@@ -5,6 +5,11 @@ export const commonRouter = [
         component: () => import('@/pages/Dashboard.vue')
     },
     {
+        path: '/login',
+        name: 'login',
+        component: () => import('@/pages/common/LoginPage.vue')
+    },
+    {
         path: '/uikit/formlayout',
         name: 'formlayout',
         component: () => import('@/pages/uikit/FormLayout.vue')
