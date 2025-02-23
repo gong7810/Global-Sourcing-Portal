@@ -151,7 +151,7 @@ watch([getPrimary, getSurface, isDarkTheme], () => {
             >지원내역</span
           >
         </div>
-        <div class="flex flex-col items-center cursor-pointer group">
+        <!-- <div class="flex flex-col items-center cursor-pointer group">
           <div
             class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
           >
@@ -170,7 +170,7 @@ watch([getPrimary, getSurface, isDarkTheme], () => {
           <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
             >북마크</span
           >
-        </div>
+        </div> -->
         <div class="flex flex-col items-center cursor-pointer group">
           <div
             class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
