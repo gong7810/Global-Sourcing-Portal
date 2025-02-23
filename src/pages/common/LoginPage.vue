@@ -4,6 +4,12 @@ const loginGoogle = () => {
 
   window.location.href = url;
 };
+
+const loginLine = () => {
+  const url = `https://accounts.line.com/o/oauth2/v2/auth?client_id=${import.meta.env.VITE_GOOGLE_CLIENT_ID}&redirect_uri=${import.meta.env.VITE_GOOGLE_REDIRECT_URL}&response_type=code&scope=email profile`;
+
+  window.location.href = url;
+};
 </script>
 
 <template>
