@@ -1,6 +1,8 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
+import { createPinia } from 'pinia';
+import piniaPersist from 'pinia-plugin-persist';
 
 import Aura from '@primevue/themes/aura';
 import PrimeVue from 'primevue/config';
@@ -19,14 +21,18 @@ import '@/assets/tailwind.css';
 
 const app = createApp(App);
 
+const pinia = createPinia();
+pinia.use(piniaPersist);
+
+app.use(pinia);
 app.use(router);
 app.use(PrimeVue, {
-    theme: {
-        preset: Aura,
-        options: {
-            darkModeSelector: '.app-dark'
-        }
+  theme: {
+    preset: Aura,
+    options: {
+      darkModeSelector: '.app-dark'
     }
+  }
 });
 app.use(ToastService);
 app.use(ConfirmationService);
