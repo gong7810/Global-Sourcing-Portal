@@ -4,6 +4,12 @@ const loginGoogle = () => {
 
   window.location.href = url;
 };
+
+// const loginLine = () => {
+//   const url = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${import.meta.env.VITE_LINE_CLIENT_ID}&redirect_uri=${import.meta.env.VITE_LINE_REDIRECT_URL}&state=12345abcde&scope=profile openid`;
+
+//   window.location.href = url;
+// };
 </script>
 
 <template>
@@ -54,12 +60,21 @@ const loginGoogle = () => {
 
       <!-- 소셜 로그인 -->
       <div class="text-center text-sm text-gray-500 mt-6 mb-4">소셜 계정 로그인</div>
+      <!-- Google 로그인 버튼 -->
       <button
         class="w-full flex items-center justify-center gap-2 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
         @click="loginGoogle"
       >
         <i class="pi pi-google text-[#8FA1FF]"></i>
         <span class="text-gray-600">Sign in with Google</span>
+      </button>
+      <!-- Line 로그인 버튼 -->
+      <button
+        class="w-full flex items-center justify-center gap-2 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors mt-2"
+        @click="loginLine"
+      >
+        <img src="/demo/icons/btn_base.png" alt="Line Login" class="h-6 w-6" />
+        <span class="text-gray-600">Sign in with Line</span>
       </button>
     </div>
   </div>
