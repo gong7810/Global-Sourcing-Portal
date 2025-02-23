@@ -1,6 +1,9 @@
 <script setup>
 import { useLayout } from '@/layout/composables/layout';
 import AppConfigurator from './AppConfigurator.vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
 </script>
@@ -51,7 +54,11 @@ const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
             <!-- 메뉴 드롭다운 -->
             <div class="hidden absolute right-0 top-[3.8rem] w-56 bg-white rounded-xl shadow-lg border border-gray-100">
               <div class="py-2">
-                <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50">
+                <a
+                  @click="router.push('/uikit/formlayout')"
+                  href="#"
+                  class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50"
+                >
                   <i class="pi pi-file-edit text-[#8FA1FF]"></i>
                   <span class="font-medium">이력서 관리</span>
                 </a>

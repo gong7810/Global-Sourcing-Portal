@@ -1,55 +1,66 @@
+<script setup>
+const loginGoogle = () => {
+  const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${import.meta.env.VITE_GOOGLE_CLIENT_ID}&redirect_uri=${import.meta.env.VITE_GOOGLE_REDIRECT_URL}&response_type=code&scope=email profile`;
+
+  window.location.href = url;
+};
+</script>
+
 <template>
-    <div class="min-h-screen flex items-center justify-center bg-[rgb(229, 231, 235)]">
-        <div class="bg-white p-8 rounded-2xl shadow-lg w-[480px]">
-            <!-- 로고 -->
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold">BTPOTAL</h1>
-            </div>
+  <div class="min-h-screen flex items-center justify-center bg-[rgb(229, 231, 235)]">
+    <div class="bg-white p-8 rounded-2xl shadow-lg w-[480px]">
+      <!-- 로고 -->
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold">BT POTAL</h1>
+      </div>
 
-            <!-- 탭 메뉴 -->
-            <div class="flex justify-center mb-8">
-                <button class="px-8 py-2 font-medium text-[#8FA1FF] border-b-2 border-[#8FA1FF]">
-                    개인회원
-                </button>
-                <button class="px-8 py-2 font-medium text-gray-400">
-                    기업회원
-                </button>
-            </div>
+      <!-- 탭 메뉴 -->
+      <div class="flex justify-center mb-8">
+        <button class="px-8 py-2 font-medium text-[#8FA1FF] border-b-2 border-[#8FA1FF]">개인회원</button>
+        <button class="px-8 py-2 font-medium text-gray-400">기업회원</button>
+      </div>
 
-            <!-- 입력 폼 -->
-            <div class="space-y-4 mb-6">
-                <input type="text" placeholder="아이디" 
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]">
-                <input type="password" placeholder="비밀번호" 
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]">
-                <div class="flex items-center">
-                    <input type="checkbox" id="remember" class="mr-2">
-                    <label for="remember" class="text-sm text-gray-600">자동 로그인</label>
-                </div>
-            </div>
-
-            <!-- 로그인 버튼 -->
-            <button class="w-full py-3 bg-[#8FA1FF] text-white rounded-lg font-medium hover:bg-[#7B8FFF] transition-colors">
-                로그인
-            </button>
-
-            <!-- 아이디/비밀번호 찾기, 회원가입 -->
-            <div class="flex justify-center items-center gap-4 my-4 text-sm text-gray-500">
-                <button class="hover:text-[#8FA1FF] transition-colors">아이디찾기</button>
-                <div class="w-px h-4 bg-gray-300"></div>
-                <button class="hover:text-[#8FA1FF] transition-colors">비밀번호찾기</button>
-                <div class="w-px h-4 bg-gray-300"></div>
-                <button class="hover:text-[#8FA1FF] transition-colors">회원가입</button>
-            </div>
-
-            <!-- 소셜 로그인 -->
-            <div class="text-center text-sm text-gray-500 mt-6 mb-4">
-                소셜 계정 로그인
-            </div>
-            <button class="w-full flex items-center justify-center gap-2 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                <i class="pi pi-google text-[#8FA1FF]"></i>
-                <span class="text-gray-600">Sign in with Google</span>
-            </button>
+      <!-- 입력 폼 -->
+      <div class="space-y-4 mb-6">
+        <input
+          type="text"
+          placeholder="아이디"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
+        />
+        <input
+          type="password"
+          placeholder="비밀번호"
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
+        />
+        <div class="flex items-center">
+          <input type="checkbox" id="remember" class="mr-2" />
+          <label for="remember" class="text-sm text-gray-600">자동 로그인</label>
         </div>
+      </div>
+
+      <!-- 로그인 버튼 -->
+      <button class="w-full py-3 bg-[#8FA1FF] text-white rounded-lg font-medium hover:bg-[#7B8FFF] transition-colors">
+        로그인
+      </button>
+
+      <!-- 아이디/비밀번호 찾기, 회원가입 -->
+      <div class="flex justify-center items-center gap-4 my-4 text-sm text-gray-500">
+        <button class="hover:text-[#8FA1FF] transition-colors">아이디찾기</button>
+        <div class="w-px h-4 bg-gray-300"></div>
+        <button class="hover:text-[#8FA1FF] transition-colors">비밀번호찾기</button>
+        <div class="w-px h-4 bg-gray-300"></div>
+        <button class="hover:text-[#8FA1FF] transition-colors">회원가입</button>
+      </div>
+
+      <!-- 소셜 로그인 -->
+      <div class="text-center text-sm text-gray-500 mt-6 mb-4">소셜 계정 로그인</div>
+      <button
+        class="w-full flex items-center justify-center gap-2 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+        @click="loginGoogle"
+      >
+        <i class="pi pi-google text-[#8FA1FF]"></i>
+        <span class="text-gray-600">Sign in with Google</span>
+      </button>
     </div>
+  </div>
 </template>
