@@ -8,6 +8,7 @@ export const useAuthStore = defineStore(
   () => {
     const router = useRouter();
     let userInfo = ref({}); // 사용자정보
+    let lineState = ref('12345abcde');
 
     /* 로그인 완료후 사용자 정보 설정 */
     const setUser = (param) => {
@@ -31,8 +32,15 @@ export const useAuthStore = defineStore(
       router.push('/login');
     };
 
+    /* 라인 state 관리 */
+    const setState = (state) => {
+      lineState.value = state;
+    };
+
     return {
       userInfo,
+      lineState,
+      setState,
       setUser,
       reset,
       isLogin,

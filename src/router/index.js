@@ -31,9 +31,19 @@ const router = createRouter({
       children: userRouter
     },
     {
+      path: '/login',
+      name: 'login',
+      component: () => import('@/pages/common/LoginPage.vue')
+    },
+    {
       path: '/auth/login/google',
-      name: 'loginResult',
-      component: () => import('@/pages/common/LoginBridgePage.vue')
+      name: 'loginGoogleResult',
+      component: () => import('@/pages/common/LoginGoogleBridgePage.vue')
+    },
+    {
+      path: '/auth/login/line',
+      name: 'loginLineResult',
+      component: () => import('@/pages/common/LoginLineBridgePage.vue')
     }
     // {
     //   path: '/landing',

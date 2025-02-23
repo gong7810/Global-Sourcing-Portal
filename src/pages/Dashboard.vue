@@ -347,4 +347,8 @@ watch([getPrimary, getSurface, isDarkTheme], () => {
 .group:hover {
   transform: translateY(-2px);
 }
+
+.mt-12.border-t.border-gray-200.bg-gray-50 {
+  background-color: #F1F5F9;
+}
 </style>

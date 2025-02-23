@@ -2,10 +2,27 @@
 import { useLayout } from '@/layout/composables/layout';
 import AppConfigurator from './AppConfigurator.vue';
 import { useRouter } from 'vue-router';
+import { onMounted, ref } from 'vue';
+const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
 
 const router = useRouter();
 
-const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
+const isMenuOpen = ref(false); // 메뉴 열림 상태
+
+const toggleMenu = () => {
+  isMenuOpen.value = !isMenuOpen.value; // 메뉴 토글
+};
+
+// 외부 클릭 시 메뉴 닫기
+const handleClickOutside = (event) => {
+  if (!event.target.closest('.relative')) {
+    isMenuOpen.value = false;
+  }
+};
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+});
 </script>
 
 <template>
@@ -34,6 +51,7 @@ const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
           <div class="relative">
             <div
               class="flex items-center cursor-pointer"
+              @click="toggleMenu"
               v-styleclass="{
                 selector: '@next',
                 enterFromClass: 'hidden opacity-0 translate-y-2',
@@ -52,7 +70,11 @@ const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
             </div>
 
             <!-- 메뉴 드롭다운 -->
-            <div class="hidden absolute right-0 top-[3.8rem] w-56 bg-white rounded-xl shadow-lg border border-gray-100">
+            <div
+              v-if="isMenuOpen"
+              class="absolute right-0 top-[3.8rem] w-56 bg-white rounded-xl shadow-lg border border-gray-100"
+            >
+              <!-- 메뉴 열림 상태에 따라 표시 -->
               <div class="py-2">
                 <a
                   @click="router.push('/uikit/formlayout')"
