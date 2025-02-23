@@ -10,93 +10,93 @@ const chartData = ref(null);
 const chartOptions = ref(null);
 
 const items = ref([
-    { label: 'Add New', icon: 'pi pi-fw pi-plus' },
-    { label: 'Remove', icon: 'pi pi-fw pi-trash' }
+  { label: 'Add New', icon: 'pi pi-fw pi-plus' },
+  { label: 'Remove', icon: 'pi pi-fw pi-trash' }
 ]);
 
 onMounted(() => {
-    ProductService.getProductsSmall().then((data) => (products.value = data));
-    chartData.value = setChartData();
-    chartOptions.value = setChartOptions();
+  ProductService.getProductsSmall().then((data) => (products.value = data));
+  chartData.value = setChartData();
+  chartOptions.value = setChartOptions();
 });
 
 function setChartData() {
-    const documentStyle = getComputedStyle(document.documentElement);
+  const documentStyle = getComputedStyle(document.documentElement);
 
-    return {
-        labels: ['Q1', 'Q2', 'Q3', 'Q4'],
-        datasets: [
-            {
-                type: 'bar',
-                label: 'Subscriptions',
-                backgroundColor: documentStyle.getPropertyValue('--p-primary-400'),
-                data: [4000, 10000, 15000, 4000],
-                barThickness: 32
-            },
-            {
-                type: 'bar',
-                label: 'Advertising',
-                backgroundColor: documentStyle.getPropertyValue('--p-primary-300'),
-                data: [2100, 8400, 2400, 7500],
-                barThickness: 32
-            },
-            {
-                type: 'bar',
-                label: 'Affiliate',
-                backgroundColor: documentStyle.getPropertyValue('--p-primary-200'),
-                data: [4100, 5200, 3400, 7400],
-                borderRadius: {
-                    topLeft: 8,
-                    topRight: 8
-                },
-                borderSkipped: true,
-                barThickness: 32
-            }
-        ]
-    };
+  return {
+    labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+    datasets: [
+      {
+        type: 'bar',
+        label: 'Subscriptions',
+        backgroundColor: documentStyle.getPropertyValue('--p-primary-400'),
+        data: [4000, 10000, 15000, 4000],
+        barThickness: 32
+      },
+      {
+        type: 'bar',
+        label: 'Advertising',
+        backgroundColor: documentStyle.getPropertyValue('--p-primary-300'),
+        data: [2100, 8400, 2400, 7500],
+        barThickness: 32
+      },
+      {
+        type: 'bar',
+        label: 'Affiliate',
+        backgroundColor: documentStyle.getPropertyValue('--p-primary-200'),
+        data: [4100, 5200, 3400, 7400],
+        borderRadius: {
+          topLeft: 8,
+          topRight: 8
+        },
+        borderSkipped: true,
+        barThickness: 32
+      }
+    ]
+  };
 }
 
 function setChartOptions() {
-    const documentStyle = getComputedStyle(document.documentElement);
-    const borderColor = documentStyle.getPropertyValue('--surface-border');
-    const textMutedColor = documentStyle.getPropertyValue('--text-color-secondary');
+  const documentStyle = getComputedStyle(document.documentElement);
+  const borderColor = documentStyle.getPropertyValue('--surface-border');
+  const textMutedColor = documentStyle.getPropertyValue('--text-color-secondary');
 
-    return {
-        maintainAspectRatio: false,
-        aspectRatio: 0.8,
-        scales: {
-            x: {
-                stacked: true,
-                ticks: {
-                    color: textMutedColor
-                },
-                grid: {
-                    color: 'transparent',
-                    borderColor: 'transparent'
-                }
-            },
-            y: {
-                stacked: true,
-                ticks: {
-                    color: textMutedColor
-                },
-                grid: {
-                    color: borderColor,
-                    borderColor: 'transparent',
-                    drawTicks: false
-                }
-            }
+  return {
+    maintainAspectRatio: false,
+    aspectRatio: 0.8,
+    scales: {
+      x: {
+        stacked: true,
+        ticks: {
+          color: textMutedColor
+        },
+        grid: {
+          color: 'transparent',
+          borderColor: 'transparent'
         }
-    };
+      },
+      y: {
+        stacked: true,
+        ticks: {
+          color: textMutedColor
+        },
+        grid: {
+          color: borderColor,
+          borderColor: 'transparent',
+          drawTicks: false
+        }
+      }
+    }
+  };
 }
 
 const formatCurrency = (value) => {
-    return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+  return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 };
 
 watch([getPrimary, getSurface, isDarkTheme], () => {
-    chartData.value = setChartData();
-    chartOptions.value = setChartOptions();
+  chartData.value = setChartData();
+  chartOptions.value = setChartOptions();
 });
 </script>
 
@@ -107,8 +107,18 @@ watch([getPrimary, getSurface, isDarkTheme], () => {
       <!-- 상단 메뉴 아이콘들 -->
       <div class="flex justify-center gap-32 mb-12">
         <div class="flex flex-col items-center cursor-pointer group">
-          <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#8B8BF5" stroke-width="2.5" class="transition-all duration-200 group-hover:stroke-white">
+          <div
+            class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
+          >
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#8B8BF5"
+              stroke-width="2.5"
+              class="transition-all duration-200 group-hover:stroke-white"
+            >
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
               <path d="M14 2v6h6"></path>
               <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -116,48 +126,88 @@ watch([getPrimary, getSurface, isDarkTheme], () => {
               <line x1="10" y1="9" x2="8" y2="9"></line>
             </svg>
           </div>
-          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">이력서</span>
+          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
+            >이력서</span
+          >
         </div>
         <div class="flex flex-col items-center cursor-pointer group">
-          <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#8B8BF5" stroke-width="2.5" class="transition-all duration-200 group-hover:stroke-white">
+          <div
+            class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
+          >
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#8B8BF5"
+              stroke-width="2.5"
+              class="transition-all duration-200 group-hover:stroke-white"
+            >
               <circle cx="12" cy="12" r="10"></circle>
               <polyline points="12 6 12 12 16 14"></polyline>
             </svg>
           </div>
-          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">지원내역</span>
+          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
+            >지원내역</span
+          >
         </div>
         <div class="flex flex-col items-center cursor-pointer group">
-          <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#8B8BF5" stroke-width="2.5" class="transition-all duration-200 group-hover:stroke-white">
+          <div
+            class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
+          >
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#8B8BF5"
+              stroke-width="2.5"
+              class="transition-all duration-200 group-hover:stroke-white"
+            >
               <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
             </svg>
           </div>
-          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">북마크</span>
+          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
+            >북마크</span
+          >
         </div>
         <div class="flex flex-col items-center cursor-pointer group">
-          <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#8B8BF5" stroke-width="2.5" class="transition-all duration-200 group-hover:stroke-white">
+          <div
+            class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
+          >
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#8B8BF5"
+              stroke-width="2.5"
+              class="transition-all duration-200 group-hover:stroke-white"
+            >
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
           </div>
-          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">내 정보</span>
+          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
+            >내 정보</span
+          >
         </div>
       </div>
 
       <!-- 필터 영역 -->
       <div class="flex gap-4 mb-6">
-        <Dropdown v-model="selectedRegion" :options="regions" placeholder="지역" class="w-24" />
-        <Dropdown v-model="selectedJob" :options="jobs" placeholder="직무" class="w-24" />
-        <Dropdown v-model="selectedCareer" :options="careers" placeholder="근무형태" class="w-32" />
-        <Dropdown v-model="selectedEducation" :options="education" placeholder="보유한 비자" class="w-36" />
+        <Dropdown v-model="selectedRegion" :options="regions" placeholder="지역" />
+        <Dropdown v-model="selectedJob" :options="jobs" placeholder="직무" />
+        <Dropdown v-model="selectedCareer" :options="careers" placeholder="근무형태" />
+        <Dropdown v-model="selectedEducation" :options="education" placeholder="보유한 비자" />
       </div>
 
       <!-- 채용공고 카드들 -->
       <div class="space-y-4">
         <!-- 첫 번째 채용공고 -->
-        <div class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg hover:border-[#8B8BF5] cursor-pointer">
+        <div
+          class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg hover:border-[#8B8BF5] cursor-pointer"
+        >
           <div class="flex justify-between items-start">
             <div>
               <div class="flex items-center gap-2 mb-2">
@@ -181,14 +231,14 @@ watch([getPrimary, getSurface, isDarkTheme], () => {
                 </span>
               </div>
             </div>
-            <button class="px-4 py-2 rounded-[8px] bg-[#8B8BF5] text-white text-[14px]">
-              지원하기
-            </button>
+            <button class="px-4 py-2 rounded-[8px] bg-[#8B8BF5] text-white text-[14px]">지원하기</button>
           </div>
         </div>
 
         <!-- 두 번째 채용공고 -->
-        <div class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg hover:border-[#8B8BF5] cursor-pointer">
+        <div
+          class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg hover:border-[#8B8BF5] cursor-pointer"
+        >
           <div class="flex justify-between items-start">
             <div>
               <div class="flex items-center gap-2 mb-2">
@@ -213,14 +263,14 @@ watch([getPrimary, getSurface, isDarkTheme], () => {
                 </span>
               </div>
             </div>
-            <button class="px-4 py-2 rounded-[8px] bg-[#8B8BF5] text-white text-[14px]">
-              지원하기
-            </button>
+            <button class="px-4 py-2 rounded-[8px] bg-[#8B8BF5] text-white text-[14px]">지원하기</button>
           </div>
         </div>
 
         <!-- 세 번째 채용공고 -->
-        <div class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg hover:border-[#8B8BF5] cursor-pointer">
+        <div
+          class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg hover:border-[#8B8BF5] cursor-pointer"
+        >
           <div class="flex justify-between items-start">
             <div>
               <div class="flex items-center gap-2 mb-2">
@@ -245,14 +295,12 @@ watch([getPrimary, getSurface, isDarkTheme], () => {
                 </span>
               </div>
             </div>
-            <button class="px-4 py-2 rounded-[8px] bg-[#8B8BF5] text-white text-[14px]">
-              지원하기
-            </button>
+            <button class="px-4 py-2 rounded-[8px] bg-[#8B8BF5] text-white text-[14px]">지원하기</button>
           </div>
         </div>
       </div>
     </div>
-    
+
     <!-- 푸터 추가 -->
     <div class="mt-12 border-t border-gray-200 bg-gray-50">
       <div class="max-w-[1200px] mx-auto px-4 py-8">
@@ -268,7 +316,7 @@ watch([getPrimary, getSurface, isDarkTheme], () => {
             <p class="pb-3 border-b border-gray-200">통신판매업:</p>
           </div>
         </div>
-        
+
         <div class="flex gap-6 text-sm">
           <a href="#" class="text-blue-900 font-medium">개인정보처리방침</a>
           <a href="#" class="text-gray-600">이용약관</a>
@@ -281,19 +329,19 @@ watch([getPrimary, getSurface, isDarkTheme], () => {
 
 <style scoped>
 .card {
-    background: white;
-    border-radius: 12px;
-    border: 1px solid #e5e7eb;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
 }
 
 :deep(.p-dropdown) {
-    border-color: #8B8BF5;
-    border-radius: 8px;
-    padding: 0.5rem;
+  border-color: #8b8bf5;
+  border-radius: 8px;
+  padding: 0.5rem;
 }
 
 :deep(.p-button-outlined) {
-    padding: 0.75rem 1.5rem;
+  padding: 0.75rem 1.5rem;
 }
 
 .group:hover {
