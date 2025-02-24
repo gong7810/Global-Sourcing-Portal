@@ -44,7 +44,17 @@ const router = createRouter({
       path: '/auth/login/line',
       name: 'loginLineResult',
       component: () => import('@/pages/common/LoginLineBridgePage.vue')
-    }
+    },
+    {
+      path: '/personal/register',
+      name: 'personalRegister',
+      component: () => import('@/pages/common/PersonalRegisterPage.vue')
+    },
+    {
+      path: '/business/register',
+      name: 'businessRegister',
+      component: () => import('@/pages/common/BusinessRegisterPage.vue')
+    },
     // {
     //   path: '/landing',
     //   name: 'landing',

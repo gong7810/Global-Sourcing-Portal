@@ -4,8 +4,16 @@ import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 
 const authStore = useAuthStore();
-
 const activeTab = ref('personal');
+
+// 개인회원 입력 필드
+const personalId = ref(''); // 정의
+const personalPassword = ref(''); // 정의
+
+// 기업회원 입력 필드
+const businessId = ref('');
+const businessPassword = ref('');
+
 const setActiveTab = (tab) => {
   activeTab.value = tab;
 };
@@ -98,32 +106,36 @@ const loginLine = () => {
         <div class="w-px h-4 bg-gray-300"></div>
         <button class="hover:text-[#8FA1FF] transition-colors">비밀번호찾기</button>
         <div class="w-px h-4 bg-gray-300"></div>
-        <button class="hover:text-[#8FA1FF] transition-colors">회원가입</button>
+        <!-- <button class="hover:text-[#8FA1FF] transition-colors">회원가입</button> -->
+        <router-link to="/personal/register" v-if="activeTab === 'personal'" class="hover:text-[#8FA1FF] transition-colors">회원가입</router-link>
+        <router-link to="/business/register" v-if="activeTab === 'business'" class="hover:text-[#8FA1FF] transition-colors">회원가입</router-link>
       </div>
 
       <!-- 소셜 로그인 -->
-      <div class="flex items-center text-sm text-gray-500 mt-6 mb-4">
-          <div class="flex-grow border-t border-gray-300"></div>
-          <span class="mx-4">소셜 계정 로그인</span>
-          <div class="flex-grow border-t border-gray-300"></div>
-      </div>
+      <div v-if="activeTab === 'personal'">
+        <div class="flex items-center text-sm text-gray-500 mt-6 mb-4">
+            <div class="flex-grow border-t border-gray-300"></div>
+            <span class="mx-4">소셜 계정 로그인</span>
+            <div class="flex-grow border-t border-gray-300"></div>
+        </div>
 
-      <!-- Google 로그인 버튼 -->
-      <button
-        class="w-full flex items-center justify-center gap-2 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-        @click="loginGoogle"
-      >
-        <i class="pi pi-google text-[#8FA1FF]"></i>
-        <span class="text-gray-600">Sign in with Google</span>
-      </button>
-      <!-- Line 로그인 버튼 -->
-      <button
-        class="w-full flex items-center justify-center gap-2 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors mt-2"
-        @click="loginLine"
-      >
-        <img src="/demo/icons/btn_base.png" alt="Line Login" class="h-6 w-6" />
-        <span class="text-gray-600">Sign in with Line</span>
-      </button>
+        <!-- Google 로그인 버튼 -->
+        <button
+          class="w-full flex items-center justify-center gap-2 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          @click="loginGoogle"
+        >
+          <i class="pi pi-google text-[#8FA1FF]"></i>
+          <span class="text-gray-600">Sign in with Google</span>
+        </button>
+        <!-- Line 로그인 버튼 -->
+        <button
+          class="w-full flex items-center justify-center gap-2 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors mt-2"
+          @click="loginLine"
+        >
+          <img src="/demo/icons/btn_base.png" alt="Line Login" class="h-6 w-6" />
+          <span class="text-gray-600">Sign in with Line</span>
+        </button>
+      </div>
     </div>
   </div>
 </template>
