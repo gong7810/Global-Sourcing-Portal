@@ -4,8 +4,16 @@ import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 
 const authStore = useAuthStore();
-
 const activeTab = ref('personal');
+
+// 개인회원 입력 필드
+const personalId = ref(''); // 정의
+const personalPassword = ref(''); // 정의
+
+// 기업회원 입력 필드
+const businessId = ref('');
+const businessPassword = ref('');
+
 const setActiveTab = (tab) => {
   activeTab.value = tab;
 };
@@ -98,7 +106,9 @@ const loginLine = () => {
         <div class="w-px h-4 bg-gray-300"></div>
         <button class="hover:text-[#8FA1FF] transition-colors">비밀번호찾기</button>
         <div class="w-px h-4 bg-gray-300"></div>
-        <button class="hover:text-[#8FA1FF] transition-colors">회원가입</button>
+        <!-- <button class="hover:text-[#8FA1FF] transition-colors">회원가입</button> -->
+        <router-link to="/personal/register" v-if="activeTab === 'personal'" class="hover:text-[#8FA1FF] transition-colors">회원가입</router-link>
+        <router-link to="/business/register" v-if="activeTab === 'business'" class="hover:text-[#8FA1FF] transition-colors">회원가입</router-link>
       </div>
 
       <!-- 소셜 로그인 -->
