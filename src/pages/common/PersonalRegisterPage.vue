@@ -4,19 +4,49 @@ import { isEmpty } from 'es-toolkit/compat';
 import { verifyPassportNumber } from '@/apis/auth/authApis';
 
 const personalId = ref('');
+const idCheckMessage = ref('');
+const idCheckSuccess = ref(false);
 const personalPassword = ref('');
 const personalPasswordCheck = ref('');
 const personalName = ref('');
 const birthdate = ref('');
 const gender = ref('');
 const personalEmail = ref('');
-const personalPhone = ref('');
+// const personalPhone = ref('');
 const passportNumber = ref('M981L0621');
 const showPassword = ref(false);
 const showPasswordCheck = ref(false);
-const verificationCode = ref('');
+// const verificationCode = ref('');
+const formError = ref('');
 
 const passwordCheckFlag = ref(false);
+
+const checkIdDuplication = async () => {
+  if (!personalId.value.trim()) {
+    idCheckMessage.value = '아이디를 입력해주세요.';
+    idCheckSuccess.value = false;
+    return;
+  }
+
+  try {
+    // 여기에 실제 API 호출을 추가하세요.
+    // 예시: const response = await axios.post('/api/check-id', { id: personalId.value });
+
+    // 임시로 중복 확인 로직을 추가합니다.
+    const isDuplicate = personalId.value === 'existingId'; // 'existingId'는 이미 존재하는 아이디 예시입니다.
+
+    if (isDuplicate) {
+      idCheckMessage.value = '이미 사용 중인 아이디입니다.';
+      idCheckSuccess.value = false;
+    } else {
+      idCheckMessage.value = '사용 가능한 아이디입니다.';
+      idCheckSuccess.value = true;
+    }
+  } catch (error) {
+    idCheckMessage.value = '오류가 발생했습니다. 다시 시도해주세요.';
+    idCheckSuccess.value = false;
+  }
+};
 
 const allAgreed = ref(false);
 const terms = ref({
@@ -24,8 +54,8 @@ const terms = ref({
   service: false,
   privacy: false,
   optionalPrivacy: false,
-  emailAds: false,
-  smsAds: false
+  // emailAds: false,
+  // smsAds: false
 });
 
 const details = ref({
@@ -107,6 +137,26 @@ const toggleDetail = (key) => {
 };
 
 const signIn = () => {};
+
+const submitForm = () => {
+  if (
+    !personalId.value.trim() ||
+    !personalPassword.value.trim() ||
+    !personalName.value.trim() ||
+    !birthdate.value.trim() ||
+    !personalEmail.value.trim() ||
+    !terms.value.age ||
+    !terms.value.service ||
+    !terms.value.privacy
+  ) {
+    formError.value = '모든 필수 항목을 입력하고 체크해주세요.';
+    return;
+  }
+
+  // 가입 처리 로직
+  formError.value = '';
+  console.log('가입 성공');
+};
 </script>
 
 <template>
@@ -121,12 +171,25 @@ const signIn = () => {};
       <!-- 입력 폼 -->
       <form @submit.prevent="submitForm">
         <div class="space-y-4 mb-6">
-          <input
-            v-model="personalId"
-            type="text"
-            placeholder="아이디"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
-          />
+          <div>
+            <div class="flex space-x-2">
+              <input
+                v-model="personalId"
+                type="text"
+                placeholder="아이디"
+                class="flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
+              />
+              <button
+                @click="checkIdDuplication"
+                class="px-4 py-3 bg-[#F2F4F7] text-gray-500 border border-gray-300 rounded-lg"
+              >
+                아이디 중복 확인
+              </button>
+            </div>
+              <p v-if="idCheckMessage" :class="idCheckSuccess ? 'text-green-500' : 'text-red-500'">
+                {{ idCheckMessage }}
+              </p>
+          </div>
           <div class="relative">
             <input
               :type="showPassword ? 'text' : 'password'"
@@ -335,6 +398,7 @@ const signIn = () => {};
           >
             가입하기
           </button>
+          <p v-if="formError" class="text-red-500">{{ formError }}</p>
         </div>
       </form>
     </div>
