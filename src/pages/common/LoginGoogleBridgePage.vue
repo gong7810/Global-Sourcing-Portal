@@ -1,8 +1,10 @@
 <script setup>
 import { onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/store/auth/authStore';
 
 const router = useRouter();
+const authStore = useAuthStore();
 
 onMounted(() => {
   const query = new URLSearchParams(window.location.search);
@@ -12,6 +14,12 @@ onMounted(() => {
     console.log(code);
     // code가 존재하면 백엔드로 전송
     // sendCodeToBackend(code);
+    authStore.setUser({
+      user: '공성욱',
+      email: 'testmail@gmail.com',
+      type: 'user'
+    });
+
     setTimeout(() => {
       router.push('/');
     }, 1000);

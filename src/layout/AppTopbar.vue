@@ -3,14 +3,43 @@ import { useLayout } from '@/layout/composables/layout';
 import AppConfigurator from './AppConfigurator.vue';
 import { useRouter } from 'vue-router';
 import { onMounted, ref } from 'vue';
+import { useAuthStore } from '@/store/auth/authStore';
+import { useMessagePop } from '@/plugins/commonutils';
+
 const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
 
 const router = useRouter();
+const authStore = useAuthStore();
+const messagePop = useMessagePop();
 
 const isMenuOpen = ref(false); // 메뉴 열림 상태
+const loginFlag = ref(false); // 로그인 여부 체크
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+
+  if (authStore.isLogin()) {
+    loginFlag.value = true;
+  } else {
+    loginFlag.value = false;
+  }
+});
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value; // 메뉴 토글
+};
+
+const logout = () => {
+  messagePop.confirm({
+    icon: 'info',
+    message: '로그아웃 하시겠습니까?',
+    onCloseYes: () => {
+      authStore.reset();
+
+      window.location.reload();
+    }
+  });
+  // messagePop.alert('test', 'info');
 };
 
 // 외부 클릭 시 메뉴 닫기
@@ -19,10 +48,6 @@ const handleClickOutside = (event) => {
     isMenuOpen.value = false;
   }
 };
-
-onMounted(() => {
-  document.addEventListener('click', handleClickOutside);
-});
 </script>
 
 <template>
@@ -38,14 +63,22 @@ onMounted(() => {
         <!-- 오른쪽 메뉴들 -->
         <div class="flex items-center gap-4">
           <!-- 로그인 버튼 -->
-          <router-link to="/login">
-            <button
-              class="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 rounded-full transition-all"
-            >
-              <i class="pi pi-user text-white"></i>
-              <span class="text-sm text-white font-medium">로그인</span>
-            </button>
-          </router-link>
+          <button
+            v-if="!loginFlag"
+            class="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 rounded-full transition-all"
+            @click="router.push('/login')"
+          >
+            <i class="pi pi-user text-white"></i>
+            <span class="text-sm text-white font-medium">로그인</span>
+          </button>
+          <button
+            v-if="loginFlag"
+            class="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 rounded-full transition-all"
+            @click="logout"
+          >
+            <i class="pi pi-user text-white"></i>
+            <span class="text-sm text-white font-medium">로그아웃</span>
+          </button>
 
           <!-- 메뉴 버튼 -->
           <div class="relative">
