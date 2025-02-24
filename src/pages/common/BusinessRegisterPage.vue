@@ -1,19 +1,18 @@
 <script setup>
 import { ref } from 'vue';
 
-const companyType = ref('');
+const businessType = ref('');
 const businessRegistrationNumber = ref('');
-const companyName = ref('');
+const businessName = ref('');
 const ceoName = ref('');
-const companyAddress = ref('');
+const businessAddress = ref('');
 const businessCertificateIssueNumber = ref('');
 const businessId = ref('');
 const businessPassword = ref('');
 const businessPasswordCheck = ref('');
-const businessName = ref('');
+const managerName = ref('');
 const businessEmail = ref('');
 const businessPhone = ref('');
-const businessAddress = ref('');
 const showPassword = ref(false);
 const showPasswordCheck = ref(false);
 const verificationCode = ref('');
@@ -98,7 +97,12 @@ const submitForm = () => {
       <!-- 입력 폼 -->
       <form @submit.prevent="submitForm">
         <div class="space-y-4 mb-6">
-          <select for="companyType" id="companyType" name="companyType" class="mt-1 block w-full pl-3 pr-10 py-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="기업형태">
+          <select
+            id="businessType"
+            name="businessType"
+            v-model="businessType"
+            class="mt-1 block w-full pl-3 pr-10 py-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          >
             <option value="" disabled selected>기업형태</option>
             <option>대기업</option>
             <option>대기업 계열사·자회사</option>
@@ -118,7 +122,7 @@ const submitForm = () => {
             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
           />
           <input
-            v-model="companyName"
+            v-model="businessName"
             type="text"
             placeholder="회사명"
             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
@@ -130,7 +134,7 @@ const submitForm = () => {
             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
           />
           <input
-            v-model="companyAddress"
+            v-model="businessAddress"
             type="text"
             placeholder="회사주소"
             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
@@ -178,7 +182,7 @@ const submitForm = () => {
             </button>
           </div>
           <input
-            v-model="businessName"
+            v-model="managerName"
             type="text"
             placeholder="가입자명"
             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
