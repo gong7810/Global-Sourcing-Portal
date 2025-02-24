@@ -7,28 +7,29 @@ import { defineConfig } from 'vite';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    optimizeDeps: {
-        noDiscovery: true
-    },
-    plugins: [
-        vue(),
-        Components({
-            resolvers: [PrimeVueResolver()]
-        })
-    ],
-    resolve: {
-        alias: {
-            '@': fileURLToPath(new URL('./src', import.meta.url))
-        }
+  optimizeDeps: {
+    noDiscovery: true
+  },
+  plugins: [
+    vue(),
+    Components({
+      resolvers: [PrimeVueResolver()]
+    })
+  ],
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url))
     }
-    // server: {
-    //     port: 3000,
-    //     proxy: {
-    //         '/api': {
-    //             target: 'http://152.67.211.72:18080',
-    //             changeOrigin: true,
-    //             rewrite: (path) => path.replace(/^\/api/, '')
-    //         }
-    //     }
-    // }
+  }
+  //   server: {
+  //     port: 5173,
+  //     proxy: {
+  //       // 여권 확인 API
+  //       '/passport': {
+  //         target: 'https://api.codef.io/v1/kr/public/mj/hi-korea/passport-number-identification',
+  //         changeOrigin: true
+  //         // rewrite: (path) => path.replace(/^\/passport/, '')
+  //       }
+  //     }
+  //   }
 });
