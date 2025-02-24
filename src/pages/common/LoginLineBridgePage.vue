@@ -15,10 +15,14 @@ onMounted(() => {
   const states = query.get('state');
 
   if (code) {
-    console.log(code);
-    console.log(states);
     // code가 존재하면 백엔드로 전송
     // sendCodeToBackend(code);
+    authStore.setUser({
+      user: '공성욱',
+      email: 'testmail@gmail.com',
+      type: 'user'
+    });
+
     if (lineState.value === states) {
       setTimeout(() => {
         router.push('/');
