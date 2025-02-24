@@ -1,103 +1,26 @@
 <script setup>
+import { onMounted, ref, watch } from 'vue';
 import { useLayout } from '@/layout/composables/layout';
 import { ProductService } from '@/service/ProductService';
-import { onMounted, ref, watch } from 'vue';
+import { useAuthStore } from '@/store/auth/authStore';
+import { storeToRefs } from 'pinia';
 
 const { getPrimary, getSurface, isDarkTheme } = useLayout();
 
-const products = ref(null);
-const chartData = ref(null);
-const chartOptions = ref(null);
+const authStore = useAuthStore();
+const { userInfo } = storeToRefs(authStore);
 
-const items = ref([
-  { label: 'Add New', icon: 'pi pi-fw pi-plus' },
-  { label: 'Remove', icon: 'pi pi-fw pi-trash' }
-]);
+const bookmarkFlag = ref(true);
 
 onMounted(() => {
-  ProductService.getProductsSmall().then((data) => (products.value = data));
-  chartData.value = setChartData();
-  chartOptions.value = setChartOptions();
+  if (userInfo.value?.type === 'user') {
+    bookmarkFlag.value = false;
+  }
 });
-
-function setChartData() {
-  const documentStyle = getComputedStyle(document.documentElement);
-
-  return {
-    labels: ['Q1', 'Q2', 'Q3', 'Q4'],
-    datasets: [
-      {
-        type: 'bar',
-        label: 'Subscriptions',
-        backgroundColor: documentStyle.getPropertyValue('--p-primary-400'),
-        data: [4000, 10000, 15000, 4000],
-        barThickness: 32
-      },
-      {
-        type: 'bar',
-        label: 'Advertising',
-        backgroundColor: documentStyle.getPropertyValue('--p-primary-300'),
-        data: [2100, 8400, 2400, 7500],
-        barThickness: 32
-      },
-      {
-        type: 'bar',
-        label: 'Affiliate',
-        backgroundColor: documentStyle.getPropertyValue('--p-primary-200'),
-        data: [4100, 5200, 3400, 7400],
-        borderRadius: {
-          topLeft: 8,
-          topRight: 8
-        },
-        borderSkipped: true,
-        barThickness: 32
-      }
-    ]
-  };
-}
-
-function setChartOptions() {
-  const documentStyle = getComputedStyle(document.documentElement);
-  const borderColor = documentStyle.getPropertyValue('--surface-border');
-  const textMutedColor = documentStyle.getPropertyValue('--text-color-secondary');
-
-  return {
-    maintainAspectRatio: false,
-    aspectRatio: 0.8,
-    scales: {
-      x: {
-        stacked: true,
-        ticks: {
-          color: textMutedColor
-        },
-        grid: {
-          color: 'transparent',
-          borderColor: 'transparent'
-        }
-      },
-      y: {
-        stacked: true,
-        ticks: {
-          color: textMutedColor
-        },
-        grid: {
-          color: borderColor,
-          borderColor: 'transparent',
-          drawTicks: false
-        }
-      }
-    }
-  };
-}
 
 const formatCurrency = (value) => {
   return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 };
-
-watch([getPrimary, getSurface, isDarkTheme], () => {
-  chartData.value = setChartData();
-  chartOptions.value = setChartOptions();
-});
 </script>
 
 <template>
@@ -151,7 +74,7 @@ watch([getPrimary, getSurface, isDarkTheme], () => {
             >지원내역</span
           >
         </div>
-        <div class="flex flex-col items-center cursor-pointer group">
+        <div v-if="bookmarkFlag" class="flex flex-col items-center cursor-pointer group">
           <div
             class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
           >
@@ -349,6 +272,6 @@ watch([getPrimary, getSurface, isDarkTheme], () => {
 }
 
 .mt-12.border-t.border-gray-200.bg-gray-50 {
-  background-color: #F1F5F9;
+  background-color: #f1f5f9;
 }
 </style>

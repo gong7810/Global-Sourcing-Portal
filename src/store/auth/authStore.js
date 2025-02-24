@@ -18,7 +18,7 @@ export const useAuthStore = defineStore(
     /* 사용자 정보 초기화 - 로그아웃 시 */
     const reset = () => {
       userInfo.value = {};
-      referer.value = '';
+      // referer.value = '';
     };
 
     /* 로그인 여부 */
