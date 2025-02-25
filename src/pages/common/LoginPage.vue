@@ -2,10 +2,13 @@
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import Button from 'primevue/button';
 
 const authStore = useAuthStore();
 const activeTab = ref('personal');
+
+const router = useRouter();
 
 // 개인회원 입력 필드
 const personalId = ref(''); // 정의
@@ -15,8 +18,40 @@ const personalPassword = ref(''); // 정의
 const businessId = ref('');
 const businessPassword = ref('');
 
+// 개인회원 임시 로그인 정보
+const validPersonalUsername = 'personalUser';
+const validPersonalPassword = 'personalPass123!';
+
+// 기업회원 임시 로그인 정보
+const validBusinessUsername = 'businessUser';
+const validBusinessPassword = 'businessPass123!';
+
 const setActiveTab = (tab) => {
   activeTab.value = tab;
+};
+
+const login = () => {
+  let id, pw, validUsername, validPassword, targetPage;
+
+  if (activeTab.value === 'personal') {
+    id = personalId.value;
+    pw = personalPassword.value;
+    validUsername = validPersonalUsername;
+    validPassword = validPersonalPassword;
+    targetPage = 'userIndex'; // 개인회원 페이지
+  } else if (activeTab.value === 'business') {
+    id = businessId.value;
+    pw = businessPassword.value;
+    validUsername = validBusinessUsername;
+    validPassword = validBusinessPassword;
+    targetPage = 'businessIndex'; // 기업회원 페이지
+  }
+
+  if (id === validUsername && pw === validPassword) {
+    router.push({ name: targetPage }); // 해당 메인 페이지로 이동
+  } else {
+    alert('아이디 또는 비밀번호가 잘못되었습니다.');
+  }
 };
 
 const { lineState } = storeToRefs(authStore);
@@ -97,7 +132,7 @@ const loginLine = () => {
       </div>
 
       <!-- 로그인 버튼 -->
-      <Button class="w-full py-3 bt_btn primary">
+      <Button class="w-full py-3 bt_btn primary" @click="login">
         로그인
       </Button>
 

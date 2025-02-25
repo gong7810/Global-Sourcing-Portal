@@ -203,7 +203,7 @@ const submitForm = () => {
   formError.value = '';
   console.log('가입 성공');
   // 회원가입 완료 페이지로 이동
-  router.push({ name: 'RegisterComplete' });
+  router.push({ name: 'userRegisterComplete' });
 };
 </script>
 

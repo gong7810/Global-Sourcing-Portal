@@ -1,11 +1,13 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { isEmpty } from 'es-toolkit/compat';
+import { useRouter } from 'vue-router';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import Dropdown from 'primevue/dropdown';
 
-const businessType = ref('');
+const router = useRouter();
+const businessType = ref(null);
 const businessRegistrationNumber = ref('');
 const businessNumberError = ref('');
 const businessName = ref('');
@@ -247,7 +249,8 @@ const signIn = () => {};
 
 const submitForm = () => {
   if (
-    !businessType.value.trim() ||
+    !businessType.value ||
+    !businessType.value.value.trim() ||
     !businessRegistrationNumber.value.trim() ||
     !businessName.value.trim() ||
     !ceoName.value.trim() ||
@@ -269,6 +272,8 @@ const submitForm = () => {
   // 가입 처리 로직
   formError.value = '';
   console.log('가입 성공');
+  // 회원가입 완료 페이지로 이동
+  router.push({ name: 'businessRegisterComplete' });
 };
 </script>
 

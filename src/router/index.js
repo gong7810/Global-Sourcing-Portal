@@ -56,9 +56,24 @@ const router = createRouter({
       component: () => import('@/pages/common/BusinessRegisterPage.vue')
     },
     {
-      path: '/register/complete',
-      name: 'RegisterComplete',
+      path: '/user/register/complete',
+      name: 'userRegisterComplete',
       component: () => import('@/pages/user/RegisterComplete.vue')
+    },
+    {
+      path: '/business/register/complete',
+      name: 'businessRegisterComplete',
+      component: () => import('@/pages/business/RegisterComplete.vue')
+    },
+    {
+      path: '/user/index',
+      name: 'userIndex',
+      component: () => import('@/pages/user/Dashboard.vue')
+    },
+    {
+      path: '/business/index',
+      name: 'businessIndex',
+      component: () => import('@/pages/business/Dashboard.vue')
     },
     // {
     //   path: '/landing',
