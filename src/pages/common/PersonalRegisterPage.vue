@@ -4,6 +4,9 @@ import { isEmpty } from 'es-toolkit/compat';
 import { verifyPassportNumber } from '@/apis/auth/authApis';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 const personalId = ref('');
 const idCheckMessage = ref('');
 const idCheckSuccess = ref(false);
@@ -199,6 +202,8 @@ const submitForm = () => {
   // 가입 처리 로직
   formError.value = '';
   console.log('가입 성공');
+  // 회원가입 완료 페이지로 이동
+  router.push({ name: 'RegisterComplete' });
 };
 </script>
 

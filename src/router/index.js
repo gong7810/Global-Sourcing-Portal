@@ -55,6 +55,11 @@ const router = createRouter({
       name: 'businessRegister',
       component: () => import('@/pages/common/BusinessRegisterPage.vue')
     },
+    {
+      path: '/register/complete',
+      name: 'RegisterComplete',
+      component: () => import('@/pages/user/RegisterComplete.vue')
+    },
     // {
     //   path: '/landing',
     //   name: 'landing',
