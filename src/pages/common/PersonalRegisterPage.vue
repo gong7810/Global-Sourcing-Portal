@@ -3,7 +3,6 @@ import { ref, watch } from 'vue';
 import { isEmpty } from 'es-toolkit/compat';
 import { verifyPassportNumber } from '@/apis/auth/authApis';
 import InputText from 'primevue/inputtext';
-import Button from 'primevue/button';
 
 const personalId = ref('');
 const idCheckMessage = ref('');

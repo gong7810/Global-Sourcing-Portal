@@ -4,6 +4,10 @@ import { useLayout } from '@/layout/composables/layout';
 import { ProductService } from '@/service/ProductService';
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
+import InputText from 'primevue/inputtext';
+import Button from 'primevue/button';
+import Checkbox from 'primevue/checkbox';
+import Dropdown from 'primevue/dropdown';
 
 const { getPrimary, getSurface, isDarkTheme } = useLayout();
 
@@ -154,7 +158,7 @@ const formatCurrency = (value) => {
                 </span>
               </div>
             </div>
-            <button class="px-4 py-2 rounded-[8px] bg-[#8B8BF5] text-white text-[14px]">지원하기</button>
+            <Button class="bt_btn primary">지원하기</Button>
           </div>
         </div>
 
@@ -186,7 +190,7 @@ const formatCurrency = (value) => {
                 </span>
               </div>
             </div>
-            <button class="px-4 py-2 rounded-[8px] bg-[#8B8BF5] text-white text-[14px]">지원하기</button>
+            <Button class="bt_btn primary">지원하기</Button>
           </div>
         </div>
 
@@ -218,7 +222,7 @@ const formatCurrency = (value) => {
                 </span>
               </div>
             </div>
-            <button class="px-4 py-2 rounded-[8px] bg-[#8B8BF5] text-white text-[14px]">지원하기</button>
+            <Button class="bt_btn primary">지원하기</Button>
           </div>
         </div>
       </div>
@@ -226,7 +230,7 @@ const formatCurrency = (value) => {
 
     <!-- 푸터 추가 -->
     <div class="mt-12 border-t border-gray-200 bg-gray-50">
-      <div class="max-w-[1200px] mx-auto px-4">
+      <div class="max-w-[1200px] mx-auto px-4 pt-6">
         <div class="mb-6">
           <h2 class="text-lg font-bold mb-2">BTPOTAL</h2>
           <div class="text-gray-600 text-sm space-y-1">
@@ -263,7 +267,7 @@ const formatCurrency = (value) => {
   padding: 0.5rem;
 }
 
-:deep(.p-button-outlined) {
+:deep(.p-Button-outlined) {
   padding: 0.75rem 1.5rem;
 }
 
