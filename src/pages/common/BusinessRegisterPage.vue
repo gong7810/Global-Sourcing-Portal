@@ -60,6 +60,11 @@ const isValidPassword = (password) => {
   return regex.test(password);
 };
 
+const containsInvalidCharacters = (password) => {
+  // 특정 특수문자를 포함하는지 확인
+  return /[~^()\-_+=`\[\]{}|;':",.\\/<>]/.test(password);
+};
+
 const formatBusinessNumber = (value) => {
   const cleaned = value.replace(/\D+/g, '');
   const match = cleaned.match(/^(\d{0,3})(\d{0,2})(\d{0,5})$/);
@@ -110,7 +115,10 @@ watch(certificateIssueNumber, (newVal, oldVal) => {
 });
 
 watch(businessPassword, (newVal) => {
-  if (newVal && !isValidPassword(newVal)) {
+  if (containsInvalidCharacters(newVal)) {
+    passwordMessage.value = '사용할 수 없는 특수문자가 포함되어 있습니다.';
+    passwordError.value = true;
+  } else if (newVal && !isValidPassword(newVal)) {
     passwordMessage.value = '8~16자의 영문, 숫자, 특수문자 조합으로 입력해 주세요.';
     passwordError.value = true;
   } else if (newVal) {
