@@ -9,18 +9,20 @@ const idCheckMessage = ref('');
 const idCheckSuccess = ref(false);
 const personalPassword = ref('');
 const personalPasswordCheck = ref('');
+const passwordMessage = ref('');
+const passwordError = ref(false);
+const passwordCheckMessage = ref('');
+const passwordCheckFlag = ref(false);
+const showPassword = ref(false);
+const showPasswordCheck = ref(false);
 const personalName = ref('');
 const birthdate = ref('');
 const gender = ref('');
 const personalEmail = ref('');
 // const personalPhone = ref('');
-const passportNumber = ref('M981L0621');
-const showPassword = ref(false);
-const showPasswordCheck = ref(false);
 // const verificationCode = ref('');
+const passportNumber = ref('M981L0621');
 const formError = ref('');
-
-const passwordCheckFlag = ref(false);
 
 const checkIdDuplication = async () => {
   if (!personalId.value.trim()) {
@@ -47,6 +49,17 @@ const checkIdDuplication = async () => {
     idCheckMessage.value = '오류가 발생했습니다. 다시 시도해주세요.';
     idCheckSuccess.value = false;
   }
+};
+
+const isValidPassword = (password) => {
+  // 8~16자의 영문, 숫자, 특수문자 조합
+  const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,16}$/;
+  return regex.test(password);
+};
+
+const containsInvalidCharacters = (password) => {
+  // 특정 특수문자를 포함하는지 확인
+  return /[~^()\-_+=`\[\]{}|;':",.\\/<>]/.test(password);
 };
 
 const allAgreed = ref(false);
@@ -77,6 +90,35 @@ watch(
     }
   }
 );
+
+watch(personalPassword, (newVal) => {
+  if (containsInvalidCharacters(newVal)) {
+    passwordMessage.value = '사용할 수 없는 특수문자가 포함되어 있습니다.';
+    passwordError.value = true;
+  } else if (newVal && !isValidPassword(newVal)) {
+    passwordMessage.value = '8~16자의 영문, 숫자, 특수문자 조합으로 입력해 주세요.';
+    passwordError.value = true;
+  } else if (newVal) {
+    passwordMessage.value = '사용할 수 있는 비밀번호입니다.';
+    passwordError.value = false;
+  } else {
+    passwordMessage.value = '';
+    passwordError.value = false;
+  }
+});
+
+watch(personalPasswordCheck, (newVal) => {
+  if (newVal && newVal !== personalPassword.value) {
+    passwordCheckMessage.value = '비밀번호가 일치하지 않습니다.';
+    passwordCheckFlag.value = true;
+  } else if (newVal) {
+    passwordCheckMessage.value = '비밀번호가 일치합니다.';
+    passwordCheckFlag.value = false;
+  } else {
+    passwordCheckMessage.value = '';
+    passwordCheckFlag.value = false;
+  }
+});
 
 const togglePasswordVisibility = () => {
   showPassword.value = !showPassword.value;
@@ -191,37 +233,43 @@ const submitForm = () => {
                 {{ idCheckMessage }}
               </p>
           </div>
-          <div class="relative">
-            <InputText
-              :type="showPassword ? 'text' : 'password'"
-              v-model="personalPassword"
-              placeholder="비밀번호(8~16자의 영문, 숫자, 특수기호)"
-              class="w-full px-4 py-3"
-            />
-            <button
-              type="button"
-              @click="togglePasswordVisibility"
-              class="absolute inset-y-0 right-0 px-3 flex items-center"
-            >
-              <i :class="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
-            </button>
-          </div>
-          <div class="relative">
-            <InputText
-              v-model="personalPasswordCheck"
-              class="w-full px-4 py-3"
-              :type="showPasswordCheck ? 'text' : 'password'"
-              placeholder="비밀번호 확인"
-              :invalid="passwordCheckFlag"
-              style="padding: 11px 16px"
-            />
-            <button
-              type="button"
-              @click="togglePasswordCheckVisibility"
-              class="absolute inset-y-0 right-0 px-3 flex items-center"
-            >
-              <i :class="showPasswordCheck ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
-            </button>
+          <div>
+            <div class="flex items-center">
+              <InputText
+                :type="showPassword ? 'text' : 'password'"
+                v-model="personalPassword"
+                placeholder="비밀번호(8~16자의 영문, 숫자, 특수기호)"
+                class="w-full px-4 py-3"
+                maxlength="16"
+              />
+              <button
+                type="button"
+                @click="togglePasswordVisibility"
+                class="ml-2 flex items-center"
+              >
+                <i :class="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+              </button>
+            </div>
+            <p :class="passwordError ? 'text-red-500' : 'text-green-500'">{{ passwordMessage }}</p>
+
+            <div class="flex items-center mt-4">
+              <InputText
+                v-model="personalPasswordCheck"
+                class="w-full px-4 py-3"
+                :type="showPasswordCheck ? 'text' : 'password'"
+                placeholder="비밀번호 확인"
+                :invalid="passwordCheckFlag"
+                maxlength="16"
+              />
+              <button
+                type="button"
+                @click="togglePasswordCheckVisibility"
+                class="ml-2 flex items-center"
+              >
+                <i :class="showPasswordCheck ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+              </button>
+            </div>
+            <p :class="passwordCheckFlag ? 'text-red-500' : 'text-green-500'">{{ passwordCheckMessage }}</p>
           </div>
           <InputText
             v-model="personalName"

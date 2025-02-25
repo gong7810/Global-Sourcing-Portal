@@ -1,7 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { isEmpty } from 'es-toolkit/compat';
-import { verifyPassportNumber } from '@/apis/auth/authApis';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import Dropdown from 'primevue/dropdown';
@@ -143,6 +142,17 @@ watch(businessPasswordCheck, (newVal) => {
   }
 });
 
+watch(
+  () => businessPasswordCheck.value,
+  () => {
+    if (!isEmpty(businessPasswordCheck.value) && businessPasswordCheck.value !== businessPassword.value) {
+      passwordCheckFlag.value = true;
+    } else {
+      passwordCheckFlag.value = false;
+    }
+  }
+);
+
 watch(businessPhoneNumber, (newVal, oldVal) => {
   if (newVal !== oldVal) {
     businessPhoneNumber.value = formatPhoneNumber(newVal);
@@ -193,17 +203,6 @@ const details = ref({
   emailAds: false,
   smsAds: false
 });
-
-watch(
-  () => businessPasswordCheck.value,
-  () => {
-    if (!isEmpty(businessPasswordCheck.value) && businessPasswordCheck.value !== businessPassword.value) {
-      passwordCheckFlag.value = true;
-    } else {
-      passwordCheckFlag.value = false;
-    }
-  }
-);
 
 const togglePasswordVisibility = () => {
   showPassword.value = !showPassword.value;
