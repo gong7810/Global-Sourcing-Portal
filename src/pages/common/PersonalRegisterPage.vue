@@ -394,6 +394,7 @@ const submitForm = () => {
         <!-- 회원가입 버튼 -->
         <div class="mt-6">
           <Button
+            type="submit"
             class="w-full py-3 bt_btn primary"
             @click="signIn"
           >
