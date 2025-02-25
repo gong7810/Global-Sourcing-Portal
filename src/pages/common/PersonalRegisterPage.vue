@@ -7,24 +7,30 @@ import Button from 'primevue/button';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
+
 const personalId = ref('');
-const idCheckMessage = ref('');
-const idCheckSuccess = ref(false);
 const personalPassword = ref('');
-const personalPasswordCheck = ref('');
-const passwordMessage = ref('');
-const passwordError = ref(false);
-const passwordCheckMessage = ref('');
-const passwordCheckFlag = ref(false);
 const showPassword = ref(false);
 const showPasswordCheck = ref(false);
 const personalName = ref('');
 const birthdate = ref('');
 const gender = ref('');
 const personalEmail = ref('');
+const issueDate = ref();
+const expirationDate = ref();
+const passportNumber = ref('M981L0621');
+
+const idCheckMessage = ref('');
+const idCheckSuccess = ref(false);
+const personalPasswordCheck = ref('');
+const passwordCheckMessage = ref('');
+const passwordMessage = ref('');
+const passwordError = ref(false);
+
+const passwordCheckFlag = ref(false);
 // const personalPhone = ref('');
 // const verificationCode = ref('');
-const passportNumber = ref('M981L0621');
+
 const formError = ref('');
 
 const checkIdDuplication = async () => {
@@ -70,7 +76,7 @@ const terms = ref({
   age: false,
   service: false,
   privacy: false,
-  optionalPrivacy: false,
+  optionalPrivacy: false
   // emailAds: false,
   // smsAds: false
 });
@@ -221,12 +227,7 @@ const submitForm = () => {
         <div class="space-y-4 mb-6">
           <div>
             <div class="flex space-x-2">
-              <InputText
-                v-model="personalId"
-                type="text"
-                placeholder="아이디"
-                class="flex-grow px-4 py-3"
-              />
+              <InputText v-model="personalId" type="text" placeholder="아이디" class="flex-grow px-4 py-3" />
               <button
                 @click="checkIdDuplication"
                 class="px-4 py-2 bg-[#F2F4F7] text-gray-500 border border-gray-300 rounded-lg"
@@ -234,9 +235,9 @@ const submitForm = () => {
                 아이디 중복 확인
               </button>
             </div>
-              <p v-if="idCheckMessage" :class="idCheckSuccess ? 'text-green-500' : 'text-red-500'">
-                {{ idCheckMessage }}
-              </p>
+            <p v-if="idCheckMessage" :class="idCheckSuccess ? 'text-green-500' : 'text-red-500'">
+              {{ idCheckMessage }}
+            </p>
           </div>
           <div>
             <div class="flex items-center">
@@ -247,11 +248,7 @@ const submitForm = () => {
                 class="w-full px-4 py-3"
                 maxlength="16"
               />
-              <button
-                type="button"
-                @click="togglePasswordVisibility"
-                class="ml-2 flex items-center"
-              >
+              <button type="button" @click="togglePasswordVisibility" class="ml-2 flex items-center">
                 <i :class="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
               </button>
             </div>
@@ -266,22 +263,13 @@ const submitForm = () => {
                 :invalid="passwordCheckFlag"
                 maxlength="16"
               />
-              <button
-                type="button"
-                @click="togglePasswordCheckVisibility"
-                class="ml-2 flex items-center"
-              >
+              <button type="button" @click="togglePasswordCheckVisibility" class="ml-2 flex items-center">
                 <i :class="showPasswordCheck ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
               </button>
             </div>
             <p :class="passwordCheckFlag ? 'text-red-500' : 'text-green-500'">{{ passwordCheckMessage }}</p>
           </div>
-          <InputText
-            v-model="personalName"
-            type="text"
-            placeholder="이름(실명)"
-            class="w-full px-4 py-3"
-          />
+          <InputText v-model="personalName" type="text" placeholder="이름(실명)" class="w-full px-4 py-3" />
           <div class="flex space-x-4">
             <InputText
               v-model="birthdate"
@@ -300,12 +288,7 @@ const submitForm = () => {
               </label>
             </div>
           </div>
-          <InputText
-            v-model="personalEmail"
-            type="email"
-            placeholder="이메일"
-            class="w-full px-4 py-3"
-          />
+          <InputText v-model="personalEmail" type="email" placeholder="이메일" class="w-full px-4 py-3" />
           <!-- <div class="flex space-x-2">
             <input
               v-model="personalPhone"
@@ -343,13 +326,26 @@ const submitForm = () => {
               재전송
             </button>
           </div> -->
-          <div class="flex space-x-2">
-            <InputText
-              v-model="passportNumber"
-              type="text"
-              placeholder="여권번호"
-              class="flex-grow px-4 py-3"
+          <div class="flex space-x-7">
+            <DatePicker
+              v-model="issueDate"
+              showIcon
+              fluid
+              iconDisplay="input"
+              dateFormat="yy-mm-dd"
+              placeholder="발급일"
             />
+            <DatePicker
+              v-model="expirationDate"
+              showIcon
+              fluid
+              iconDisplay="input"
+              dateFormat="yy-mm-dd"
+              placeholder="만료일"
+            />
+          </div>
+          <div class="flex space-x-2">
+            <InputText v-model="passportNumber" type="text" placeholder="여권번호" class="flex-grow px-4 py-3" />
             <button
               type="button"
               @click="verifyPassport"
@@ -446,13 +442,7 @@ const submitForm = () => {
 
         <!-- 회원가입 버튼 -->
         <div class="mt-6">
-          <Button
-            type="submit"
-            class="w-full py-3 bt_btn primary"
-            @click="signIn"
-          >
-            가입하기
-          </Button>
+          <Button type="submit" class="w-full py-3 bt_btn primary" @click="signIn"> 가입하기 </Button>
           <p v-if="formError" class="text-red-500">{{ formError }}</p>
         </div>
       </form>
