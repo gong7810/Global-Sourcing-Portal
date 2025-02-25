@@ -3,7 +3,7 @@ import { ref, watch } from 'vue';
 import { isEmpty } from 'es-toolkit/compat';
 import { verifyPassportNumber } from '@/apis/auth/authApis';
 import InputText from 'primevue/inputtext';
-
+import Button from 'primevue/button';
 const personalId = ref('');
 const idCheckMessage = ref('');
 const idCheckSuccess = ref(false);
@@ -180,12 +180,12 @@ const submitForm = () => {
                 placeholder="아이디"
                 class="flex-grow px-4 py-3"
               />
-              <Button
+              <button
                 @click="checkIdDuplication"
-                class="px-4 py-3 bg-[#F2F4F7] text-gray-500 border border-gray-300 rounded-lg"
+                class="px-4 py-2 bg-[#F2F4F7] text-gray-500 border border-gray-300 rounded-lg"
               >
                 아이디 중복 확인
-              </Button>
+              </button>
             </div>
               <p v-if="idCheckMessage" :class="idCheckSuccess ? 'text-green-500' : 'text-red-500'">
                 {{ idCheckMessage }}
@@ -209,7 +209,7 @@ const submitForm = () => {
           <div class="relative">
             <InputText
               v-model="personalPasswordCheck"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
+              class="w-full px-4 py-3"
               :type="showPasswordCheck ? 'text' : 'password'"
               placeholder="비밀번호 확인"
               :invalid="passwordCheckFlag"
@@ -223,18 +223,18 @@ const submitForm = () => {
               <i :class="showPasswordCheck ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
             </button>
           </div>
-          <input
+          <InputText
             v-model="personalName"
             type="text"
             placeholder="이름(실명)"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
+            class="w-full px-4 py-3"
           />
           <div class="flex space-x-4">
-            <input
+            <InputText
               v-model="birthdate"
               type="text"
               placeholder="생년월일(예시: 20000131)"
-              class="flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
+              class="flex-grow px-4 py-3"
             />
             <div class="flex items-center space-x-2">
               <label>
@@ -247,11 +247,11 @@ const submitForm = () => {
               </label>
             </div>
           </div>
-          <input
+          <InputText
             v-model="personalEmail"
             type="email"
             placeholder="이메일"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
+            class="w-full px-4 py-3"
           />
           <!-- <div class="flex space-x-2">
             <input
@@ -291,16 +291,16 @@ const submitForm = () => {
             </button>
           </div> -->
           <div class="flex space-x-2">
-            <input
+            <InputText
               v-model="passportNumber"
               type="text"
               placeholder="여권번호"
-              class="flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
+              class="flex-grow px-4 py-3"
             />
             <button
               type="button"
               @click="verifyPassport"
-              class="px-4 py-3 bg-[#F2F4F7] text-gray-500 border border-gray-300 rounded-lg"
+              class="px-4 py-2 bg-[#F2F4F7] text-gray-500 border border-gray-300 rounded-lg"
             >
               여권번호 확인
             </button>
@@ -393,12 +393,12 @@ const submitForm = () => {
 
         <!-- 회원가입 버튼 -->
         <div class="mt-6">
-          <button
-            class="w-full py-3 bg-[#8FA1FF] text-white rounded-lg font-medium hover:bg-[#7B8FFF] transition-colors"
+          <Button
+            class="w-full py-3 bt_btn primary"
             @click="signIn"
           >
             가입하기
-          </button>
+          </Button>
           <p v-if="formError" class="text-red-500">{{ formError }}</p>
         </div>
       </form>

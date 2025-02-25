@@ -1,5 +1,9 @@
 <script setup>
 import { ref } from 'vue';
+import Button from 'primevue/button';
+import InputText from 'primevue/inputtext';
+import Dropdown from 'primevue/dropdown';
+
 
 const businessType = ref('');
 const businessRegistrationNumber = ref('');
@@ -16,6 +20,19 @@ const businessPhone = ref('');
 const showPassword = ref(false);
 const showPasswordCheck = ref(false);
 const verificationCode = ref('');
+
+const businessOptions = [
+  { label: '대기업', value: '대기업' },
+  { label: '대기업 계열사·자회사', value: '대기업 계열사·자회사' },
+  { label: '중소기업(300명이하)', value: '중소기업(300명이하)' },
+  { label: '중견기업(300명이상)', value: '중견기업(300명이상)' },
+  { label: '벤처기업', value: '벤처기업' },
+  { label: '외국계(외국 투자기업)', value: '외국계(외국 투자기업)' },
+  { label: '외국계(외국 법인기업)', value: '외국계(외국 법인기업)' },
+  { label: '국내 공공기관·공기업', value: '국내 공공기관·공기업' },
+  { label: '비영리단체·협회·교육재단', value: '비영리단체·협회·교육재단' },
+  { label: '외국 기관·비영리기구·단체', value: '외국 기관·비영리기구·단체' }
+];
 
 const allAgreed = ref(false);
 const terms = ref({
@@ -97,66 +114,55 @@ const submitForm = () => {
       <!-- 입력 폼 -->
       <form @submit.prevent="submitForm">
         <div class="space-y-4 mb-6">
-          <select
-            id="businessType"
-            name="businessType"
+          <Dropdown
             v-model="businessType"
-            class="mt-1 block w-full pl-3 pr-10 py-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          >
-            <option value="" disabled selected>기업형태</option>
-            <option>대기업</option>
-            <option>대기업 계열사·자회사</option>
-            <option>중소기업(300명이하)</option>
-            <option>중견기업(300명이상)</option>
-            <option>벤처기업</option>
-            <option>외국계(외국 투자기업)</option>
-            <option>외국계(외국 법인기업)</option>
-            <option>국내 공공기관·공기업</option>
-            <option>비영리단체·협회·교육재단</option>
-            <option>외국 기관·비영리기구·단체</option>
-          </select>
-          <input
+            :options="businessOptions"
+            optionLabel="label"
+            placeholder="기업형태 선택"
+            class="w-full"
+          />
+          <InputText
             v-model="businessRegistrationNumber"
             type="text"
             placeholder="사업자등록번호"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
+            class="w-full px-4 py-3"
           />
-          <input
+          <InputText
             v-model="businessName"
             type="text"
             placeholder="회사명"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
+            class="w-full px-4 py-3"
           />
-          <input
+          <InputText
             v-model="ceoName"
             type="text"
             placeholder="대표자명"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
+            class="w-full px-4 py-3"
           />
-          <input
+          <InputText
             v-model="businessAddress"
             type="text"
             placeholder="회사주소"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
+            class="w-full px-4 py-3"
           />
-          <input
+          <InputText
             v-model="businessCertificateIssueNumber"
             type="text"
             placeholder="사업자등록증명원 발급번호"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
+            class="w-full px-4 py-3"
           />
-          <input
+          <InputText
             v-model="businessId"
             type="text"
             placeholder="아이디"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
+            class="w-full px-4 py-3"
           />
           <div class="relative">
-            <input
+            <InputText
               :type="showPassword ? 'text' : 'password'"
               v-model="businessPassword"
               placeholder="비밀번호(8~16자의 영문, 숫자, 특수기호)"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
+              class="w-full px-4 py-3"
             />
             <button
               type="button"
@@ -167,11 +173,11 @@ const submitForm = () => {
             </button>
           </div>
           <div class="relative">
-            <input
+            <InputText
               :type="showPasswordCheck ? 'text' : 'password'"
               v-model="businessPasswordCheck"
               placeholder="비밀번호 확인"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
+              class="w-full px-4 py-3"
             />
             <button
               type="button"
@@ -181,54 +187,54 @@ const submitForm = () => {
               <i :class="showPasswordCheck ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
             </button>
           </div>
-          <input
+          <InputText
             v-model="managerName"
             type="text"
             placeholder="가입자명"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
+            class="w-full px-4 py-3"
           />
           <div class="flex space-x-2">
-            <input
+            <InputText
               v-model="businessPhone"
               type="text"
               placeholder="전화번호"
-              class="flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
+              class="flex-grow px-4 py-3"
             />
             <button
               type="button"
               @click="sendVerificationCode"
-              class="px-4 py-3 bg-[#F2F4F7] text-gray-500 border border-gray-300 rounded-lg"
+              class="px-4 py-2 bg-[#F2F4F7] text-gray-500 border border-gray-300 rounded-lg"
             >
               인증번호 전송
             </button>
           </div>
           <div class="flex space-x-2">
-            <input
+            <InputText
               v-model="verificationCode"
               type="text"
               placeholder="인증번호 입력"
-              class="flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
+              class="flex-grow px-4 py-3"
             />
             <button
               type="button"
               @click="verifyCode"
-              class="px-4 py-3 bg-[#F2F4F7] text-gray-500 border border-gray-300 rounded-lg"
+              class="px-4 py-2 bg-[#F2F4F7] text-gray-500 border border-gray-300 rounded-lg"
             >
               확인
             </button>
             <button
               type="button"
               @click="resendVerificationCode"
-              class="px-4 py-3 bg-[#F2F4F7] text-gray-500 border border-gray-300 rounded-lg"
+              class="px-4 py-2 bg-[#F2F4F7] text-gray-500 border border-gray-300 rounded-lg"
             >
               재전송
             </button>
           </div>
-          <input
+          <InputText
             v-model="businessEmail"
             type="email"
             placeholder="이메일"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
+            class="w-full px-4 py-3"
           />
         </div>
 
@@ -301,9 +307,9 @@ const submitForm = () => {
         
         <!-- 회원가입 버튼 -->
         <div class="mt-6">
-          <button type="submit" class="w-full py-3 bg-[#8FA1FF] text-white rounded-lg font-medium hover:bg-[#7B8FFF] transition-colors">
+          <Button type="submit" class="w-full py-3 bt_btn primary">
             가입하기
-          </button>
+          </Button>
         </div>
       </form>
     </div>

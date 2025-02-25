@@ -2,6 +2,7 @@
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
+import Button from 'primevue/button';
 
 const authStore = useAuthStore();
 const activeTab = ref('personal');
@@ -96,9 +97,9 @@ const loginLine = () => {
       </div>
 
       <!-- 로그인 버튼 -->
-      <button class="w-full py-3 bg-[#8FA1FF] text-white rounded-lg font-medium hover:bg-[#7B8FFF] transition-colors">
+      <Button class="w-full py-3 bt_btn primary">
         로그인
-      </button>
+      </Button>
 
       <!-- 아이디/비밀번호 찾기, 회원가입 -->
       <div class="flex justify-center items-center gap-4 my-4 text-sm text-gray-500">

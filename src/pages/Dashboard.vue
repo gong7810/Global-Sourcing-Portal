@@ -4,10 +4,37 @@ import { useLayout } from '@/layout/composables/layout';
 import { ProductService } from '@/service/ProductService';
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
-import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
-import Checkbox from 'primevue/checkbox';
 import Dropdown from 'primevue/dropdown';
+
+const selectedRegion = ref(null);
+const selectedJob = ref(null);
+const selectedCareer = ref(null);
+const selectedEducation = ref(null);
+
+const regions = [
+  { label: '서울', value: 'seoul' },
+  { label: '부산', value: 'busan' },
+  // 다른 지역들...
+];
+
+const jobs = [
+  { label: '개발자', value: 'developer' },
+  { label: '디자이너', value: 'designer' },
+  // 다른 직무들...
+];
+
+const careers = [
+  { label: '신입', value: 'entry' },
+  { label: '경력', value: 'experienced' },
+  // 다른 근무형태들...
+];
+
+const education = [
+  { label: '비자 없음', value: 'none' },
+  { label: '취업 비자', value: 'work' },
+  // 다른 비자들...
+];
 
 const { getPrimary, getSurface, isDarkTheme } = useLayout();
 
@@ -123,10 +150,10 @@ const formatCurrency = (value) => {
 
       <!-- 필터 영역 -->
       <div class="flex gap-4 mb-6">
-        <Dropdown v-model="selectedRegion" :options="regions" placeholder="지역" />
-        <Dropdown v-model="selectedJob" :options="jobs" placeholder="직무" />
-        <Dropdown v-model="selectedCareer" :options="careers" placeholder="근무형태" />
-        <Dropdown v-model="selectedEducation" :options="education" placeholder="보유한 비자" />
+        <Dropdown v-model="selectedRegion" :options="regions" optionLabel="label" placeholder="지역" class="w-1/4" />
+        <Dropdown v-model="selectedJob" :options="jobs" optionLabel="label" placeholder="직무" class="w-1/4" />
+        <Dropdown v-model="selectedCareer" :options="careers" optionLabel="label" placeholder="근무형태" class="w-1/4" />
+        <Dropdown v-model="selectedEducation" :options="education" optionLabel="label" placeholder="보유한 비자" class="w-1/4" />
       </div>
 
       <!-- 채용공고 카드들 -->
