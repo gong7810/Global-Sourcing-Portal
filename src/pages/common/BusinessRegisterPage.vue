@@ -9,26 +9,28 @@ const businessType = ref('');
 const businessRegistrationNumber = ref('');
 const businessNumberError = ref('');
 const businessName = ref('');
-const ceoName = ref('');
+const ownerName = ref('');
 const businessAddress = ref('');
 const certificateIssueNumber = ref('');
-const certificateNumberError = ref('');
 const businessId = ref('');
-const idCheckMessage = ref('');
-const idCheckSuccess = ref(false);
 const businessPassword = ref('');
 const businessPasswordCheck = ref('');
-const passwordMessage = ref('');
-const passwordError = ref(false);
-const passwordCheckMessage = ref('');
-const passwordCheckFlag = ref(false);
-const showPassword = ref(false);
-const showPasswordCheck = ref(false);
 const managerName = ref('');
 const businessPhoneNumber = ref('');
 const verificationCode = ref('');
 const businessEmail = ref('');
+
+const certificateNumberError = ref('');
+const idCheckMessage = ref('');
+const idCheckSuccess = ref(false);
+const passwordMessage = ref('');
+const passwordError = ref(false);
+const passwordCheckMessage = ref('');
+const showPassword = ref(false);
+const showPasswordCheck = ref(false);
 const formError = ref('');
+
+const passwordCheckFlag = ref(false);
 
 const businessOptions = [
   { label: '대기업', value: '대기업' },
@@ -191,7 +193,7 @@ const terms = ref({
   age: false,
   service: false,
   privacy: false,
-  optionalPrivacy: false,
+  optionalPrivacy: false
   // emailAds: false,
   // smsAds: false
 });
@@ -250,7 +252,7 @@ const submitForm = () => {
     !businessType.value.trim() ||
     !businessRegistrationNumber.value.trim() ||
     !businessName.value.trim() ||
-    !ceoName.value.trim() ||
+    !ownerName.value.trim() ||
     !businessAddress.value.trim() ||
     !certificateIssueNumber.value.trim() ||
     !businessId.value.trim() ||
@@ -292,39 +294,29 @@ const submitForm = () => {
             class="w-full"
           />
           <div class="mb-2">
-            <InputText v-model="businessRegistrationNumber" placeholder="사업자등록번호" class="w-full" maxlength="12" />
+            <InputText
+              v-model="businessRegistrationNumber"
+              placeholder="사업자등록번호"
+              class="w-full"
+              maxlength="12"
+            />
             <p v-if="businessNumberError" class="text-red-500">{{ businessNumberError }}</p>
           </div>
-          <InputText
-            v-model="businessName"
-            type="text"
-            placeholder="회사명"
-            class="w-full px-4 py-3"
-          />
-          <InputText
-            v-model="ceoName"
-            type="text"
-            placeholder="대표자명"
-            class="w-full px-4 py-3"
-          />
-          <InputText
-            v-model="businessAddress"
-            type="text"
-            placeholder="회사주소"
-            class="w-full px-4 py-3"
-          />
+          <InputText v-model="businessName" type="text" placeholder="회사명" class="w-full px-4 py-3" />
+          <InputText v-model="ownerName" type="text" placeholder="대표자명" class="w-full px-4 py-3" />
+          <InputText v-model="businessAddress" type="text" placeholder="회사주소" class="w-full px-4 py-3" />
           <div class="mb-2">
-            <InputText v-model="certificateIssueNumber" placeholder="사업자등록증명원 발급번호" class="w-full" maxlength="17" />
+            <InputText
+              v-model="certificateIssueNumber"
+              placeholder="사업자등록증명원 발급번호"
+              class="w-full"
+              maxlength="17"
+            />
             <p v-if="certificateNumberError" class="text-red-500">{{ certificateNumberError }}</p>
           </div>
           <div>
             <div class="flex space-x-2">
-              <InputText
-                v-model="businessId"
-                type="text"
-                placeholder="아이디"
-                class="flex-grow px-4 py-3"
-              />
+              <InputText v-model="businessId" type="text" placeholder="아이디" class="flex-grow px-4 py-3" />
               <button
                 @click="checkIdDuplication"
                 class="px-4 py-2 bg-[#F2F4F7] text-gray-500 border border-gray-300 rounded-lg"
@@ -332,9 +324,9 @@ const submitForm = () => {
                 아이디 중복 확인
               </button>
             </div>
-              <p v-if="idCheckMessage" :class="idCheckSuccess ? 'text-green-500' : 'text-red-500'">
-                {{ idCheckMessage }}
-              </p>
+            <p v-if="idCheckMessage" :class="idCheckSuccess ? 'text-green-500' : 'text-red-500'">
+              {{ idCheckMessage }}
+            </p>
           </div>
           <div>
             <div class="flex items-center">
@@ -345,11 +337,7 @@ const submitForm = () => {
                 class="w-full px-4 py-3"
                 maxlength="16"
               />
-              <button
-                type="button"
-                @click="togglePasswordVisibility"
-                class="ml-2 flex items-center"
-              >
+              <button type="button" @click="togglePasswordVisibility" class="ml-2 flex items-center">
                 <i :class="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
               </button>
             </div>
@@ -364,22 +352,13 @@ const submitForm = () => {
                 :invalid="passwordCheckFlag"
                 maxlength="16"
               />
-              <button
-                type="button"
-                @click="togglePasswordCheckVisibility"
-                class="ml-2 flex items-center"
-              >
+              <button type="button" @click="togglePasswordCheckVisibility" class="ml-2 flex items-center">
                 <i :class="showPasswordCheck ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
               </button>
             </div>
             <p :class="passwordCheckFlag ? 'text-red-500' : 'text-green-500'">{{ passwordCheckMessage }}</p>
           </div>
-          <InputText
-            v-model="managerName"
-            type="text"
-            placeholder="가입자명"
-            class="w-full px-4 py-3"
-          />
+          <InputText v-model="managerName" type="text" placeholder="가입자명" class="w-full px-4 py-3" />
           <div class="flex space-x-2">
             <InputText
               v-model="businessPhoneNumber"
@@ -396,12 +375,7 @@ const submitForm = () => {
             </button>
           </div>
           <div class="flex space-x-2">
-            <InputText
-              v-model="verificationCode"
-              type="text"
-              placeholder="인증번호 입력"
-              class="flex-grow px-4 py-3"
-            />
+            <InputText v-model="verificationCode" type="text" placeholder="인증번호 입력" class="flex-grow px-4 py-3" />
             <button
               type="button"
               @click="verifyCode"
@@ -417,12 +391,7 @@ const submitForm = () => {
               재전송
             </button>
           </div>
-          <InputText
-            v-model="businessEmail"
-            type="email"
-            placeholder="이메일"
-            class="w-full px-4 py-3"
-          />
+          <InputText v-model="businessEmail" type="email" placeholder="이메일" class="w-full px-4 py-3" />
         </div>
 
         <!-- 이용약관 -->
@@ -511,13 +480,7 @@ const submitForm = () => {
 
         <!-- 회원가입 버튼 -->
         <div class="mt-6">
-          <Button
-            type="submit"
-            class="w-full py-3 bt_btn primary"
-            @click="signIn"
-          >
-            가입하기
-          </Button>
+          <Button type="submit" class="w-full py-3 bt_btn primary" @click="signIn"> 가입하기 </Button>
           <p v-if="formError" class="text-red-500">{{ formError }}</p>
         </div>
       </form>
