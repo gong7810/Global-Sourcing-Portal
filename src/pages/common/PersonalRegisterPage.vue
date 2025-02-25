@@ -2,6 +2,8 @@
 import { ref, watch } from 'vue';
 import { isEmpty } from 'es-toolkit/compat';
 import { verifyPassportNumber } from '@/apis/auth/authApis';
+import InputText from 'primevue/inputtext';
+import Button from 'primevue/button';
 
 const personalId = ref('');
 const idCheckMessage = ref('');
@@ -173,29 +175,29 @@ const submitForm = () => {
         <div class="space-y-4 mb-6">
           <div>
             <div class="flex space-x-2">
-              <input
+              <InputText
                 v-model="personalId"
                 type="text"
                 placeholder="아이디"
-                class="flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
+                class="flex-grow px-4 py-3"
               />
-              <button
+              <Button
                 @click="checkIdDuplication"
                 class="px-4 py-3 bg-[#F2F4F7] text-gray-500 border border-gray-300 rounded-lg"
               >
                 아이디 중복 확인
-              </button>
+              </Button>
             </div>
               <p v-if="idCheckMessage" :class="idCheckSuccess ? 'text-green-500' : 'text-red-500'">
                 {{ idCheckMessage }}
               </p>
           </div>
           <div class="relative">
-            <input
+            <InputText
               :type="showPassword ? 'text' : 'password'"
               v-model="personalPassword"
               placeholder="비밀번호(8~16자의 영문, 숫자, 특수기호)"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
+              class="w-full px-4 py-3"
             />
             <button
               type="button"

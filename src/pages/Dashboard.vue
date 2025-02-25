@@ -226,7 +226,7 @@ const formatCurrency = (value) => {
 
     <!-- 푸터 추가 -->
     <div class="mt-12 border-t border-gray-200 bg-gray-50">
-      <div class="max-w-[1200px] mx-auto px-4 py-8">
+      <div class="max-w-[1200px] mx-auto px-4">
         <div class="mb-6">
           <h2 class="text-lg font-bold mb-2">BTPOTAL</h2>
           <div class="text-gray-600 text-sm space-y-1">
