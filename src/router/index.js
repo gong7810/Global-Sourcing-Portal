@@ -66,6 +66,16 @@ const router = createRouter({
       component: () => import('@/pages/business/RegisterComplete.vue')
     },
     {
+      path: '/find-id',
+      name: 'findId',
+      component: () => import('@/pages/common/FindIdPage.vue')
+    },
+    {
+      path: '/find-password',
+      name: 'findPassword',
+      component: () => import('@/pages/common/FindPasswordPage.vue')
+    },
+    {
       path: '/user/index',
       name: 'userIndex',
       component: () => import('@/pages/user/Dashboard.vue')

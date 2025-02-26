@@ -138,9 +138,9 @@ const loginLine = () => {
 
       <!-- 아이디/비밀번호 찾기, 회원가입 -->
       <div class="flex justify-center items-center gap-4 my-4 text-sm text-gray-500">
-        <button class="hover:text-[#8FA1FF] transition-colors">아이디찾기</button>
+        <router-link to="/find-id" class="hover:text-[#8FA1FF] transition-colors">아이디찾기</router-link>
         <div class="w-px h-4 bg-gray-300"></div>
-        <button class="hover:text-[#8FA1FF] transition-colors">비밀번호찾기</button>
+        <router-link to="/find-password" class="hover:text-[#8FA1FF] transition-colors">비밀번호찾기</router-link>
         <div class="w-px h-4 bg-gray-300"></div>
         <!-- <button class="hover:text-[#8FA1FF] transition-colors">회원가입</button> -->
         <router-link to="/personal/register" v-if="activeTab === 'personal'" class="hover:text-[#8FA1FF] transition-colors">회원가입</router-link>
