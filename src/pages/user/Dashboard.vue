@@ -5,10 +5,18 @@ import { storeToRefs } from 'pinia';
 import Button from 'primevue/button';
 import Dropdown from 'primevue/dropdown';
 import AppTopbar from '@/layout/AppTopbar.vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
 const selectedRegion = ref(null);
 const selectedJob = ref(null);
 const selectedCareer = ref(null);
 const selectedEducation = ref(null);
+
+const goToResume = () => {
+  router.push({ name: 'Resume' });
+};
 
 const regions = [
   { label: '서울', value: 'seoul' },
@@ -59,6 +67,7 @@ const formatCurrency = (value) => {
       <div class="flex justify-center gap-32 mb-12">
         <div class="flex flex-col items-center cursor-pointer group">
           <div
+            @click="goToResume"
             class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
           >
             <svg
@@ -77,9 +86,7 @@ const formatCurrency = (value) => {
               <line x1="10" y1="9" x2="8" y2="9"></line>
             </svg>
           </div>
-          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
-            >이력서</span
-          >
+          <button @click="goToResume" class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">이력서</button>
         </div>
         <div class="flex flex-col items-center cursor-pointer group">
           <div

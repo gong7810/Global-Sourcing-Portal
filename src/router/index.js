@@ -85,6 +85,11 @@ const router = createRouter({
       name: 'businessIndex',
       component: () => import('@/pages/business/Dashboard.vue')
     },
+    {
+      path: '/user/resume',
+      name: 'Resume',
+      component: () => import('@/pages/user/ResumePage.vue')
+    },
     // {
     //   path: '/landing',
     //   name: 'landing',
