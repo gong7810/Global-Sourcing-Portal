@@ -11,47 +11,28 @@ const activeTab = ref('personal');
 const router = useRouter();
 
 // 개인회원 입력 필드
-const personalId = ref(''); // 정의
-const personalPassword = ref(''); // 정의
+const id = ref(''); // 정의
+const pw = ref(''); // 정의
 
 // 기업회원 입력 필드
 const businessId = ref('');
 const businessPassword = ref('');
-
-// 개인회원 임시 로그인 정보
-const validPersonalUsername = 'personalUser';
-const validPersonalPassword = 'personalPass123!';
-
-// 기업회원 임시 로그인 정보
-const validBusinessUsername = 'businessUser';
-const validBusinessPassword = 'businessPass123!';
 
 const setActiveTab = (tab) => {
   activeTab.value = tab;
 };
 
 const login = () => {
-  let id, pw, validUsername, validPassword, targetPage;
+  // 로그인 검증을 비활성화하고 바로 페이지 이동
+  let targetPage;
 
   if (activeTab.value === 'personal') {
-    id = personalId.value;
-    pw = personalPassword.value;
-    validUsername = validPersonalUsername;
-    validPassword = validPersonalPassword;
     targetPage = 'userIndex'; // 개인회원 페이지
   } else if (activeTab.value === 'business') {
-    id = businessId.value;
-    pw = businessPassword.value;
-    validUsername = validBusinessUsername;
-    validPassword = validBusinessPassword;
     targetPage = 'businessIndex'; // 기업회원 페이지
   }
 
-  if (id === validUsername && pw === validPassword) {
-    router.push({ name: targetPage }); // 해당 메인 페이지로 이동
-  } else {
-    alert('아이디 또는 비밀번호가 잘못되었습니다.');
-  }
+  router.push({ name: targetPage }); // 해당 메인 페이지로 이동
 };
 
 const { lineState } = storeToRefs(authStore);
@@ -99,14 +80,14 @@ const loginLine = () => {
       <div class="space-y-4 mb-6">
         <input
           v-if="activeTab === 'personal'"
-          v-model="personalId"
+          v-model="id"
           type="text"
           placeholder="아이디"
           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
         />
         <input
           v-if="activeTab === 'personal'"
-          v-model="personalPassword"
+          v-model="pw"
           type="password"
           placeholder="비밀번호"
           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"

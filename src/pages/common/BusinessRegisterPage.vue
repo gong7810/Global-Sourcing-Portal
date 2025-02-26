@@ -8,26 +8,26 @@ import Dropdown from 'primevue/dropdown';
 
 const router = useRouter();
 const businessType = ref(null);
-const businessRegistrationNumber = ref('');
-const businessNumberError = ref('');
+const businessRegistrationNo = ref('');
+const businessNoError = ref('');
 const businessName = ref('');
-const ceoName = ref('');
+const ownerName = ref('');
 const businessAddress = ref('');
-const certificateIssueNumber = ref('');
-const certificateNumberError = ref('');
+const certificateIssueNo = ref('');
+const certificateNoError = ref('');
 const businessId = ref('');
 const idCheckMessage = ref('');
 const idCheckSuccess = ref(false);
-const businessPassword = ref('');
-const businessPasswordCheck = ref('');
-const passwordMessage = ref('');
-const passwordError = ref(false);
-const passwordCheckMessage = ref('');
-const passwordCheckFlag = ref(false);
-const showPassword = ref(false);
-const showPasswordCheck = ref(false);
+const businessPw = ref('');
+const businessPwCheck = ref('');
+const pwMessage = ref('');
+const pwError = ref(false);
+const pwCheckMessage = ref('');
+const pwCheckFlag = ref(false);
+const showPw = ref(false);
+const showPwCheck = ref(false);
 const managerName = ref('');
-const businessPhoneNumber = ref('');
+const businessPhoneNo = ref('');
 const verificationCode = ref('');
 const businessEmail = ref('');
 const formError = ref('');
@@ -93,71 +93,71 @@ const formatPhoneNumber = (value) => {
   return value;
 };
 
-watch(businessRegistrationNumber, (newVal, oldVal) => {
+watch(businessRegistrationNo, (newVal, oldVal) => {
   if (newVal !== oldVal) {
-    businessRegistrationNumber.value = formatBusinessNumber(newVal);
+    businessRegistrationNo.value = formatBusinessNumber(newVal);
   }
   if (newVal && !isValidBusinessNumber(newVal)) {
-    businessNumberError.value = '유효한 사업자등록번호를 입력해주세요.';
+    businessNoError.value = '유효한 사업자등록번호를 입력해주세요.';
   } else {
-    businessNumberError.value = '';
+    businessNoError.value = '';
   }
 });
 
-watch(certificateIssueNumber, (newVal, oldVal) => {
+watch(certificateIssueNo, (newVal, oldVal) => {
   if (newVal !== oldVal) {
-    certificateIssueNumber.value = formatCertificateNumber(newVal);
+    certificateIssueNo.value = formatCertificateNumber(newVal);
   }
   if (newVal && !isValidCertificateNumber(newVal)) {
-    certificateNumberError.value = '유효한 발급번호를 입력해주세요.';
+    certificateNoError.value = '유효한 발급번호를 입력해주세요.';
   } else {
-    certificateNumberError.value = '';
+    certificateNoError.value = '';
   }
 });
 
-watch(businessPassword, (newVal) => {
+watch(businessPw, (newVal) => {
   if (containsInvalidCharacters(newVal)) {
-    passwordMessage.value = '사용할 수 없는 특수문자가 포함되어 있습니다.';
-    passwordError.value = true;
+    pwMessage.value = '사용할 수 없는 특수문자가 포함되어 있습니다.';
+    pwError.value = true;
   } else if (newVal && !isValidPassword(newVal)) {
-    passwordMessage.value = '8~16자의 영문, 숫자, 특수문자 조합으로 입력해 주세요.';
-    passwordError.value = true;
+    pwMessage.value = '8~16자의 영문, 숫자, 특수문자 조합으로 입력해 주세요.';
+    pwError.value = true;
   } else if (newVal) {
-    passwordMessage.value = '사용할 수 있는 비밀번호입니다.';
-    passwordError.value = false;
+    pwMessage.value = '사용할 수 있는 비밀번호입니다.';
+    pwError.value = false;
   } else {
-    passwordMessage.value = '';
-    passwordError.value = false;
+    pwMessage.value = '';
+    pwError.value = false;
   }
 });
 
-watch(businessPasswordCheck, (newVal) => {
-  if (newVal && newVal !== businessPassword.value) {
-    passwordCheckMessage.value = '비밀번호가 일치하지 않습니다.';
-    passwordCheckFlag.value = true;
+watch(businessPwCheck, (newVal) => {
+  if (newVal && newVal !== businessPw.value) {
+    pwCheckMessage.value = '비밀번호가 일치하지 않습니다.';
+    pwCheckFlag.value = true;
   } else if (newVal) {
-    passwordCheckMessage.value = '비밀번호가 일치합니다.';
-    passwordCheckFlag.value = false;
+    pwCheckMessage.value = '비밀번호가 일치합니다.';
+    pwCheckFlag.value = false;
   } else {
-    passwordCheckMessage.value = '';
-    passwordCheckFlag.value = false;
+    pwCheckMessage.value = '';
+    pwCheckFlag.value = false;
   }
 });
 
 watch(
-  () => businessPasswordCheck.value,
+  () => businessPwCheck.value,
   () => {
-    if (!isEmpty(businessPasswordCheck.value) && businessPasswordCheck.value !== businessPassword.value) {
-      passwordCheckFlag.value = true;
+    if (!isEmpty(businessPwCheck.value) && businessPwCheck.value !== businessPw.value) {
+      pwCheckFlag.value = true;
     } else {
-      passwordCheckFlag.value = false;
+      pwCheckFlag.value = false;
     }
   }
 );
 
-watch(businessPhoneNumber, (newVal, oldVal) => {
+watch(businessPhoneNo, (newVal, oldVal) => {
   if (newVal !== oldVal) {
-    businessPhoneNumber.value = formatPhoneNumber(newVal);
+    businessPhoneNo.value = formatPhoneNumber(newVal);
   }
 });
 
@@ -207,11 +207,11 @@ const details = ref({
 });
 
 const togglePasswordVisibility = () => {
-  showPassword.value = !showPassword.value;
+  showPw.value = !showPw.value;
 };
 
 const togglePasswordCheckVisibility = () => {
-  showPasswordCheck.value = !showPasswordCheck.value;
+  showPwCheck.value = !showPwCheck.value;
 };
 
 const sendVerificationCode = () => {
@@ -251,15 +251,15 @@ const submitForm = () => {
   if (
     !businessType.value ||
     !businessType.value.value.trim() ||
-    !businessRegistrationNumber.value.trim() ||
+    !businessRegistrationNo.value.trim() ||
     !businessName.value.trim() ||
-    !ceoName.value.trim() ||
+    !ownerName.value.trim() ||
     !businessAddress.value.trim() ||
-    !certificateIssueNumber.value.trim() ||
+    !certificateIssueNo.value.trim() ||
     !businessId.value.trim() ||
-    !businessPassword.value.trim() ||
+    !businessPw.value.trim() ||
     !managerName.value.trim() ||
-    !businessPhoneNumber.value.trim() ||
+    !businessPhoneNo.value.trim() ||
     !businessEmail.value.trim() ||
     !terms.value.age ||
     !terms.value.service ||
@@ -297,8 +297,8 @@ const submitForm = () => {
             class="w-full"
           />
           <div class="mb-2">
-            <InputText v-model="businessRegistrationNumber" placeholder="사업자등록번호" class="w-full" maxlength="12" />
-            <p v-if="businessNumberError" class="text-red-500">{{ businessNumberError }}</p>
+            <InputText v-model="businessRegistrationNo" placeholder="사업자등록번호" class="w-full" maxlength="12" />
+            <p v-if="businessNoError" class="text-red-500">{{ businessNoError }}</p>
           </div>
           <InputText
             v-model="businessName"
@@ -307,7 +307,7 @@ const submitForm = () => {
             class="w-full px-4 py-3"
           />
           <InputText
-            v-model="ceoName"
+            v-model="ownerName"
             type="text"
             placeholder="대표자명"
             class="w-full px-4 py-3"
@@ -319,8 +319,8 @@ const submitForm = () => {
             class="w-full px-4 py-3"
           />
           <div class="mb-2">
-            <InputText v-model="certificateIssueNumber" placeholder="사업자등록증명원 발급번호" class="w-full" maxlength="17" />
-            <p v-if="certificateNumberError" class="text-red-500">{{ certificateNumberError }}</p>
+            <InputText v-model="certificateIssueNo" placeholder="사업자등록증명원 발급번호" class="w-full" maxlength="17" />
+            <p v-if="certificateNoError" class="text-red-500">{{ certificateNoError }}</p>
           </div>
           <div>
             <div class="flex space-x-2">
@@ -344,8 +344,8 @@ const submitForm = () => {
           <div>
             <div class="flex items-center">
               <InputText
-                :type="showPassword ? 'text' : 'password'"
-                v-model="businessPassword"
+                :type="showPw ? 'text' : 'password'"
+                v-model="businessPw"
                 placeholder="비밀번호(8~16자의 영문, 숫자, 특수기호)"
                 class="w-full px-4 py-3"
                 maxlength="16"
@@ -355,18 +355,18 @@ const submitForm = () => {
                 @click="togglePasswordVisibility"
                 class="ml-2 flex items-center"
               >
-                <i :class="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+                <i :class="showPw ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
               </button>
             </div>
-            <p :class="passwordError ? 'text-red-500' : 'text-green-500'">{{ passwordMessage }}</p>
+            <p :class="pwError ? 'text-red-500' : 'text-green-500'">{{ pwMessage }}</p>
 
             <div class="flex items-center mt-4">
               <InputText
-                v-model="businessPasswordCheck"
+                v-model="businessPwCheck"
                 class="w-full px-4 py-3"
-                :type="showPasswordCheck ? 'text' : 'password'"
+                :type="showPwCheck ? 'text' : 'password'"
                 placeholder="비밀번호 확인"
-                :invalid="passwordCheckFlag"
+                :invalid="pwCheckFlag"
                 maxlength="16"
               />
               <button
@@ -374,10 +374,10 @@ const submitForm = () => {
                 @click="togglePasswordCheckVisibility"
                 class="ml-2 flex items-center"
               >
-                <i :class="showPasswordCheck ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+                <i :class="showPwCheck ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
               </button>
             </div>
-            <p :class="passwordCheckFlag ? 'text-red-500' : 'text-green-500'">{{ passwordCheckMessage }}</p>
+            <p :class="pwCheckFlag ? 'text-red-500' : 'text-green-500'">{{ pwCheckMessage }}</p>
           </div>
           <InputText
             v-model="managerName"
@@ -387,7 +387,7 @@ const submitForm = () => {
           />
           <div class="flex space-x-2">
             <InputText
-              v-model="businessPhoneNumber"
+              v-model="businessPhoneNo"
               placeholder="전화번호"
               class="flex-grow px-4 py-3"
               maxlength="13"

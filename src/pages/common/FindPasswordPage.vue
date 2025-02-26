@@ -8,7 +8,7 @@ const name = ref('');
 const email = ref('');
 const businessId = ref('');
 const managerName = ref('');
-const businessRegistrationNumber = ref('');
+const businessRegistrationNo = ref('');
 
 const setActiveTab = (tab) => {
   activeTab.value = tab;
@@ -93,7 +93,7 @@ const findPassword = () => {
             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
           />
           <input
-            v-model="businessRegistrationNumber"
+            v-model="businessRegistrationNo"
             type="email"
             placeholder="사업자등록번호"
             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"

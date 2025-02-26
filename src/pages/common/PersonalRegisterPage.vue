@@ -1,40 +1,40 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { isEmpty } from 'es-toolkit/compat';
-import { verifyPassportNumber } from '@/apis/auth/authApis';
+import { verifypassportNo } from '@/apis/auth/authApis';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
-const personalId = ref('');
-const personalPassword = ref('');
-const showPassword = ref(false);
-const showPasswordCheck = ref(false);
-const personalName = ref('');
+const id = ref('');
+const pw = ref('');
+const showPw = ref(false);
+const showPwCheck = ref(false);
+const name = ref('');
 const birthdate = ref('');
 const gender = ref('');
-const personalEmail = ref('');
+const email = ref('');
 const issueDate = ref();
 const expirationDate = ref();
-const passportNumber = ref('M981L0621');
+const passportNo = ref('M981L0621');
 
 const idCheckMessage = ref('');
 const idCheckSuccess = ref(false);
-const personalPasswordCheck = ref('');
-const passwordCheckMessage = ref('');
-const passwordMessage = ref('');
-const passwordError = ref(false);
+const pwCheck = ref('');
+const pwCheckMessage = ref('');
+const pwMessage = ref('');
+const pwError = ref(false);
 
-const passwordCheckFlag = ref(false);
+const pwCheckFlag = ref(false);
 // const personalPhone = ref('');
 // const verificationCode = ref('');
 
 const formError = ref('');
 
 const checkIdDuplication = async () => {
-  if (!personalId.value.trim()) {
+  if (!id.value.trim()) {
     idCheckMessage.value = '아이디를 입력해주세요.';
     idCheckSuccess.value = false;
     return;
@@ -42,10 +42,10 @@ const checkIdDuplication = async () => {
 
   try {
     // 여기에 실제 API 호출을 추가하세요.
-    // 예시: const response = await axios.post('/api/check-id', { id: personalId.value });
+    // 예시: const response = await axios.post('/api/check-id', { id: id.value });
 
     // 임시로 중복 확인 로직을 추가합니다.
-    const isDuplicate = personalId.value === 'existingId'; // 'existingId'는 이미 존재하는 아이디 예시입니다.
+    const isDuplicate = id.value === 'existingId'; // 'existingId'는 이미 존재하는 아이디 예시입니다.
 
     if (isDuplicate) {
       idCheckMessage.value = '이미 사용 중인 아이디입니다.';
@@ -90,51 +90,51 @@ const details = ref({
 });
 
 watch(
-  () => personalPasswordCheck.value,
+  () => pwCheck.value,
   () => {
-    if (!isEmpty(personalPasswordCheck.value) && personalPasswordCheck.value !== personalPassword.value) {
-      passwordCheckFlag.value = true;
+    if (!isEmpty(pwCheck.value) && pwCheck.value !== pw.value) {
+      pwCheckFlag.value = true;
     } else {
-      passwordCheckFlag.value = false;
+      pwCheckFlag.value = false;
     }
   }
 );
 
-watch(personalPassword, (newVal) => {
+watch(pw, (newVal) => {
   if (containsInvalidCharacters(newVal)) {
-    passwordMessage.value = '사용할 수 없는 특수문자가 포함되어 있습니다.';
-    passwordError.value = true;
+    pwMessage.value = '사용할 수 없는 특수문자가 포함되어 있습니다.';
+    pwError.value = true;
   } else if (newVal && !isValidPassword(newVal)) {
-    passwordMessage.value = '8~16자의 영문, 숫자, 특수문자 조합으로 입력해 주세요.';
-    passwordError.value = true;
+    pwMessage.value = '8~16자의 영문, 숫자, 특수문자 조합으로 입력해 주세요.';
+    pwError.value = true;
   } else if (newVal) {
-    passwordMessage.value = '사용할 수 있는 비밀번호입니다.';
-    passwordError.value = false;
+    pwMessage.value = '사용할 수 있는 비밀번호입니다.';
+    pwError.value = false;
   } else {
-    passwordMessage.value = '';
-    passwordError.value = false;
+    pwMessage.value = '';
+    pwError.value = false;
   }
 });
 
-watch(personalPasswordCheck, (newVal) => {
-  if (newVal && newVal !== personalPassword.value) {
-    passwordCheckMessage.value = '비밀번호가 일치하지 않습니다.';
-    passwordCheckFlag.value = true;
+watch(pwCheck, (newVal) => {
+  if (newVal && newVal !== pw.value) {
+    pwCheckMessage.value = '비밀번호가 일치하지 않습니다.';
+    pwCheckFlag.value = true;
   } else if (newVal) {
-    passwordCheckMessage.value = '비밀번호가 일치합니다.';
-    passwordCheckFlag.value = false;
+    pwCheckMessage.value = '비밀번호가 일치합니다.';
+    pwCheckFlag.value = false;
   } else {
-    passwordCheckMessage.value = '';
-    passwordCheckFlag.value = false;
+    pwCheckMessage.value = '';
+    pwCheckFlag.value = false;
   }
 });
 
 const togglePasswordVisibility = () => {
-  showPassword.value = !showPassword.value;
+  showPw.value = !showPw.value;
 };
 
 const togglePasswordCheckVisibility = () => {
-  showPasswordCheck.value = !showPasswordCheck.value;
+  showPwCheck.value = !showPwCheck.value;
 };
 
 const sendVerificationCode = () => {
@@ -157,14 +157,14 @@ const verifyPassport = async () => {
 
   body = {
     organization: '0001',
-    passportNo: passportNumber.value,
+    passportNo: passportNo.value,
     nationality: '12',
     country: '',
     birthDate: '19980814'
   };
 
   try {
-    const response = await verifyPassportNumber(body);
+    const response = await verifypassportNo(body);
 
     console.log(response);
   } catch (error) {
@@ -192,11 +192,11 @@ const signIn = () => {};
 
 const submitForm = () => {
   if (
-    !personalId.value.trim() ||
-    !personalPassword.value.trim() ||
-    !personalName.value.trim() ||
+    !id.value.trim() ||
+    !pw.value.trim() ||
+    !name.value.trim() ||
     !birthdate.value.trim() ||
-    !personalEmail.value.trim() ||
+    !email.value.trim() ||
     !terms.value.age ||
     !terms.value.service ||
     !terms.value.privacy
@@ -227,7 +227,7 @@ const submitForm = () => {
         <div class="space-y-4 mb-6">
           <div>
             <div class="flex space-x-2">
-              <InputText v-model="personalId" type="text" placeholder="아이디" class="flex-grow px-4 py-3" />
+              <InputText v-model="id" type="text" placeholder="아이디" class="flex-grow px-4 py-3" />
               <button
                 @click="checkIdDuplication"
                 class="px-4 py-2 bg-[#F2F4F7] text-gray-500 border border-gray-300 rounded-lg"
@@ -242,34 +242,34 @@ const submitForm = () => {
           <div>
             <div class="flex items-center">
               <InputText
-                :type="showPassword ? 'text' : 'password'"
-                v-model="personalPassword"
+                :type="showPw ? 'text' : 'password'"
+                v-model="pw"
                 placeholder="비밀번호(8~16자의 영문, 숫자, 특수기호)"
                 class="w-full px-4 py-3"
                 maxlength="16"
               />
               <button type="button" @click="togglePasswordVisibility" class="ml-2 flex items-center">
-                <i :class="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+                <i :class="showPw ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
               </button>
             </div>
-            <p :class="passwordError ? 'text-red-500' : 'text-green-500'">{{ passwordMessage }}</p>
+            <p :class="pwError ? 'text-red-500' : 'text-green-500'">{{ pwMessage }}</p>
 
             <div class="flex items-center mt-4">
               <InputText
-                v-model="personalPasswordCheck"
+                v-model="pwCheck"
                 class="w-full px-4 py-3"
-                :type="showPasswordCheck ? 'text' : 'password'"
+                :type="showPwCheck ? 'text' : 'password'"
                 placeholder="비밀번호 확인"
-                :invalid="passwordCheckFlag"
+                :invalid="pwCheckFlag"
                 maxlength="16"
               />
               <button type="button" @click="togglePasswordCheckVisibility" class="ml-2 flex items-center">
-                <i :class="showPasswordCheck ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+                <i :class="showPwCheck ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
               </button>
             </div>
-            <p :class="passwordCheckFlag ? 'text-red-500' : 'text-green-500'">{{ passwordCheckMessage }}</p>
+            <p :class="pwCheckFlag ? 'text-red-500' : 'text-green-500'">{{ pwCheckMessage }}</p>
           </div>
-          <InputText v-model="personalName" type="text" placeholder="이름(실명)" class="w-full px-4 py-3" />
+          <InputText v-model="name" type="text" placeholder="이름(실명)" class="w-full px-4 py-3" />
           <div class="flex space-x-4">
             <InputText
               v-model="birthdate"
@@ -288,7 +288,7 @@ const submitForm = () => {
               </label>
             </div>
           </div>
-          <InputText v-model="personalEmail" type="email" placeholder="이메일" class="w-full px-4 py-3" />
+          <InputText v-model="email" type="email" placeholder="이메일" class="w-full px-4 py-3" />
           <!-- <div class="flex space-x-2">
             <input
               v-model="personalPhone"
@@ -345,7 +345,7 @@ const submitForm = () => {
             />
           </div>
           <div class="flex space-x-2">
-            <InputText v-model="passportNumber" type="text" placeholder="여권번호" class="flex-grow px-4 py-3" />
+            <InputText v-model="passportNo" type="text" placeholder="여권번호" class="flex-grow px-4 py-3" />
             <button
               type="button"
               @click="verifyPassport"
