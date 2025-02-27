@@ -4,57 +4,122 @@ import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
 import Button from 'primevue/button';
-import Select from 'primevue/select';
+import Dialog from 'primevue/dialog';
 
 const router = useRouter();
 
-const selectedRegion = ref(null);
-const selectedJob = ref(null);
-const selectedCareer = ref(null);
-const selectedEducation = ref(null);
+const showFilterModal = ref(false);
+const currentFilter = ref(null);
+const tempSelectedOptions = ref([]);
 
-const goToResume = () => {
-  router.push({ name: 'Resume' });
-};
-
-const regions = [
-  { label: '서울', value: 'seoul' },
-  { label: '부산', value: 'busan' },
-  // 다른 지역들...
-];
-
-const jobs = [
-  { label: '개발자', value: 'developer' },
-  { label: '디자이너', value: 'designer' },
-  // 다른 직무들...
-];
-
-const careers = [
-  { label: '신입', value: 'entry' },
-  { label: '경력', value: 'experienced' },
-  // 다른 근무형태들...
-];
-
-const education = [
-  { label: '비자 없음', value: 'none' },
-  { label: '취업 비자', value: 'work' },
-  // 다른 비자들...
-];
-
-const authStore = useAuthStore();
-const { userInfo } = storeToRefs(authStore);
-
-const bookmarkFlag = ref(true);
-
-onMounted(() => {
-  if (userInfo.value?.type === 'user') {
-    bookmarkFlag.value = false;
+const filters = [
+  {
+    type: 'region',
+    title: '지역',
+    options: [
+      { label: '서울', value: 'seoul' },
+      { label: '경기도', value: 'gyeonggi' },
+      { label: '인천', value: 'incheon' },
+      { label: '부산', value: 'busan' },
+      { label: '대구', value: 'daegu' },
+      { label: '광주', value: 'gwangju' },
+      { label: '대전', value: 'daejeon' },
+      { label: '울산', value: 'ulsan' },
+      { label: '세종', value: 'sejong' },
+    ]
+  },
+  {
+    type: 'job',
+    title: '직무',
+    options: [
+      { label: '개발자', value: 'developer' },
+      { label: '디자이너', value: 'designer' },
+      { label: '기획자', value: 'planner' },
+      { label: '마케팅', value: 'marketing' },
+      { label: '영업', value: 'sales' },
+      { label: '경영지원', value: 'management' },
+    ]
+  },
+  {
+    type: 'career',
+    title: '근무형태',
+    options: [
+      { label: '신입', value: 'entry' },
+      { label: '경력', value: 'experienced' },
+      { label: '인턴', value: 'intern' },
+      { label: '계약직', value: 'contract' },
+    ]
+  },
+  {
+    type: 'visa',
+    title: '보유한 비자',
+    options: [
+      { label: '비자 없음', value: 'none' },
+      { label: '취업 비자', value: 'work' },
+      { label: '영주권', value: 'permanent' },
+      { label: '학생 비자', value: 'student' },
+    ]
   }
+];
+
+const selectedFilters = ref({
+  region: [],
+  job: [],
+  career: [],
+  visa: []
 });
 
-const formatCurrency = (value) => {
-  return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+const openFilterModal = (filterType) => {
+  const filter = filters.find(f => f.type === filterType);
+  currentFilter.value = filter;
+  tempSelectedOptions.value = [...selectedFilters.value[filterType]];
+  showFilterModal.value = true;
 };
+
+const toggleOption = (option) => {
+  const index = tempSelectedOptions.value.findIndex(o => o.value === option.value);
+  if (index === -1) {
+    tempSelectedOptions.value.push(option);
+  } else {
+    tempSelectedOptions.value.splice(index, 1);
+  }
+};
+
+const isOptionSelected = (option) => {
+  return tempSelectedOptions.value.some(o => o.value === option.value);
+};
+
+const applyFilter = () => {
+  selectedFilters.value[currentFilter.value.type] = [...tempSelectedOptions.value];
+  showFilterModal.value = false;
+};
+
+const cancelFilter = () => {
+  showFilterModal.value = false;
+};
+
+const getFilterLabel = (filterType) => {
+  const selected = selectedFilters.value[filterType];
+  if (selected.length === 0) {
+    return filters.find(f => f.type === filterType).title;
+  }
+  return `${filters.find(f => f.type === filterType).title} (${selected.length})`;
+};
+
+// const authStore = useAuthStore();
+// const { userInfo } = storeToRefs(authStore);
+
+// const bookmarkFlag = ref(true);
+
+// onMounted(() => {
+//   if (userInfo.value?.type === 'user') {
+//     bookmarkFlag.value = false;
+//   }
+// });
+
+// const formatCurrency = (value) => {
+//   return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+// };
 </script>
 
 <template>
@@ -151,11 +216,57 @@ const formatCurrency = (value) => {
 
       <!-- 필터 영역 -->
       <div class="flex gap-4 mb-6">
-        <Select v-model="selectedRegion" :options="regions" optionLabel="label" placeholder="지역" class="w-1/4" />
-        <Select v-model="selectedJob" :options="jobs" optionLabel="label" placeholder="직무" class="w-1/4" />
-        <Select v-model="selectedCareer" :options="careers" optionLabel="label" placeholder="근무형태" class="w-1/4" />
-        <Select v-model="selectedEducation" :options="education" optionLabel="label" placeholder="보유한 비자" class="w-1/4" />
+        <button 
+          v-for="filter in filters" 
+          :key="filter.type"
+          @click="openFilterModal(filter.type)"
+          class="flex-1 px-4 py-3 border border-[#8B8BF5] rounded-lg text-left hover:bg-gray-50 transition-colors flex items-center justify-between"
+        >
+          <span class="text-gray-600">{{ getFilterLabel(filter.type) }}</span>
+          <i class="pi pi-chevron-down text-[#8B8BF5]"></i>
+        </button>
       </div>
+
+      <!-- 필터 모달 -->
+      <Dialog 
+        v-model:visible="showFilterModal" 
+        :header="currentFilter?.title"
+        :modal="true"
+        :style="{ width: '50vw' }"
+        :breakpoints="{ '960px': '75vw', '641px': '90vw' }"
+      >
+        <div class="p-4">
+          <div class="grid grid-cols-3 gap-4">
+            <div 
+              v-for="option in currentFilter?.options" 
+              :key="option.value"
+              @click="toggleOption(option)"
+              :class="[
+                'p-4 border rounded-lg cursor-pointer transition-all',
+                isOptionSelected(option) 
+                  ? 'border-[#8B8BF5] bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5]' 
+                  : 'border-gray-200 hover:border-[#8B8BF5]'
+              ]"
+            >
+              {{ option.label }}
+            </div>
+          </div>
+        </div>
+        <template #footer>
+          <div class="flex justify-end gap-4">
+            <Button 
+              label="취소" 
+              @click="cancelFilter"
+              class="p-button-text" 
+            />
+            <Button 
+              label="적용하기" 
+              @click="applyFilter"
+              class="p-button-primary bg-[#8B8BF5]" 
+            />
+          </div>
+        </template>
+      </Dialog>
 
       <!-- 채용공고 카드들 -->
       <div class="space-y-4">
@@ -259,16 +370,36 @@ const formatCurrency = (value) => {
 </template>
 
 <style scoped>
-.card {
-  background: white;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
+:deep(.p-dialog-header) {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-:deep(.p-select) {
-  border-color: #8b8bf5;
-  border-radius: 8px;
-  padding: 0.5rem;
+:deep(.p-dialog-content) {
+  padding: 0;
+}
+
+:deep(.p-dialog-footer) {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+:deep(.p-button.p-button-primary) {
+  background: #8B8BF5;
+  border-color: #8B8BF5;
+}
+
+:deep(.p-button.p-button-primary:hover) {
+  background: #7878F2;
+  border-color: #7878F2;
+}
+
+:deep(.p-button.p-button-text) {
+  color: #64748b;
+}
+
+:deep(.p-button.p-button-text:hover) {
+  background: rgba(100, 116, 139, 0.04);
 }
 
 :deep(.p-Button-outlined) {
