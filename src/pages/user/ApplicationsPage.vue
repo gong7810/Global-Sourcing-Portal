@@ -94,18 +94,17 @@ const goToJobDetail = (applicationId) => {
 
 <template>
   <div class="max-w-[1200px] mx-auto px-4 py-12">
-    <div class="flex items-center justify-between mb-8">
+    <div class="flex items-center justify-between">
       <div class="flex items-center gap-4 mb-8">
         <i class="pi pi-angle-left text-4xl text-gray-600 cursor-pointer transition-colors hover:text-[#8FA1FF]" @click="router.back()"></i>
         <h1 class="text-3xl font-bold">지원 내역</h1>
+        <!-- 알림 설정 버튼 -->
+        <Button 
+            icon="pi pi-bell" 
+            class="p-button-rounded p-button-text notification-btn" 
+            @click="showNotificationSettings = true"
+          />
       </div>
-
-      <!-- 알림 설정 버튼 -->
-      <Button 
-          icon="pi pi-bell" 
-          class="p-button-rounded p-button-text notification-btn" 
-          @click="showNotificationSettings = true"
-        />
     </div>
 
     <!-- 마감 임박 알림 -->
