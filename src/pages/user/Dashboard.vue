@@ -5,6 +5,7 @@ import { storeToRefs } from 'pinia';
 import Button from 'primevue/button';
 import Dropdown from 'primevue/dropdown';
 import AppTopbar from '@/layout/AppTopbar.vue';
+import AppFooter from '@/layout/AppFooter.vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -65,9 +66,8 @@ const formatCurrency = (value) => {
     <div class="grid gap-4">
       <!-- 상단 메뉴 아이콘들 -->
       <div class="flex justify-center gap-32 mb-12">
-        <div class="flex flex-col items-center cursor-pointer group">
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push({ name: 'Resume' })">
           <div
-            @click="goToResume"
             class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
           >
             <svg
@@ -86,7 +86,7 @@ const formatCurrency = (value) => {
               <line x1="10" y1="9" x2="8" y2="9"></line>
             </svg>
           </div>
-          <button @click="goToResume" class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">이력서</button>
+          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">이력서</span>
         </div>
         <div class="flex flex-col items-center cursor-pointer group" @click="router.push({ name: 'Applications' })">
           <div
@@ -109,7 +109,7 @@ const formatCurrency = (value) => {
             >지원내역</span
           >
         </div>
-        <div v-if="bookmarkFlag" class="flex flex-col items-center cursor-pointer group">
+        <!-- <div v-if="bookmarkFlag" class="flex flex-col items-center cursor-pointer group">
           <div
             class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
           >
@@ -128,7 +128,7 @@ const formatCurrency = (value) => {
           <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
             >북마크</span
           >
-        </div>
+        </div> -->
         <div class="flex flex-col items-center cursor-pointer group">
           <div
             class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
@@ -258,31 +258,8 @@ const formatCurrency = (value) => {
         </div>
       </div>
     </div>
-
-    <!-- 푸터 추가 -->
-    <div class="mt-12 border-t border-gray-200 bg-gray-50">
-      <div class="max-w-[1200px] mx-auto px-4 pt-6">
-        <div class="mb-6">
-          <h2 class="text-lg font-bold mb-2">BTPOTAL</h2>
-          <div class="text-gray-600 text-sm space-y-1">
-            <p>대표: 김종진</p>
-            <p>사업자 등록번호: 695-87-03015</p>
-            <p>주소: 경상남도 진주시 동부로 169번길 12, B동 505호 (충무공동, 윙스타워)</p>
-            <p>고객센터: 070-8211-3394</p>
-            <p>이메일: jjkim@pbnt.kr</p>
-            <p>직업정보제공사업:</p>
-            <p class="pb-3 border-b border-gray-200">통신판매업:</p>
-          </div>
-        </div>
-
-        <div class="flex gap-6 text-sm">
-          <a href="#" class="text-blue-900 font-medium">개인정보처리방침</a>
-          <a href="#" class="text-gray-600">이용약관</a>
-          <a href="#" class="text-gray-600">이용자 준수사항</a>
-        </div>
-      </div>
-    </div>
   </div>
+  <AppFooter />
 </template>
 
 <style scoped>
@@ -304,9 +281,5 @@ const formatCurrency = (value) => {
 
 .group:hover {
   transform: translateY(-2px);
-}
-
-.mt-12.border-t.border-gray-200.bg-gray-50 {
-  background-color: #f1f5f9;
 }
 </style>

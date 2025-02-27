@@ -5,6 +5,7 @@ import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
 import Button from 'primevue/button';
 import AppTopbar from '@/layout/AppTopbar.vue';
+import AppFooter from '@/layout/AppFooter.vue';
 import Select from 'primevue/select';
 import DatePicker from 'primevue/datepicker';
 import InputText from 'primevue/inputtext';
@@ -15,6 +16,11 @@ const showNationalityModal = ref(false);
 const showPassportModal = ref(false);
 const showCareerModal = ref(false);
 const showEducationModal = ref(false);
+
+// 이력서 공개 설정 관련 상태 추가
+const visibilityType = ref('private'); // 'public', 'private', 'selective'
+const selectedCompanies = ref([]);
+const showCompanySelectModal = ref(false);
 
 // 국가/비자 정보 관련 상태
 const nationalityInfo = ref({
@@ -196,16 +202,112 @@ const saveEducationInfo = () => {
 const formatCurrency = (value) => {
   return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 };
+
+// 기업 목록 (예시 데이터)
+const companies = [
+  { name: '(주)비티포탈', id: 1 },
+  { name: '삼성전자', id: 2 },
+  { name: '네이버', id: 3 },
+  { name: '카카오', id: 4 },
+];
+
+const visibilityOptions = [
+  { label: '전체 공개', value: 'public', icon: 'pi pi-globe' },
+  { label: '비공개', value: 'private', icon: 'pi pi-lock' },
+  { label: '특정 기업 공개', value: 'selective', icon: 'pi pi-users' }
+];
+
+const openCompanySelect = () => {
+  showCompanySelectModal.value = true;
+};
+
+const closeCompanySelect = () => {
+  showCompanySelectModal.value = false;
+};
+
+const saveCompanySelection = () => {
+  showCompanySelectModal.value = false;
+};
 </script>
 
 <template>
   <AppTopbar />
   <!-- 전체 컨테이너에 최대 폭 제한과 중앙 정렬 적용 -->
   <div class="max-w-[1200px] mx-auto px-4 py-12">
+    <div class="flex items-center gap-4 mb-8">
+      <i class="pi pi-angle-left text-4xl text-gray-600 cursor-pointer transition-colors hover:text-[#8FA1FF]"
+        @click="router.back()"></i>
+      <h1 class="text-3xl font-bold">이력서</h1>
+    </div>
+
+    <!-- 이력서 공개 설정 섹션 추가 -->
+    <div class="bg-white rounded-lg p-6 mb-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-6">
+          <h2 class="font-bold">이력서 공개 설정</h2>
+          <div class="flex gap-4">
+            <template v-for="option in visibilityOptions" :key="option.value">
+              <div @click="visibilityType = option.value"
+                class="flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer transition-all"
+                :class="visibilityType === option.value ? 'bg-[#8FA1FF] bg-opacity-10 text-[#8FA1FF]' : 'text-gray-600 hover:bg-gray-100'">
+                <i :class="option.icon"></i>
+                <span>{{ option.label }}</span>
+              </div>
+            </template>
+          </div>
+        </div>
+        <Button v-if="visibilityType === 'selective'" label="기업 선택" icon="pi pi-search" class="p-button-outlined"
+          @click="openCompanySelect" />
+      </div>
+      <!-- 선택된 기업 표시 영역 -->
+      <div v-if="visibilityType === 'selective' && selectedCompanies.length > 0" class="mt-4">
+        <div class="flex flex-wrap gap-2">
+          <div v-for="company in selectedCompanies" :key="company.id"
+            class="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full">
+            <span class="text-sm">{{ company.name }}</span>
+            <button @click="selectedCompanies = selectedCompanies.filter(c => c.id !== company.id)"
+              class="text-gray-400 hover:text-gray-600">
+              <i class="pi pi-times"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 기업 선택 모달 -->
+    <div v-if="showCompanySelectModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg w-[600px] max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center p-6 border-b">
+          <h2 class="text-xl font-bold">공개할 기업 선택</h2>
+          <button @click="closeCompanySelect" class="text-gray-400 hover:text-gray-600">
+            <i class="pi pi-times text-xl"></i>
+          </button>
+        </div>
+
+        <div class="p-6">
+          <div class="space-y-4">
+            <div v-for="company in companies" :key="company.id"
+              class="flex items-center justify-between p-4 border rounded-lg hover:border-[#8FA1FF] cursor-pointer"
+              @click="selectedCompanies = selectedCompanies.includes(company)
+                ? selectedCompanies.filter(c => c.id !== company.id)
+                : [...selectedCompanies, company]">
+              <span>{{ company.name }}</span>
+              <i :class="selectedCompanies.some(c => c.id === company.id)
+                ? 'pi pi-check-circle text-[#8FA1FF]'
+                : 'pi pi-circle text-gray-300'"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-6 border-t bg-gray-50 flex justify-center">
+          <Button label="선택 완료" class="w-full" @click="saveCompanySelection" />
+        </div>
+      </div>
+    </div>
+
     <div class="grid gap-4">
       <div class="resume-page">
-        <!-- 페이지 제목 -->
-        <h1 class="text-2xl font-bold mb-6">이력서</h1>
         <!-- 기본 정보 섹션 -->
         <div class="bg-white rounded-lg p-6 mb-6">
           <div class="flex justify-between items-center mb-4">
@@ -247,7 +349,7 @@ const formatCurrency = (value) => {
                 <h3 class="font-bold">국가</h3>
               </div>
               <Button label="추가" icon="pi pi-plus" class="p-button-text p-button-sm"
-                @click="navigateToSection(sections[0])" />
+              @click="navigateToSection(sections[0])" />
             </div>
 
             <!-- 국가 정보 카드 -->
@@ -667,42 +769,11 @@ const formatCurrency = (value) => {
       </div>
     </div>
   </div>
-
-  <!-- 푸터 추가 -->
-  <div class="mt-12 border-t border-gray-200 bg-gray-50">
-    <div class="max-w-[1200px] mx-auto px-4 py-6">
-      <div class="mb-6">
-        <h2 class="text-lg font-bold mb-2">BTPOTAL</h2>
-        <div class="text-gray-600 text-sm space-y-1">
-          <p>대표: 김종진</p>
-          <p>사업자 등록번호: 695-87-03015</p>
-          <p>주소: 경상남도 진주시 동부로 169번길 12, B동 505호 (충무공동, 윙스타워)</p>
-          <p>고객센터: 070-8211-3394</p>
-          <p>이메일: jjkim@pbnt.kr</p>
-          <p>직업정보제공사업:</p>
-          <p class="pb-3 border-b border-gray-200">통신판매업:</p>
-        </div>
-      </div>
-
-      <div class="flex gap-6 text-sm">
-        <a href="#" class="text-blue-900 font-medium">개인정보처리방침</a>
-        <a href="#" class="text-gray-600">이용약관</a>
-        <a href="#" class="text-gray-600">이용자 준수사항</a>
-      </div>
-    </div>
-  </div>
+  <AppFooter />
 </template>
 
 <style scoped>
 .w-96 {
   width: 36rem;
-}
-
-.p-dropdown {
-  width: 100%;
-}
-
-.mt-12.border-t.border-gray-200.bg-gray-50 {
-  background-color: #f1f5f9;
 }
 </style>

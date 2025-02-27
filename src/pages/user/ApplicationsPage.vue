@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import AppTopbar from '@/layout/AppTopbar.vue';
+import AppFooter from '@/layout/AppFooter.vue';
 import TabMenu from 'primevue/tabmenu';
 import Button from 'primevue/button';
 import { useRouter } from 'vue-router';
@@ -67,7 +68,10 @@ const goToJobDetail = (applicationId) => {
 <template>
   <AppTopbar />
   <div class="max-w-[1200px] mx-auto px-4 py-12">
-    <h1 class="text-2xl font-bold mb-8">지원 내역</h1>
+    <div class="flex items-center gap-4 mb-8">
+      <i class="pi pi-angle-left text-4xl text-gray-600 cursor-pointer transition-colors hover:text-[#8FA1FF]" @click="router.back()"></i>
+      <h1 class="text-3xl font-bold">지원 내역</h1>
+    </div>
 
     <!-- 탭 메뉴와 내용 -->
     <div class="bg-white rounded-lg p-6">
@@ -82,7 +86,7 @@ const goToJobDetail = (applicationId) => {
 
       <div v-else class="space-y-4">
         <div v-for="application in filteredApplications" :key="application.id"
-          class="border-b border-gray-200 last:border-0 pb-4 last:pb-0 hover:bg-gray-50 transition-all cursor-pointer p-4 rounded-lg"
+          class="border-b border-gray-200 last:border-0 py-6 hover:bg-gray-50 transition-all cursor-pointer px-4 rounded-lg"
           @click="goToJobDetail(application.id)">
           <div class="flex justify-between items-start">
             <div>
@@ -118,30 +122,7 @@ const goToJobDetail = (applicationId) => {
       </div>
     </div>
   </div>
-  
-  <!-- 푸터 추가 -->
-  <div class="mt-12 border-t border-gray-200 bg-gray-50">
-    <div class="max-w-[1200px] mx-auto px-4 py-6">
-      <div class="mb-6">
-        <h2 class="text-lg font-bold mb-2">BTPOTAL</h2>
-        <div class="text-gray-600 text-sm space-y-1">
-          <p>대표: 김종진</p>
-          <p>사업자 등록번호: 695-87-03015</p>
-          <p>주소: 경상남도 진주시 동부로 169번길 12, B동 505호 (충무공동, 윙스타워)</p>
-          <p>고객센터: 070-8211-3394</p>
-          <p>이메일: jjkim@pbnt.kr</p>
-          <p>직업정보제공사업:</p>
-          <p class="pb-3 border-b border-gray-200">통신판매업:</p>
-        </div>
-      </div>
-
-      <div class="flex gap-6 text-sm">
-        <a href="#" class="text-blue-900 font-medium">개인정보처리방침</a>
-        <a href="#" class="text-gray-600">이용약관</a>
-        <a href="#" class="text-gray-600">이용자 준수사항</a>
-      </div>
-    </div>
-  </div>
+  <AppFooter />
 </template>
 
 <style scoped>
@@ -186,9 +167,5 @@ const goToJobDetail = (applicationId) => {
 
 :deep(.p-button.p-button-text:hover) {
   background: rgba(143, 161, 255, 0.1);
-}
-
-.mt-12.border-t.border-gray-200.bg-gray-50 {
-  background-color: #f1f5f9;
 }
 </style> 
