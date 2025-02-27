@@ -95,6 +95,11 @@ const router = createRouter({
       name: 'Profile',
       component: () => import('@/pages/user/Profile.vue')
     },
+    {
+      path: '/user/applications',
+      name: 'Applications',
+      component: () => import('@/pages/user/ApplicationsPage.vue')
+    },
     // {
     //   path: '/landing',
     //   name: 'landing',
