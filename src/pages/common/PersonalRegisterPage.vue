@@ -16,9 +16,6 @@ const name = ref('');
 const birthdate = ref('');
 const gender = ref('');
 const email = ref('');
-const issueDate = ref();
-const expirationDate = ref();
-const passportNo = ref('M981L0621');
 
 const idCheckMessage = ref('');
 const idCheckSuccess = ref(false);
@@ -30,6 +27,28 @@ const pwError = ref(false);
 const pwCheckFlag = ref(false);
 // const personalPhone = ref('');
 // const verificationCode = ref('');
+
+const nationality = ref(null);
+const passportNo = ref('M981L0621');
+const passportLastName = ref('');
+const passportFirstName = ref('');
+const issueDate = ref(null);
+const expirationDate = ref(null);
+const issuingCountry = ref(null);
+
+const nationalityOptions = [
+  { label: '대한민국', value: 'KOR' },
+  { label: '일본', value: 'JPN' },
+  { label: '중국', value: 'CHN' },
+  // ... 더 많은 국가들
+];
+
+const countryOptions = [
+  { label: '대한민국', value: 'KOR' },
+  { label: '일본', value: 'JPN' },
+  { label: '중국', value: 'CHN' },
+  // ... 더 많은 국가들
+];
 
 const formError = ref('');
 
@@ -188,10 +207,9 @@ const toggleDetail = (key) => {
   details.value[key] = !details.value[key];
 };
 
-const signIn = () => {};
-
 const submitForm = () => {
   if (
+    // 기존 필수 항목들
     !id.value.trim() ||
     !pw.value.trim() ||
     !name.value.trim() ||
@@ -199,11 +217,32 @@ const submitForm = () => {
     !email.value.trim() ||
     !terms.value.age ||
     !terms.value.service ||
-    !terms.value.privacy
+    !terms.value.privacy ||
+    // 여권 정보 필수 항목들
+    !nationality.value ||
+    !passportNo.value.trim() ||
+    !passportLastName.value.trim() ||
+    !passportFirstName.value.trim() ||
+    !issueDate.value ||
+    !expirationDate.value ||
+    !issuingCountry.value
   ) {
     formError.value = '모든 필수 항목을 입력하고 체크해주세요.';
     return;
   }
+
+  // 여권 유효기간 검사
+  // const today = new Date();
+  // if (new Date(expirationDate.value) <= today) {
+  //   formError.value = '만료된 여권입니다. 유효한 여권을 입력해주세요.';
+  //   return;
+  // }
+
+  // // 발급일이 만료일보다 늦은 경우 체크
+  // if (new Date(issueDate.value) >= new Date(expirationDate.value)) {
+  //   formError.value = '여권 발급일이 만료일보다 늦을 수 없습니다.';
+  //   return;
+  // }
 
   // 가입 처리 로직
   formError.value = '';
@@ -326,33 +365,94 @@ const submitForm = () => {
               재전송
             </button>
           </div> -->
-          <div class="flex space-x-7">
-            <DatePicker
-              v-model="issueDate"
-              showIcon
-              fluid
-              iconDisplay="input"
-              dateFormat="yy-mm-dd"
-              placeholder="발급일"
-            />
-            <DatePicker
-              v-model="expirationDate"
-              showIcon
-              fluid
-              iconDisplay="input"
-              dateFormat="yy-mm-dd"
-              placeholder="만료일"
-            />
-          </div>
-          <div class="flex space-x-2">
-            <InputText v-model="passportNo" type="text" placeholder="여권번호" class="flex-grow px-4 py-3" />
-            <button
-              type="button"
-              @click="verifyPassport"
-              class="px-4 py-2 bg-[#F2F4F7] text-gray-500 border border-gray-300 rounded-lg"
-            >
-              여권번호 확인
-            </button>
+          <div class="space-y-4">
+            <h3 class="font-bold text-lg mb-2">여권 정보</h3>
+            
+            <!-- 국적 선택 -->
+            <div class="flex space-x-2">
+              <Select
+                v-model="nationality"
+                :options="nationalityOptions"
+                optionLabel="label"
+                placeholder="국적"
+                class="w-full"
+              />
+            </div>
+
+            <!-- 여권번호 -->
+            <div class="flex space-x-2">
+              <InputText 
+                v-model="passportNo" 
+                type="text" 
+                placeholder="여권번호 (예: M12345678)" 
+                class="flex-grow px-4 py-3"
+                maxlength="9"
+                @input="formatPassportNo"
+              />
+              <button
+                type="button"
+                @click="verifyPassport"
+                :disabled="!isValidPassport"
+                class="px-4 py-2 bg-[#F2F4F7] text-gray-500 border border-gray-300 rounded-lg"
+              >
+                여권번호 확인
+              </button>
+            </div>
+
+            <!-- 영문 이름 -->
+            <div class="flex space-x-2">
+              <InputText
+                v-model="passportLastName"
+                type="text"
+                placeholder="영문 성 (예: HONG)"
+                class="w-1/2 px-4 py-3"
+              />
+              <InputText
+                v-model="passportFirstName"
+                type="text"
+                placeholder="영문 이름 (예: GILDONG)"
+                class="w-1/2 px-4 py-3"
+              />
+            </div>
+
+            <!-- 발급일/만료일 -->
+            <div class="flex space-x-4">
+              <div class="w-1/2">
+                <label class="block text-sm text-gray-600 mb-1">발급일</label>
+                <DatePicker
+                  v-model="issueDate"
+                  showIcon
+                  fluid
+                  iconDisplay="input"
+                  dateFormat="yy-mm-dd"
+                  placeholder="YYYY-MM-DD"
+                  class="w-full"
+                />
+              </div>
+              <div class="w-1/2">
+                <label class="block text-sm text-gray-600 mb-1">만료일</label>
+                <DatePicker
+                  v-model="expirationDate"
+                  showIcon
+                  fluid
+                  iconDisplay="input"
+                  dateFormat="yy-mm-dd"
+                  placeholder="YYYY-MM-DD"
+                  class="w-full"
+                />
+              </div>
+            </div>
+
+            <!-- 발급국가 -->
+            <div class="flex space-x-2">
+              <Select
+                v-model="issuingCountry"
+                :options="countryOptions"
+                optionLabel="label"
+                placeholder="발급국가"
+                class="w-full"
+              />
+            </div>
           </div>
         </div>
 
@@ -442,7 +542,7 @@ const submitForm = () => {
 
         <!-- 회원가입 버튼 -->
         <div class="mt-6">
-          <Button type="submit" class="w-full py-3 bt_btn primary" @click="signIn"> 가입하기 </Button>
+          <Button type="submit" class="w-full py-3 bt_btn primary"> 가입하기 </Button>
           <p v-if="formError" class="text-red-500">{{ formError }}</p>
         </div>
       </form>
