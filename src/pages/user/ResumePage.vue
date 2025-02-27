@@ -212,7 +212,7 @@ const companies = [
 const visibilityOptions = [
   { label: '전체 공개', value: 'public', icon: 'pi pi-globe' },
   { label: '비공개', value: 'private', icon: 'pi pi-lock' },
-  { label: '특정 기업 공개', value: 'selective', icon: 'pi pi-users' }
+  { label: '특정 기업 비공개', value: 'selective', icon: 'pi pi-users' }
 ];
 
 const openCompanySelect = () => {
@@ -226,15 +226,27 @@ const closeCompanySelect = () => {
 const saveCompanySelection = () => {
   showCompanySelectModal.value = false;
 };
+
+const saveResume = () => {
+  // TODO: 저장 로직 구현
+};
 </script>
 
 <template>
   <!-- 전체 컨테이너에 최대 폭 제한과 중앙 정렬 적용 -->
   <div class="max-w-[1200px] mx-auto px-4 py-12">
-    <div class="flex items-center gap-4 mb-8">
-      <i class="pi pi-angle-left text-4xl text-gray-600 cursor-pointer transition-colors hover:text-[#8FA1FF]"
-        @click="router.back()"></i>
-      <h1 class="text-3xl font-bold">이력서</h1>
+    <div class="flex items-center justify-between mb-8">
+      <div class="flex items-center gap-4">
+        <i class="pi pi-angle-left text-4xl text-gray-600 cursor-pointer transition-colors hover:text-[#8FA1FF]"
+          @click="router.back()"></i>
+        <h1 class="text-3xl font-bold">이력서</h1>
+      </div>
+      <Button 
+        label="저장" 
+        icon="pi pi-save" 
+        class="p-button-primary" 
+        @click="saveResume"
+      />
     </div>
 
     <!-- 이력서 공개 설정 섹션 추가 -->
@@ -345,8 +357,6 @@ const saveCompanySelection = () => {
                 <i class="pi pi-globe text-gray-600"></i>
                 <h3 class="font-bold">국가</h3>
               </div>
-              <Button label="추가" icon="pi pi-plus" class="p-button-text p-button-sm"
-              @click="navigateToSection(sections[0])" />
             </div>
 
             <!-- 국가 정보 카드 -->
@@ -355,14 +365,6 @@ const saveCompanySelection = () => {
               <div class="flex justify-between items-start">
                 <div>
                   <h4 class="font-medium text-lg">{{ nationalityInfo.country.name }}</h4>
-                </div>
-                <div class="flex gap-2">
-                  <button class="text-gray-400 hover:text-gray-600">
-                    <i class="pi pi-pencil"></i>
-                  </button>
-                  <button class="text-gray-400 hover:text-gray-600">
-                    <i class="pi pi-trash"></i>
-                  </button>
                 </div>
               </div>
             </div>
@@ -376,8 +378,6 @@ const saveCompanySelection = () => {
                 <i class="pi pi-id-card text-gray-600"></i>
                 <h3 class="font-bold">여권</h3>
               </div>
-              <Button label="추가" icon="pi pi-plus" class="p-button-text p-button-sm"
-                @click="navigateToSection(sections[1])" />
             </div>
 
             <!-- 여권 정보 카드 -->
@@ -390,14 +390,6 @@ const saveCompanySelection = () => {
                     <p class="text-gray-600 mt-1">여권번호: {{ passport.passportNumber.slice(0, 5) + '****' }}</p>
                     <p class="text-gray-600">국적: {{ passport.nationality.name }}</p>
                     <p class="text-gray-600">만료일: {{ passport.expiryDate }}</p>
-                  </div>
-                  <div class="flex gap-2">
-                    <button class="text-gray-400 hover:text-gray-600">
-                      <i class="pi pi-pencil"></i>
-                    </button>
-                    <button class="text-gray-400 hover:text-gray-600">
-                      <i class="pi pi-trash"></i>
-                    </button>
                   </div>
                 </div>
               </div>
@@ -476,138 +468,6 @@ const saveCompanySelection = () => {
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 국가/비자 정보 모달 -->
-  <div v-if="showNationalityModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg w-[600px] max-h-[90vh] overflow-y-auto">
-      <!-- 헤더 -->
-      <div class="flex justify-between items-center p-6 border-b">
-        <h2 class="text-xl font-bold">국적</h2>
-        <div class="flex items-center gap-2">
-          <button @click="closeNationalityModal" class="text-gray-400 hover:text-gray-600">
-            <i class="pi pi-times text-xl"></i>
-          </button>
-        </div>
-      </div>
-
-      <!-- 내용 -->
-      <div class="p-6 space-y-6">
-        <!-- 국가 선택 -->
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            국적<span class="text-red-500">*</span>
-          </label>
-          <Select v-model="nationalityInfo.country" :options="countries" optionLabel="name" placeholder="국적 선택"
-            class="w-full" />
-        </div>
-      </div>
-
-      <!-- 하단 버튼 -->
-      <div class="p-6 border-t bg-gray-50 flex justify-center">
-        <Button label="저장하기" class="w-full" @click="saveNationalityInfo" />
-      </div>
-    </div>
-  </div>
-
-  <!-- 여권 정보 모달 -->
-  <div v-if="showPassportModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg w-[600px] max-h-[90vh] overflow-y-auto">
-      <!-- 헤더 -->
-      <div class="flex justify-between items-center p-6 border-b">
-        <h2 class="text-xl font-bold">여권 정보</h2>
-        <div class="flex items-center gap-2">
-          <button @click="closePassportModal" class="text-gray-400 hover:text-gray-600">
-            <i class="pi pi-times text-xl"></i>
-          </button>
-        </div>
-      </div>
-
-      <!-- 내용 -->
-      <div class="p-6 space-y-6">
-        <!-- 여권번호 -->
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            여권번호<span class="text-red-500">*</span>
-          </label>
-          <InputText v-model="passportInfo.passportNumber" placeholder="여권번호 입력" class="w-full" />
-        </div>
-
-        <!-- 성 -->
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            성 (영문)<span class="text-red-500">*</span>
-          </label>
-          <InputText v-model="passportInfo.surname" placeholder="영문 성 입력" class="w-full" />
-        </div>
-
-        <!-- 이름 -->
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            이름 (영문)<span class="text-red-500">*</span>
-          </label>
-          <InputText v-model="passportInfo.givenNames" placeholder="영문 이름 입력" class="w-full" />
-        </div>
-
-        <!-- 국적 -->
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            국적<span class="text-red-500">*</span>
-          </label>
-          <Select v-model="passportInfo.nationality" :options="countries" optionLabel="name" placeholder="국적 선택"
-            class="w-full" />
-        </div>
-
-        <!-- 생년월일 -->
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            생년월일<span class="text-red-500">*</span>
-          </label>
-          <DatePicker v-model="passportInfo.birthDate" dateFormat="yy.mm.dd" placeholder="YYYY.MM.DD" :showIcon="true"
-            class="w-full" />
-        </div>
-
-        <!-- 발급일 -->
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            발급일<span class="text-red-500">*</span>
-          </label>
-          <DatePicker v-model="passportInfo.issueDate" dateFormat="yy.mm.dd" placeholder="YYYY.MM.DD" :showIcon="true"
-            class="w-full" />
-        </div>
-
-        <!-- 만료일 -->
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            만료일<span class="text-red-500">*</span>
-          </label>
-          <DatePicker v-model="passportInfo.expiryDate" dateFormat="yy.mm.dd" placeholder="YYYY.MM.DD" :showIcon="true"
-            class="w-full" />
-        </div>
-
-        <!-- 발급국가 -->
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            발급국가<span class="text-red-500">*</span>
-          </label>
-          <Select v-model="passportInfo.issuingCountry" :options="countries" optionLabel="name" placeholder="발급국가 선택"
-            class="w-full" />
-        </div>
-
-        <!-- 출생지 -->
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            출생지<span class="text-red-500">*</span>
-          </label>
-          <InputText v-model="passportInfo.birthPlace" placeholder="출생지 입력" class="w-full" />
-        </div>
-      </div>
-
-      <!-- 하단 버튼 -->
-      <div class="p-6 border-t bg-gray-50 flex justify-center">
-        <Button label="저장하기" class="w-full" @click="savePassportInfo" />
       </div>
     </div>
   </div>
