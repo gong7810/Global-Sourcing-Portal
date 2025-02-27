@@ -23,6 +23,11 @@ export const userRouter = [
     path: '/user/applications',
     name: 'Applications',
     component: () => import('@/pages/user/ApplicationsPage.vue')
+  },
+  {
+    path: '/user/job-offers',
+    name: 'JobOffers',
+    component: () => import('@/pages/user/JobOffersPage.vue')
   }
   // {
   //     path: '/manageMember',
