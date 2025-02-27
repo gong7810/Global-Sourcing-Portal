@@ -1,4 +1,29 @@
 export const userRouter = [
+    {
+        path: '/user/index',
+        name: 'userIndex',
+        component: () => import('@/pages/user/Dashboard.vue')
+    },
+    {
+        path: '/business/index',
+        name: 'businessIndex',
+        component: () => import('@/pages/business/Dashboard.vue')
+    },
+    {
+        path: '/user/resume',
+        name: 'Resume',
+        component: () => import('@/pages/user/ResumePage.vue')
+    },
+    {
+        path: '/user/userPage',
+        name: 'UserPage',
+        component: () => import('@/pages/user/UserPage.vue')
+    },
+    {
+        path: '/user/applications',
+        name: 'Applications',
+        component: () => import('@/pages/user/ApplicationsPage.vue')
+    },
     // {
     //     path: '/manageMember',
     //     name: 'manageMember',

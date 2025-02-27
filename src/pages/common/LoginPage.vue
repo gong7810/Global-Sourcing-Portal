@@ -2,14 +2,17 @@
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import Button from 'primevue/button';
 
 const authStore = useAuthStore();
 const activeTab = ref('personal');
 
+const router = useRouter();
+
 // 개인회원 입력 필드
-const personalId = ref(''); // 정의
-const personalPassword = ref(''); // 정의
+const id = ref(''); // 정의
+const pw = ref(''); // 정의
 
 // 기업회원 입력 필드
 const businessId = ref('');
@@ -17,6 +20,19 @@ const businessPassword = ref('');
 
 const setActiveTab = (tab) => {
   activeTab.value = tab;
+};
+
+const login = () => {
+  // 로그인 검증을 비활성화하고 바로 페이지 이동
+  let targetPage;
+
+  if (activeTab.value === 'personal') {
+    targetPage = 'userIndex'; // 개인회원 페이지
+  } else if (activeTab.value === 'business') {
+    targetPage = 'businessIndex'; // 기업회원 페이지
+  }
+
+  router.push({ name: targetPage }); // 해당 메인 페이지로 이동
 };
 
 const { lineState } = storeToRefs(authStore);
@@ -64,14 +80,14 @@ const loginLine = () => {
       <div class="space-y-4 mb-6">
         <input
           v-if="activeTab === 'personal'"
-          v-model="personalId"
+          v-model="id"
           type="text"
           placeholder="아이디"
           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
         />
         <input
           v-if="activeTab === 'personal'"
-          v-model="personalPassword"
+          v-model="pw"
           type="password"
           placeholder="비밀번호"
           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
@@ -97,15 +113,15 @@ const loginLine = () => {
       </div>
 
       <!-- 로그인 버튼 -->
-      <Button class="w-full py-3 bt_btn primary">
+      <Button class="w-full py-3 bt_btn primary" @click="login">
         로그인
       </Button>
 
       <!-- 아이디/비밀번호 찾기, 회원가입 -->
       <div class="flex justify-center items-center gap-4 my-4 text-sm text-gray-500">
-        <button class="hover:text-[#8FA1FF] transition-colors">아이디찾기</button>
+        <router-link to="/find-id" class="hover:text-[#8FA1FF] transition-colors">아이디찾기</router-link>
         <div class="w-px h-4 bg-gray-300"></div>
-        <button class="hover:text-[#8FA1FF] transition-colors">비밀번호찾기</button>
+        <router-link to="/find-password" class="hover:text-[#8FA1FF] transition-colors">비밀번호찾기</router-link>
         <div class="w-px h-4 bg-gray-300"></div>
         <!-- <button class="hover:text-[#8FA1FF] transition-colors">회원가입</button> -->
         <router-link to="/personal/register" v-if="activeTab === 'personal'" class="hover:text-[#8FA1FF] transition-colors">회원가입</router-link>

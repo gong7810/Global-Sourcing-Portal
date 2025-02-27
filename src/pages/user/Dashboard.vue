@@ -1,16 +1,21 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue';
-import { useLayout } from '@/layout/composables/layout';
-import { ProductService } from '@/service/ProductService';
+import { onMounted, ref } from 'vue';
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
+import { useRouter } from 'vue-router';
 import Button from 'primevue/button';
 import Select from 'primevue/select';
+
+const router = useRouter();
 
 const selectedRegion = ref(null);
 const selectedJob = ref(null);
 const selectedCareer = ref(null);
 const selectedEducation = ref(null);
+
+const goToResume = () => {
+  router.push({ name: 'Resume' });
+};
 
 const regions = [
   { label: '서울', value: 'seoul' },
@@ -36,8 +41,6 @@ const education = [
   // 다른 비자들...
 ];
 
-const { getPrimary, getSurface, isDarkTheme } = useLayout();
-
 const authStore = useAuthStore();
 const { userInfo } = storeToRefs(authStore);
 
@@ -56,11 +59,11 @@ const formatCurrency = (value) => {
 
 <template>
   <!-- 전체 컨테이너에 최대 폭 제한과 중앙 정렬 적용 -->
-  <div class="max-w-[1200px] mx-auto px-4">
+  <div class="max-w-[1200px] mx-auto px-4 py-12">
     <div class="grid gap-4">
       <!-- 상단 메뉴 아이콘들 -->
       <div class="flex justify-center gap-32 mb-12">
-        <div class="flex flex-col items-center cursor-pointer group">
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push({ name: 'Resume' })">
           <div
             class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
           >
@@ -80,11 +83,9 @@ const formatCurrency = (value) => {
               <line x1="10" y1="9" x2="8" y2="9"></line>
             </svg>
           </div>
-          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
-            >이력서</span
-          >
+          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">이력서</span>
         </div>
-        <div class="flex flex-col items-center cursor-pointer group">
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push({ name: 'Applications' })">
           <div
             class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
           >
@@ -125,7 +126,7 @@ const formatCurrency = (value) => {
             >북마크</span
           >
         </div> -->
-        <div class="flex flex-col items-center cursor-pointer group">
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push({ name: 'UserPage' })">
           <div
             class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
           >

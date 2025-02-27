@@ -56,9 +56,24 @@ const router = createRouter({
       component: () => import('@/pages/common/BusinessRegisterPage.vue')
     },
     {
-      path: '/register/complete',
-      name: 'RegisterComplete',
+      path: '/user/register/complete',
+      name: 'userRegisterComplete',
       component: () => import('@/pages/user/RegisterComplete.vue')
+    },
+    {
+      path: '/business/register/complete',
+      name: 'businessRegisterComplete',
+      component: () => import('@/pages/business/RegisterComplete.vue')
+    },
+    {
+      path: '/find-id',
+      name: 'findId',
+      component: () => import('@/pages/common/FindIdPage.vue')
+    },
+    {
+      path: '/find-password',
+      name: 'findPassword',
+      component: () => import('@/pages/common/FindPasswordPage.vue')
     },
     // {
     //   path: '/landing',

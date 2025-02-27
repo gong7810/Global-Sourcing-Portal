@@ -5,8 +5,8 @@ import Button from 'primevue/button';
 import 'primeicons/primeicons.css'
 
 const router = useRouter();
-const userName = ref('홍길동');
-const userId = ref('hong123'); 
+const businessName = ref('PBNT');
+const businessId = ref('pbnt505'); 
 
 const goToLogin = () => {
   router.push({ name: 'login' }); // 로그인 페이지로 이동
@@ -18,9 +18,9 @@ const goToLogin = () => {
     <div class="content">
       <i class="pi pi-check check-icon"></i>
       <h1>회원가입 완료</h1>
-      <p>{{ userName }}({{ userId }})님의 회원가입이 성공적으로 완료되었습니다.</p>
+      <p>{{ businessName }}({{ businessId }})님의 회원가입이 성공적으로 완료되었습니다.</p>
       <p class="info">
-        * 회원가입 내역 확인 및 수정은 <span class="highlight">내 정보</span>에서 가능합니다.
+        * 회원가입 내역 확인 및 수정은 <span class="highlight">기업 정보</span>에서 가능합니다.
       </p>
       <Button @click="goToLogin" class="bt_btn primary">로그인 바로하기</Button>
     </div>
