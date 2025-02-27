@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, toRaw } from 'vue';
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
@@ -8,8 +8,11 @@ import Select from 'primevue/select';
 import DatePicker from 'primevue/datepicker';
 import InputText from 'primevue/inputtext';
 import Checkbox from 'primevue/checkbox';
+import { useMessagePop } from '@/plugins/commonutils';
 
 const router = useRouter();
+const messagePop = useMessagePop();
+
 const showNationalityModal = ref(false);
 const showPassportModal = ref(false);
 const showCareerModal = ref(false);
@@ -98,28 +101,29 @@ const sections = [
     title: '국가',
     placeholder: '국가를 입력해주세요',
     icon: 'pi pi-globe',
-    action: () => showNationalityModal.value = true
+    action: () => (showNationalityModal.value = true)
   },
   {
     title: '여권',
     placeholder: '여권 정보를 입력해주세요',
     icon: 'pi pi-id-card',
-    action: () => showPassportModal.value = true
+    action: () => (showPassportModal.value = true)
   },
   {
     title: '경력',
     placeholder: '회사명, 재직기간, 직무',
     icon: 'pi pi-briefcase',
-    action: () => showCareerModal.value = true
+    action: () => (showCareerModal.value = true)
   },
   {
     title: '학력',
     placeholder: '학교명, 재학기간, 전공, 학력',
     icon: 'pi pi-book',
-    action: () => showEducationModal.value = true
+    action: () => (showEducationModal.value = true)
   }
 ];
 
+// 경력리스트
 const careerList = ref([
   {
     companyName: '(주)비티포탈',
@@ -130,6 +134,7 @@ const careerList = ref([
   }
 ]);
 
+// 학력리스트
 const educationList = ref([
   {
     educationType: { name: '대학교(4년)', code: 'UNIVERSITY' },
@@ -141,6 +146,7 @@ const educationList = ref([
   }
 ]);
 
+// 학력종류
 const educationTypes = [
   { name: '고등학교', code: 'HIGH_SCHOOL' },
   { name: '대학교(2,3년)', code: 'COLLEGE' },
@@ -183,8 +189,33 @@ const closeCareerModal = () => {
   showCareerModal.value = false;
 };
 
+// 경력 추가 로직
 const saveCareerInfo = () => {
   // TODO: 저장 로직 구현
+
+  const allValuesExist = careerInfo.value.isCurrentJob
+    ? Object.entries(careerInfo.value).every(([key, value]) => key === 'endDate' || (value !== null && value !== ''))
+    : Object.values(careerInfo.value).every((value) => value !== null && value !== '');
+
+  if (!allValuesExist) {
+    // 값이 존재하지 않을 경우 처리 (예: 경고 메시지 출력)
+    messagePop.toast('모든 필드를 입력해야 합니다.', 'warn');
+    return; // 함수 종료
+  }
+
+  const insertCareer = {
+    companyName: careerInfo.value.companyName,
+    period: careerInfo.value.isCurrentJob
+      ? `${careerInfo.value.startDate.getFullYear()}.${(careerInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')}.${careerInfo.value.startDate.getDate().toString().padStart(2, '0')} - 재직중`
+      : `${careerInfo.value.startDate.getFullYear()}.${(careerInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')}.${careerInfo.value.startDate.getDate().toString().padStart(2, '0')} - 
+      ${careerInfo.value.endDate.getFullYear()}.${(careerInfo.value.endDate.getMonth() + 1).toString().padStart(2, '0')}.${careerInfo.value.endDate.getDate().toString().padStart(2, '0')}`,
+    jobTitle: careerInfo.value.jobTitle,
+    department: careerInfo.value.department,
+    responsibilities: careerInfo.value.responsibilities
+  };
+
+  careerList.value.push(insertCareer);
+
   showCareerModal.value = false;
 };
 
@@ -206,7 +237,7 @@ const companies = [
   { name: '(주)비티포탈', id: 1 },
   { name: '삼성전자', id: 2 },
   { name: '네이버', id: 3 },
-  { name: '카카오', id: 4 },
+  { name: '카카오', id: 4 }
 ];
 
 const visibilityOptions = [
@@ -232,8 +263,10 @@ const saveCompanySelection = () => {
   <!-- 전체 컨테이너에 최대 폭 제한과 중앙 정렬 적용 -->
   <div class="max-w-[1200px] mx-auto px-4 py-12">
     <div class="flex items-center gap-4 mb-8">
-      <i class="pi pi-angle-left text-4xl text-gray-600 cursor-pointer transition-colors hover:text-[#8FA1FF]"
-        @click="router.back()"></i>
+      <i
+        class="pi pi-angle-left text-4xl text-gray-600 cursor-pointer transition-colors hover:text-[#8FA1FF]"
+        @click="router.back()"
+      ></i>
       <h1 class="text-3xl font-bold">이력서</h1>
     </div>
 
@@ -244,26 +277,42 @@ const saveCompanySelection = () => {
           <h2 class="font-bold">이력서 공개 설정</h2>
           <div class="flex gap-4">
             <template v-for="option in visibilityOptions" :key="option.value">
-              <div @click="visibilityType = option.value"
+              <div
+                @click="visibilityType = option.value"
                 class="flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer transition-all"
-                :class="visibilityType === option.value ? 'bg-[#8FA1FF] bg-opacity-10 text-[#8FA1FF]' : 'text-gray-600 hover:bg-gray-100'">
+                :class="
+                  visibilityType === option.value
+                    ? 'bg-[#8FA1FF] bg-opacity-10 text-[#8FA1FF]'
+                    : 'text-gray-600 hover:bg-gray-100'
+                "
+              >
                 <i :class="option.icon"></i>
                 <span>{{ option.label }}</span>
               </div>
             </template>
           </div>
         </div>
-        <Button v-if="visibilityType === 'selective'" label="기업 선택" icon="pi pi-search" class="p-button-outlined"
-          @click="openCompanySelect" />
+        <Button
+          v-if="visibilityType === 'selective'"
+          label="기업 선택"
+          icon="pi pi-search"
+          class="p-button-outlined"
+          @click="openCompanySelect"
+        />
       </div>
       <!-- 선택된 기업 표시 영역 -->
       <div v-if="visibilityType === 'selective' && selectedCompanies.length > 0" class="mt-4">
         <div class="flex flex-wrap gap-2">
-          <div v-for="company in selectedCompanies" :key="company.id"
-            class="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full">
+          <div
+            v-for="company in selectedCompanies"
+            :key="company.id"
+            class="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full"
+          >
             <span class="text-sm">{{ company.name }}</span>
-            <button @click="selectedCompanies = selectedCompanies.filter(c => c.id !== company.id)"
-              class="text-gray-400 hover:text-gray-600">
+            <button
+              @click="selectedCompanies = selectedCompanies.filter((c) => c.id !== company.id)"
+              class="text-gray-400 hover:text-gray-600"
+            >
               <i class="pi pi-times"></i>
             </button>
           </div>
@@ -272,8 +321,10 @@ const saveCompanySelection = () => {
     </div>
 
     <!-- 기업 선택 모달 -->
-    <div v-if="showCompanySelectModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div
+      v-if="showCompanySelectModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
       <div class="bg-white rounded-lg w-[600px] max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center p-6 border-b">
           <h2 class="text-xl font-bold">공개할 기업 선택</h2>
@@ -284,15 +335,24 @@ const saveCompanySelection = () => {
 
         <div class="p-6">
           <div class="space-y-4">
-            <div v-for="company in companies" :key="company.id"
+            <div
+              v-for="company in companies"
+              :key="company.id"
               class="flex items-center justify-between p-4 border rounded-lg hover:border-[#8FA1FF] cursor-pointer"
-              @click="selectedCompanies = selectedCompanies.includes(company)
-                ? selectedCompanies.filter(c => c.id !== company.id)
-                : [...selectedCompanies, company]">
+              @click="
+                selectedCompanies = selectedCompanies.includes(company)
+                  ? selectedCompanies.filter((c) => c.id !== company.id)
+                  : [...selectedCompanies, company]
+              "
+            >
               <span>{{ company.name }}</span>
-              <i :class="selectedCompanies.some(c => c.id === company.id)
-                ? 'pi pi-check-circle text-[#8FA1FF]'
-                : 'pi pi-circle text-gray-300'"></i>
+              <i
+                :class="
+                  selectedCompanies.some((c) => c.id === company.id)
+                    ? 'pi pi-check-circle text-[#8FA1FF]'
+                    : 'pi pi-circle text-gray-300'
+                "
+              ></i>
             </div>
           </div>
         </div>
@@ -345,13 +405,19 @@ const saveCompanySelection = () => {
                 <i class="pi pi-globe text-gray-600"></i>
                 <h3 class="font-bold">국가</h3>
               </div>
-              <Button label="추가" icon="pi pi-plus" class="p-button-text p-button-sm"
-              @click="navigateToSection(sections[0])" />
+              <Button
+                label="추가"
+                icon="pi pi-plus"
+                class="p-button-text p-button-sm"
+                @click="navigateToSection(sections[0])"
+              />
             </div>
 
             <!-- 국가 정보 카드 -->
-            <div v-if="nationalityInfo.country"
-              class="border border-gray-200 rounded-lg p-4 hover:border-[#8FA1FF] transition-colors">
+            <div
+              v-if="nationalityInfo.country"
+              class="border border-gray-200 rounded-lg p-4 hover:border-[#8FA1FF] transition-colors"
+            >
               <div class="flex justify-between items-start">
                 <div>
                   <h4 class="font-medium text-lg">{{ nationalityInfo.country.name }}</h4>
@@ -376,14 +442,21 @@ const saveCompanySelection = () => {
                 <i class="pi pi-id-card text-gray-600"></i>
                 <h3 class="font-bold">여권</h3>
               </div>
-              <Button label="추가" icon="pi pi-plus" class="p-button-text p-button-sm"
-                @click="navigateToSection(sections[1])" />
+              <Button
+                label="추가"
+                icon="pi pi-plus"
+                class="p-button-text p-button-sm"
+                @click="navigateToSection(sections[1])"
+              />
             </div>
 
             <!-- 여권 정보 카드 -->
             <div class="space-y-4">
-              <div v-for="(passport, index) in passportList" :key="index"
-                class="border border-gray-200 rounded-lg p-4 hover:border-[#8FA1FF] transition-colors">
+              <div
+                v-for="(passport, index) in passportList"
+                :key="index"
+                class="border border-gray-200 rounded-lg p-4 hover:border-[#8FA1FF] transition-colors"
+              >
                 <div class="flex justify-between items-start">
                   <div>
                     <h4 class="font-medium text-lg">{{ passport.surname }} {{ passport.givenNames }}</h4>
@@ -412,14 +485,21 @@ const saveCompanySelection = () => {
                 <i class="pi pi-briefcase text-gray-600"></i>
                 <h3 class="font-bold">경력</h3>
               </div>
-              <Button label="추가" icon="pi pi-plus" class="p-button-text p-button-sm"
-                @click="navigateToSection(sections[2])" />
+              <Button
+                label="추가"
+                icon="pi pi-plus"
+                class="p-button-text p-button-sm"
+                @click="navigateToSection(sections[2])"
+              />
             </div>
 
             <!-- 경력 리스트 -->
             <div class="space-y-4">
-              <div v-for="(career, index) in careerList" :key="index"
-                class="border border-gray-200 rounded-lg p-4 hover:border-[#8FA1FF] transition-colors">
+              <div
+                v-for="(career, index) in careerList"
+                :key="index"
+                class="border border-gray-200 rounded-lg p-4 hover:border-[#8FA1FF] transition-colors"
+              >
                 <div class="flex justify-between items-start">
                   <div>
                     <h4 class="font-medium text-lg">{{ career.companyName }}</h4>
@@ -447,14 +527,21 @@ const saveCompanySelection = () => {
                 <i class="pi pi-book text-gray-600"></i>
                 <h3 class="font-bold">학력</h3>
               </div>
-              <Button label="추가" icon="pi pi-plus" class="p-button-text p-button-sm"
-                @click="navigateToSection(sections[3])" />
+              <Button
+                label="추가"
+                icon="pi pi-plus"
+                class="p-button-text p-button-sm"
+                @click="navigateToSection(sections[3])"
+              />
             </div>
 
             <!-- 학력 리스트 -->
             <div class="space-y-4">
-              <div v-for="(education, index) in educationList" :key="index"
-                class="border border-gray-200 rounded-lg p-4 hover:border-[#8FA1FF] transition-colors">
+              <div
+                v-for="(education, index) in educationList"
+                :key="index"
+                class="border border-gray-200 rounded-lg p-4 hover:border-[#8FA1FF] transition-colors"
+              >
                 <div class="flex justify-between items-start">
                   <div>
                     <h4 class="font-medium text-lg">{{ education.schoolName }}</h4>
@@ -497,11 +584,14 @@ const saveCompanySelection = () => {
       <div class="p-6 space-y-6">
         <!-- 국가 선택 -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            국적<span class="text-red-500">*</span>
-          </label>
-          <Select v-model="nationalityInfo.country" :options="countries" optionLabel="name" placeholder="국적 선택"
-            class="w-full" />
+          <label class="block text-sm font-medium text-gray-700"> 국적<span class="text-red-500">*</span> </label>
+          <Select
+            v-model="nationalityInfo.country"
+            :options="countries"
+            optionLabel="name"
+            placeholder="국적 선택"
+            class="w-full"
+          />
         </div>
       </div>
 
@@ -529,17 +619,13 @@ const saveCompanySelection = () => {
       <div class="p-6 space-y-6">
         <!-- 여권번호 -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            여권번호<span class="text-red-500">*</span>
-          </label>
+          <label class="block text-sm font-medium text-gray-700"> 여권번호<span class="text-red-500">*</span> </label>
           <InputText v-model="passportInfo.passportNumber" placeholder="여권번호 입력" class="w-full" />
         </div>
 
         <!-- 성 -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            성 (영문)<span class="text-red-500">*</span>
-          </label>
+          <label class="block text-sm font-medium text-gray-700"> 성 (영문)<span class="text-red-500">*</span> </label>
           <InputText v-model="passportInfo.surname" placeholder="영문 성 입력" class="w-full" />
         </div>
 
@@ -553,54 +639,67 @@ const saveCompanySelection = () => {
 
         <!-- 국적 -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            국적<span class="text-red-500">*</span>
-          </label>
-          <Select v-model="passportInfo.nationality" :options="countries" optionLabel="name" placeholder="국적 선택"
-            class="w-full" />
+          <label class="block text-sm font-medium text-gray-700"> 국적<span class="text-red-500">*</span> </label>
+          <Select
+            v-model="passportInfo.nationality"
+            :options="countries"
+            optionLabel="name"
+            placeholder="국적 선택"
+            class="w-full"
+          />
         </div>
 
         <!-- 생년월일 -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            생년월일<span class="text-red-500">*</span>
-          </label>
-          <DatePicker v-model="passportInfo.birthDate" dateFormat="yy.mm.dd" placeholder="YYYY.MM.DD" :showIcon="true"
-            class="w-full" />
+          <label class="block text-sm font-medium text-gray-700"> 생년월일<span class="text-red-500">*</span> </label>
+          <DatePicker
+            v-model="passportInfo.birthDate"
+            dateFormat="yy.mm.dd"
+            placeholder="YYYY.MM.DD"
+            :showIcon="true"
+            class="w-full"
+          />
         </div>
 
         <!-- 발급일 -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            발급일<span class="text-red-500">*</span>
-          </label>
-          <DatePicker v-model="passportInfo.issueDate" dateFormat="yy.mm.dd" placeholder="YYYY.MM.DD" :showIcon="true"
-            class="w-full" />
+          <label class="block text-sm font-medium text-gray-700"> 발급일<span class="text-red-500">*</span> </label>
+          <DatePicker
+            v-model="passportInfo.issueDate"
+            dateFormat="yy.mm.dd"
+            placeholder="YYYY.MM.DD"
+            :showIcon="true"
+            class="w-full"
+          />
         </div>
 
         <!-- 만료일 -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            만료일<span class="text-red-500">*</span>
-          </label>
-          <DatePicker v-model="passportInfo.expiryDate" dateFormat="yy.mm.dd" placeholder="YYYY.MM.DD" :showIcon="true"
-            class="w-full" />
+          <label class="block text-sm font-medium text-gray-700"> 만료일<span class="text-red-500">*</span> </label>
+          <DatePicker
+            v-model="passportInfo.expiryDate"
+            dateFormat="yy.mm.dd"
+            placeholder="YYYY.MM.DD"
+            :showIcon="true"
+            class="w-full"
+          />
         </div>
 
         <!-- 발급국가 -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            발급국가<span class="text-red-500">*</span>
-          </label>
-          <Select v-model="passportInfo.issuingCountry" :options="countries" optionLabel="name" placeholder="발급국가 선택"
-            class="w-full" />
+          <label class="block text-sm font-medium text-gray-700"> 발급국가<span class="text-red-500">*</span> </label>
+          <Select
+            v-model="passportInfo.issuingCountry"
+            :options="countries"
+            optionLabel="name"
+            placeholder="발급국가 선택"
+            class="w-full"
+          />
         </div>
 
         <!-- 출생지 -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            출생지<span class="text-red-500">*</span>
-          </label>
+          <label class="block text-sm font-medium text-gray-700"> 출생지<span class="text-red-500">*</span> </label>
           <InputText v-model="passportInfo.birthPlace" placeholder="출생지 입력" class="w-full" />
         </div>
       </div>
@@ -629,25 +728,32 @@ const saveCompanySelection = () => {
       <div class="p-6 space-y-6">
         <!-- 회사명 -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            회사명<span class="text-red-500">*</span>
-          </label>
+          <label class="block text-sm font-medium text-gray-700"> 회사명<span class="text-red-500">*</span> </label>
           <InputText v-model="careerInfo.companyName" placeholder="회사명 입력" class="w-full" />
         </div>
 
         <!-- 재직기간 -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            재직기간<span class="text-red-500">*</span>
-          </label>
+          <label class="block text-sm font-medium text-gray-700"> 재직기간<span class="text-red-500">*</span> </label>
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <DatePicker v-model="careerInfo.startDate" dateFormat="yy.mm.dd" placeholder="입사일" :showIcon="true"
-                class="w-full" />
+              <DatePicker
+                v-model="careerInfo.startDate"
+                dateFormat="yy.mm.dd"
+                placeholder="입사일"
+                :showIcon="true"
+                class="w-full"
+              />
             </div>
             <div>
-              <DatePicker v-model="careerInfo.endDate" dateFormat="yy.mm.dd" placeholder="퇴사일" :showIcon="true"
-                class="w-full" :disabled="careerInfo.isCurrentJob" />
+              <DatePicker
+                v-model="careerInfo.endDate"
+                dateFormat="yy.mm.dd"
+                placeholder="퇴사일"
+                :showIcon="true"
+                class="w-full"
+                :disabled="careerInfo.isCurrentJob"
+              />
             </div>
           </div>
           <div class="flex items-center gap-2 mt-2">
@@ -658,27 +764,25 @@ const saveCompanySelection = () => {
 
         <!-- 직무 -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            직무<span class="text-red-500">*</span>
-          </label>
+          <label class="block text-sm font-medium text-gray-700"> 직무<span class="text-red-500">*</span> </label>
           <InputText v-model="careerInfo.jobTitle" placeholder="직무 입력" class="w-full" />
         </div>
 
         <!-- 부서 -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            부서<span class="text-red-500">*</span>
-          </label>
+          <label class="block text-sm font-medium text-gray-700"> 부서<span class="text-red-500">*</span> </label>
           <InputText v-model="careerInfo.department" placeholder="부서명 입력" class="w-full" />
         </div>
 
         <!-- 담당업무 -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            담당업무<span class="text-red-500">*</span>
-          </label>
-          <textarea v-model="careerInfo.responsibilities" rows="4" placeholder="담당업무를 입력해주세요"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF] resize-none"></textarea>
+          <label class="block text-sm font-medium text-gray-700"> 담당업무<span class="text-red-500">*</span> </label>
+          <textarea
+            v-model="careerInfo.responsibilities"
+            rows="4"
+            placeholder="담당업무를 입력해주세요"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF] resize-none"
+          ></textarea>
         </div>
       </div>
 
@@ -706,42 +810,50 @@ const saveCompanySelection = () => {
       <div class="p-6 space-y-6">
         <!-- 학력 선택 -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            학력<span class="text-red-500">*</span>
-          </label>
-          <Select v-model="educationInfo.educationType" :options="educationTypes" optionLabel="name" placeholder="학력 선택"
-            class="w-full" />
+          <label class="block text-sm font-medium text-gray-700"> 학력<span class="text-red-500">*</span> </label>
+          <Select
+            v-model="educationInfo.educationType"
+            :options="educationTypes"
+            optionLabel="name"
+            placeholder="학력 선택"
+            class="w-full"
+          />
         </div>
 
         <!-- 학교명 -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            학교명<span class="text-red-500">*</span>
-          </label>
+          <label class="block text-sm font-medium text-gray-700"> 학교명<span class="text-red-500">*</span> </label>
           <InputText v-model="educationInfo.schoolName" placeholder="학교명 입력" class="w-full" />
         </div>
 
         <!-- 전공 -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            전공<span class="text-red-500">*</span>
-          </label>
+          <label class="block text-sm font-medium text-gray-700"> 전공<span class="text-red-500">*</span> </label>
           <InputText v-model="educationInfo.major" placeholder="전공 입력" class="w-full" />
         </div>
 
         <!-- 재학기간 -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            재학기간<span class="text-red-500">*</span>
-          </label>
+          <label class="block text-sm font-medium text-gray-700"> 재학기간<span class="text-red-500">*</span> </label>
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <DatePicker v-model="educationInfo.startDate" dateFormat="yy.mm.dd" placeholder="입학일" :showIcon="true"
-                class="w-full" />
+              <DatePicker
+                v-model="educationInfo.startDate"
+                dateFormat="yy.mm.dd"
+                placeholder="입학일"
+                :showIcon="true"
+                class="w-full"
+              />
             </div>
             <div>
-              <DatePicker v-model="educationInfo.endDate" dateFormat="yy.mm.dd" placeholder="졸업일" :showIcon="true"
-                class="w-full" :disabled="!educationInfo.isGraduated" />
+              <DatePicker
+                v-model="educationInfo.endDate"
+                dateFormat="yy.mm.dd"
+                placeholder="졸업일"
+                :showIcon="true"
+                class="w-full"
+                :disabled="!educationInfo.isGraduated"
+              />
             </div>
           </div>
           <div class="flex items-center gap-2 mt-2">
@@ -752,11 +864,13 @@ const saveCompanySelection = () => {
 
         <!-- 주요내용 -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">
-            주요내용
-          </label>
-          <textarea v-model="educationInfo.details" rows="4" placeholder="프로젝트, 교육내용, 졸업논문 등에 대해 적어주세요"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF] resize-none"></textarea>
+          <label class="block text-sm font-medium text-gray-700"> 주요내용 </label>
+          <textarea
+            v-model="educationInfo.details"
+            rows="4"
+            placeholder="프로젝트, 교육내용, 졸업논문 등에 대해 적어주세요"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF] resize-none"
+          ></textarea>
         </div>
       </div>
 
