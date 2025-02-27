@@ -6,6 +6,7 @@ import Button from 'primevue/button';
 
 const router = useRouter();
 const activeTab = ref(0);
+const showNotificationSettings = ref(false);
 
 const tabs = [
   { label: '전체', icon: 'pi pi-list' },
@@ -14,7 +15,14 @@ const tabs = [
   { label: '지원취소', icon: 'pi pi-times' }
 ];
 
-// 샘플 지원내역 데이터
+// 알림 설정
+const notificationSettings = ref({
+  deadline: true,  // 마감 3일 전 알림
+  status: true,    // 지원 상태 변경 알림
+  interview: true  // 면접 일정 알림
+});
+
+// 샘플 지원내역 데이터 (마감일 정보 추가)
 const applications = ref([
   {
     id: 1,
@@ -23,7 +31,9 @@ const applications = ref([
     location: '경남 진주시',
     salary: '3,500만원',
     applicationDate: '2024.03.15',
-    status: '미열람'
+    deadline: '2024.04.15',
+    status: '미열람',
+    daysUntilDeadline: 15
   },
   {
     id: 2,
@@ -32,7 +42,9 @@ const applications = ref([
     location: '서울 강남구',
     salary: '4,000만원',
     applicationDate: '2024.03.10',
-    status: '열람'
+    deadline: '2024.03.30',
+    status: '열람',
+    daysUntilDeadline: 3
   },
   {
     id: 3,
@@ -41,9 +53,26 @@ const applications = ref([
     location: '부산 해운대구',
     salary: '3,800만원',
     applicationDate: '2024.03.05',
-    status: '지원취소'
+    deadline: '2024.03.25',
+    status: '지원취소',
+    daysUntilDeadline: -2
   }
 ]);
+
+// 마감 임박한 지원 내역 필터링
+const upcomingDeadlines = computed(() => {
+  return applications.value.filter(app => 
+    app.daysUntilDeadline > 0 && 
+    app.daysUntilDeadline <= 3 && 
+    app.status !== '지원취소'
+  );
+});
+
+const saveNotificationSettings = () => {
+  // 알림 설정 저장 로직
+  showNotificationSettings.value = false;
+  // 실제 구현시에는 서버에 설정을 저장
+};
 
 const filteredApplications = computed(() => {
   switch (activeTab.value) {
@@ -65,10 +94,62 @@ const goToJobDetail = (applicationId) => {
 
 <template>
   <div class="max-w-[1200px] mx-auto px-4 py-12">
-    <div class="flex items-center gap-4 mb-8">
-      <i class="pi pi-angle-left text-4xl text-gray-600 cursor-pointer transition-colors hover:text-[#8FA1FF]" @click="router.back()"></i>
-      <h1 class="text-3xl font-bold">지원 내역</h1>
+    <div class="flex items-center justify-between mb-8">
+      <div class="flex items-center gap-4 mb-8">
+        <i class="pi pi-angle-left text-4xl text-gray-600 cursor-pointer transition-colors hover:text-[#8FA1FF]" @click="router.back()"></i>
+        <h1 class="text-3xl font-bold">지원 내역</h1>
+      </div>
+
+      <!-- 알림 설정 버튼 -->
+      <Button 
+          icon="pi pi-bell" 
+          class="p-button-rounded p-button-text notification-btn" 
+          @click="showNotificationSettings = true"
+        />
     </div>
+
+    <!-- 마감 임박 알림 -->
+    <div v-if="upcomingDeadlines.length > 0" class="mb-6">
+      <div class="bg-orange-50 border-l-4 border-orange-500 p-4 rounded-r-lg">
+        <div class="flex items-center">
+          <i class="pi pi-clock text-orange-500 mr-3 text-xl"></i>
+          <div>
+            <h3 class="font-medium text-orange-800">마감 임박한 지원 공고</h3>
+            <ul class="mt-2 space-y-1">
+              <li v-for="app in upcomingDeadlines" :key="app.id" class="text-orange-700">
+                {{ app.companyName }} - {{ app.position }} (마감까지 {{ app.daysUntilDeadline }}일)
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 알림 설정 다이얼로그 -->
+    <Dialog 
+      v-model:visible="showNotificationSettings"
+      header="알림 설정"
+      :modal="true"
+      :style="{ width: '400px' }"
+    >
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <span>마감 3일 전 알림</span>
+          <ToggleButton v-model="notificationSettings.deadline" />
+        </div>
+        <div class="flex items-center justify-between">
+          <span>지원 상태 변경 알림</span>
+          <ToggleButton v-model="notificationSettings.status" />
+        </div>
+        <div class="flex items-center justify-between">
+          <span>면접 일정 알림</span>
+          <ToggleButton v-model="notificationSettings.interview" />
+        </div>
+      </div>
+      <template #footer>
+        <Button label="저장" @click="saveNotificationSettings" class="p-button-primary" />
+      </template>
+    </Dialog>
 
     <!-- 탭 메뉴와 내용 -->
     <div class="bg-white rounded-lg p-6">
@@ -122,6 +203,42 @@ const goToJobDetail = (applicationId) => {
 </template>
 
 <style scoped>
+.notification-btn {
+  width: 48px;
+  height: 48px;
+}
+
+.notification-btn :deep(.p-button-icon) {
+  font-size: 1.5rem;  /* 아이콘 크기 증가 */
+  color: #8FA1FF;     /* 브랜드 컬러로 변경 */
+}
+
+.notification-btn:hover :deep(.p-button-icon) {
+  color: #7878F2;     /* 호버 시 색상 변경 */
+}
+
+/* 알림 버튼에 배지 효과 추가 */
+.notification-btn {
+  position: relative;
+}
+
+.notification-btn::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  background-color: #FF4B4B;
+  border-radius: 50%;
+  display: block;
+}
+
+/* 알림이 있을 때만 배지 표시 */
+.notification-btn.has-notification::after {
+  display: block;
+}
+
 .p-tabmenu .p-tabmenu-nav {
   border: none;
   background: transparent;
