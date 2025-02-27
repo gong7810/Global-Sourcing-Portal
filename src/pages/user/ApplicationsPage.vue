@@ -1,9 +1,8 @@
 <script setup>
 import { ref, computed } from 'vue';
-import AppTopbar from '@/layout/AppTopbar.vue';
+import { useRouter } from 'vue-router';
 import TabMenu from 'primevue/tabmenu';
 import Button from 'primevue/button';
-import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const activeTab = ref(0);
@@ -65,7 +64,6 @@ const goToJobDetail = (applicationId) => {
 </script>
 
 <template>
-  <AppTopbar />
   <div class="max-w-[1200px] mx-auto px-4 py-12">
     <div class="flex items-center gap-4 mb-8">
       <i class="pi pi-angle-left text-4xl text-gray-600 cursor-pointer transition-colors hover:text-[#8FA1FF]" @click="router.back()"></i>
@@ -121,7 +119,6 @@ const goToJobDetail = (applicationId) => {
       </div>
     </div>
   </div>
-  <AppFooter />
 </template>
 
 <style scoped>

@@ -4,8 +4,6 @@ import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
 import Button from 'primevue/button';
-import AppTopbar from '@/layout/AppTopbar.vue';
-import AppFooter from '@/layout/AppFooter.vue';
 import Select from 'primevue/select';
 import DatePicker from 'primevue/datepicker';
 import InputText from 'primevue/inputtext';
@@ -152,7 +150,7 @@ const educationTypes = [
 ];
 
 const goToEditInfo = () => {
-  router.push({ name: 'Profile' });
+  router.push({ name: 'UserPage' });
 };
 
 const navigateToSection = (section) => {
@@ -231,7 +229,6 @@ const saveCompanySelection = () => {
 </script>
 
 <template>
-  <AppTopbar />
   <!-- 전체 컨테이너에 최대 폭 제한과 중앙 정렬 적용 -->
   <div class="max-w-[1200px] mx-auto px-4 py-12">
     <div class="flex items-center gap-4 mb-8">
@@ -769,7 +766,6 @@ const saveCompanySelection = () => {
       </div>
     </div>
   </div>
-  <AppFooter />
 </template>
 
 <style scoped>

@@ -75,31 +75,6 @@ const router = createRouter({
       name: 'findPassword',
       component: () => import('@/pages/common/FindPasswordPage.vue')
     },
-    {
-      path: '/user/index',
-      name: 'userIndex',
-      component: () => import('@/pages/user/Dashboard.vue')
-    },
-    {
-      path: '/business/index',
-      name: 'businessIndex',
-      component: () => import('@/pages/business/Dashboard.vue')
-    },
-    {
-      path: '/user/resume',
-      name: 'Resume',
-      component: () => import('@/pages/user/ResumePage.vue')
-    },
-    {
-      path: '/user/profile',
-      name: 'Profile',
-      component: () => import('@/pages/user/Profile.vue')
-    },
-    {
-      path: '/user/applications',
-      name: 'Applications',
-      component: () => import('@/pages/user/ApplicationsPage.vue')
-    },
     // {
     //   path: '/landing',
     //   name: 'landing',
