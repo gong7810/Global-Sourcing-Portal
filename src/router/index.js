@@ -90,6 +90,11 @@ const router = createRouter({
       name: 'Resume',
       component: () => import('@/pages/user/ResumePage.vue')
     },
+    {
+      path: '/user/profile',
+      name: 'Profile',
+      component: () => import('@/pages/user/Profile.vue')
+    },
     // {
     //   path: '/landing',
     //   name: 'landing',
