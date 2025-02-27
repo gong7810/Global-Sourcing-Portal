@@ -3,7 +3,7 @@ import { onMounted, ref } from 'vue';
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
 import Button from 'primevue/button';
-import Dropdown from 'primevue/dropdown';
+import Select from 'primevue/select';
 import AppTopbar from '@/layout/AppTopbar.vue';
 import AppFooter from '@/layout/AppFooter.vue';
 import { useRouter } from 'vue-router';
@@ -154,10 +154,10 @@ const formatCurrency = (value) => {
 
       <!-- 필터 영역 -->
       <div class="flex gap-4 mb-6">
-        <Dropdown v-model="selectedRegion" :options="regions" optionLabel="label" placeholder="지역" class="w-1/4" />
-        <Dropdown v-model="selectedJob" :options="jobs" optionLabel="label" placeholder="직무" class="w-1/4" />
-        <Dropdown v-model="selectedCareer" :options="careers" optionLabel="label" placeholder="근무형태" class="w-1/4" />
-        <Dropdown v-model="selectedEducation" :options="education" optionLabel="label" placeholder="보유한 비자" class="w-1/4" />
+        <Select v-model="selectedRegion" :options="regions" optionLabel="label" placeholder="지역" class="w-1/4" />
+        <Select v-model="selectedJob" :options="jobs" optionLabel="label" placeholder="직무" class="w-1/4" />
+        <Select v-model="selectedCareer" :options="careers" optionLabel="label" placeholder="근무형태" class="w-1/4" />
+        <Select v-model="selectedEducation" :options="education" optionLabel="label" placeholder="보유한 비자" class="w-1/4" />
       </div>
 
       <!-- 채용공고 카드들 -->
@@ -269,7 +269,7 @@ const formatCurrency = (value) => {
   border: 1px solid #e5e7eb;
 }
 
-:deep(.p-dropdown) {
+:deep(.p-select) {
   border-color: #8b8bf5;
   border-radius: 8px;
   padding: 0.5rem;

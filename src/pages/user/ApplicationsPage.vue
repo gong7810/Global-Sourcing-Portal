@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue';
 import AppTopbar from '@/layout/AppTopbar.vue';
-import AppFooter from '@/layout/AppFooter.vue';
 import TabMenu from 'primevue/tabmenu';
 import Button from 'primevue/button';
 import { useRouter } from 'vue-router';
