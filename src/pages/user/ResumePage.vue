@@ -59,7 +59,7 @@ const educationInfo = ref({
 // 여권 정보 리스트 상태 추가
 const passportList = ref([
   {
-    passportNumber: 'M12345678',
+    passportNumber: 'M1234****',
     surname: 'CHOI',
     givenNames: 'YEJI',
     nationality: { name: '대한민국', code: 'KR' },
@@ -288,7 +288,7 @@ const formatCurrency = (value) => {
                 <div class="flex justify-between items-start">
                   <div>
                     <h4 class="font-medium text-lg">{{ passport.surname }} {{ passport.givenNames }}</h4>
-                    <p class="text-gray-600 mt-1">여권번호: {{ passport.passportNumber }}</p>
+                    <p class="text-gray-600 mt-1">여권번호: {{ passport.passportNumber.slice(0, 5) + '****' }}</p>
                     <p class="text-gray-600">국적: {{ passport.nationality.name }}</p>
                     <p class="text-gray-600">만료일: {{ passport.expiryDate }}</p>
                   </div>
@@ -670,7 +670,7 @@ const formatCurrency = (value) => {
 
   <!-- 푸터 추가 -->
   <div class="mt-12 border-t border-gray-200 bg-gray-50">
-    <div class="max-w-[1200px] mx-auto px-4 pt-6">
+    <div class="max-w-[1200px] mx-auto px-4 py-6">
       <div class="mb-6">
         <h2 class="text-lg font-bold mb-2">BTPOTAL</h2>
         <div class="text-gray-600 text-sm space-y-1">
