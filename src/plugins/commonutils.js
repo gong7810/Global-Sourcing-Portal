@@ -38,6 +38,7 @@ export const useMessagePop = () => {
         detail: detail,
         severity: severity,
         summary: summary,
+        group: group,
         life: life
       };
       globalProperties.$toast.add(param);
