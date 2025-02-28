@@ -32,7 +32,7 @@ const login = () => {
     targetPage = 'businessIndex'; // 기업회원 페이지
   }
 
-  router.push({ name: targetPage }); // 해당 메인 페이지로 이동
+  router.push({ name: targetPage }); // 해당 메인 페이지로 이동, ToDo: 라우터 수정하기
 };
 
 const { lineState } = storeToRefs(authStore);

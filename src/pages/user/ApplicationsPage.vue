@@ -87,7 +87,7 @@ const filteredApplications = computed(() => {
 });
 
 const goToJobDetail = (applicationId) => {
-  router.push({ name: 'JobDetail', params: { id: applicationId } });
+  router.push({ name: 'JobDetail', params: { id: applicationId } }); // ToDo: 라우터 수정하기
 };
 </script>
 
@@ -153,7 +153,7 @@ const goToJobDetail = (applicationId) => {
         <i class="pi pi-file-edit text-[#8FA1FF]" style="font-size: 4rem"></i>
         <h3 class="text-xl font-medium text-gray-900 mb-2 mt-4">아직 지원내역이 없습니다</h3>
         <p class="text-gray-600 mb-6">관심있는 공고에 지원해보세요!</p>
-        <Button label="채용공고 보러가기" icon="pi pi-search" class="p-button-outlined" @click="router.push({ name: 'Jobs' })" />
+        <Button label="채용공고 보러가기" icon="pi pi-search" class="p-button-outlined" @click="router.push('/')" />
       </div>
 
       <div v-else class="space-y-4">

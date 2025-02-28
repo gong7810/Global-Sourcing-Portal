@@ -9,7 +9,7 @@ const businessName = ref('PBNT');
 const businessId = ref('pbnt505'); 
 
 const goToLogin = () => {
-  router.push({ name: 'login' }); // 로그인 페이지로 이동
+  router.push('/login'); // 로그인 페이지로 이동
 };
 </script>
 

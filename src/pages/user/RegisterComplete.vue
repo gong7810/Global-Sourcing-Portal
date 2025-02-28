@@ -9,7 +9,7 @@ const userName = ref('홍길동');
 const userId = ref('hong123'); 
 
 const goToLogin = () => {
-  router.push({ name: 'login' }); // 로그인 페이지로 이동
+  router.push('/login'); // 로그인 페이지로 이동
 };
 </script>
 

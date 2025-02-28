@@ -127,7 +127,7 @@ onMounted(() => {
     <div class="grid gap-4">
       <!-- 상단 메뉴 아이콘들 -->
       <div class="flex justify-center gap-32 mb-12">
-        <div class="flex flex-col items-center cursor-pointer group" @click="router.push({ name: 'Resume' })">
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/resume')">
           <div
             class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
           >
@@ -151,7 +151,7 @@ onMounted(() => {
             >이력서</span
           >
         </div>
-        <div class="flex flex-col items-center cursor-pointer group" @click="router.push({ name: 'Applications' })">
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/applications')">
           <div
             class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
           >
@@ -192,7 +192,7 @@ onMounted(() => {
             >북마크</span
           >
         </div> -->
-        <div class="flex flex-col items-center cursor-pointer group" @click="router.push({ name: 'JobOffers' })">
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/job-offers')">
           <div class="relative w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
             <svg
               width="32"
@@ -214,7 +214,7 @@ onMounted(() => {
             채용제안
           </span>
         </div>
-        <div class="flex flex-col items-center cursor-pointer group" @click="router.push({ name: 'UserPage' })">
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/userPage')">
           <div
             class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
           >

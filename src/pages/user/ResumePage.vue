@@ -159,7 +159,7 @@ const educationTypes = [
 ];
 
 const goToEditInfo = () => {
-  router.push({ name: 'UserPage' });
+  router.push('/user/userPage');
 };
 
 const navigateToSection = (section) => {
