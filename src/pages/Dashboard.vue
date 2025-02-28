@@ -54,23 +54,23 @@ const filters = [
       { label: '계약직', value: 'contract' }
     ]
   },
-  {
-    type: 'visa',
-    title: '보유한 비자',
-    options: [
-      { label: '비자 없음', value: 'none' },
-      { label: '취업 비자', value: 'work' },
-      { label: '영주권', value: 'permanent' },
-      { label: '학생 비자', value: 'student' }
-    ]
-  }
+  // {
+  //   type: 'visa',
+  //   title: '보유한 비자',
+  //   options: [
+  //     { label: '비자 없음', value: 'none' },
+  //     { label: '취업 비자', value: 'work' },
+  //     { label: '영주권', value: 'permanent' },
+  //     { label: '학생 비자', value: 'student' }
+  //   ]
+  // }
 ];
 
 const selectedFilters = ref({
   region: [],
   job: [],
   career: [],
-  visa: []
+  // visa: []
 });
 
 const openFilterModal = (filterType) => {
