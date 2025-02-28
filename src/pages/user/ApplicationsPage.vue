@@ -19,7 +19,6 @@ const tabs = [
 const notificationSettings = ref({
   deadline: true,  // 마감 3일 전 알림
   status: true,    // 지원 상태 변경 알림
-  interview: true  // 면접 일정 알림
 });
 
 // 샘플 지원내역 데이터 (마감일 정보 추가)
@@ -139,10 +138,6 @@ const goToJobDetail = (applicationId) => {
         <div class="flex items-center justify-between">
           <span>지원 상태 변경 알림</span>
           <ToggleButton v-model="notificationSettings.status" />
-        </div>
-        <div class="flex items-center justify-between">
-          <span>면접 일정 알림</span>
-          <ToggleButton v-model="notificationSettings.interview" />
         </div>
       </div>
       <template #footer>
