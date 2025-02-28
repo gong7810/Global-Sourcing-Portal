@@ -303,9 +303,6 @@ const submitForm = () => {
           <InputText v-model="businessName" type="text" placeholder="회사명" class="w-full px-4 py-3" />
           <InputText v-model="ownerName" type="text" placeholder="대표자명" class="w-full px-4 py-3" />
           <InputText v-model="businessAddress" type="text" placeholder="회사주소" class="w-full px-4 py-3" />
-          <InputText v-model="businessName" type="text" placeholder="회사명" class="w-full px-4 py-3" />
-          <InputText v-model="ownerName" type="text" placeholder="대표자명" class="w-full px-4 py-3" />
-          <InputText v-model="businessAddress" type="text" placeholder="회사주소" class="w-full px-4 py-3" />
           <div class="mb-2">
             <InputText
               v-model="certificateIssueNo"
