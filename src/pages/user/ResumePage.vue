@@ -386,7 +386,7 @@ const saveResume = () => {
     >
       <div class="bg-white rounded-lg w-[600px] max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center p-6 border-b">
-          <h2 class="text-xl font-bold">공개할 기업 선택</h2>
+          <h2 class="text-xl font-bold">비공개할 기업 선택</h2>
           <button @click="closeCompanySelect" class="text-gray-400 hover:text-gray-600">
             <i class="pi pi-times text-xl"></i>
           </button>
