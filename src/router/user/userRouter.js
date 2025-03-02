@@ -28,7 +28,12 @@ export const userRouter = [
     path: '/user/job-offers',
     name: 'JobOffers',
     component: () => import('@/pages/user/JobOffersPage.vue')
-  }
+  },
+  {
+    path: '/business/businessPage',
+    name: 'BusinessPage',
+    component: () => import('@/pages/business/businessPage.vue')
+  },
   // {
   //     path: '/manageMember',
   //     name: 'manageMember',

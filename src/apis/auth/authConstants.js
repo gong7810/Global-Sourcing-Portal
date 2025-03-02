@@ -18,4 +18,5 @@ export const AUTH_EXCLUSIONS_ROUTER_NAME = [
   'UserPage',
   'Applications',
   'JobOffers',
+  'BusinessPage'
 ];

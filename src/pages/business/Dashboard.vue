@@ -2,19 +2,15 @@
 import { onMounted, ref } from 'vue';
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
+import { useRouter } from 'vue-router';
 import Button from 'primevue/button';
-import Dropdown from 'primevue/dropdown';
+import Select from 'primevue/select';
 
-const selectedRegion = ref(null);
+const router = useRouter();
+
 const selectedJob = ref(null);
 const selectedCareer = ref(null);
-const selectedEducation = ref(null);
-
-const regions = [
-  { label: '서울', value: 'seoul' },
-  { label: '부산', value: 'busan' },
-  // 다른 지역들...
-];
+const selectedNationality = ref(null);
 
 const jobs = [
   { label: '개발자', value: 'developer' },
@@ -24,14 +20,17 @@ const jobs = [
 
 const careers = [
   { label: '신입', value: 'entry' },
-  { label: '경력', value: 'experienced' },
-  // 다른 근무형태들...
+  { label: '1~3년', value: 'junior' },
+  { label: '4~7년', value: 'middle' },
+  { label: '8년 이상', value: 'senior' },
 ];
 
-const education = [
-  { label: '비자 없음', value: 'none' },
-  { label: '취업 비자', value: 'work' },
-  // 다른 비자들...
+const nationalities = [
+  { label: '대한민국', value: 'KR' },
+  { label: '일본', value: 'JP' },
+  { label: '중국', value: 'CN' },
+  { label: '베트남', value: 'VN' },
+  { label: '기타', value: 'OTHER' }
 ];
 
 const authStore = useAuthStore();
@@ -48,6 +47,23 @@ onMounted(() => {
 const formatCurrency = (value) => {
   return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 };
+
+// 구직자 목록 데이터
+const candidates = ref([
+  {
+    id: 1,
+    name: '홍길동',
+    career: '5년',
+    lastPosition: '프론트엔드 개발자',
+    skills: ['Vue.js', 'React', 'TypeScript'],
+    education: '서울대학교',
+    location: '서울',
+    status: '구직중',
+    lastUpdate: '2024-03-20',
+    isBookmarked: false
+  },
+  // ... 더 많은 구직자 데이터
+]);
 </script>
 
 <template>
@@ -56,10 +72,26 @@ const formatCurrency = (value) => {
     <div class="grid gap-4">
       <!-- 상단 메뉴 아이콘들 -->
       <div class="flex justify-center gap-32 mb-12">
-        <div class="flex flex-col items-center cursor-pointer group">
-          <div
-            class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
-          >
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/post-job')">
+          <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#8B8BF5"
+              stroke-width="2.5"
+              class="transition-all duration-200 group-hover:stroke-white"
+            >
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </div>
+          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">공고 등록</span>
+        </div>
+
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/job-posts')">
+          <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
             <svg
               width="32"
               height="32"
@@ -76,14 +108,11 @@ const formatCurrency = (value) => {
               <line x1="10" y1="9" x2="8" y2="9"></line>
             </svg>
           </div>
-          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
-            >이력서</span
-          >
+          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">공고 관리</span>
         </div>
-        <div class="flex flex-col items-center cursor-pointer group">
-          <div
-            class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
-          >
+        
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/applications')">
+          <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
             <svg
               width="32"
               height="32"
@@ -93,18 +122,17 @@ const formatCurrency = (value) => {
               stroke-width="2.5"
               class="transition-all duration-200 group-hover:stroke-white"
             >
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="12 6 12 12 16 14"></polyline>
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
             </svg>
           </div>
-          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
-            >지원내역</span
-          >
+          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">지원자 관리</span>
         </div>
-        <div v-if="bookmarkFlag" class="flex flex-col items-center cursor-pointer group">
-          <div
-            class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
-          >
+
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/talent-pool')">
+          <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
             <svg
               width="32"
               height="32"
@@ -117,14 +145,11 @@ const formatCurrency = (value) => {
               <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
             </svg>
           </div>
-          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
-            >북마크</span
-          >
+          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">북마크</span>
         </div>
-        <div class="flex flex-col items-center cursor-pointer group">
-          <div
-            class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
-          >
+
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/company-info')">
+          <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
             <svg
               width="32"
               height="32"
@@ -134,118 +159,63 @@ const formatCurrency = (value) => {
               stroke-width="2.5"
               class="transition-all duration-200 group-hover:stroke-white"
             >
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
             </svg>
           </div>
-          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
-            >내 정보</span
-          >
+          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">기업 정보</span>
         </div>
       </div>
 
       <!-- 필터 영역 -->
-      <div class="flex gap-4 mb-6">
-        <Dropdown v-model="selectedRegion" :options="regions" optionLabel="label" placeholder="지역" class="w-1/4" />
-        <Dropdown v-model="selectedJob" :options="jobs" optionLabel="label" placeholder="직무" class="w-1/4" />
-        <Dropdown v-model="selectedCareer" :options="careers" optionLabel="label" placeholder="근무형태" class="w-1/4" />
-        <Dropdown v-model="selectedEducation" :options="education" optionLabel="label" placeholder="보유한 비자" class="w-1/4" />
+      <div class="flex flex-wrap gap-4 mb-6">
+        <div class="flex-1 min-w-[200px]">
+          <Select v-model="selectedNationality" :options="nationalities" optionLabel="label" 
+            placeholder="국적" class="w-full" />
+        </div>
+        <div class="flex-1 min-w-[200px]">
+          <Select v-model="selectedCareer" :options="careers" optionLabel="label" 
+            placeholder="경력" class="w-full" />
+        </div>
+        <div class="flex-1 min-w-[200px]">
+          <Select v-model="selectedJob" :options="jobs" optionLabel="label" 
+            placeholder="직무" class="w-full" />
+        </div>
       </div>
 
-      <!-- 채용공고 카드들 -->
+      <!-- 구직자 카드 목록 -->
       <div class="space-y-4">
-        <!-- 첫 번째 채용공고 -->
-        <div
-          class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg hover:border-[#8B8BF5] cursor-pointer"
-        >
+        <div v-for="candidate in candidates" :key="candidate.id"
+          class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg hover:border-[#8B8BF5] cursor-pointer group">
           <div class="flex justify-between items-start">
-            <div>
+            <div class="flex-grow">
               <div class="flex items-center gap-2 mb-2">
-                <span class="font-bold">(주)코아시아</span>
-                <span class="text-[#8B8BF5]">D-49</span>
-                <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">정규직</span>
+                <span class="font-bold">{{ candidate.name }}</span>
+                <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">{{ candidate.career }}</span>
+                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">{{ candidate.status }}</span>
               </div>
-              <h3 class="text-xl font-bold mb-4">정보전략그룹(IT) 경력직 채용 공고</h3>
+              <h3 class="text-xl font-bold mb-4">{{ candidate.lastPosition }}</h3>
               <div class="flex gap-8 text-gray-600">
                 <span class="flex items-center gap-2">
-                  <i class="pi pi-briefcase"></i>
-                  IT개발·데이터
+                  <i class="pi pi-tag"></i>
+                  {{ candidate.skills.join(', ') }}
                 </span>
                 <span class="flex items-center gap-2">
-                  <i class="pi pi-map-marker"></i>
-                  경기 화성시
+                  <i class="pi pi-building"></i>
+                  {{ candidate.location }}
                 </span>
                 <span class="flex items-center gap-2">
-                  <i class="pi pi-users"></i>
-                  채용인원: 0명
+                  <i class="pi pi-money-bill"></i>
+                  {{ candidate.desiredSalary }}
                 </span>
               </div>
             </div>
-            <Button class="bt_btn primary">지원하기</Button>
-          </div>
-        </div>
-
-        <!-- 두 번째 채용공고 -->
-        <div
-          class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg hover:border-[#8B8BF5] cursor-pointer"
-        >
-          <div class="flex justify-between items-start">
-            <div>
-              <div class="flex items-center gap-2 mb-2">
-                <span class="font-bold">(주)삼성전자</span>
-                <span class="text-[#8B8BF5]">D-30</span>
-                <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">정규직</span>
-                <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">신입</span>
-              </div>
-              <h3 class="text-xl font-bold mb-4">소프트웨어 개발자 채용</h3>
-              <div class="flex gap-8 text-gray-600">
-                <span class="flex items-center gap-2">
-                  <i class="pi pi-briefcase"></i>
-                  웹 개발
-                </span>
-                <span class="flex items-center gap-2">
-                  <i class="pi pi-map-marker"></i>
-                  서울 서초구
-                </span>
-                <span class="flex items-center gap-2">
-                  <i class="pi pi-users"></i>
-                  채용인원: 5명
-                </span>
-              </div>
+            <div class="flex items-center gap-4">
+              <Button icon="pi pi-bookmark" class="p-button-rounded p-button-text"
+                :class="{ 'text-[#8B8BF5]': candidate.isBookmarked }"
+                @click="toggleBookmark(candidate)" />
+              <Button label="제안하기" class="bt_btn primary" />
             </div>
-            <Button class="bt_btn primary">지원하기</Button>
-          </div>
-        </div>
-
-        <!-- 세 번째 채용공고 -->
-        <div
-          class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg hover:border-[#8B8BF5] cursor-pointer"
-        >
-          <div class="flex justify-between items-start">
-            <div>
-              <div class="flex items-center gap-2 mb-2">
-                <span class="font-bold">(주)네이버</span>
-                <span class="text-[#8B8BF5]">D-15</span>
-                <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">정규직</span>
-                <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">경력</span>
-              </div>
-              <h3 class="text-xl font-bold mb-4">프론트엔드 개발자 모집</h3>
-              <div class="flex gap-8 text-gray-600">
-                <span class="flex items-center gap-2">
-                  <i class="pi pi-briefcase"></i>
-                  프론트엔드
-                </span>
-                <span class="flex items-center gap-2">
-                  <i class="pi pi-map-marker"></i>
-                  경기 성남시
-                </span>
-                <span class="flex items-center gap-2">
-                  <i class="pi pi-users"></i>
-                  채용인원: 3명
-                </span>
-              </div>
-            </div>
-            <Button class="bt_btn primary">지원하기</Button>
           </div>
         </div>
       </div>
@@ -260,14 +230,22 @@ const formatCurrency = (value) => {
   border: 1px solid #e5e7eb;
 }
 
-:deep(.p-dropdown) {
+:deep(.p-select) {
+  width: 100%;
+}
+
+:deep(.p-select-input) {
   border-color: #8b8bf5;
   border-radius: 8px;
   padding: 0.5rem;
 }
 
-:deep(.p-Button-outlined) {
-  padding: 0.75rem 1.5rem;
+/* Remove Dropdown specific styles */
+:deep(.p-dropdown),
+:deep(.p-dropdown-panel),
+:deep(.p-dropdown-items),
+:deep(.p-dropdown-item) {
+  display: none;
 }
 
 .group:hover {

@@ -121,6 +121,14 @@ const handleClickOutside = (event) => {
                   <i class="pi pi-chart-line text-[#8FA1FF]"></i>
                   <span class="font-medium">지원 현황</span>
                 </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50">
+                  <i class="pi pi-question-circle text-[#8FA1FF]"></i>
+                  <span class="font-medium">FAQ</span>
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50">
+                  <i class="pi pi-comments text-[#8FA1FF]"></i>
+                  <span class="font-medium">문의하기</span>
+                </a>
                 <!-- <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50">
                   <i class="pi pi-bookmark text-[#8FA1FF]"></i>
                   <span class="font-medium">스크랩</span>
