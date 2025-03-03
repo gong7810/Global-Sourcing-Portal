@@ -474,7 +474,7 @@ const saveResume = () => {
         ></i>
         <h1 class="text-3xl font-bold">이력서</h1>
       </div>
-      <Button class="bt_btn primary" label="저장" icon="pi pi-save" style="z-index: 0" @click="saveResume" />
+      <Button class="bt_btn primary" label="저장" icon="pi pi-save" @click="saveResume" />
     </div>
 
     <!-- 이력서 공개 설정 섹션 추가 -->
