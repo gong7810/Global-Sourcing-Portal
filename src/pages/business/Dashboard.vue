@@ -37,6 +37,11 @@ const { userInfo } = storeToRefs(authStore);
 
 const bookmarkFlag = ref(true);
 
+// 북마크 토글 함수 추가
+const toggleBookmark = (candidate) => {
+  candidate.isBookmarked = !candidate.isBookmarked;
+};
+
 onMounted(() => {
   if (userInfo.value?.type === 'user') {
     bookmarkFlag.value = false;
@@ -204,9 +209,10 @@ const candidates = ref([
               </div>
             </div>
             <div class="flex items-center gap-4">
-              <Button icon="pi pi-bookmark" class="p-button-rounded p-button-text"
+              <Button :icon="candidate.isBookmarked ? 'pi pi-bookmark-fill' : 'pi pi-bookmark'" 
+                class="p-button-rounded p-button-text"
                 :class="{ 'text-[#8B8BF5]': candidate.isBookmarked }"
-                @click="toggleBookmark(candidate)" />
+                @click.stop="toggleBookmark(candidate)" />
               <Button label="제안하기" class="bt_btn primary" />
             </div>
           </div>
