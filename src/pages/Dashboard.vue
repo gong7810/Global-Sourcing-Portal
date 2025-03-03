@@ -3,18 +3,22 @@ import { onMounted, ref } from 'vue';
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
+import { useUserStore } from '@/store/user/userStore';
 
 const router = useRouter();
 const authStore = useAuthStore();
+const userStore = useUserStore();
 const { userInfo } = storeToRefs(authStore);
+const { proposalCount } = storeToRefs(userStore);
 
 const showFilterModal = ref(false);
 const currentFilter = ref(null);
 const tempSelectedOptions = ref([]);
 
 const bookmarkFlag = ref(true);
+const proposalFlag = ref(false);
 
-const unreadOffers = ref(2);
+const unreadOffers = ref(proposalCount.value);
 
 const filters = [
   {
@@ -53,7 +57,7 @@ const filters = [
       { label: '인턴', value: 'intern' },
       { label: '계약직', value: 'contract' }
     ]
-  },
+  }
   // {
   //   type: 'visa',
   //   title: '보유한 비자',
@@ -69,7 +73,7 @@ const filters = [
 const selectedFilters = ref({
   region: [],
   job: [],
-  career: [],
+  career: []
   // visa: []
 });
 
@@ -113,6 +117,7 @@ const getFilterLabel = (filterType) => {
 onMounted(() => {
   if (userInfo.value?.type === 'user') {
     bookmarkFlag.value = false;
+    proposalFlag.value = true;
   }
 });
 
@@ -192,8 +197,14 @@ onMounted(() => {
             >북마크</span
           >
         </div> -->
-        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/job-offers')">
-          <div class="relative w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
+        <div
+          v-if="proposalFlag"
+          class="flex flex-col items-center cursor-pointer group"
+          @click="router.push('/user/job-offers')"
+        >
+          <div
+            class="relative w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
+          >
             <svg
               width="32"
               height="32"
@@ -206,7 +217,10 @@ onMounted(() => {
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
             </svg>
             <!-- 읽지 않은 제안이 있을 경우 표시되는 배지 -->
-            <div v-if="unreadOffers > 0" class="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center bg-red-500 text-white text-xs rounded-full">
+            <div
+              v-if="unreadOffers > 0"
+              class="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center bg-red-500 text-white text-xs rounded-full"
+            >
               {{ unreadOffers }}
             </div>
           </div>
