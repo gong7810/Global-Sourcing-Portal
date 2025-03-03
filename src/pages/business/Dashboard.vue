@@ -215,7 +215,7 @@ const candidates = ref([
                 @click.stop="toggleBookmark(candidate)" />
               <Button label="제안하기" 
                 class="bt_btn primary"
-                @click.stop="router.push(`/business/job-offer/${candidate.id}`)" />
+                @click.stop="router.push(`/business/job-offer/create/${candidate.id}`)" />
             </div>
           </div>
         </div>

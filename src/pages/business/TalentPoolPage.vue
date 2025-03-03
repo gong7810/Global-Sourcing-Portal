@@ -145,7 +145,7 @@ const removeBookmark = (candidate) => {
             <div class="flex items-center gap-4">
               <Button icon="pi pi-bookmark-fill" class="p-button-rounded p-button-text text-[#8B8BF5]"
                 @click="removeBookmark(candidate)" />
-              <Button label="제안하기" class="p-button-outlined" />
+              <Button label="제안하기" class="p-button-outlined" @click.stop="router.push(`/business/job-offer/create/${candidate.id}`)" />
             </div>
           </div>
         </div>

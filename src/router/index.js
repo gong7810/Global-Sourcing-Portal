@@ -2,7 +2,7 @@ import AppLayout from '@/layout/AppLayout.vue';
 import { authRouter } from './auth/authRouter';
 import { adminRouter } from '@/router/admin/adminRouter';
 import { commonRouter } from '@/router/common/commonRouter';
-import { ownerRouter } from '@/router/owner/ownerRouter';
+import { businessRouter } from '@/router/business/businessRouter';
 import { userRouter } from '@/router/user/userRouter';
 import { useAuthStore } from '@/store/auth/authStore';
 import { AUTH_EXCLUSIONS_ROUTER_NAME } from '@/apis/auth/authConstants';
@@ -28,7 +28,7 @@ const router = createRouter({
     {
       path: '/',
       component: AppLayout,
-      children: ownerRouter
+      children: businessRouter
     },
     {
       path: '/',
