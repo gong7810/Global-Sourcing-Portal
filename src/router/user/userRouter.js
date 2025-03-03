@@ -59,6 +59,11 @@ export const userRouter = [
     name: 'CompanyInfoPage',
     component: () => import('@/pages/business/CompanyInfoPage.vue')
   },
+  {
+    path: '/business/post-job/:id',
+    name: 'EditJobPage',
+    component: () => import('@/pages/business/PostJobPage.vue')
+  },
   // {
   //     path: '/manageMember',
   //     name: 'manageMember',

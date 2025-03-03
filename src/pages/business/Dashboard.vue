@@ -213,7 +213,9 @@ const candidates = ref([
                 class="p-button-rounded p-button-text"
                 :class="{ 'text-[#8B8BF5]': candidate.isBookmarked }"
                 @click.stop="toggleBookmark(candidate)" />
-              <Button label="제안하기" class="bt_btn primary" />
+              <Button label="제안하기" 
+                class="bt_btn primary"
+                @click.stop="router.push(`/business/job-offer/${candidate.id}`)" />
             </div>
           </div>
         </div>

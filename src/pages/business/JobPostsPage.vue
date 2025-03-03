@@ -54,6 +54,14 @@ const filteredJobPosts = computed(() => {
       return jobPosts.value;
   }
 });
+
+const closeJobPost = (postId) => {
+  const post = jobPosts.value.find(p => p.id === postId);
+  if (post) {
+    post.status = '마감';
+  }
+  // TODO: API 연동 시 서버에 상태 업데이트 요청
+};
 </script>
 
 <template>
@@ -122,10 +130,11 @@ const filteredJobPosts = computed(() => {
                 {{ post.status }}
               </span>
               <div class="flex gap-2">
-                <Button label="수정" class="p-button-outlined" />
+                <Button label="수정" class="p-button-outlined" @click="router.push(`/business/post-job/${post.id}`)" />
                 <Button v-if="post.status === '진행중'" 
                   label="마감" 
-                  class="p-button-outlined p-button-danger" />
+                  class="p-button-outlined p-button-danger"
+                  @click="closeJobPost(post.id)" />
               </div>
             </div>
           </div>
