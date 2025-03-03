@@ -15,7 +15,6 @@ const selectedNationality = ref(null);
 const jobs = [
   { label: '개발자', value: 'developer' },
   { label: '디자이너', value: 'designer' },
-  // 다른 직무들...
 ];
 
 const careers = [
@@ -38,6 +37,11 @@ const { userInfo } = storeToRefs(authStore);
 
 const bookmarkFlag = ref(true);
 
+// 북마크 토글 함수 추가
+const toggleBookmark = (candidate) => {
+  candidate.isBookmarked = !candidate.isBookmarked;
+};
+
 onMounted(() => {
   if (userInfo.value?.type === 'user') {
     bookmarkFlag.value = false;
@@ -57,12 +61,10 @@ const candidates = ref([
     lastPosition: '프론트엔드 개발자',
     skills: ['Vue.js', 'React', 'TypeScript'],
     education: '서울대학교',
-    location: '서울',
     status: '구직중',
     lastUpdate: '2024-03-20',
     isBookmarked: false
   },
-  // ... 더 많은 구직자 데이터
 ]);
 </script>
 
@@ -72,7 +74,7 @@ const candidates = ref([
     <div class="grid gap-4">
       <!-- 상단 메뉴 아이콘들 -->
       <div class="flex justify-center gap-32 mb-12">
-        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/post-job')">
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/postJobPage')">
           <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
             <svg
               width="32"
@@ -90,7 +92,7 @@ const candidates = ref([
           <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">공고 등록</span>
         </div>
 
-        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/job-posts')">
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/JobPostsPage')">
           <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
             <svg
               width="32"
@@ -111,7 +113,7 @@ const candidates = ref([
           <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">공고 관리</span>
         </div>
         
-        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/applications')">
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/CandidatesPage')">
           <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
             <svg
               width="32"
@@ -131,7 +133,7 @@ const candidates = ref([
           <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">지원자 관리</span>
         </div>
 
-        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/talent-pool')">
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/TalentPoolPage')">
           <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
             <svg
               width="32"
@@ -148,7 +150,7 @@ const candidates = ref([
           <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">북마크</span>
         </div>
 
-        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/company-info')">
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/CompanyInfoPage')">
           <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
             <svg
               width="32"
@@ -200,21 +202,20 @@ const candidates = ref([
                   <i class="pi pi-tag"></i>
                   {{ candidate.skills.join(', ') }}
                 </span>
-                <span class="flex items-center gap-2">
+                <!-- <span class="flex items-center gap-2">
                   <i class="pi pi-building"></i>
-                  {{ candidate.location }}
-                </span>
-                <span class="flex items-center gap-2">
-                  <i class="pi pi-money-bill"></i>
-                  {{ candidate.desiredSalary }}
-                </span>
+                  {{ candidate.education }}
+                </span> -->
               </div>
             </div>
             <div class="flex items-center gap-4">
-              <Button icon="pi pi-bookmark" class="p-button-rounded p-button-text"
+              <Button :icon="candidate.isBookmarked ? 'pi pi-bookmark-fill' : 'pi pi-bookmark'" 
+                class="p-button-rounded p-button-text"
                 :class="{ 'text-[#8B8BF5]': candidate.isBookmarked }"
-                @click="toggleBookmark(candidate)" />
-              <Button label="제안하기" class="bt_btn primary" />
+                @click.stop="toggleBookmark(candidate)" />
+              <Button label="제안하기" 
+                class="bt_btn primary"
+                @click.stop="router.push(`/business/job-offer/${candidate.id}`)" />
             </div>
           </div>
         </div>
