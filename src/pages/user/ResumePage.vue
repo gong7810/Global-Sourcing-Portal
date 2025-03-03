@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref, toRaw, watch } from 'vue';
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
@@ -9,9 +9,12 @@ import DatePicker from 'primevue/datepicker';
 import InputText from 'primevue/inputtext';
 import Checkbox from 'primevue/checkbox';
 import { useMessagePop } from '@/plugins/commonutils';
+import { random, randomInt } from 'es-toolkit/compat';
 
 const router = useRouter();
 const messagePop = useMessagePop();
+
+const searchCompanyName = ref('');
 
 const showNationalityModal = ref(false);
 const showPassportModal = ref(false);
@@ -19,12 +22,34 @@ const showCareerModal = ref(false);
 const showEducationModal = ref(false);
 
 const careerModifyIdx = ref(-1);
+const educationModifyIdx = ref(-1);
+
 const careerModifyFlag = ref(false);
+const educationModifyFlag = ref(false);
 
 // 이력서 공개 설정 관련 상태 추가
 const visibilityType = ref('private'); // 'public', 'private', 'selective'
 const selectedCompanies = ref([]);
 const showCompanySelectModal = ref(false);
+
+const filterdCompany = ref('');
+const filterdCompanyList = ref([]);
+
+// 기업 목록 (예시 데이터)
+// TODO: 추후 회원가입된 company테이블에서 직접 조회형식으로 수정필요
+// 검색 필터 형식
+const companies = ref([
+  { name: '(주)비티포탈', id: 1 },
+  { name: '삼성전자', id: 2 },
+  { name: '네이버', id: 3 },
+  { name: '카카오', id: 4 }
+]);
+
+const visibilityOptions = [
+  { label: '전체 공개', value: 'public', icon: 'pi pi-globe' },
+  { label: '비공개', value: 'private', icon: 'pi pi-lock' },
+  { label: '특정 기업 비공개', value: 'selective', icon: 'pi pi-users' }
+];
 
 // 국가/비자 정보 관련 상태
 const nationalityInfo = ref({
@@ -170,34 +195,81 @@ const navigateToSection = (section) => {
   }
 };
 
-const closeNationalityModal = () => {
-  showNationalityModal.value = false;
+// const closeNationalityModal = () => {
+//   showNationalityModal.value = false;
+// };
+
+// const saveNationalityInfo = () => {
+//   // TODO: 저장 로직 구현
+//   showNationalityModal.value = false;
+// };
+
+// const closePassportModal = () => {
+//   showPassportModal.value = false;
+// };
+
+// const savePassportInfo = () => {
+//   // TODO: 저장 로직 구현
+//   showPassportModal.value = false;
+// };
+
+// 기업 조회
+const searchCompany = () => {
+  // TODO: 기업조회 api호출
+  const body = {
+    companyName: searchCompanyName.value
+  };
+
+  const response = [
+    {
+      name: searchCompanyName.value,
+      id: randomInt(5, 10000)
+    }
+  ];
+
+  filterdCompanyList.value = response;
+
+  searchCompanyName.value = '';
 };
 
-const saveNationalityInfo = () => {
-  // TODO: 저장 로직 구현
-  showNationalityModal.value = false;
+// 하단 선택자에 추가
+const addCompany = () => {
+  if (filterdCompany.value && !companies.value.includes(filterdCompany.value)) {
+    companies.value.push(toRaw(filterdCompany.value));
+  }
 };
 
-const closePassportModal = () => {
-  showPassportModal.value = false;
-};
-
-const savePassportInfo = () => {
-  // TODO: 저장 로직 구현
-  showPassportModal.value = false;
+// 비공개할 기업 선택된
+const selectCompany = (company) => {
+  selectedCompanies.value = selectedCompanies.value.some((c) => c.id === company.id)
+    ? selectedCompanies.value.filter((c) => c.id !== company.id)
+    : [...selectedCompanies.value, company];
 };
 
 const closeCareerModal = () => {
   showCareerModal.value = false;
 };
 
+// 경력 모달창 감지
 watch(
   () => showCareerModal.value,
   () => {
     if (!showCareerModal.value) {
       careerModifyFlag.value = false;
       careerModifyIdx.value = -1;
+    }
+
+    // 경력 추가인 경우
+    if (!careerModifyFlag.value) {
+      careerInfo.value = {
+        companyName: '',
+        startDate: null,
+        endDate: null,
+        isCurrentJob: false,
+        jobTitle: '',
+        department: '',
+        responsibilities: ''
+      };
     }
   }
 );
@@ -220,8 +292,7 @@ const saveCareerInfo = () => {
     companyName: careerInfo.value.companyName,
     period: careerInfo.value.isCurrentJob
       ? `${careerInfo.value.startDate.getFullYear()}.${(careerInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')} - 재직중`
-      : `${careerInfo.value.startDate.getFullYear()}.${(careerInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')} -
-      ${careerInfo.value.endDate.getFullYear()}.${(careerInfo.value.endDate.getMonth() + 1).toString().padStart(2, '0')}`,
+      : `${careerInfo.value.startDate.getFullYear()}.${(careerInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')} - ${careerInfo.value.endDate.getFullYear()}.${(careerInfo.value.endDate.getMonth() + 1).toString().padStart(2, '0')}`,
     jobTitle: careerInfo.value.jobTitle,
     department: careerInfo.value.department,
     responsibilities: careerInfo.value.responsibilities
@@ -247,7 +318,7 @@ const deleteCareer = (index) => {
   });
 };
 
-// 경력 수정
+// 경력 수정 로직
 const modifyCareer = (index) => {
   careerModifyFlag.value = true;
   careerModifyIdx.value = index;
@@ -275,28 +346,105 @@ const closeEducationModal = () => {
   showEducationModal.value = false;
 };
 
+// 학력 모달창 감지
+watch(
+  () => showEducationModal.value,
+  () => {
+    if (!showEducationModal.value) {
+      educationModifyFlag.value = false;
+      educationModifyIdx.value = -1;
+    }
+
+    // 경력 추가인 경우
+    if (!educationModifyFlag.value) {
+      educationInfo.value = {
+        educationType: '',
+        schoolName: '',
+        major: '',
+        startDate: null,
+        endDate: null,
+        isGraduated: false,
+        details: ''
+      };
+    }
+  }
+);
+
+// 학력 추가 로직
 const saveEducationInfo = () => {
   // TODO: 저장 로직 구현
+
+  const allValuesExist = !educationInfo.value.isGraduated
+    ? Object.entries(educationInfo.value).every(([key, value]) => key === 'endDate' || (value !== null && value !== ''))
+    : Object.values(educationInfo.value).every((value) => value !== null && value !== '');
+
+  if (!allValuesExist) {
+    // 값이 존재하지 않을 경우 처리 (예: 경고 메시지 출력)
+    messagePop.toast('모든 필드를 입력해야 합니다.', 'warn');
+    return; // 함수 종료
+  }
+
+  const insertEdu = {
+    educationType: educationInfo.value.educationType,
+    schoolName: educationInfo.value.schoolName,
+    major: educationInfo.value.major,
+    period: !educationInfo.value.isGraduated
+      ? `${educationInfo.value.startDate.getFullYear()}.${(educationInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')} - 재학중`
+      : `${educationInfo.value.startDate.getFullYear()}.${(educationInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')} - ${educationInfo.value.endDate.getFullYear()}.${(educationInfo.value.endDate.getMonth() + 1).toString().padStart(2, '0')}`,
+    details: educationInfo.value.details
+  };
+
+  console.log(insertEdu);
+
+  if (educationModifyFlag.value) {
+    educationList.value[educationModifyIdx.value] = insertEdu;
+  } else {
+    educationList.value.push(insertEdu);
+  }
+
+  educationModifyFlag.value = false;
   showEducationModal.value = false;
+};
+
+//학력 수정 로직
+const modifyEducation = (index) => {
+  educationModifyFlag.value = true;
+  educationModifyIdx.value = index;
+
+  console.log(educationList.value[index]);
+
+  let startDate = educationList.value[index].period.split('-')[0];
+  let endDate = educationList.value[index].period.split('-')[1];
+
+  console.log(startDate);
+  console.log(endDate);
+
+  educationInfo.value = {
+    educationType: educationList.value[index].educationType,
+    schoolName: educationList.value[index].schoolName,
+    major: educationList.value[index].major,
+    startDate: new Date(startDate),
+    endDate: endDate.trim() !== '재학중' ? new Date(endDate.trim()) : null,
+    isGraduated: endDate.trim() !== '재학중' ? true : false,
+    details: educationList.value[index].details
+  };
+
+  showEducationModal.value = true;
+};
+
+// 학력 삭제 로직
+const deleteEducation = (index) => {
+  messagePop.confirm({
+    message: '해당 학력을 삭제하시겠습니까?',
+    onCloseYes: () => {
+      educationList.value.splice(index, 1);
+    }
+  });
 };
 
 const formatCurrency = (value) => {
   return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 };
-
-// 기업 목록 (예시 데이터)
-const companies = [
-  { name: '(주)비티포탈', id: 1 },
-  { name: '삼성전자', id: 2 },
-  { name: '네이버', id: 3 },
-  { name: '카카오', id: 4 }
-];
-
-const visibilityOptions = [
-  { label: '전체 공개', value: 'public', icon: 'pi pi-globe' },
-  { label: '비공개', value: 'private', icon: 'pi pi-lock' },
-  { label: '특정 기업 비공개', value: 'selective', icon: 'pi pi-users' }
-];
 
 const openCompanySelect = () => {
   showCompanySelectModal.value = true;
@@ -311,7 +459,7 @@ const saveCompanySelection = () => {
 };
 
 const saveResume = () => {
-  // TODO: 저장 로직 구현
+  // TODO: 추가된 경력, 학력 사항들 저장 로직 구현
 };
 </script>
 
@@ -326,7 +474,7 @@ const saveResume = () => {
         ></i>
         <h1 class="text-3xl font-bold">이력서</h1>
       </div>
-      <Button label="저장" icon="pi pi-save" class="p-button-primary" @click="saveResume" />
+      <Button class="bt_btn primary" label="저장" icon="pi pi-save" style="z-index: 0" @click="saveResume" />
     </div>
 
     <!-- 이력서 공개 설정 섹션 추가 -->
@@ -353,9 +501,9 @@ const saveResume = () => {
         </div>
         <Button
           v-if="visibilityType === 'selective'"
+          class="bt_btn primary outlined"
           label="기업 선택"
           icon="pi pi-search"
-          class="p-button-outlined"
           @click="openCompanySelect"
         />
       </div>
@@ -384,7 +532,7 @@ const saveResume = () => {
       v-if="showCompanySelectModal"
       class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
     >
-      <div class="bg-white rounded-lg w-[600px] max-h-[90vh] overflow-y-auto">
+      <div class="bg-white rounded-lg w-[600px] max-h-[90vh]">
         <div class="flex justify-between items-center p-6 border-b">
           <h2 class="text-xl font-bold">비공개할 기업 선택</h2>
           <button @click="closeCompanySelect" class="text-gray-400 hover:text-gray-600">
@@ -393,16 +541,32 @@ const saveResume = () => {
         </div>
 
         <div class="p-6">
-          <div class="space-y-4">
+          <div class="mb-4">
+            <IconField>
+              <InputIcon class="pi pi-search" />
+              <InputText v-model="searchCompanyName" class="w-full" placeholder="Search" @keyup.enter="searchCompany" />
+            </IconField>
+          </div>
+
+          <Listbox
+            v-if="filterdCompanyList.length"
+            v-model="filterdCompany"
+            class="w-full"
+            listStyle="max-height:150px"
+            :options="filterdCompanyList"
+            optionLabel="name"
+            checkmark
+            @change="addCompany"
+          />
+
+          <Divider />
+
+          <div class="space-y-4 max-h-[50vh] overflow-y-auto">
             <div
               v-for="company in companies"
               :key="company.id"
               class="flex items-center justify-between p-4 border rounded-lg hover:border-[#8FA1FF] cursor-pointer"
-              @click="
-                selectedCompanies = selectedCompanies.includes(company)
-                  ? selectedCompanies.filter((c) => c.id !== company.id)
-                  : [...selectedCompanies, company]
-              "
+              @click="selectCompany(company)"
             >
               <span>{{ company.name }}</span>
               <i
@@ -582,10 +746,10 @@ const saveResume = () => {
                     <p v-if="education.details" class="text-gray-600 mt-2">{{ education.details }}</p>
                   </div>
                   <div class="flex gap-2">
-                    <button class="text-gray-400 hover:text-gray-600">
+                    <button class="text-gray-400 hover:text-gray-600" @click="modifyEducation(index)">
                       <i class="pi pi-pencil"></i>
                     </button>
-                    <button class="text-gray-400 hover:text-gray-600">
+                    <button class="text-gray-400 hover:text-gray-600" @click="deleteEducation(index)">
                       <i class="pi pi-trash"></i>
                     </button>
                   </div>
@@ -728,7 +892,8 @@ const saveResume = () => {
             <div>
               <DatePicker
                 v-model="educationInfo.startDate"
-                dateFormat="yy.mm.dd"
+                dateFormat="yy.mm"
+                view="month"
                 placeholder="입학일"
                 :showIcon="true"
                 class="w-full"
@@ -737,7 +902,8 @@ const saveResume = () => {
             <div>
               <DatePicker
                 v-model="educationInfo.endDate"
-                dateFormat="yy.mm.dd"
+                dateFormat="yy.mm"
+                view="month"
                 placeholder="졸업일"
                 :showIcon="true"
                 class="w-full"

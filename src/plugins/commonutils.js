@@ -7,8 +7,6 @@ let globalProperties;
 export default {
   install: (app, options) => {
     globalProperties = app.config.globalProperties;
-
-    console.log(globalProperties);
   }
 };
 
