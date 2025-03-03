@@ -34,6 +34,16 @@ export const userRouter = [
     name: 'BusinessPage',
     component: () => import('@/pages/business/businessPage.vue')
   },
+  {
+    path: '/business/postJobPage',
+    name: 'PostJobPage',
+    component: () => import('@/pages/business/PostJobPage.vue')
+  },
+  {
+    path: '/business/JobPostsPage',
+    name: 'JobPostsPage',
+    component: () => import('@/pages/business/JobPostsPage.vue')
+  },
   // {
   //     path: '/manageMember',
   //     name: 'manageMember',

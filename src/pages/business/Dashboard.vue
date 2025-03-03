@@ -72,7 +72,7 @@ const candidates = ref([
     <div class="grid gap-4">
       <!-- 상단 메뉴 아이콘들 -->
       <div class="flex justify-center gap-32 mb-12">
-        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/post-job')">
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/postJobPage')">
           <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
             <svg
               width="32"
@@ -90,7 +90,7 @@ const candidates = ref([
           <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">공고 등록</span>
         </div>
 
-        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/job-posts')">
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/JobPostsPage')">
           <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
             <svg
               width="32"
@@ -203,10 +203,6 @@ const candidates = ref([
                 <span class="flex items-center gap-2">
                   <i class="pi pi-building"></i>
                   {{ candidate.location }}
-                </span>
-                <span class="flex items-center gap-2">
-                  <i class="pi pi-money-bill"></i>
-                  {{ candidate.desiredSalary }}
                 </span>
               </div>
             </div>
