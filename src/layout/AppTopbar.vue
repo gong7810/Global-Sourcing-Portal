@@ -105,7 +105,7 @@ const handleClickOutside = (event) => {
             <!-- 메뉴 드롭다운 -->
             <div
               v-if="isMenuOpen"
-              class="absolute right-0 top-[3.8rem] w-56 bg-white rounded-xl shadow-lg border border-gray-100"
+              class="absolute right-0 top-[3.8rem] w-56 bg-white rounded-xl shadow-lg border border-gray-100 z-100"
             >
               <!-- 메뉴 열림 상태에 따라 표시 -->
               <div class="py-2">
