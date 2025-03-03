@@ -1,4 +1,5 @@
 import AppLayout from '@/layout/AppLayout.vue';
+import { authRouter } from './auth/authRouter';
 import { adminRouter } from '@/router/admin/adminRouter';
 import { commonRouter } from '@/router/common/commonRouter';
 import { ownerRouter } from '@/router/owner/ownerRouter';
@@ -10,6 +11,10 @@ import { createRouter, createWebHistory } from 'vue-router';
 const router = createRouter({
   history: createWebHistory(),
   routes: [
+    {
+      path: '/',
+      children: authRouter
+    },
     {
       path: '/',
       component: AppLayout,
@@ -29,52 +34,7 @@ const router = createRouter({
       path: '/',
       component: AppLayout,
       children: userRouter
-    },
-    {
-      path: '/login',
-      name: 'login',
-      component: () => import('@/pages/common/LoginPage.vue')
-    },
-    {
-      path: '/auth/login/google',
-      name: 'loginGoogleResult',
-      component: () => import('@/pages/common/LoginGoogleBridgePage.vue')
-    },
-    {
-      path: '/auth/login/line',
-      name: 'loginLineResult',
-      component: () => import('@/pages/common/LoginLineBridgePage.vue')
-    },
-    {
-      path: '/personal/register',
-      name: 'personalRegister',
-      component: () => import('@/pages/common/PersonalRegisterPage.vue')
-    },
-    {
-      path: '/business/register',
-      name: 'businessRegister',
-      component: () => import('@/pages/common/BusinessRegisterPage.vue')
-    },
-    {
-      path: '/user/register/complete',
-      name: 'userRegisterComplete',
-      component: () => import('@/pages/user/RegisterComplete.vue')
-    },
-    {
-      path: '/business/register/complete',
-      name: 'businessRegisterComplete',
-      component: () => import('@/pages/business/RegisterComplete.vue')
-    },
-    {
-      path: '/find-id',
-      name: 'findId',
-      component: () => import('@/pages/common/FindIdPage.vue')
-    },
-    {
-      path: '/find-password',
-      name: 'findPassword',
-      component: () => import('@/pages/common/FindPasswordPage.vue')
-    },
+    }
     // {
     //   path: '/landing',
     //   name: 'landing',
