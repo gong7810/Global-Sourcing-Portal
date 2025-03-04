@@ -51,22 +51,29 @@ const visibilityOptions = [
   { label: '특정 기업 비공개', value: 'selective', icon: 'pi pi-users' }
 ];
 
-// 국가/비자 정보 관련 상태
-const nationalityInfo = ref({
-  country: { name: '대한민국', code: 'KR' }
+const basicInfo = ref({
+  name: '최예지',
+  birthDate: '1996.09.01',
+  gender: '여성',
+  email: 'ye****@naver.com',
+  phone: '010-****-7496',
+  address: '윙스타워 505호'
 });
+
+// 국가/비자 정보 관련 상태
+const nationalityInfo = ref('대한민국');
 
 // 여권 정보 관련 상태
 const passportInfo = ref({
-  passportNumber: '',
-  surname: '',
-  givenNames: '',
-  nationality: '',
-  birthDate: null,
-  issueDate: null,
-  expiryDate: null,
-  issuingCountry: '',
-  birthPlace: ''
+  passportNumber: 'M1234****',
+  surname: 'CHOI',
+  givenNames: 'YEJI',
+  nationality: '대한민국',
+  birthDate: '1996-09-01',
+  issueDate: '2020-01-01',
+  expiryDate: '2030-01-01',
+  issuingCountry: '대한민국',
+  birthPlace: 'SEOUL'
 });
 
 // 경력 정보 관련 상태
@@ -91,21 +98,6 @@ const educationInfo = ref({
   details: ''
 });
 
-// 여권 정보 리스트 상태 추가
-const passportList = ref([
-  {
-    passportNumber: 'M1234****',
-    surname: 'CHOI',
-    givenNames: 'YEJI',
-    nationality: { name: '대한민국', code: 'KR' },
-    birthDate: '1996-09-01',
-    issueDate: '2020-01-01',
-    expiryDate: '2030-01-01',
-    issuingCountry: { name: '대한민국', code: 'KR' },
-    birthPlace: 'SEOUL'
-  }
-]);
-
 const countries = [
   { name: '대한민국', code: 'KR' },
   { name: '일본', code: 'JP' },
@@ -114,15 +106,6 @@ const countries = [
   { name: '베트남', code: 'VN' },
   { name: '필리핀', code: 'PH' }
 ];
-
-const basicInfo = ref({
-  name: '최예지',
-  birthDate: '1996.09.01',
-  gender: '여성',
-  email: 'ye****@naver.com',
-  phone: '010-****-7496',
-  address: '윙스타워 505호'
-});
 
 const sections = [
   {
@@ -193,6 +176,21 @@ const navigateToSection = (section) => {
   } else if (section.route) {
     router.push(section.route);
   }
+};
+
+onMounted(() => {
+  getResume();
+});
+
+// TODO: 이력서 정보 조회, 세팅
+const getResume = async () => {
+  // const response = await getResumeData();
+  //
+  // basicInfo.value = response?.basicInfo;
+  // nationalityInfo.value = response?.country;
+  // passportInfo.value = response?.passportInfo;
+  // careerList.value = response?.careerInfoList;
+  // educationList.value = response?.educationInfoList
 };
 
 // const closeNationalityModal = () => {
@@ -632,12 +630,12 @@ const saveResume = () => {
 
             <!-- 국가 정보 카드 -->
             <div
-              v-if="nationalityInfo.country"
+              v-if="nationalityInfo"
               class="border border-gray-200 rounded-lg p-4 hover:border-[#8FA1FF] transition-colors"
             >
               <div class="flex justify-between items-start">
                 <div>
-                  <h4 class="font-medium text-lg">{{ nationalityInfo.country.name }}</h4>
+                  <h4 class="font-medium text-lg">{{ nationalityInfo }}</h4>
                 </div>
               </div>
             </div>
@@ -655,22 +653,18 @@ const saveResume = () => {
 
             <!-- 여권 정보 카드 -->
             <div class="space-y-4">
-              <div
-                v-for="(passport, index) in passportList"
-                :key="index"
-                class="border border-gray-200 rounded-lg p-4 hover:border-[#8FA1FF] transition-colors"
-              >
+              <div class="border border-gray-200 rounded-lg p-4 hover:border-[#8FA1FF] transition-colors">
                 <div class="flex justify-between items-start">
                   <div>
-                    <h4 class="font-medium text-lg">{{ passport.surname }} {{ passport.givenNames }}</h4>
-                    <p class="text-gray-600 mt-1">여권번호: {{ passport.passportNumber.slice(0, 5) + '****' }}</p>
-                    <p class="text-gray-600">국적: {{ passport.nationality.name }}</p>
-                    <p class="text-gray-600">만료일: {{ passport.expiryDate }}</p>
+                    <h4 class="font-medium text-lg">{{ passportInfo.surname }} {{ passportInfo.givenNames }}</h4>
+                    <p class="text-gray-600 mt-1">여권번호: {{ passportInfo.passportNumber.slice(0, 5) + '****' }}</p>
+                    <p class="text-gray-600">국적: {{ passportInfo.nationality }}</p>
+                    <p class="text-gray-600">만료일: {{ passportInfo.expiryDate }}</p>
                   </div>
                 </div>
               </div>
             </div>
-            <p v-if="!passportList.length" class="text-gray-500 mt-2">여권 정보를 입력해주세요</p>
+            <p v-if="!passportInfo" class="text-gray-500 mt-2">여권 정보를 입력해주세요</p>
           </div>
 
           <!-- 경력 섹션 -->
