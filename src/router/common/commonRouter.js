@@ -94,5 +94,15 @@ export const commonRouter = [
     path: '/documentation',
     name: 'documentation',
     component: () => import('@/pages/tests/Documentation.vue')
+  },
+  {
+    path: '/faq',
+    name: 'FaqPage',
+    component: () => import('@/pages/common/FaqPage.vue')
+  },
+  {
+    path: '/inquiry',
+    name: 'InquiryPage',
+    component: () => import('@/pages/common/InquiryPage.vue')
   }
 ];
