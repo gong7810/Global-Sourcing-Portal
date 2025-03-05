@@ -25,7 +25,6 @@ export const AUTH_EXCLUSIONS_ROUTER_NAME = [
   'CandidatesPage',
   'TalentPoolPage',
   'CompanyInfoPage',
-  'JobOfferPage',
   'CreateJobOfferPage',
   'FaqPage',
   'InquiryPage'

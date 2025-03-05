@@ -90,8 +90,8 @@ const offers = ref([
     candidate: {
       name: '홍길동',
       career: '5년',
-      lastPosition: '프론트엔드 개발자',
-      skills: ['Vue.js', 'React', 'TypeScript']
+      job: '기획·전략',
+      nationality: '대한민국'
     },
     jobPosting: {
       title: '시니어 프론트엔드 개발자'
@@ -106,8 +106,8 @@ const offers = ref([
     candidate: {
       name: '김철수',
       career: '3년',
-      lastPosition: '백엔드 개발자',
-      skills: ['Java', 'Spring', 'MySQL']
+      job: 'IT개발·데이터',
+      nationality: '대한민국'
     },
     jobPosting: {
       title: '백엔드 개발자'
@@ -153,25 +153,19 @@ const applications = ref([
     id: 1,
     name: '홍길동',
     status: '서류검토',
-    position: '프론트엔드 개발자 (React/Vue)',
-    applyDate: '2024-03-20',
-    career: '경력 5년',
-    education: '서울대학교 컴퓨터공학과',
-    skills: ['React', 'Vue.js', 'TypeScript'],
-    lastCompany: '(주)카카오',
-    lastPosition: '프론트엔드 개발자'
+    job: '기획·전략',
+    career: '5년',
+    nationality: '대한민국',
+    applyDate: '2024-03-20'
   },
   {
     id: 2,
     name: '김철수',
     status: '면접대기',
-    position: '프론트엔드 개발자 (React/Vue)',
-    applyDate: '2024-03-19',
-    career: '경력 3년',
-    education: '연세대학교 소프트웨어학과',
-    skills: ['JavaScript', 'Vue.js', 'Node.js'],
-    lastCompany: '(주)네이버',
-    lastPosition: '웹 개발자'
+    job: 'IT개발·데이터',
+    career: '3년',
+    nationality: '대한민국',
+    applyDate: '2024-03-19'
   }
 ]);
 
@@ -223,44 +217,39 @@ const filteredOffers = computed(() => {
 
       <div v-else class="space-y-4">
         <div v-for="application in filteredApplications" :key="application.id"
-          class="border-b border-gray-200 last:border-0 py-6 hover:bg-gray-50 transition-all px-4 rounded-lg">
+          class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg">
           <div class="flex justify-between items-start">
-            <div>
-              <div class="flex items-center gap-4 mb-2">
-                <h3 class="font-medium text-lg">{{ application.name }}</h3>
+            <div class="flex-grow">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="font-bold">{{ application.name }}</span>
+                <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">
+                  {{ application.career }}
+                </span>
                 <span :class="{
                   'bg-blue-100 text-blue-700': application.status === APPLICATION_STATUS.REVIEW,
                   'bg-yellow-100 text-yellow-700': application.status === APPLICATION_STATUS.INTERVIEW,
                   'bg-green-100 text-green-700': application.status === APPLICATION_STATUS.ACCEPTED,
                   'bg-red-100 text-red-700': application.status === APPLICATION_STATUS.REJECTED
-                }" class="px-3 py-1 rounded-full text-sm font-medium">
+                }" class="px-3 py-1 rounded-full text-sm">
                   {{ application.status }}
                 </span>
               </div>
-              <p class="text-[#8FA1FF] font-medium mb-2">{{ application.position }}</p>
-              <div class="flex gap-4 text-sm text-gray-600">
-                <span class="flex items-center gap-1">
-                  <i class="pi pi-briefcase"></i>
-                  {{ application.lastCompany }}
+              <h3 class="text-xl font-bold mb-4">{{ application.job }}</h3>
+              <div class="flex gap-8 text-gray-600">
+                <span class="flex items-center gap-2">
+                  <i class="pi pi-globe"></i>
+                  {{ application.nationality }}
                 </span>
-                <span class="flex items-center gap-1">
-                  <i class="pi pi-user"></i>
-                  {{ application.career }}
-                </span>
-              </div>
-              <div class="flex gap-4 mt-2">
-                <span v-for="skill in application.skills" :key="skill"
-                  class="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-sm">
-                  {{ skill }}
+                <span class="flex items-center gap-2">
+                  <i class="pi pi-calendar"></i>
+                  지원일: {{ application.applyDate }}
                 </span>
               </div>
             </div>
-            <div class="flex flex-col items-end gap-4">
-              <span class="text-sm text-gray-500">지원일: {{ application.applyDate }}</span>
-              <div class="flex gap-2">
-                <Button label="이력서 보기" icon="pi pi-file" class="p-button-outlined" />
-                <Button label="상태 변경" icon="pi pi-chevron-down" class="p-button-outlined" @click="(event) => toggleStatusMenu(event, application)" />
-              </div>
+            <div class="flex gap-2">
+              <Button label="이력서 보기" icon="pi pi-file" class="p-button-outlined" />
+              <Button label="상태 변경" icon="pi pi-chevron-down" class="p-button-outlined" 
+                @click="(event) => toggleStatusMenu(event, application)" />
             </div>
           </div>
         </div>
@@ -285,10 +274,10 @@ const filteredOffers = computed(() => {
       <div class="space-y-4">
         <div v-for="offer in filteredOffers" :key="offer.id"
           class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg">
-          <div class="flex justify-between items-start mb-4">
-            <div>
+          <div class="flex justify-between items-start">
+            <div class="flex-grow">
               <div class="flex items-center gap-2 mb-2">
-                <span class="font-bold text-xl">{{ offer.candidate.name }}</span>
+                <span class="font-bold">{{ offer.candidate.name }}</span>
                 <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">
                   {{ offer.candidate.career }}
                 </span>
@@ -296,23 +285,21 @@ const filteredOffers = computed(() => {
                   {{ getStatusText(offer.status) }}
                 </span>
               </div>
-              <h3 class="text-lg font-medium text-gray-600 mb-2">{{ offer.candidate.lastPosition }}</h3>
-              <div class="flex gap-2">
-                <span v-for="skill in offer.candidate.skills" :key="skill"
-                  class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm">
-                  {{ skill }}
+              <h3 class="text-xl font-bold mb-4">{{ offer.candidate.job }}</h3>
+              <div class="flex gap-8 text-gray-600">
+                <span class="flex items-center gap-2">
+                  <i class="pi pi-globe"></i>
+                  {{ offer.candidate.nationality }}
+                </span>
+                <span class="flex items-center gap-2">
+                  <i class="pi pi-calendar"></i>
+                  제안일: {{ offer.sentDate }}
                 </span>
               </div>
             </div>
-            <div class="text-right">
-              <p class="text-sm text-gray-500">제안일: {{ offer.sentDate }}</p>
-              <p v-if="offer.responseDate" class="text-sm text-gray-500">
-                응답일: {{ offer.responseDate }}
-              </p>
-            </div>
           </div>
           
-          <div class="border-t pt-4">
+          <div class="border-t pt-4 mt-4">
             <h4 class="font-medium mb-2">제안한 포지션: {{ offer.jobPosting.title }}</h4>
             <p class="text-gray-600 line-clamp-2">{{ offer.message }}</p>
           </div>
