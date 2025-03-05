@@ -106,7 +106,7 @@ const loginLine = () => {
           placeholder="비밀번호"
           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
         />
-        <div class="flex items-center" v-if="activeTab === 'personal'">
+        <div class="flex items-center">
           <input type="checkbox" id="remember" class="mr-2" />
           <label for="remember" class="text-sm text-gray-600">자동 로그인</label>
         </div>
