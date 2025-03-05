@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import TabMenu from 'primevue/tabmenu';
 import Button from 'primevue/button';
@@ -21,12 +21,12 @@ const tabs = [
 
 // 알림 설정
 const notificationSettings = ref({
-  deadline: true,  // 마감 3일 전 알림
-  status: true,    // 지원 상태 변경 알림
+  deadline: true, // 마감 3일 전 알림
+  status: true // 지원 상태 변경 알림
 });
 
 // 샘플 지원내역 데이터 (마감일 정보 추가)
-const applications = ref([
+const supportDetailInfo = ref([
   {
     id: 1,
     companyName: '(주)비티포탈',
@@ -62,12 +62,17 @@ const applications = ref([
   }
 ]);
 
+onMounted(() => {
+  // TODO: 지원내역 조회 api
+  // const body = {
+  //   id: user.id
+  // }
+});
+
 // 마감 임박한 지원 내역 필터링
 const upcomingDeadlines = computed(() => {
-  return applications.value.filter(app => 
-    app.daysUntilDeadline > 0 && 
-    app.daysUntilDeadline <= 3 && 
-    app.status !== '지원취소'
+  return supportDetailInfo.value.filter(
+    (app) => app.daysUntilDeadline > 0 && app.daysUntilDeadline <= 3 && app.status !== '지원취소'
   );
 });
 
@@ -77,16 +82,16 @@ const saveNotificationSettings = () => {
   // 실제 구현시에는 서버에 설정을 저장
 };
 
-const filteredApplications = computed(() => {
+const filteredSupports = computed(() => {
   switch (activeTab.value) {
     case 1:
-      return applications.value.filter(app => app.status === '열람');
+      return supportDetailInfo.value.filter((app) => app.status === '열람');
     case 2:
-      return applications.value.filter(app => app.status === '미열람');
+      return supportDetailInfo.value.filter((app) => app.status === '미열람');
     case 3:
-      return applications.value.filter(app => app.status === '지원취소');
+      return supportDetailInfo.value.filter((app) => app.status === '지원취소');
     default:
-      return applications.value;
+      return supportDetailInfo.value;
   }
 });
 
@@ -95,8 +100,8 @@ const goToJobDetail = (applicationId) => {
 };
 
 // 지원 취소 함수
-const cancelApplication = (application) => {
-  if (application.status !== '미열람') {
+const cancelSupports = (app) => {
+  if (app.status !== '미열람') {
     toast.add({
       severity: 'info',
       summary: '취소 불가',
@@ -113,8 +118,14 @@ const cancelApplication = (application) => {
     acceptLabel: '취소하기',
     rejectLabel: '돌아가기',
     accept: () => {
-      // API 연동 시 서버에 취소 요청
-      application.status = '지원취소';
+      // TODO: 지원 취소 api
+      app.status = '지원취소';
+
+      // const body = {
+      //   id: user.id,
+      //   supportDetailInfo: app
+      // }
+
       toast.add({
         severity: 'success',
         summary: '지원 취소 완료',
@@ -130,14 +141,17 @@ const cancelApplication = (application) => {
   <div class="max-w-[1200px] mx-auto px-4 py-12">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-4 mb-8">
-        <i class="pi pi-angle-left text-4xl text-gray-600 cursor-pointer transition-colors hover:text-[#8FA1FF]" @click="router.back()"></i>
+        <i
+          class="pi pi-angle-left text-4xl text-gray-600 cursor-pointer transition-colors hover:text-[#8FA1FF]"
+          @click="router.back()"
+        ></i>
         <h1 class="text-3xl font-bold">지원 내역</h1>
         <!-- 알림 설정 버튼 -->
-        <Button 
-            icon="pi pi-bell" 
-            class="p-button-rounded p-button-text notification-btn" 
-            @click="showNotificationSettings = true"
-          />
+        <Button
+          icon="pi pi-bell"
+          class="p-button-rounded p-button-text notification-btn"
+          @click="showNotificationSettings = true"
+        />
       </div>
     </div>
 
@@ -159,12 +173,7 @@ const cancelApplication = (application) => {
     </div>
 
     <!-- 알림 설정 다이얼로그 -->
-    <Dialog 
-      v-model:visible="showNotificationSettings"
-      header="알림 설정"
-      :modal="true"
-      :style="{ width: '400px' }"
-    >
+    <Dialog v-model:visible="showNotificationSettings" header="알림 설정" :modal="true" :style="{ width: '400px' }">
       <div class="space-y-4">
         <div class="flex items-center justify-between">
           <span>마감 3일 전 알림</span>
@@ -184,7 +193,7 @@ const cancelApplication = (application) => {
     <div class="bg-white rounded-lg p-6">
       <TabMenu :model="tabs" v-model:activeIndex="activeTab" class="mb-6" />
 
-      <div v-if="filteredApplications.length === 0" class="flex flex-col items-center justify-center py-16">
+      <div v-if="filteredSupports.length === 0" class="flex flex-col items-center justify-center py-16">
         <i class="pi pi-file-edit text-[#8FA1FF]" style="font-size: 4rem"></i>
         <h3 class="text-xl font-medium text-gray-900 mb-2 mt-4">아직 지원내역이 없습니다</h3>
         <p class="text-gray-600 mb-6">관심있는 공고에 지원해보세요!</p>
@@ -192,41 +201,48 @@ const cancelApplication = (application) => {
       </div>
 
       <div v-else class="space-y-4">
-        <div v-for="application in filteredApplications" :key="application.id"
-          class="border-b border-gray-200 last:border-0 py-6 px-4 rounded-lg">
+        <div
+          v-for="support in filteredSupports"
+          :key="support.id"
+          class="border-b border-gray-200 last:border-0 py-6 px-4 rounded-lg"
+        >
           <div class="flex justify-between items-start">
             <div>
               <div class="flex items-center gap-2 mb-2">
-                <h4 class="font-medium text-lg">{{ application.position }}</h4>
-                <span :class="{
-                  'bg-blue-100 text-blue-700': application.status === '미열람',
-                  'bg-green-100 text-green-700': application.status === '열람',
-                  'bg-gray-100 text-gray-700': application.status === '지원취소'
-                }" class="px-3 py-1 rounded-full text-sm font-medium">
-                  {{ application.status }}
+                <h4 class="font-medium text-lg">{{ support.position }}</h4>
+                <span
+                  :class="{
+                    'bg-blue-100 text-blue-700': support.status === '미열람',
+                    'bg-green-100 text-green-700': support.status === '열람',
+                    'bg-gray-100 text-gray-700': support.status === '지원취소'
+                  }"
+                  class="px-3 py-1 rounded-full text-sm font-medium"
+                >
+                  {{ support.status }}
                 </span>
               </div>
-              <p class="text-[#8FA1FF] font-medium">{{ application.companyName }}</p>
+              <p class="text-[#8FA1FF] font-medium">{{ support.companyName }}</p>
               <div class="flex gap-4 text-sm text-gray-600 mt-2">
                 <span class="flex items-center gap-1">
                   <i class="pi pi-map-marker"></i>
-                  {{ application.location }}
+                  {{ support.location }}
                 </span>
                 <span class="flex items-center gap-1">
                   <i class="pi pi-money-bill"></i>
-                  {{ application.salary }}
+                  {{ support.salary }}
                 </span>
                 <span class="flex items-center gap-1">
                   <i class="pi pi-calendar"></i>
-                  지원일: {{ application.applicationDate }}
+                  지원일: {{ support.applicationDate }}
                 </span>
               </div>
             </div>
             <!-- 지원 취소 버튼 (미열람 상태일 때만 표시) -->
-            <Button v-if="application.status === '미열람'"
+            <Button
+              v-if="support.status === '미열람'"
               label="지원취소"
               class="p-button-text p-button-danger"
-              @click="cancelApplication(application)"
+              @click="cancelSupports(support)"
               size="small"
             />
           </div>
@@ -247,12 +263,12 @@ const cancelApplication = (application) => {
 }
 
 .notification-btn :deep(.p-button-icon) {
-  font-size: 1.5rem;  /* 아이콘 크기 증가 */
-  color: #8FA1FF;     /* 브랜드 컬러로 변경 */
+  font-size: 1.5rem; /* 아이콘 크기 증가 */
+  color: #8fa1ff; /* 브랜드 컬러로 변경 */
 }
 
 .notification-btn:hover :deep(.p-button-icon) {
-  color: #7878F2;     /* 호버 시 색상 변경 */
+  color: #7878f2; /* 호버 시 색상 변경 */
 }
 
 /* 알림 버튼에 배지 효과 추가 */
@@ -267,7 +283,7 @@ const cancelApplication = (application) => {
   right: 8px;
   width: 8px;
   height: 8px;
-  background-color: #FF4B4B;
+  background-color: #ff4b4b;
   border-radius: 50%;
   display: block;
 }
@@ -291,29 +307,29 @@ const cancelApplication = (application) => {
 }
 
 .p-tabmenu .p-tabmenu-nav .p-tabmenuitem.p-highlight .p-menuitem-link {
-  background: #8FA1FF;
+  background: #8fa1ff;
   color: white;
 }
 
 .p-tabmenu .p-tabmenu-nav .p-tabmenuitem:not(.p-highlight):not(.p-disabled):hover .p-menuitem-link {
   background: rgba(143, 161, 255, 0.1);
   border: none;
-  color: #8FA1FF;
+  color: #8fa1ff;
 }
 
 :deep(.p-button.p-button-outlined) {
-  color: #8FA1FF;
-  border-color: #8FA1FF;
+  color: #8fa1ff;
+  border-color: #8fa1ff;
 }
 
 :deep(.p-button.p-button-outlined:hover) {
   background: rgba(143, 161, 255, 0.1);
-  border-color: #8FA1FF;
-  color: #8FA1FF;
+  border-color: #8fa1ff;
+  color: #8fa1ff;
 }
 
 :deep(.p-button.p-button-text) {
-  color: #8FA1FF;
+  color: #8fa1ff;
 }
 
 :deep(.p-button.p-button-text:hover) {
@@ -328,4 +344,4 @@ const cancelApplication = (application) => {
 :deep(.p-button.p-button-danger.p-button-text:hover) {
   background: rgba(239, 68, 68, 0.1);
 }
-</style> 
+</style>
