@@ -4,7 +4,6 @@ import { computed, ref } from 'vue';
 export const useUserStore = defineStore(
   'userStore',
   () => {
-    // TODO: 페이지가 렌더링될때 API호출로 채용제안 목록을 가져와야함
     const jobOfferList = ref([
       {
         id: 1,
@@ -49,8 +48,7 @@ export const useUserStore = defineStore(
     });
 
     return {
-      jobOfferList,
-      proposalCount
+      jobOfferList
     };
   },
   {

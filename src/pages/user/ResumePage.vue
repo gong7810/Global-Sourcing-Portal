@@ -78,6 +78,42 @@ const passportInfo = ref({
   birthPlace: 'SEOUL'
 });
 
+// 경력리스트
+const careerList = ref([
+  {
+    companyName: '(주)비티포탈',
+    period: '2023.03 - 2024.03',
+    jobTitle: '프론트엔드 개발자',
+    department: '개발팀',
+    responsibilities: '웹 서비스 프론트엔드 개발'
+  }
+]);
+
+// 학력리스트
+const educationList = ref([
+  {
+    educationType: { name: '대학교(4년)', code: 'UNIVERSITY' },
+    schoolName: '한국대학교',
+    period: '2015.03 - 2019.02',
+    major: '컴퓨터공학과',
+    isGraduated: true,
+    details: '웹 개발 동아리 활동'
+  }
+]);
+
+onMounted(() => {
+  // TODO: 이력서 정보 조회 api
+  // const body = {
+  //   id: user.id,
+  // }
+  // visibilityType.value = response.visibility;
+  // basicInfo.value = response.basicInfo;
+  // nationalityInfo.value = response.country;
+  // passportInfo.value = response.passportInfo;
+  // careerList.value = response.careerInfoList;
+  // educationList.value = response.educationInfoList;
+});
+
 // 경력 정보 관련 상태
 const careerInfo = ref({
   companyName: '',
@@ -135,29 +171,6 @@ const sections = [
     action: () => (showEducationModal.value = true)
   }
 ];
-
-// 경력리스트
-const careerList = ref([
-  {
-    companyName: '(주)비티포탈',
-    period: '2023.03 - 2024.03',
-    jobTitle: '프론트엔드 개발자',
-    department: '개발팀',
-    responsibilities: '웹 서비스 프론트엔드 개발'
-  }
-]);
-
-// 학력리스트
-const educationList = ref([
-  {
-    educationType: { name: '대학교(4년)', code: 'UNIVERSITY' },
-    schoolName: '한국대학교',
-    period: '2015.03 - 2019.02',
-    major: '컴퓨터공학과',
-    isGraduated: true,
-    details: '웹 개발 동아리 활동'
-  }
-]);
 
 // 학력종류
 const educationTypes = [
