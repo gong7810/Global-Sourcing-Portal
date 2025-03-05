@@ -56,8 +56,7 @@ const handleClickOutside = (event) => {
       <div class="flex justify-between items-center h-20">
         <!-- 왼쪽 로고 -->
         <router-link to="/" class="flex items-center gap-2">
-          <span class="font-bold text-2xl text-white tracking-tight">BT</span>
-          <span class="font-semibold text-xl text-white/90">POTAL</span>
+          <span class="font-bold text-2xl text-white tracking-tight">Global Sourcing Portal</span>
         </router-link>
 
         <!-- 오른쪽 메뉴들 -->
