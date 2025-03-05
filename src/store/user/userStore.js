@@ -13,8 +13,7 @@ export const useUserStore = defineStore(
         offerDate: '2025.03.20',
         deadline: '2025.04.05',
         status: 'pending',
-        message: '귀하의 이력서를 보고 연락드립니다. 저희 회사와 함께하시면 좋겠습니다.',
-        isRead: false
+        message: '귀하의 이력서를 보고 연락드립니다. 저희 회사와 함께하시면 좋겠습니다.'
       },
       {
         id: 2,
@@ -24,8 +23,7 @@ export const useUserStore = defineStore(
         offerDate: '2025.03.18',
         deadline: '2025.04.01',
         status: 'pending',
-        message: '귀하의 기술스택이 저희 회사와 잘 맞을 것 같습니다.',
-        isRead: true
+        message: '귀하의 기술스택이 저희 회사와 잘 맞을 것 같습니다.'
       },
       {
         id: 3,
@@ -35,8 +33,7 @@ export const useUserStore = defineStore(
         offerDate: '2025.04.05',
         deadline: '2025.04.10',
         status: 'pending',
-        message: '귀하의 기술스택이 저희 회사와 잘 맞을 것 같습니다.',
-        isRead: false
+        message: '귀하의 기술스택이 저희 회사와 잘 맞을 것 같습니다.'
       }
     ]);
 

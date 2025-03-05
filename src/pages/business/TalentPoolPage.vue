@@ -14,8 +14,27 @@ const selectedJob = ref(null);
 const selectedCareer = ref(null);
 
 const jobs = [
-  { label: '개발자', value: 'developer' },
-  { label: '디자이너', value: 'designer' },
+  { label: '기획·전략', value: 'planning' },
+  { label: '마케팅·홍보·조사', value: 'marketing' },
+  { label: '회계·세무·재무', value: 'accounting' },
+  { label: '인사·노무·HRD', value: 'hr' },
+  { label: '총무·법무·사무', value: 'admin' },
+  { label: 'IT개발·데이터', value: 'it' },
+  { label: '디자인', value: 'design' },
+  { label: '영업·판매·무역', value: 'sales' },
+  { label: '고객상담·TM', value: 'cs' },
+  { label: '구매·자재·물류', value: 'purchasing' },
+  { label: '상품기획·MD', value: 'md' },
+  { label: '운전·운송·배송', value: 'delivery' },
+  { label: '서비스', value: 'service' },
+  { label: '생산', value: 'production' },
+  { label: '건설·건축', value: 'construction' },
+  { label: '의료', value: 'medical' },
+  { label: '연구·R&D', value: 'research' },
+  { label: '교육', value: 'education' },
+  { label: '미디어·문화·스포츠', value: 'media' },
+  { label: '금융·보험', value: 'finance' },
+  { label: '공공·복지', value: 'public' }
 ];
 
 const careers = [
@@ -25,40 +44,32 @@ const careers = [
   { label: '8년 이상', value: 'senior' },
 ];
 
-// 북마크된 구직자 데이터
+// 북마크된 구직자 데이터 수정
 const bookmarkedCandidates = ref([
   {
     id: 1,
     name: '홍길동',
     career: '5년',
-    lastPosition: '프론트엔드 개발자',
-    skills: ['Vue.js', 'React', 'TypeScript'],
-    education: '서울대학교',
-    location: '서울',
-    status: '구직중',
-    lastUpdate: '2024-03-20',
-    isBookmarked: true,
+    job: 'IT개발·데이터',
+    position: '프론트엔드 개발자',
+    nationality: '대한민국',
     bookmarkDate: '2024-03-21'
   },
   {
     id: 2,
     name: '김철수',
-    career: '3년',
-    lastPosition: '백엔드 개발자',
-    skills: ['Node.js', 'Python', 'AWS'],
-    education: '연세대학교',
-    location: '서울',
-    status: '구직중',
-    lastUpdate: '2024-03-19',
-    isBookmarked: true,
+    career: '신입',
+    job: 'IT개발·데이터',
+    position: '',
+    nationality: '대한민국',
     bookmarkDate: '2024-03-20'
   }
 ]);
 
-// 필터링된 구직자 목록
+// 필터링된 구직자 목록 수정 (lastPosition을 job으로 변경)
 const filteredCandidates = computed(() => {
   return bookmarkedCandidates.value.filter(candidate => {
-    if (selectedJob.value && !candidate.lastPosition.includes(selectedJob.value.label)) return false;
+    if (selectedJob.value && candidate.job !== selectedJob.value.label) return false;
     if (selectedCareer.value) {
       const careerYears = parseInt(candidate.career);
       switch (selectedCareer.value.value) {
@@ -74,7 +85,6 @@ const filteredCandidates = computed(() => {
 
 // 북마크 제거 함수
 const removeBookmark = (candidate) => {
-  candidate.isBookmarked = false;
   bookmarkedCandidates.value = bookmarkedCandidates.value.filter(c => c.id !== candidate.id);
 };
 </script>
@@ -122,19 +132,13 @@ const removeBookmark = (candidate) => {
                 <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">
                   {{ candidate.career }}
                 </span>
-                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
-                  {{ candidate.status }}
-                </span>
               </div>
-              <h3 class="text-xl font-bold mb-4">{{ candidate.lastPosition }}</h3>
+              <h3 class="text-xl font-bold mb-2">{{ candidate.job }}</h3>
+              <p v-if="candidate.position" class="text-gray-600 mb-2">{{ candidate.position }}</p>
               <div class="flex gap-8 text-gray-600">
                 <span class="flex items-center gap-2">
-                  <i class="pi pi-tag"></i>
-                  {{ candidate.skills.join(', ') }}
-                </span>
-                <span class="flex items-center gap-2">
-                  <i class="pi pi-building"></i>
-                  {{ candidate.location }}
+                  <i class="pi pi-globe"></i>
+                  {{ candidate.nationality }}
                 </span>
                 <span class="flex items-center gap-2">
                   <i class="pi pi-calendar"></i>

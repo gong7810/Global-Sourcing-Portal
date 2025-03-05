@@ -57,7 +57,9 @@ const basicInfo = ref({
   gender: '여성',
   email: 'ye****@naver.com',
   phone: '010-****-7496',
-  address: '윙스타워 505호'
+  address: '윙스타워 505호',
+  totalCareer: '5년',
+  lastEducation: '대학교(4년) 졸업'
 });
 
 // 국가/비자 정보 관련 상태
@@ -195,15 +197,45 @@ onMounted(() => {
   getResume();
 });
 
-// TODO: 이력서 정보 조회, 세팅
+const calculateTotalCareer = (careerList) => {
+  // 모든 경력 기간을 합산하는 로직
+  let totalMonths = 0;
+  careerList.forEach(career => {
+    const [start, end] = career.period.split(' - ');
+    const startDate = new Date(start);
+    const endDate = end === '재직중' ? new Date() : new Date(end);
+    const months = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                  (endDate.getMonth() - startDate.getMonth());
+    totalMonths += months;
+  });
+  return `${Math.floor(totalMonths / 12)}년 ${totalMonths % 12}개월`;
+};
+
+const getLastEducation = (educationList) => {
+  // 최종학력 찾기
+  const sortedEducation = [...educationList].sort((a, b) => {
+    const eduOrder = {
+      'PHD': 5,
+      'MASTERS': 4,
+      'UNIVERSITY': 3,
+      'COLLEGE': 2,
+      'HIGH_SCHOOL': 1
+    };
+    return eduOrder[b.educationType.code] - eduOrder[a.educationType.code];
+  });
+  
+  if (sortedEducation.length === 0) return '학력 정보 없음';
+  
+  const lastEdu = sortedEducation[0];
+  return `${lastEdu.educationType.name} ${lastEdu.isGraduated ? '졸업' : '재학중'}`;
+};
+
 const getResume = async () => {
-  // const response = await getResumeData();
-  //
-  // basicInfo.value = response?.basicInfo;
-  // nationalityInfo.value = response?.country;
-  // passportInfo.value = response?.passportInfo;
-  // careerList.value = response?.careerInfoList;
-  // educationList.value = response?.educationInfoList
+  // ... existing code ...
+  
+  // 총 경력과 최종학력 계산
+  basicInfo.value.totalCareer = calculateTotalCareer(careerList.value);
+  basicInfo.value.lastEducation = getLastEducation(educationList.value);
 };
 
 // const closeNationalityModal = () => {
@@ -614,6 +646,14 @@ const saveResume = () => {
               <i class="pi pi-calendar"></i>
               <span>{{ basicInfo.birthDate }}</span>
               <span>{{ basicInfo.gender }}</span>
+            </div>
+            <div class="flex items-center gap-4">
+              <i class="pi pi-briefcase"></i>
+              <span>총 경력 {{ basicInfo.totalCareer }}</span>
+            </div>
+            <div class="flex items-center gap-4">
+              <i class="pi pi-book"></i>
+              <span>{{ basicInfo.lastEducation }}</span>
             </div>
             <div class="flex items-center gap-4">
               <i class="pi pi-envelope"></i>
