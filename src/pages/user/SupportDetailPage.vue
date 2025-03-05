@@ -32,7 +32,6 @@ const supportDetailInfo = ref([
     companyName: '(주)비티포탈',
     position: '프론트엔드 개발자',
     location: '경남 진주시',
-    salary: '3,500만원',
     applicationDate: '2024.03.15',
     deadline: '2024.04.15',
     status: '미열람',
@@ -43,7 +42,6 @@ const supportDetailInfo = ref([
     companyName: '테크솔루션',
     position: '웹 개발자',
     location: '서울 강남구',
-    salary: '4,000만원',
     applicationDate: '2024.03.10',
     deadline: '2024.03.30',
     status: '열람',
@@ -54,7 +52,6 @@ const supportDetailInfo = ref([
     companyName: '스마트시스템즈',
     position: 'Vue.js 개발자',
     location: '부산 해운대구',
-    salary: '3,800만원',
     applicationDate: '2024.03.05',
     deadline: '2024.03.25',
     status: '지원취소',
@@ -226,10 +223,6 @@ const cancelSupports = (app) => {
                 <span class="flex items-center gap-1">
                   <i class="pi pi-map-marker"></i>
                   {{ support.location }}
-                </span>
-                <span class="flex items-center gap-1">
-                  <i class="pi pi-money-bill"></i>
-                  {{ support.salary }}
                 </span>
                 <span class="flex items-center gap-1">
                   <i class="pi pi-calendar"></i>
