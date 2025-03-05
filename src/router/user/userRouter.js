@@ -15,15 +15,15 @@ export const userRouter = [
     component: () => import('@/pages/user/UserPage.vue')
   },
   {
-    path: '/user/applications',
-    name: 'Applications',
-    component: () => import('@/pages/user/ApplicationsPage.vue')
+    path: '/user/supportDetail',
+    name: 'SupportDetail',
+    component: () => import('@/pages/user/SupportDetailPage.vue')
   },
   {
     path: '/user/job-offers',
     name: 'JobOffers',
     component: () => import('@/pages/user/JobOffersPage.vue')
-  },
+  }
   // {
   //     path: '/manageMember',
   //     name: 'manageMember',

@@ -9,19 +9,29 @@ const router = useRouter();
 const authStore = useAuthStore();
 const userStore = useUserStore();
 const { userInfo } = storeToRefs(authStore);
-const { proposalCount } = storeToRefs(userStore);
+// const { proposalCount } = storeToRefs(userStore);
 
 const bookmarkFlag = ref(true);
 const proposalFlag = ref(false);
 
-const unreadOffers = ref(proposalCount.value);
+const unreadOffers = ref(3);
 
 onMounted(() => {
   if (userInfo.value?.type === 'user') {
     bookmarkFlag.value = false;
     proposalFlag.value = true;
   }
+
+  // getJobOfferList();
 });
+
+const getJobOfferList = async () => {
+  // TODO: 페이지가 렌더링될때 API호출로 채용제안 갯수를 가져와야함
+  // const body = {
+  //   id: userInfo.id
+  // }
+  // unreadOffers.value = response.filter((item) => item.status === 'pending').length;
+};
 
 // const formatCurrency = (value) => {
 //   return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
@@ -58,7 +68,7 @@ onMounted(() => {
             >이력서</span
           >
         </div>
-        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/applications')">
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/supportDetail')">
           <div
             class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
           >
@@ -100,10 +110,7 @@ onMounted(() => {
           >
         </div> -->
         <!-- v-if="proposalFlag" -->
-        <div
-          class="flex flex-col items-center cursor-pointer group"
-          @click="router.push('/user/job-offers')"
-        >
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/job-offers')">
           <div
             class="relative w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
           >
