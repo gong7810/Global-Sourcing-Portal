@@ -3,10 +3,14 @@ import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import TabMenu from 'primevue/tabmenu';
 import Button from 'primevue/button';
+import { useConfirm } from 'primevue/useconfirm';
+import { useToast } from 'primevue/usetoast';
 
 const router = useRouter();
 const activeTab = ref(0);
 const showNotificationSettings = ref(false);
+const confirm = useConfirm();
+const toast = useToast();
 
 const tabs = [
   { label: '전체', icon: 'pi pi-list' },
@@ -89,6 +93,37 @@ const filteredApplications = computed(() => {
 const goToJobDetail = (applicationId) => {
   router.push({ name: 'JobDetail', params: { id: applicationId } }); // ToDo: 라우터 수정하기
 };
+
+// 지원 취소 함수
+const cancelApplication = (application) => {
+  if (application.status !== '미열람') {
+    toast.add({
+      severity: 'info',
+      summary: '취소 불가',
+      detail: '이미 기업이 확인한 지원내역은 취소할 수 없습니다.',
+      life: 3000
+    });
+    return;
+  }
+
+  confirm.require({
+    message: '지원을 취소하시겠습니까?',
+    header: '지원 취소 확인',
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: '취소하기',
+    rejectLabel: '돌아가기',
+    accept: () => {
+      // API 연동 시 서버에 취소 요청
+      application.status = '지원취소';
+      toast.add({
+        severity: 'success',
+        summary: '지원 취소 완료',
+        detail: '지원이 취소되었습니다.',
+        life: 3000
+      });
+    }
+  });
+};
 </script>
 
 <template>
@@ -158,8 +193,7 @@ const goToJobDetail = (applicationId) => {
 
       <div v-else class="space-y-4">
         <div v-for="application in filteredApplications" :key="application.id"
-          class="border-b border-gray-200 last:border-0 py-6 hover:bg-gray-50 transition-all cursor-pointer px-4 rounded-lg"
-          @click="goToJobDetail(application.id)">
+          class="border-b border-gray-200 last:border-0 py-6 px-4 rounded-lg">
           <div class="flex justify-between items-start">
             <div>
               <div class="flex items-center gap-2 mb-2">
@@ -188,11 +222,21 @@ const goToJobDetail = (applicationId) => {
                 </span>
               </div>
             </div>
-            <Button icon="pi pi-chevron-right" class="p-button-text p-button-rounded" />
+            <!-- 지원 취소 버튼 (미열람 상태일 때만 표시) -->
+            <Button v-if="application.status === '미열람'"
+              label="지원취소"
+              class="p-button-text p-button-danger"
+              @click="cancelApplication(application)"
+              size="small"
+            />
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Toast와 Confirm 컴포넌트 추가 -->
+    <Toast />
+    <ConfirmDialog />
   </div>
 </template>
 
@@ -274,5 +318,14 @@ const goToJobDetail = (applicationId) => {
 
 :deep(.p-button.p-button-text:hover) {
   background: rgba(143, 161, 255, 0.1);
+}
+
+/* 취소 버튼 스타일 */
+:deep(.p-button.p-button-danger.p-button-text) {
+  color: #ef4444;
+}
+
+:deep(.p-button.p-button-danger.p-button-text:hover) {
+  background: rgba(239, 68, 68, 0.1);
 }
 </style> 
