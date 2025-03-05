@@ -12,11 +12,11 @@ const deadline = ref(null);
 const jobType = ref(null);
 const careerLevel = ref(null);
 const education = ref(null);
-const salaryMin = ref(null);
-const salaryMax = ref(null);
 const workLocation = ref('');
-const requiredSkills = ref('');
-const preferredSkills = ref('');
+// const requiredSkills = ref('');
+// const preferredSkills = ref('');
+const jobCategory = ref(null);
+const headcount = ref(null);
 
 const jobTypes = [
   { label: '정규직', value: 'full-time' },
@@ -38,6 +38,30 @@ const educationLevels = [
   { label: '대졸이상', value: 'bachelor' },
   { label: '석사이상', value: 'master' },
   { label: '박사이상', value: 'phd' }
+];
+
+const jobCategories = [
+  { label: '기획·전략', value: 'planning' },
+  { label: '마케팅·홍보·조사', value: 'marketing' },
+  { label: '회계·세무·재무', value: 'accounting' },
+  { label: '인사·노무·HRD', value: 'hr' },
+  { label: '총무·법무·사무', value: 'admin' },
+  { label: 'IT개발·데이터', value: 'it' },
+  { label: '디자인', value: 'design' },
+  { label: '영업·판매·무역', value: 'sales' },
+  { label: '고객상담·TM', value: 'cs' },
+  { label: '구매·자재·물류', value: 'purchasing' },
+  { label: '상품기획·MD', value: 'md' },
+  { label: '운전·운송·배송', value: 'delivery' },
+  { label: '서비스', value: 'service' },
+  { label: '생산', value: 'production' },
+  { label: '건설·건축', value: 'construction' },
+  { label: '의료', value: 'medical' },
+  { label: '연구·R&D', value: 'research' },
+  { label: '교육', value: 'education' },
+  { label: '미디어·문화·스포츠', value: 'media' },
+  { label: '금융·보험', value: 'finance' },
+  { label: '공공·복지', value: 'public' }
 ];
 
 const router = useRouter();
@@ -76,6 +100,19 @@ const handleSubmit = () => {
               <InputText v-model="jobTitle" class="w-full" placeholder="공고 제목을 입력해주세요" />
             </div>
 
+            <div class="grid grid-cols-2 gap-6">
+              <div class="form-group">
+                <label class="block text-sm font-medium text-gray-700 mb-2">직무*</label>
+                <Select v-model="jobCategory" :options="jobCategories" optionLabel="label" 
+                  placeholder="직무를 선택해주세요" class="w-full" />
+              </div>
+              <div class="form-group">
+                <label class="block text-sm font-medium text-gray-700 mb-2">채용인원*</label>
+                <InputNumber v-model="headcount" placeholder="채용인원을 입력해주세요" 
+                  class="w-full" :min="1" suffix=" 명" />
+              </div>
+            </div>
+
             <div class="form-group">
               <label class="block text-sm font-medium text-gray-700 mb-2">마감일*</label>
               <DatePicker v-model="deadline" class="w-full" placeholder="마감일을 선택해주세요" />
@@ -105,20 +142,11 @@ const handleSubmit = () => {
                 <InputText v-model="workLocation" class="w-full" placeholder="근무지역을 입력해주세요" />
               </div>
             </div>
-
-            <div class="form-group">
-              <label class="block text-sm font-medium text-gray-700 mb-2">연봉</label>
-              <div class="flex items-center gap-4">
-                <InputNumber v-model="salaryMin" placeholder="최소 연봉" suffix=" 만원" class="w-full" />
-                <span>~</span>
-                <InputNumber v-model="salaryMax" placeholder="최대 연봉" suffix=" 만원" class="w-full" />
-              </div>
-            </div>
           </div>
         </div>
 
-        <!-- 자격 요건 -->
-        <div class="p-6">
+        <!-- 자격 요건 섹션 주석처리 -->
+        <!-- <div class="p-6">
           <h2 class="text-lg font-bold mb-6">자격 요건</h2>
           
           <div class="space-y-6">
@@ -134,9 +162,9 @@ const handleSubmit = () => {
                 placeholder="우대 사항을 입력해주세요 (쉼표로 구분)" />
             </div>
           </div>
-        </div>
+        </div> -->
 
-        <!-- 버튼 영역을 폼 내부 마지막으로 이동 -->
+        <!-- 버튼 영역 -->
         <div class="p-6">
           <div class="flex justify-end gap-4">
             <Button label="취소" class="p-button-outlined" @click="goBack" />
