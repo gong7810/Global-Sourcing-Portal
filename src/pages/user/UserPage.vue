@@ -22,6 +22,14 @@ const genders = [
   { label: '여성', value: 'female' }
 ];
 
+onMounted(() => {
+  // TODO: 내 정보 조회 api
+  // const body = {
+  //   id: user.id
+  // }
+  // basicInfo.value = response
+});
+
 const cancelEdit = () => {
   console.log(basicInfo.value.gender);
   messagePop.confirm({
@@ -36,6 +44,11 @@ const saveAll = () => {
   messagePop.confirm({
     message: '변경사항을 저장하시겠습니까?',
     onCloseYes: () => {
+      // TODO: 내 정보 수정 api
+      // const body = {
+      //   id: user.id,
+      //   userInfo: basicInfo.value
+      // }
       messagePop.alert('저장되었습니다.', 'good');
       router.back();
     }
