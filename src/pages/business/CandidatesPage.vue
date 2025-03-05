@@ -83,14 +83,15 @@ const offerStatusOptions = [
   { label: '거절', value: 'rejected' }
 ];
 
-// 제안 목록 데이터 (테스트용)
+// 제안 목록 데이터 수정
 const offers = ref([
   {
     id: 1,
     candidate: {
       name: '홍길동',
       career: '5년',
-      job: '기획·전략',
+      job: 'IT개발·데이터',
+      position: '프론트엔드 개발자',
       nationality: '대한민국'
     },
     jobPosting: {
@@ -107,6 +108,7 @@ const offers = ref([
       name: '김철수',
       career: '3년',
       job: 'IT개발·데이터',
+      position: '백엔드 개발자',
       nationality: '대한민국'
     },
     jobPosting: {
@@ -151,21 +153,29 @@ const getStatusText = (status) => {
 const applications = ref([
   {
     id: 1,
-    name: '홍길동',
-    status: '서류검토',
-    job: '기획·전략',
-    career: '5년',
-    nationality: '대한민국',
-    applyDate: '2024-03-20'
+    candidate: {
+      id: 1,
+      name: '홍길동',
+      career: '5년',
+      job: 'IT개발·데이터',
+      position: '프론트엔드 개발자',
+      nationality: '대한민국'
+    },
+    status: APPLICATION_STATUS.REVIEW,
+    appliedDate: '2024-03-20'
   },
   {
     id: 2,
-    name: '김철수',
-    status: '면접대기',
-    job: 'IT개발·데이터',
-    career: '3년',
-    nationality: '대한민국',
-    applyDate: '2024-03-19'
+    candidate: {
+      id: 2,
+      name: '김철수',
+      career: '3년',
+      job: 'IT개발·데이터',
+      position: '백엔드 개발자',
+      nationality: '대한민국'
+    },
+    status: APPLICATION_STATUS.INTERVIEW,
+    appliedDate: '2024-03-19'
   }
 ]);
 
@@ -185,6 +195,22 @@ const filteredOffers = computed(() => {
   }
   return offers.value.filter(offer => offer.status === selectedOfferStatus.value);
 });
+
+// 상태별 스타일 함수 수정
+const getStatusClass = (status) => {
+  switch (status) {
+    case APPLICATION_STATUS.REVIEW:
+      return 'bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm';
+    case APPLICATION_STATUS.INTERVIEW:
+      return 'bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm';
+    case APPLICATION_STATUS.ACCEPTED:
+      return 'bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm';
+    case APPLICATION_STATUS.REJECTED:
+      return 'bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm';
+    default:
+      return 'bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm';
+  }
+};
 </script>
 
 <template>
@@ -217,32 +243,30 @@ const filteredOffers = computed(() => {
 
       <div v-else class="space-y-4">
         <div v-for="application in filteredApplications" :key="application.id"
-          class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg">
+          class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg hover:border-[#8B8BF5] group">
           <div class="flex justify-between items-start">
             <div class="flex-grow">
               <div class="flex items-center gap-2 mb-2">
-                <span class="font-bold">{{ application.name }}</span>
+                <span class="font-bold">{{ application.candidate.name }}</span>
                 <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">
-                  {{ application.career }}
+                  {{ application.candidate.career }}
                 </span>
-                <span :class="{
-                  'bg-blue-100 text-blue-700': application.status === APPLICATION_STATUS.REVIEW,
-                  'bg-yellow-100 text-yellow-700': application.status === APPLICATION_STATUS.INTERVIEW,
-                  'bg-green-100 text-green-700': application.status === APPLICATION_STATUS.ACCEPTED,
-                  'bg-red-100 text-red-700': application.status === APPLICATION_STATUS.REJECTED
-                }" class="px-3 py-1 rounded-full text-sm">
+                <span :class="getStatusClass(application.status)">
                   {{ application.status }}
                 </span>
               </div>
-              <h3 class="text-xl font-bold mb-4">{{ application.job }}</h3>
+              <h3 class="text-xl font-bold mb-2">{{ application.candidate.job }}</h3>
+              <p v-if="application.candidate.position" class="text-gray-600 mb-2">
+                {{ application.candidate.position }}
+              </p>
               <div class="flex gap-8 text-gray-600">
                 <span class="flex items-center gap-2">
                   <i class="pi pi-globe"></i>
-                  {{ application.nationality }}
+                  {{ application.candidate.nationality }}
                 </span>
                 <span class="flex items-center gap-2">
                   <i class="pi pi-calendar"></i>
-                  지원일: {{ application.applyDate }}
+                  지원일: {{ application.appliedDate }}
                 </span>
               </div>
             </div>
@@ -256,7 +280,7 @@ const filteredOffers = computed(() => {
       </div>
     </div>
 
-    <!-- 채용 제안 모달 -->
+    <!-- 채용 제안 모달 부분 수정 -->
     <Dialog 
       v-model:visible="showOffersModal"
       modal
@@ -285,7 +309,10 @@ const filteredOffers = computed(() => {
                   {{ getStatusText(offer.status) }}
                 </span>
               </div>
-              <h3 class="text-xl font-bold mb-4">{{ offer.candidate.job }}</h3>
+              <h3 class="text-xl font-bold mb-2">{{ offer.candidate.job }}</h3>
+              <p v-if="offer.candidate.position" class="text-gray-600 mb-2">
+                {{ offer.candidate.position }}
+              </p>
               <div class="flex gap-8 text-gray-600">
                 <span class="flex items-center gap-2">
                   <i class="pi pi-globe"></i>
@@ -294,6 +321,10 @@ const filteredOffers = computed(() => {
                 <span class="flex items-center gap-2">
                   <i class="pi pi-calendar"></i>
                   제안일: {{ offer.sentDate }}
+                </span>
+                <span v-if="offer.responseDate" class="flex items-center gap-2">
+                  <i class="pi pi-reply"></i>
+                  응답일: {{ offer.responseDate }}
                 </span>
               </div>
             </div>

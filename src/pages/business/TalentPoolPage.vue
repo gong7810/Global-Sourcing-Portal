@@ -50,15 +50,17 @@ const bookmarkedCandidates = ref([
     id: 1,
     name: '홍길동',
     career: '5년',
-    job: '기획·전략',
+    job: 'IT개발·데이터',
+    position: '프론트엔드 개발자',
     nationality: '대한민국',
     bookmarkDate: '2024-03-21'
   },
   {
     id: 2,
     name: '김철수',
-    career: '3년',
+    career: '신입',
     job: 'IT개발·데이터',
+    position: '',
     nationality: '대한민국',
     bookmarkDate: '2024-03-20'
   }
@@ -131,7 +133,8 @@ const removeBookmark = (candidate) => {
                   {{ candidate.career }}
                 </span>
               </div>
-              <h3 class="text-xl font-bold mb-4">{{ candidate.job }}</h3>
+              <h3 class="text-xl font-bold mb-2">{{ candidate.job }}</h3>
+              <p v-if="candidate.position" class="text-gray-600 mb-2">{{ candidate.position }}</p>
               <div class="flex gap-8 text-gray-600">
                 <span class="flex items-center gap-2">
                   <i class="pi pi-globe"></i>
