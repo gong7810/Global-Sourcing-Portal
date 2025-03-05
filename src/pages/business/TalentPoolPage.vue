@@ -10,32 +10,8 @@ const goBack = () => {
 };
 
 // 필터 옵션
-const selectedJob = ref(null);
 const selectedCareer = ref(null);
-
-const jobs = [
-  { label: '기획·전략', value: 'planning' },
-  { label: '마케팅·홍보·조사', value: 'marketing' },
-  { label: '회계·세무·재무', value: 'accounting' },
-  { label: '인사·노무·HRD', value: 'hr' },
-  { label: '총무·법무·사무', value: 'admin' },
-  { label: 'IT개발·데이터', value: 'it' },
-  { label: '디자인', value: 'design' },
-  { label: '영업·판매·무역', value: 'sales' },
-  { label: '고객상담·TM', value: 'cs' },
-  { label: '구매·자재·물류', value: 'purchasing' },
-  { label: '상품기획·MD', value: 'md' },
-  { label: '운전·운송·배송', value: 'delivery' },
-  { label: '서비스', value: 'service' },
-  { label: '생산', value: 'production' },
-  { label: '건설·건축', value: 'construction' },
-  { label: '의료', value: 'medical' },
-  { label: '연구·R&D', value: 'research' },
-  { label: '교육', value: 'education' },
-  { label: '미디어·문화·스포츠', value: 'media' },
-  { label: '금융·보험', value: 'finance' },
-  { label: '공공·복지', value: 'public' }
-];
+const selectedGender = ref(null);
 
 const careers = [
   { label: '신입', value: 'entry' },
@@ -44,14 +20,19 @@ const careers = [
   { label: '8년 이상', value: 'senior' },
 ];
 
+const genders = [
+  { label: '남성', value: 'male' },
+  { label: '여성', value: 'female' }
+];
+
 // 북마크된 구직자 데이터 수정
 const bookmarkedCandidates = ref([
   {
     id: 1,
     name: '홍길동',
     career: '5년',
-    job: 'IT개발·데이터',
-    position: '프론트엔드 개발자',
+    age: '28',
+    gender: '남성',
     nationality: '대한민국',
     bookmarkDate: '2024-03-21'
   },
@@ -59,17 +40,17 @@ const bookmarkedCandidates = ref([
     id: 2,
     name: '김철수',
     career: '신입',
-    job: 'IT개발·데이터',
-    position: '',
+    age: '25',
+    gender: '남성',
     nationality: '대한민국',
     bookmarkDate: '2024-03-20'
   }
 ]);
 
-// 필터링된 구직자 목록 수정 (lastPosition을 job으로 변경)
+// 필터링된 구직자 목록 수정
 const filteredCandidates = computed(() => {
   return bookmarkedCandidates.value.filter(candidate => {
-    if (selectedJob.value && candidate.job !== selectedJob.value.label) return false;
+    if (selectedGender.value && candidate.gender !== selectedGender.value.label) return false;
     if (selectedCareer.value) {
       const careerYears = parseInt(candidate.career);
       switch (selectedCareer.value.value) {
@@ -109,8 +90,8 @@ const removeBookmark = (candidate) => {
             placeholder="경력" class="w-full" />
         </div>
         <div class="flex-1 min-w-[200px]">
-          <Select v-model="selectedJob" :options="jobs" optionLabel="label" 
-            placeholder="직무" class="w-full" />
+          <Select v-model="selectedGender" :options="genders" optionLabel="label" 
+            placeholder="성별" class="w-full" />
         </div>
       </div>
 
@@ -133,9 +114,11 @@ const removeBookmark = (candidate) => {
                   {{ candidate.career }}
                 </span>
               </div>
-              <h3 class="text-xl font-bold mb-2">{{ candidate.job }}</h3>
-              <p v-if="candidate.position" class="text-gray-600 mb-2">{{ candidate.position }}</p>
               <div class="flex gap-8 text-gray-600">
+                <span class="flex items-center gap-2">
+                  <i class="pi pi-user"></i>
+                  {{ candidate.age }}세 / {{ candidate.gender }}
+                </span>
                 <span class="flex items-center gap-2">
                   <i class="pi pi-globe"></i>
                   {{ candidate.nationality }}

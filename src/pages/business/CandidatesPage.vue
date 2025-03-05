@@ -90,8 +90,8 @@ const offers = ref([
     candidate: {
       name: '홍길동',
       career: '5년',
-      job: 'IT개발·데이터',
-      position: '프론트엔드 개발자',
+      age: '28',
+      gender: '남성',
       nationality: '대한민국'
     },
     jobPosting: {
@@ -107,8 +107,8 @@ const offers = ref([
     candidate: {
       name: '김철수',
       career: '3년',
-      job: 'IT개발·데이터',
-      position: '백엔드 개발자',
+      age: '26',
+      gender: '남성',
       nationality: '대한민국'
     },
     jobPosting: {
@@ -157,8 +157,8 @@ const applications = ref([
       id: 1,
       name: '홍길동',
       career: '5년',
-      job: 'IT개발·데이터',
-      position: '프론트엔드 개발자',
+      age: '28',
+      gender: '남성',
       nationality: '대한민국'
     },
     status: APPLICATION_STATUS.REVIEW,
@@ -170,8 +170,8 @@ const applications = ref([
       id: 2,
       name: '김철수',
       career: '3년',
-      job: 'IT개발·데이터',
-      position: '백엔드 개발자',
+      age: '26',
+      gender: '남성',
       nationality: '대한민국'
     },
     status: APPLICATION_STATUS.INTERVIEW,
@@ -255,11 +255,11 @@ const getStatusClass = (status) => {
                   {{ application.status }}
                 </span>
               </div>
-              <h3 class="text-xl font-bold mb-2">{{ application.candidate.job }}</h3>
-              <p v-if="application.candidate.position" class="text-gray-600 mb-2">
-                {{ application.candidate.position }}
-              </p>
               <div class="flex gap-8 text-gray-600">
+                <span class="flex items-center gap-2">
+                  <i class="pi pi-user"></i>
+                  {{ application.candidate.age }}세 / {{ application.candidate.gender }}
+                </span>
                 <span class="flex items-center gap-2">
                   <i class="pi pi-globe"></i>
                   {{ application.candidate.nationality }}
@@ -309,11 +309,11 @@ const getStatusClass = (status) => {
                   {{ getStatusText(offer.status) }}
                 </span>
               </div>
-              <h3 class="text-xl font-bold mb-2">{{ offer.candidate.job }}</h3>
-              <p v-if="offer.candidate.position" class="text-gray-600 mb-2">
-                {{ offer.candidate.position }}
-              </p>
               <div class="flex gap-8 text-gray-600">
+                <span class="flex items-center gap-2">
+                  <i class="pi pi-user"></i>
+                  {{ offer.candidate.age }}세 / {{ offer.candidate.gender }}
+                </span>
                 <span class="flex items-center gap-2">
                   <i class="pi pi-globe"></i>
                   {{ offer.candidate.nationality }}

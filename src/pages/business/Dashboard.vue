@@ -7,33 +7,8 @@ import Select from 'primevue/select';
 
 const router = useRouter();
 
-const selectedJob = ref(null);
 const selectedCareer = ref(null);
 const selectedNationality = ref(null);
-
-const jobs = [
-  { label: '기획·전략', value: 'planning' },
-  { label: '마케팅·홍보·조사', value: 'marketing' },
-  { label: '회계·세무·재무', value: 'accounting' },
-  { label: '인사·노무·HRD', value: 'hr' },
-  { label: '총무·법무·사무', value: 'admin' },
-  { label: 'IT개발·데이터', value: 'it' },
-  { label: '디자인', value: 'design' },
-  { label: '영업·판매·무역', value: 'sales' },
-  { label: '고객상담·TM', value: 'cs' },
-  { label: '구매·자재·물류', value: 'purchasing' },
-  { label: '상품기획·MD', value: 'md' },
-  { label: '운전·운송·배송', value: 'delivery' },
-  { label: '서비스', value: 'service' },
-  { label: '생산', value: 'production' },
-  { label: '건설·건축', value: 'construction' },
-  { label: '의료', value: 'medical' },
-  { label: '연구·R&D', value: 'research' },
-  { label: '교육', value: 'education' },
-  { label: '미디어·문화·스포츠', value: 'media' },
-  { label: '금융·보험', value: 'finance' },
-  { label: '공공·복지', value: 'public' }
-];
 
 const careers = [
   { label: '신입', value: 'entry' },
@@ -202,22 +177,6 @@ const jobPosts = ref([
             </svg>
           </div>
           <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">기업 정보</span>
-        </div>
-      </div>
-
-      <!-- 필터 영역 -->
-      <div class="flex flex-wrap gap-4 mb-6">
-        <div class="flex-1 min-w-[200px]">
-          <Select v-model="selectedNationality" :options="nationalities" optionLabel="label" 
-            placeholder="국적" class="w-full" />
-        </div>
-        <div class="flex-1 min-w-[200px]">
-          <Select v-model="selectedCareer" :options="careers" optionLabel="label" 
-            placeholder="경력" class="w-full" />
-        </div>
-        <div class="flex-1 min-w-[200px]">
-          <Select v-model="selectedJob" :options="jobs" optionLabel="label" 
-            placeholder="직무" class="w-full" />
         </div>
       </div>
 

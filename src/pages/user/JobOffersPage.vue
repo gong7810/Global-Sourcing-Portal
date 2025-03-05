@@ -28,10 +28,6 @@ const selectedOffer = ref(null);
 // 제안 상세 보기
 const viewOfferDetail = (offer) => {
   selectedOffer.value = offer;
-  if (!offer.isRead) {
-    offer.isRead = true;
-    // API 호출하여 읽음 상태 업데이트
-  }
   showDetailModal.value = true;
 };
 
@@ -119,7 +115,6 @@ const getDaysUntilDeadline = (deadline) => {
               <span :class="getStatusClass(offer.status)" class="px-3 py-1 rounded-full text-sm">
                 {{ getStatusText(offer.status) }}
               </span>
-              <span v-if="!offer.isRead" class="bg-red-500 text-white px-2 py-1 rounded-full text-xs"> New </span>
             </div>
             <h3 class="text-xl font-bold mb-4">{{ offer.position }}</h3>
             <div class="flex gap-8 text-gray-600">
