@@ -11,108 +11,10 @@ const userStore = useUserStore();
 const { userInfo } = storeToRefs(authStore);
 const { proposalCount } = storeToRefs(userStore);
 
-const showFilterModal = ref(false);
-const currentFilter = ref(null);
-const tempSelectedOptions = ref([]);
-
 const bookmarkFlag = ref(true);
 const proposalFlag = ref(false);
 
 const unreadOffers = ref(proposalCount.value);
-
-const filters = [
-  {
-    type: 'region',
-    title: '지역',
-    options: [
-      { label: '서울', value: 'seoul' },
-      { label: '경기도', value: 'gyeonggi' },
-      { label: '인천', value: 'incheon' },
-      { label: '부산', value: 'busan' },
-      { label: '대구', value: 'daegu' },
-      { label: '광주', value: 'gwangju' },
-      { label: '대전', value: 'daejeon' },
-      { label: '울산', value: 'ulsan' },
-      { label: '세종', value: 'sejong' }
-    ]
-  },
-  {
-    type: 'job',
-    title: '직무',
-    options: [
-      { label: '개발자', value: 'developer' },
-      { label: '디자이너', value: 'designer' },
-      { label: '기획자', value: 'planner' },
-      { label: '마케팅', value: 'marketing' },
-      { label: '영업', value: 'sales' },
-      { label: '경영지원', value: 'management' }
-    ]
-  },
-  {
-    type: 'career',
-    title: '근무형태',
-    options: [
-      { label: '신입', value: 'entry' },
-      { label: '경력', value: 'experienced' },
-      { label: '인턴', value: 'intern' },
-      { label: '계약직', value: 'contract' }
-    ]
-  }
-  // {
-  //   type: 'visa',
-  //   title: '보유한 비자',
-  //   options: [
-  //     { label: '비자 없음', value: 'none' },
-  //     { label: '취업 비자', value: 'work' },
-  //     { label: '영주권', value: 'permanent' },
-  //     { label: '학생 비자', value: 'student' }
-  //   ]
-  // }
-];
-
-const selectedFilters = ref({
-  region: [],
-  job: [],
-  career: []
-  // visa: []
-});
-
-const openFilterModal = (filterType) => {
-  const filter = filters.find((f) => f.type === filterType);
-  currentFilter.value = filter;
-  tempSelectedOptions.value = [...selectedFilters.value[filterType]];
-  showFilterModal.value = true;
-};
-
-const toggleOption = (option) => {
-  const index = tempSelectedOptions.value.findIndex((o) => o.value === option.value);
-  if (index === -1) {
-    tempSelectedOptions.value.push(option);
-  } else {
-    tempSelectedOptions.value.splice(index, 1);
-  }
-};
-
-const isOptionSelected = (option) => {
-  return tempSelectedOptions.value.some((o) => o.value === option.value);
-};
-
-const applyFilter = () => {
-  selectedFilters.value[currentFilter.value.type] = [...tempSelectedOptions.value];
-  showFilterModal.value = false;
-};
-
-const cancelFilter = () => {
-  showFilterModal.value = false;
-};
-
-const getFilterLabel = (filterType) => {
-  const selected = selectedFilters.value[filterType];
-  if (selected.length === 0) {
-    return filters.find((f) => f.type === filterType).title;
-  }
-  return `${filters.find((f) => f.type === filterType).title} (${selected.length})`;
-};
 
 onMounted(() => {
   if (userInfo.value?.type === 'user') {
@@ -197,8 +99,8 @@ onMounted(() => {
             >북마크</span
           >
         </div> -->
+        <!-- v-if="proposalFlag" -->
         <div
-          v-if="proposalFlag"
           class="flex flex-col items-center cursor-pointer group"
           @click="router.push('/user/job-offers')"
         >
@@ -251,7 +153,8 @@ onMounted(() => {
         </div>
       </div>
 
-      <!-- 필터 영역 -->
+      <!-- 필터 영역 주석 처리 -->
+      <!--
       <div class="flex gap-4 mb-6">
         <button
           v-for="filter in filters"
@@ -263,8 +166,10 @@ onMounted(() => {
           <i class="pi pi-chevron-down text-[#8B8BF5]"></i>
         </button>
       </div>
+      -->
 
-      <!-- 필터 모달 -->
+      <!-- 필터 모달 주석 처리 -->
+      <!--
       <Dialog
         v-model:visible="showFilterModal"
         :header="currentFilter?.title"
@@ -296,6 +201,7 @@ onMounted(() => {
           </div>
         </template>
       </Dialog>
+      -->
 
       <!-- 채용공고 카드들 -->
       <div class="space-y-4">

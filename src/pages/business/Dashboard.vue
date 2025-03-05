@@ -3,7 +3,6 @@ import { onMounted, ref } from 'vue';
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
-import Button from 'primevue/button';
 import Select from 'primevue/select';
 
 const router = useRouter();
@@ -13,8 +12,27 @@ const selectedCareer = ref(null);
 const selectedNationality = ref(null);
 
 const jobs = [
-  { label: '개발자', value: 'developer' },
-  { label: '디자이너', value: 'designer' },
+  { label: '기획·전략', value: 'planning' },
+  { label: '마케팅·홍보·조사', value: 'marketing' },
+  { label: '회계·세무·재무', value: 'accounting' },
+  { label: '인사·노무·HRD', value: 'hr' },
+  { label: '총무·법무·사무', value: 'admin' },
+  { label: 'IT개발·데이터', value: 'it' },
+  { label: '디자인', value: 'design' },
+  { label: '영업·판매·무역', value: 'sales' },
+  { label: '고객상담·TM', value: 'cs' },
+  { label: '구매·자재·물류', value: 'purchasing' },
+  { label: '상품기획·MD', value: 'md' },
+  { label: '운전·운송·배송', value: 'delivery' },
+  { label: '서비스', value: 'service' },
+  { label: '생산', value: 'production' },
+  { label: '건설·건축', value: 'construction' },
+  { label: '의료', value: 'medical' },
+  { label: '연구·R&D', value: 'research' },
+  { label: '교육', value: 'education' },
+  { label: '미디어·문화·스포츠', value: 'media' },
+  { label: '금융·보험', value: 'finance' },
+  { label: '공공·복지', value: 'public' }
 ];
 
 const careers = [
@@ -25,10 +43,9 @@ const careers = [
 ];
 
 const nationalities = [
-  { label: '대한민국', value: 'KR' },
-  { label: '일본', value: 'JP' },
-  { label: '중국', value: 'CN' },
   { label: '베트남', value: 'VN' },
+  { label: '중국', value: 'CN' },
+  { label: '일본', value: 'JP' },
   { label: '기타', value: 'OTHER' }
 ];
 
@@ -52,19 +69,38 @@ const formatCurrency = (value) => {
   return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 };
 
-// 구직자 목록 데이터
-const candidates = ref([
+// 채용공고 목록 데이터
+const jobPosts = ref([
   {
     id: 1,
-    name: '홍길동',
-    career: '5년',
-    lastPosition: '프론트엔드 개발자',
-    skills: ['Vue.js', 'React', 'TypeScript'],
-    education: '서울대학교',
-    status: '구직중',
-    lastUpdate: '2024-03-20',
-    isBookmarked: false
+    company: '(주)코아시아',
+    title: '정보전략그룹(IT) 경력직 채용 공고',
+    department: 'IT개발·데이터',
+    location: '경기 화성시',
+    headcount: 0,
+    dday: 49,
+    type: '정규직'
   },
+  {
+    id: 2,
+    company: '(주)삼성전자',
+    title: '소프트웨어 개발자 채용',
+    department: '웹 개발',
+    location: '서울 서초구',
+    headcount: 5,
+    dday: 30,
+    type: '정규직'
+  },
+  {
+    id: 3,
+    company: '(주)네이버',
+    title: '프론트엔드 개발자 모집',
+    department: '프론트엔드',
+    location: '경기 성남시',
+    headcount: 3,
+    dday: 15,
+    type: '정규직'
+  }
 ]);
 </script>
 
@@ -185,37 +221,32 @@ const candidates = ref([
         </div>
       </div>
 
-      <!-- 구직자 카드 목록 -->
+      <!-- 채용공고 카드 목록 -->
       <div class="space-y-4">
-        <div v-for="candidate in candidates" :key="candidate.id"
-          class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg hover:border-[#8B8BF5] cursor-pointer group">
+        <div v-for="post in jobPosts" :key="post.id"
+          class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg hover:border-[#8B8BF5]">
           <div class="flex justify-between items-start">
-            <div class="flex-grow">
+            <div>
               <div class="flex items-center gap-2 mb-2">
-                <span class="font-bold">{{ candidate.name }}</span>
-                <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">{{ candidate.career }}</span>
-                <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">{{ candidate.status }}</span>
+                <span class="font-bold">{{ post.company }}</span>
+                <span class="text-[#8B8BF5]">D-{{ post.dday }}</span>
+                <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">{{ post.type }}</span>
               </div>
-              <h3 class="text-xl font-bold mb-4">{{ candidate.lastPosition }}</h3>
+              <h3 class="text-xl font-bold mb-4">{{ post.title }}</h3>
               <div class="flex gap-8 text-gray-600">
                 <span class="flex items-center gap-2">
-                  <i class="pi pi-tag"></i>
-                  {{ candidate.skills.join(', ') }}
+                  <i class="pi pi-briefcase"></i>
+                  {{ post.department }}
                 </span>
-                <!-- <span class="flex items-center gap-2">
-                  <i class="pi pi-building"></i>
-                  {{ candidate.education }}
-                </span> -->
+                <span class="flex items-center gap-2">
+                  <i class="pi pi-map-marker"></i>
+                  {{ post.location }}
+                </span>
+                <span class="flex items-center gap-2">
+                  <i class="pi pi-users"></i>
+                  채용인원: {{ post.headcount }}명
+                </span>
               </div>
-            </div>
-            <div class="flex items-center gap-4">
-              <Button :icon="candidate.isBookmarked ? 'pi pi-bookmark-fill' : 'pi pi-bookmark'" 
-                class="p-button-rounded p-button-text"
-                :class="{ 'text-[#8B8BF5]': candidate.isBookmarked }"
-                @click.stop="toggleBookmark(candidate)" />
-              <Button label="제안하기" 
-                class="bt_btn primary"
-                @click.stop="router.push(`/business/job-offer/create/${candidate.id}`)" />
             </div>
           </div>
         </div>
@@ -253,3 +284,4 @@ const candidates = ref([
   transform: translateY(-2px);
 }
 </style>
+
