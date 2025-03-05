@@ -109,22 +109,30 @@ const handleClickOutside = (event) => {
               <!-- 메뉴 열림 상태에 따라 표시 -->
               <div class="py-2">
                 <a
-                  @click="router.push('/uikit/formlayout')"
-                  href="#"
                   class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50"
+                  style="cursor: pointer"
+                  @click="router.push('/user/resume')"
                 >
                   <i class="pi pi-file-edit text-[#8FA1FF]"></i>
                   <span class="font-medium">이력서 관리</span>
                 </a>
-                <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50">
+                <a class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50" style="cursor: pointer">
                   <i class="pi pi-chart-line text-[#8FA1FF]"></i>
                   <span class="font-medium">지원 현황</span>
                 </a>
-                <a href="/faq" class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50">
+                <a
+                  class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50"
+                  style="cursor: pointer"
+                  @click="router.push('/faq')"
+                >
                   <i class="pi pi-question-circle text-[#8FA1FF]"></i>
                   <span class="font-medium">FAQ</span>
                 </a>
-                <a href="/inquiry" class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50">
+                <a
+                  class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50"
+                  style="cursor: pointer"
+                  @click="router.push('/inquiry')"
+                >
                   <i class="pi pi-comments text-[#8FA1FF]"></i>
                   <span class="font-medium">문의하기</span>
                 </a>
