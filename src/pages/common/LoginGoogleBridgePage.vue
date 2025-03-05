@@ -35,7 +35,7 @@ onMounted(() => {
     <div class="bg-white p-8 rounded-2xl shadow-lg w-[480px]">
       <!-- 로고 -->
       <div class="text-center mb-8">
-        <h1 class="text-3xl font-bold">BT POTAL</h1>
+        <h1 class="text-3xl font-bold">Global Sourcing Portal</h1>
       </div>
 
       <!-- 탭 메뉴 -->

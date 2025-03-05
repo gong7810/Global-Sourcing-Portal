@@ -32,7 +32,7 @@ const findPassword = () => {
     <div class="bg-white p-8 rounded-2xl shadow-lg w-[480px]">
       <!-- 로고 -->
       <div class="text-center mb-8">
-        <router-link to="/" class="text-3xl font-bold">BT POTAL</router-link>
+        <router-link to="/" class="text-3xl font-bold">Global Sourcing Portal</router-link>
       </div>
 
       <h2 class="text-2xl font-bold text-center mb-6">비밀번호 찾기</h2>

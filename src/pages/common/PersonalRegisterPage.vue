@@ -257,7 +257,7 @@ const submitForm = () => {
     <div class="bg-white p-8 rounded-2xl shadow-lg w-[480px]">
       <!-- 로고 -->
       <div class="text-center mb-8">
-        <router-link to="/" class="text-xl text-[#8FA1FF] font-bold">BT POTAL</router-link>
+        <router-link to="/" class="text-xl text-[#8FA1FF] font-bold">Global Sourcing Portal</router-link>
         <h1 class="text-3xl font-bold">개인회원가입</h1>
       </div>
 
@@ -480,7 +480,7 @@ const submitForm = () => {
             <div v-if="details.service" class="p-2 border rounded bg-gray-100" style="height: 200px; overflow-y: auto">
               <p>제 1 조 (목적)</p>
               <p>
-                본 약관은 BTPotal(이하 "회사")이 운영하는 "서비스"를 이용함에 있어 "회사"와 회원간의 이용 조건 및 제한
+                본 약관은 Global Sourcing Portal(이하 "회사")이 운영하는 "서비스"를 이용함에 있어 "회사"와 회원간의 이용 조건 및 제한
                 절차, 권리, 의무 및 책임사항, 기타 필요한 사항을 규정함을 목적으로 한다.
               </p>
               <p>제 2 조 (용어의 정의)</p>
