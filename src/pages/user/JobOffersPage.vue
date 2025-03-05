@@ -38,8 +38,6 @@ const viewOfferDetail = (offer) => {
 // 제안 수락
 const acceptOffer = (offer) => {
   offer.status = 'accepted';
-  messagePop.toast(`${offer.companyName}의 채용제안을 수락했습니다.`, 'success', 'success');
-
   toast.add({
     severity: 'success',
     summary: '제안 수락',
