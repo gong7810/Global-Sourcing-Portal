@@ -73,82 +73,6 @@ const updateApplicationStatus = (newStatus) => {
   }
 };
 
-// 채용 제안 모달
-const showOffersModal = ref(false);
-const selectedOfferStatus = ref('all');
-const offerStatusOptions = [
-  { label: '전체', value: 'all' },
-  { label: '대기중', value: 'pending' },
-  { label: '수락', value: 'accepted' },
-  { label: '거절', value: 'rejected' }
-];
-
-// 제안 목록 데이터 수정
-const offers = ref([
-  {
-    id: 1,
-    candidate: {
-      name: '홍길동',
-      career: '5년',
-      age: '28',
-      gender: '남성',
-      nationality: '대한민국'
-    },
-    jobPosting: {
-      title: '시니어 프론트엔드 개발자'
-    },
-    status: 'pending',
-    sentDate: '2024-03-20',
-    message: '안녕하세요. 귀하의 프로필을 보고 연락드립니다...',
-    responseDate: null
-  },
-  {
-    id: 2,
-    candidate: {
-      name: '김철수',
-      career: '3년',
-      age: '26',
-      gender: '남성',
-      nationality: '대한민국'
-    },
-    jobPosting: {
-      title: '백엔드 개발자'
-    },
-    status: 'accepted',
-    sentDate: '2024-03-15',
-    message: '당사의 백엔드 개발자 포지션에 관심이 있으실까요?',
-    responseDate: '2024-03-16'
-  }
-]);
-
-// 상태별 스타일
-const getStatusStyle = (status) => {
-  switch (status) {
-    case 'pending':
-      return 'bg-blue-100 text-blue-700';
-    case 'accepted':
-      return 'bg-green-100 text-green-700';
-    case 'rejected':
-      return 'bg-red-100 text-red-700';
-    default:
-      return 'bg-gray-100 text-gray-700';
-  }
-};
-
-// 상태 텍스트
-const getStatusText = (status) => {
-  switch (status) {
-    case 'pending':
-      return '대기중';
-    case 'accepted':
-      return '수락';
-    case 'rejected':
-      return '거절';
-    default:
-      return '알 수 없음';
-  }
-};
-
 // 샘플 지원자 데이터
 const applications = ref([
   {
@@ -188,14 +112,6 @@ const filteredApplications = computed(() => {
   return applications.value.filter(app => app.status === selectedTab.value);
 });
 
-// 필터링된 제안 목록
-const filteredOffers = computed(() => {
-  if (selectedOfferStatus.value === 'all') {
-    return offers.value;
-  }
-  return offers.value.filter(offer => offer.status === selectedOfferStatus.value);
-});
-
 // 상태별 스타일 함수 수정
 const getStatusClass = (status) => {
   switch (status) {
@@ -222,11 +138,6 @@ const getStatusClass = (status) => {
           @click="router.back()"></i>
         <h1 class="text-3xl font-bold">지원자 관리</h1>
       </div>
-      <Button 
-        label="채용 제안 내역" 
-        icon="pi pi-list" 
-        class="p-button-outlined"
-        @click="showOffersModal = true" />
     </div>
 
     <!-- 메인 컨텐츠 영역 -->
@@ -279,64 +190,6 @@ const getStatusClass = (status) => {
         </div>
       </div>
     </div>
-
-    <!-- 채용 제안 모달 부분 수정 -->
-    <Dialog 
-      v-model:visible="showOffersModal"
-      modal
-      :style="{ width: '90vw', maxWidth: '1000px' }"
-      header="채용 제안 내역">
-      <div class="flex justify-end mb-6">
-        <Select v-model="selectedOfferStatus" 
-          :options="offerStatusOptions" 
-          optionLabel="label"
-          optionValue="value"
-          placeholder="상태 필터"
-          class="w-[150px]" />
-      </div>
-
-      <div class="space-y-4">
-        <div v-for="offer in filteredOffers" :key="offer.id"
-          class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg">
-          <div class="flex justify-between items-start">
-            <div class="flex-grow">
-              <div class="flex items-center gap-2 mb-2">
-                <span class="font-bold">{{ offer.candidate.name }}</span>
-                <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">
-                  {{ offer.candidate.career }}
-                </span>
-                <span :class="[getStatusStyle(offer.status), 'px-3 py-1 rounded-full text-sm']">
-                  {{ getStatusText(offer.status) }}
-                </span>
-              </div>
-              <div class="flex gap-8 text-gray-600">
-                <span class="flex items-center gap-2">
-                  <i class="pi pi-user"></i>
-                  {{ offer.candidate.age }}세 / {{ offer.candidate.gender }}
-                </span>
-                <span class="flex items-center gap-2">
-                  <i class="pi pi-globe"></i>
-                  {{ offer.candidate.nationality }}
-                </span>
-                <span class="flex items-center gap-2">
-                  <i class="pi pi-calendar"></i>
-                  제안일: {{ offer.sentDate }}
-                </span>
-                <span v-if="offer.responseDate" class="flex items-center gap-2">
-                  <i class="pi pi-reply"></i>
-                  응답일: {{ offer.responseDate }}
-                </span>
-              </div>
-            </div>
-          </div>
-          
-          <div class="border-t pt-4 mt-4">
-            <h4 class="font-medium mb-2">제안한 포지션: {{ offer.jobPosting.title }}</h4>
-            <p class="text-gray-600 line-clamp-2">{{ offer.message }}</p>
-          </div>
-        </div>
-      </div>
-    </Dialog>
 
     <!-- 상태 변경 메뉴 -->
     <Menu ref="statusMenu" :model="statusMenuItems" :popup="true" />
