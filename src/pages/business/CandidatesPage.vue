@@ -73,14 +73,16 @@ const updateApplicationStatus = (newStatus) => {
   }
 };
 
-// 샘플 지원자 데이터
+// 샘플 지원자 데이터 수정
 const applications = ref([
   {
     id: 1,
     candidate: {
       id: 1,
       name: '홍길동',
+      job: 'IT개발·데이터',
       career: '5년',
+      education: '경상국립대학교(4년) 전자·전기공학과 졸업',
       age: '28',
       gender: '남성',
       nationality: '대한민국'
@@ -93,13 +95,30 @@ const applications = ref([
     candidate: {
       id: 2,
       name: '김철수',
-      career: '3년',
+      job: '경영·사무',
+      career: '신입',
+      education: '부산외국어대학교(4년) 경영학과 졸업',
       age: '26',
       gender: '남성',
       nationality: '대한민국'
     },
     status: APPLICATION_STATUS.INTERVIEW,
     appliedDate: '2024-03-19'
+  },
+  {
+    id: 3,
+    candidate: {  // candidate 객체 추가
+      id: 3,
+      name: '이영희',
+      job: '',  // 직무 없음
+      career: '신입',
+      education: '호원대학교(4년) 전자·전기공학과 졸업',
+      age: '25',
+      gender: '여성',
+      nationality: '대한민국'
+    },
+    status: APPLICATION_STATUS.REVIEW,
+    appliedDate: '2024-03-18'
   }
 ]);
 
@@ -157,13 +176,26 @@ const getStatusClass = (status) => {
           class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg hover:border-[#8B8BF5] group">
           <div class="flex justify-between items-start">
             <div class="flex-grow">
-              <div class="flex items-center gap-2 mb-2">
-                <span class="font-bold">{{ application.candidate.name }}</span>
-                <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">
-                  {{ application.candidate.career }}
-                </span>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="font-bold text-lg">{{ application.candidate.name }}</span>
                 <span :class="getStatusClass(application.status)">
                   {{ application.status }}
+                </span>
+              </div>
+              <div v-if="application.candidate.career === '신입' && !application.candidate.job" class="mb-2">
+                <span class="text-gray-600">
+                  <i class="pi pi-book mr-1"></i>
+                  {{ application.candidate.education }}
+                </span>
+              </div>
+              <div v-else class="flex items-center gap-2 mb-2">
+                <span class="text-[#8B8BF5] font-medium text-lg">{{ application.candidate.job }}</span>
+                <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
+                  {{ application.candidate.career }}
+                </span>
+                <span v-if="application.candidate.career === '신입'" class="text-gray-600">
+                  <i class="pi pi-book mr-1"></i>
+                  {{ application.candidate.education }}
                 </span>
               </div>
               <div class="flex gap-8 text-gray-600">

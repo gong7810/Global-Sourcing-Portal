@@ -9,14 +9,16 @@ import Select from 'primevue/select';
 const route = useRoute();
 const router = useRouter();
 
-// 선택된 구직자 정보
+// 선택된 인재 정보
 const candidate = ref({
-  id: null,
-  name: '',
-  career: '',
-  age: '',
-  gender: '',
-  nationality: ''
+  id: 1,
+  name: '홍길동',
+  job: 'IT개발·데이터',
+  career: '5년',
+  education: '경상국립대학교(4년) 전자·전기공학과 졸업',
+  age: '28',
+  gender: '남성',
+  nationality: '대한민국'
 });
 
 // 채용공고 목록
@@ -33,25 +35,28 @@ const offerForm = ref({
 });
 
 // 구직자 정보 로드
-onMounted(async () => {
-  const candidateId = route.params.candidateId;
-  // 임시 데이터로 설정 (실제로는 API 호출로 대체)
-  if (candidateId === '1') {
-    candidate.value = {
-      id: 1,
-      name: '홍길동',
-      career: '5년',
-      age: '28',
-      gender: '남성',
-      nationality: '대한민국'
-    };
-  } else if (candidateId === '2') {
+onMounted(() => {
+  // API 호출을 시뮬레이션
+  if (route.params.candidateId === '2') {
     candidate.value = {
       id: 2,
       name: '김철수',
+      job: '경영·사무',
       career: '신입',
-      age: '25',
+      education: '부산외국어대학교(4년) 경영학과 졸업',
+      age: '26',
       gender: '남성',
+      nationality: '대한민국'
+    };
+  } else if (route.params.candidateId === '3') {
+    candidate.value = {
+      id: 3,
+      name: '이영희',
+      job: '',
+      career: '신입',
+      education: '호원대학교(4년) 전자·전기공학과 졸업',
+      age: '25',
+      gender: '여성',
       nationality: '대한민국'
     };
   }
@@ -89,10 +94,23 @@ const sendOffer = async () => {
     <div class="bg-white rounded-lg p-6 mb-6 border border-gray-200">
       <div class="flex justify-between items-start">
         <div class="flex-grow">
-          <div class="flex items-center gap-2 mb-2">
-            <span class="font-bold">{{ candidate.name }}</span>
-            <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-bold text-lg">{{ candidate.name }}</span>
+          </div>
+          <div v-if="candidate.career === '신입' && !candidate.job" class="mb-2">
+            <span class="text-gray-600">
+              <i class="pi pi-book mr-1"></i>
+              {{ candidate.education }}
+            </span>
+          </div>
+          <div v-else class="flex items-center gap-2 mb-2">
+            <span class="text-[#8B8BF5] font-medium text-lg">{{ candidate.job }}</span>
+            <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
               {{ candidate.career }}
+            </span>
+            <span v-if="candidate.career === '신입'" class="text-gray-600">
+              <i class="pi pi-book mr-1"></i>
+              {{ candidate.education }}
             </span>
           </div>
           <div class="flex gap-8 text-gray-600">
