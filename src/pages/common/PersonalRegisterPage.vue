@@ -8,6 +8,8 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
+const fileupload = ref();
+
 const id = ref('');
 const pw = ref('');
 const showPw = ref(false);
@@ -39,14 +41,14 @@ const issuingCountry = ref(null);
 const nationalityOptions = [
   { label: '대한민국', value: 'KOR' },
   { label: '일본', value: 'JPN' },
-  { label: '중국', value: 'CHN' },
+  { label: '중국', value: 'CHN' }
   // ... 더 많은 국가들
 ];
 
 const countryOptions = [
   { label: '대한민국', value: 'KOR' },
   { label: '일본', value: 'JPN' },
-  { label: '중국', value: 'CHN' },
+  { label: '중국', value: 'CHN' }
   // ... 더 많은 국가들
 ];
 
@@ -156,21 +158,6 @@ const togglePasswordCheckVisibility = () => {
   showPwCheck.value = !showPwCheck.value;
 };
 
-const sendVerificationCode = () => {
-  // 인증번호 전송 로직
-  console.log('Verification code sent');
-};
-
-const verifyCode = () => {
-  // 인증번호 확인 로직
-  console.log('Verification code verified');
-};
-
-const resendVerificationCode = () => {
-  // 인증번호 재전송 로직
-  console.log('Verification code resent');
-};
-
 const verifyPassport = async () => {
   // 여권번호 확인 로직
 
@@ -225,7 +212,8 @@ const submitForm = () => {
     !passportFirstName.value.trim() ||
     !issueDate.value ||
     !expirationDate.value ||
-    !issuingCountry.value
+    !issuingCountry.value ||
+    !fileupload.value.hasFiles
   ) {
     formError.value = '모든 필수 항목을 입력하고 체크해주세요.';
     return;
@@ -249,6 +237,15 @@ const submitForm = () => {
   console.log('가입 성공');
   // 회원가입 완료 페이지로 이동
   router.push('/user/register/complete');
+};
+
+const test = () => {
+  // console.log(fileupload.value.files[0]);
+  console.log('1', fileupload.value);
+  const formData = new FormData();
+  formData.append('file', fileupload.value.files[0]);
+
+  console.log('2', formData);
 };
 </script>
 
@@ -328,46 +325,9 @@ const submitForm = () => {
             </div>
           </div>
           <InputText v-model="email" type="email" placeholder="이메일" class="w-full px-4 py-3" />
-          <!-- <div class="flex space-x-2">
-            <input
-              v-model="personalPhone"
-              type="text"
-              placeholder="휴대폰번호"
-              class="flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
-            />
-            <button
-              type="button"
-              @click="sendVerificationCode"
-              class="px-4 py-3 bg-[#F2F4F7] text-gray-500 border border-gray-300 rounded-lg"
-            >
-              인증번호 전송
-            </button>
-          </div>
-          <div class="flex space-x-2">
-            <input
-              v-model="verificationCode"
-              type="text"
-              placeholder="인증번호 입력"
-              class="flex-grow px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
-            />
-            <button
-              type="button"
-              @click="verifyCode"
-              class="px-4 py-3 bg-[#F2F4F7] text-gray-500 border border-gray-300 rounded-lg"
-            >
-              확인
-            </button>
-            <button
-              type="button"
-              @click="resendVerificationCode"
-              class="px-4 py-3 bg-[#F2F4F7] text-gray-500 border border-gray-300 rounded-lg"
-            >
-              재전송
-            </button>
-          </div> -->
           <div class="space-y-4">
             <h3 class="font-bold text-lg mb-2">여권 정보</h3>
-            
+
             <!-- 국적 선택 -->
             <div class="flex space-x-2">
               <Select
@@ -381,18 +341,27 @@ const submitForm = () => {
 
             <!-- 여권번호 -->
             <div class="flex space-x-2">
-              <InputText 
-                v-model="passportNo" 
-                type="text" 
-                placeholder="여권번호 (예: M12345678)" 
+              <InputText
+                v-model="passportNo"
+                type="text"
+                placeholder="여권번호 (예: M12345678)"
                 class="flex-grow px-4 py-3"
                 maxlength="9"
                 @input="formatPassportNo"
               />
+              <FileUpload
+                style="background-color: #f2f4f7; color: #353336; border-color: #9d9aa0"
+                ref="fileupload"
+                mode="basic"
+                name="demo[]"
+                url="/api/upload"
+                accept="image/*"
+                :maxFileSize="1000000"
+                @upload="onUpload"
+              />
               <button
                 type="button"
-                @click="verifyPassport"
-                :disabled="!isValidPassport"
+                @click="test"
                 class="px-4 py-2 bg-[#F2F4F7] text-gray-500 border border-gray-300 rounded-lg"
               >
                 여권번호 확인
@@ -480,8 +449,8 @@ const submitForm = () => {
             <div v-if="details.service" class="p-2 border rounded bg-gray-100" style="height: 200px; overflow-y: auto">
               <p>제 1 조 (목적)</p>
               <p>
-                본 약관은 Global Sourcing Portal(이하 "회사")이 운영하는 "서비스"를 이용함에 있어 "회사"와 회원간의 이용 조건 및 제한
-                절차, 권리, 의무 및 책임사항, 기타 필요한 사항을 규정함을 목적으로 한다.
+                본 약관은 Global Sourcing Portal(이하 "회사")이 운영하는 "서비스"를 이용함에 있어 "회사"와 회원간의 이용
+                조건 및 제한 절차, 권리, 의무 및 책임사항, 기타 필요한 사항을 규정함을 목적으로 한다.
               </p>
               <p>제 2 조 (용어의 정의)</p>
               <p>이 약관에서 사용하는 용어의 정의는 아래와 같다.</p>
@@ -549,3 +518,11 @@ const submitForm = () => {
     </div>
   </div>
 </template>
+
+<style scoped lang="scss">
+.upload-button {
+  background-color: #f2f4f7;
+  color: #353336;
+  border-color: #9d9aa0;
+}
+</style>
