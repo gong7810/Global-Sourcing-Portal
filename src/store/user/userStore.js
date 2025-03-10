@@ -37,6 +37,8 @@ export const useUserStore = defineStore(
       }
     ]);
 
+    const profileImage = ref('');
+
     const proposalCount = computed(() => {
       console.log(
         jobOfferList.value.filter((item) => {
@@ -47,8 +49,15 @@ export const useUserStore = defineStore(
       return jobOfferList.value.filter((item) => item.status === 'pending').length;
     });
 
+    const updateProfileImage = (imageUrl) => {
+      profileImage.value = imageUrl;
+    };
+
     return {
-      jobOfferList
+      jobOfferList,
+      profileImage,
+      proposalCount,
+      updateProfileImage
     };
   },
   {
