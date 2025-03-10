@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, toRaw, watch } from 'vue';
+import { onMounted, ref, toRaw, watch, onBeforeUnmount } from 'vue';
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
@@ -10,11 +10,12 @@ import InputText from 'primevue/inputtext';
 import Checkbox from 'primevue/checkbox';
 import { useMessagePop } from '@/plugins/commonutils';
 import { random, randomInt } from 'es-toolkit/compat';
+import { useUserStore } from '@/store/user/userStore';
+import { computed } from 'vue';
 
 const router = useRouter();
 const messagePop = useMessagePop();
-
-const searchCompanyName = ref('');
+const userStore = useUserStore();
 
 const showNationalityModal = ref(false);
 const showPassportModal = ref(false);
@@ -29,34 +30,13 @@ const educationModifyFlag = ref(false);
 
 // 이력서 공개 설정 관련 상태 추가
 const visibilityType = ref('private'); // 'public', 'private', 'selective'
-const selectedCompanies = ref([]);
-const showCompanySelectModal = ref(false);
-
-const filterdCompany = ref('');
-const filterdCompanyList = ref([]);
-
-// 기업 목록 (예시 데이터)
-// TODO: 추후 회원가입된 company테이블에서 직접 조회형식으로 수정필요
-// 검색 필터 형식
-const companies = ref([
-  { name: '(주)비티포탈', id: 1 },
-  { name: '삼성전자', id: 2 },
-  { name: '네이버', id: 3 },
-  { name: '카카오', id: 4 }
-]);
-
-const visibilityOptions = [
-  { label: '전체 공개', value: 'public', icon: 'pi pi-globe' },
-  { label: '비공개', value: 'private', icon: 'pi pi-lock' },
-  { label: '특정 기업 비공개', value: 'selective', icon: 'pi pi-users' }
-];
 
 const basicInfo = ref({
   name: '최예지',
   birthDate: '1996.09.01',
   gender: '여성',
-  email: 'ye****@naver.com',
-  phone: '010-****-7496',
+  email: 'yeji@naver.com',
+  phone: '010-1234-7496',
   address: '윙스타워 505호',
   totalCareer: '5년',
   lastEducation: '대학교(4년) 졸업'
@@ -100,6 +80,9 @@ const educationList = ref([
     details: '웹 개발 동아리 활동'
   }
 ]);
+
+// basicInfo는 그대로 두고, 프로필 이미지만 computed로 관리
+const profileImage = computed(() => userStore.profileImage || '/default-profile.png');
 
 onMounted(() => {
   // TODO: 이력서 정보 조회 api
@@ -236,57 +219,6 @@ const getResume = async () => {
   // 총 경력과 최종학력 계산
   basicInfo.value.totalCareer = calculateTotalCareer(careerList.value);
   basicInfo.value.lastEducation = getLastEducation(educationList.value);
-};
-
-// const closeNationalityModal = () => {
-//   showNationalityModal.value = false;
-// };
-
-// const saveNationalityInfo = () => {
-//   // TODO: 저장 로직 구현
-//   showNationalityModal.value = false;
-// };
-
-// const closePassportModal = () => {
-//   showPassportModal.value = false;
-// };
-
-// const savePassportInfo = () => {
-//   // TODO: 저장 로직 구현
-//   showPassportModal.value = false;
-// };
-
-// 기업 조회
-const searchCompany = () => {
-  // TODO: 기업조회 api호출
-  const body = {
-    companyName: searchCompanyName.value
-  };
-
-  const response = [
-    {
-      name: searchCompanyName.value,
-      id: randomInt(5, 10000)
-    }
-  ];
-
-  filterdCompanyList.value = response;
-
-  searchCompanyName.value = '';
-};
-
-// 하단 선택자에 추가
-const addCompany = () => {
-  if (filterdCompany.value && !companies.value.includes(filterdCompany.value)) {
-    companies.value.push(toRaw(filterdCompany.value));
-  }
-};
-
-// 비공개할 기업 선택된
-const selectCompany = (company) => {
-  selectedCompanies.value = selectedCompanies.value.some((c) => c.id === company.id)
-    ? selectedCompanies.value.filter((c) => c.id !== company.id)
-    : [...selectedCompanies.value, company];
 };
 
 const closeCareerModal = () => {
@@ -489,20 +421,64 @@ const formatCurrency = (value) => {
   return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 };
 
-const openCompanySelect = () => {
-  showCompanySelectModal.value = true;
-};
+const visibilityOptions = [
+  { label: '전체 공개', value: 'public', icon: 'pi pi-globe' },
+  { label: '비공개', value: 'private', icon: 'pi pi-lock' }
+];
 
-const closeCompanySelect = () => {
-  showCompanySelectModal.value = false;
-};
-
-const saveCompanySelection = () => {
-  showCompanySelectModal.value = false;
-};
-
+// 저장 버튼 클릭 시 실행되는 함수
 const saveResume = () => {
-  // TODO: 추가된 경력, 학력 사항들 저장 로직 구현
+  // 1. 기본 정보 필수값 검증만 남기고
+  if (!basicInfo.value.name) {
+    messagePop.toast('이름을 입력해주세요.', 'warn');
+    return;
+  }
+  if (!basicInfo.value.birthDate) {
+    messagePop.toast('생년월일을 입력해주세요.', 'warn');
+    return;
+  }
+  if (!basicInfo.value.phone) {
+    messagePop.toast('연락처를 입력해주세요.', 'warn');
+    return;
+  }
+  if (!basicInfo.value.email) {
+    messagePop.toast('이메일을 입력해주세요.', 'warn');
+    return;
+  }
+  if (!basicInfo.value.address) {
+    messagePop.toast('주소를 입력해주세요.', 'warn');
+    return;
+  }
+
+  // 저장 확인
+  messagePop.confirm({
+    message: '이력서를 저장하시겠습니까?',
+    onCloseYes: async () => {
+      try {
+        messagePop.toast('이력서가 저장되었습니다.', 'success');
+      } catch (error) {
+        console.error('이력서 저장 중 오류:', error);
+        messagePop.toast('이력서 저장 중 오류가 발생했습니다.', 'error');
+      }
+    }
+  });
+};
+
+// 자격증 관련 상태
+const certificationList = ref([]);
+
+// 자격증 추가 함수
+const addCertification = () => {
+  certificationList.value.push({
+    id: Date.now(),
+    name: '',
+    date: null
+  });
+};
+
+// 자격증 삭제 함수
+const removeCertification = (index) => {
+  certificationList.value.splice(index, 1);
 };
 </script>
 
@@ -520,7 +496,7 @@ const saveResume = () => {
       <Button class="bt_btn primary" label="저장" icon="pi pi-save" @click="saveResume" />
     </div>
 
-    <!-- 이력서 공개 설정 섹션 추가 -->
+    <!-- 이력서 공개 설정 섹션 -->
     <div class="bg-white rounded-lg p-6 mb-6">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-6">
@@ -542,90 +518,6 @@ const saveResume = () => {
             </template>
           </div>
         </div>
-        <Button
-          v-if="visibilityType === 'selective'"
-          class="bt_btn primary outlined"
-          label="기업 선택"
-          icon="pi pi-search"
-          @click="openCompanySelect"
-        />
-      </div>
-      <!-- 선택된 기업 표시 영역 -->
-      <div v-if="visibilityType === 'selective' && selectedCompanies.length > 0" class="mt-4">
-        <div class="flex flex-wrap gap-2">
-          <div
-            v-for="company in selectedCompanies"
-            :key="company.id"
-            class="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full"
-          >
-            <span class="text-sm">{{ company.name }}</span>
-            <button
-              @click="selectedCompanies = selectedCompanies.filter((c) => c.id !== company.id)"
-              class="text-gray-400 hover:text-gray-600"
-            >
-              <i class="pi pi-times"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 기업 선택 모달 -->
-    <div
-      v-if="showCompanySelectModal"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-    >
-      <div class="bg-white rounded-lg w-[600px] max-h-[90vh]">
-        <div class="flex justify-between items-center p-6 border-b">
-          <h2 class="text-xl font-bold">비공개할 기업 선택</h2>
-          <button @click="closeCompanySelect" class="text-gray-400 hover:text-gray-600">
-            <i class="pi pi-times text-xl"></i>
-          </button>
-        </div>
-
-        <div class="p-6">
-          <div class="mb-4">
-            <IconField>
-              <InputIcon class="pi pi-search" />
-              <InputText v-model="searchCompanyName" class="w-full" placeholder="Search" @keyup.enter="searchCompany" />
-            </IconField>
-          </div>
-
-          <Listbox
-            v-if="filterdCompanyList.length"
-            v-model="filterdCompany"
-            class="w-full"
-            listStyle="max-height:150px"
-            :options="filterdCompanyList"
-            optionLabel="name"
-            checkmark
-            @change="addCompany"
-          />
-
-          <Divider />
-
-          <div class="space-y-4 max-h-[50vh] overflow-y-auto">
-            <div
-              v-for="company in companies"
-              :key="company.id"
-              class="flex items-center justify-between p-4 border rounded-lg hover:border-[#8FA1FF] cursor-pointer"
-              @click="selectCompany(company)"
-            >
-              <span>{{ company.name }}</span>
-              <i
-                :class="
-                  selectedCompanies.some((c) => c.id === company.id)
-                    ? 'pi pi-check-circle text-[#8FA1FF]'
-                    : 'pi pi-circle text-gray-300'
-                "
-              ></i>
-            </div>
-          </div>
-        </div>
-
-        <div class="p-6 border-t bg-gray-50 flex justify-center">
-          <Button label="선택 완료" class="w-full" @click="saveCompanySelection" />
-        </div>
       </div>
     </div>
 
@@ -637,35 +529,39 @@ const saveResume = () => {
             <h2 class="text-lg font-bold">기본 정보</h2>
             <Button label="수정" icon="pi pi-pencil" class="p-button-text p-button-sm" @click="goToEditInfo" />
           </div>
-          <div class="space-y-4 text-gray-600">
-            <div class="flex items-center gap-4">
-              <i class="pi pi-user"></i>
-              <span>{{ basicInfo.name }}</span>
+          <div class="flex justify-between items-start">
+            <!-- 기본 정보 -->
+            <div class="space-y-3 text-gray-600 flex-grow">
+              <!-- 이름과 생년월일 그룹 -->
+              <div class="flex items-center">
+                <span class="text-xl font-medium">{{ basicInfo.name }}</span>
+                <span class="ml-4 text-gray-500">{{ basicInfo.gender }} | {{ basicInfo.birthDate }} (만 28세)</span>
+              </div>
+              
+              <!-- 연락처 정보 그룹 -->
+              <div class="grid grid-cols-[80px_auto] gap-y-2">
+                <span class="text-gray-500">휴대폰</span>
+                <span>{{ basicInfo.phone }}</span>
+                <span class="text-gray-500">이메일</span>
+                <span>{{ basicInfo.email }}</span>
+                <span class="text-gray-500">주소</span>
+                <span>{{ basicInfo.address }}</span>
+                <span class="text-gray-500">경력</span>
+                <span>{{ basicInfo.totalCareer }}</span>
+                <span class="text-gray-500">학력</span>
+                <span>{{ basicInfo.lastEducation }}</span>
+              </div>
             </div>
-            <div class="flex items-center gap-4">
-              <i class="pi pi-calendar"></i>
-              <span>{{ basicInfo.birthDate }}</span>
-              <span>{{ basicInfo.gender }}</span>
-            </div>
-            <div class="flex items-center gap-4">
-              <i class="pi pi-briefcase"></i>
-              <span>총 경력 {{ basicInfo.totalCareer }}</span>
-            </div>
-            <div class="flex items-center gap-4">
-              <i class="pi pi-book"></i>
-              <span>{{ basicInfo.lastEducation }}</span>
-            </div>
-            <div class="flex items-center gap-4">
-              <i class="pi pi-envelope"></i>
-              <span>{{ basicInfo.email }}</span>
-            </div>
-            <div class="flex items-center gap-4">
-              <i class="pi pi-phone"></i>
-              <span>{{ basicInfo.phone }}</span>
-            </div>
-            <div class="flex items-center gap-4">
-              <i class="pi pi-map-marker"></i>
-              <span>{{ basicInfo.address }}</span>
+            
+            <!-- 프로필 이미지 -->
+            <div class="flex-shrink-0 ml-8">
+              <div class="w-[120px] h-[160px] overflow-hidden border border-gray-200 rounded-sm">
+                <img
+                  :src="profileImage"
+                  alt="프로필 이미지"
+                  class="w-full h-full object-cover"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -718,6 +614,26 @@ const saveResume = () => {
               </div>
             </div>
             <p v-if="!passportInfo" class="text-gray-500 mt-2">여권 정보를 입력해주세요</p>
+
+            <!-- 여권 파일 업로드 -->
+            <div class="mt-4 border-t pt-4">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium">여권 스캔본</span>
+                  <span class="text-red-500 text-sm">*필수</span>
+                </div>
+                <div>
+                  <label class="cursor-pointer px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+                    <span class="text-sm">파일 선택</span>
+                    <input
+                      type="file"
+                      class="hidden"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                    />
+                  </label>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- 경력 섹션 -->
@@ -756,6 +672,23 @@ const saveResume = () => {
                     <button class="text-gray-400 hover:text-gray-600" @click="deleteCareer(index)">
                       <i class="pi pi-trash"></i>
                     </button>
+                  </div>
+                </div>
+
+                <!-- 경력 파일 업로드 -->
+                <div class="mt-4 border-t pt-4">
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600">증빙서류</span>
+                    <div>
+                      <label class="cursor-pointer px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+                        <span class="text-sm">파일 선택</span>
+                        <input
+                          type="file"
+                          class="hidden"
+                          accept=".pdf,.jpg,.jpeg,.png"
+                        />
+                      </label>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -801,7 +734,105 @@ const saveResume = () => {
                     </button>
                   </div>
                 </div>
+
+                <!-- 학력 파일 업로드 -->
+                <div class="mt-4 border-t pt-4">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <span class="text-sm text-gray-600">졸업증명서</span>
+                      <span v-if="education.educationType.code === 'UNIVERSITY'" class="text-red-500 text-sm">*필수</span>
+                    </div>
+                    <div>
+                      <label class="cursor-pointer px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+                        <span class="text-sm">파일 선택</span>
+                        <input
+                          type="file"
+                          class="hidden"
+                          accept=".pdf,.jpg,.jpeg,.png"
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </div>
               </div>
+            </div>
+          </div>
+
+          <!-- 자격증 섹션 -->
+          <div class="bg-white rounded-lg p-6">
+            <div class="flex justify-between items-center mb-4">
+              <div class="flex items-center gap-3">
+                <i class="pi pi-file text-gray-600"></i>
+                <h3 class="font-bold">자격증</h3>
+              </div>
+              <Button
+                label="자격증 추가"
+                icon="pi pi-plus"
+                class="p-button-text p-button-sm"
+                @click="addCertification"
+              />
+            </div>
+
+            <div class="space-y-4">
+              <!-- 자격증이 없을 때 -->
+              <div v-if="certificationList.length === 0" 
+                  class="text-center py-8 text-gray-500 border border-dashed rounded-lg">
+                등록된 자격증이 없습니다
+              </div>
+
+              <!-- 자격증 목록 -->
+              <div v-for="(cert, index) in certificationList" :key="cert.id" 
+                  class="border border-gray-200 rounded-lg p-6 hover:border-[#8FA1FF] transition-colors">
+                <div class="flex justify-between items-start mb-4">
+                  <h4 class="font-medium">자격증 #{{ index + 1 }}</h4>
+                  <button 
+                    class="text-gray-400 hover:text-red-500"
+                    @click="removeCertification(index)"
+                  >
+                    <i class="pi pi-times"></i>
+                  </button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                  <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700">자격증명</label>
+                    <InputText 
+                      v-model="cert.name" 
+                      placeholder="자격증 이름을 입력하세요" 
+                      class="w-full"
+                    />
+                  </div>
+                  <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700">취득일</label>
+                    <DatePicker
+                      v-model="cert.date"
+                      dateFormat="yy.mm.dd"
+                      placeholder="취득일을 선택하세요"
+                      :showIcon="true"
+                      class="w-full"
+                    />
+                  </div>
+                </div>
+
+                <!-- 파일 업로드 영역 -->
+                <div class="flex items-center justify-between border-t pt-4">
+                  <span class="text-sm text-gray-600">자격증 스캔본</span>
+                  <div>
+                    <label class="cursor-pointer px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+                      <span class="text-sm">파일 선택</span>
+                      <input
+                        type="file"
+                        class="hidden"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                      />
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 text-sm text-gray-500">
+              * PDF, JPG, PNG 형식의 파일만 업로드 가능합니다. (최대 10MB)
             </div>
           </div>
         </div>
@@ -987,5 +1018,23 @@ const saveResume = () => {
 <style scoped>
 .w-96 {
   width: 36rem;
+}
+
+.file-upload {
+  @apply border rounded-lg p-4;
+}
+
+.file-upload:hover {
+  @apply border-[#8FA1FF];
+}
+
+.file-upload.has-file {
+  @apply bg-[#8FA1FF] bg-opacity-5 border-[#8FA1FF];
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

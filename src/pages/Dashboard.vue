@@ -36,6 +36,35 @@ const getJobOfferList = async () => {
 // const formatCurrency = (value) => {
 //   return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 // };
+
+// 회사 정보 데이터
+const companies = ref([
+  {
+    name: '밥스(주)',
+    business: '산업용 CFRP 물러, 디스플레이용 로봇핸드, 자동차 부품',
+    address: '대전 유성구 국제과학로46(신동)'
+  },
+  {
+    name: '한국항공우주산업(주)',
+    business: '기체구조물, 성능개량, 원재기 제작',
+    address: '서울사무소: 서울특별시 강남구 테헤란로 309 6층 (역삼동, 삼성제일빌딩)\n부사: 경남 사천시 사남면 유천리 802'
+  },
+  {
+    name: 'LIG넥스원',
+    business: '항공전자, 유도 및 수중 무기, 사격통제, 전자광학',
+    address: '경기도 용인시 기흥구 마북로 207'
+  },
+  {
+    name: '대한항공',
+    business: '항공기 및 위성 부품 제작, 정비 및 개조',
+    address: '서울시 중구 서소문동 41-3 대한항공 서소문빌딩 10층'
+  },
+  {
+    name: '한국로스트왁스',
+    business: '항공기 엔진 부품',
+    address: '경기도 안산시 단원구 성곡동 702-5(시화공단 4마 409)'
+  }
+]);
 </script>
 
 <template>
@@ -210,100 +239,29 @@ const getJobOfferList = async () => {
       </Dialog>
       -->
 
-      <!-- 채용공고 카드들 -->
-      <div class="space-y-4">
-        <!-- 첫 번째 채용공고 -->
-        <div
-          class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg hover:border-[#8B8BF5] cursor-pointer"
-        >
+      <!-- 메뉴 아이콘들 아래에 추가 -->
+      <div class="space-y-4 mt-8">
+        <!-- 회사 정보 카드 -->
+        <div v-for="company in companies" :key="company.name"
+          class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg hover:border-[#8B8BF5]">
           <div class="flex justify-between items-start">
-            <div>
-              <div class="flex items-center gap-2 mb-2">
-                <span class="font-bold">(주)코아시아</span>
-                <span class="text-[#8B8BF5]">D-49</span>
-                <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">정규직</span>
+            <div class="flex-grow">
+              <div class="flex items-center gap-2 mb-3">
+                <h3 class="text-xl font-bold">{{ company.name }}</h3>
               </div>
-              <h3 class="text-xl font-bold mb-4">정보전략그룹(IT) 경력직 채용 공고</h3>
-              <div class="flex gap-8 text-gray-600">
+              <div class="flex gap-8 text-gray-600 mb-3">
                 <span class="flex items-center gap-2">
                   <i class="pi pi-briefcase"></i>
-                  IT개발·데이터
+                  {{ company.business }}
                 </span>
-                <span class="flex items-center gap-2">
+              </div>
+              <div class="flex gap-8 text-gray-600">
+                <span class="flex items-center gap-2 text-sm">
                   <i class="pi pi-map-marker"></i>
-                  경기 화성시
-                </span>
-                <span class="flex items-center gap-2">
-                  <i class="pi pi-users"></i>
-                  채용인원: 0명
+                  {{ company.address }}
                 </span>
               </div>
             </div>
-            <Button class="bt_btn primary">지원하기</Button>
-          </div>
-        </div>
-
-        <!-- 두 번째 채용공고 -->
-        <div
-          class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg hover:border-[#8B8BF5] cursor-pointer"
-        >
-          <div class="flex justify-between items-start">
-            <div>
-              <div class="flex items-center gap-2 mb-2">
-                <span class="font-bold">(주)삼성전자</span>
-                <span class="text-[#8B8BF5]">D-30</span>
-                <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">정규직</span>
-                <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">신입</span>
-              </div>
-              <h3 class="text-xl font-bold mb-4">소프트웨어 개발자 채용</h3>
-              <div class="flex gap-8 text-gray-600">
-                <span class="flex items-center gap-2">
-                  <i class="pi pi-briefcase"></i>
-                  웹 개발
-                </span>
-                <span class="flex items-center gap-2">
-                  <i class="pi pi-map-marker"></i>
-                  서울 서초구
-                </span>
-                <span class="flex items-center gap-2">
-                  <i class="pi pi-users"></i>
-                  채용인원: 5명
-                </span>
-              </div>
-            </div>
-            <Button class="bt_btn primary">지원하기</Button>
-          </div>
-        </div>
-
-        <!-- 세 번째 채용공고 -->
-        <div
-          class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg hover:border-[#8B8BF5] cursor-pointer"
-        >
-          <div class="flex justify-between items-start">
-            <div>
-              <div class="flex items-center gap-2 mb-2">
-                <span class="font-bold">(주)네이버</span>
-                <span class="text-[#8B8BF5]">D-15</span>
-                <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">정규직</span>
-                <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">경력</span>
-              </div>
-              <h3 class="text-xl font-bold mb-4">프론트엔드 개발자 모집</h3>
-              <div class="flex gap-8 text-gray-600">
-                <span class="flex items-center gap-2">
-                  <i class="pi pi-briefcase"></i>
-                  프론트엔드
-                </span>
-                <span class="flex items-center gap-2">
-                  <i class="pi pi-map-marker"></i>
-                  경기 성남시
-                </span>
-                <span class="flex items-center gap-2">
-                  <i class="pi pi-users"></i>
-                  채용인원: 3명
-                </span>
-              </div>
-            </div>
-            <Button class="bt_btn primary">지원하기</Button>
           </div>
         </div>
       </div>
@@ -350,5 +308,10 @@ const getJobOfferList = async () => {
 
 .group:hover {
   transform: translateY(-2px);
+}
+
+/* 주소 줄바꿈을 위한 스타일 추가 */
+.text-sm {
+  white-space: pre-line;
 }
 </style>
