@@ -1,11 +1,10 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
 import Toast from 'primevue/toast';
 import { useToast } from 'primevue/usetoast';
-import { useMessagePop } from '@/plugins/commonutils';
 import { useUserStore } from '@/store/user/userStore';
 import { storeToRefs } from 'pinia';
 
@@ -14,13 +13,10 @@ const userStore = useUserStore();
 const { jobOfferList } = storeToRefs(userStore);
 
 const toast = useToast();
-const messagePop = useMessagePop();
 
 // 채용제안 목록 상태
 const jobOffers = computed(() => {
-  // 실제 API 연동 전까지는 mockJobOffers 사용
   return mockJobOffers;
-  // return jobOfferList.value; // API 연동 후 사용할 코드
 });
 
 // 상세 보기 모달 상태
@@ -40,20 +36,17 @@ const viewOfferDetail = (offer) => {
 // 제안 수락
 const acceptOffer = async (offer) => {
   try {
-    // 현재 이력서 정보 가져오기
-    const currentResume = await getCurrentResume();  // API 호출 필요
-    
     // 제안 수락 처리
     offer.status = 'accepted';
-    offer.resumeSnapshot = currentResume;  // 현재 이력서 정보를 스냅샷으로 저장
+    offer.acceptedAt = new Date().toISOString();
     
-    // API 호출하여 서버에 저장
-    await updateJobOffer(offer);  // API 호출 필요
+    // API 연동 전까지는 주석 처리
+    // await updateJobOffer(offer);  // 실제 API 연동 시 사용할 코드
 
     toast.add({
       severity: 'success',
       summary: '제안 수락',
-      detail: `${offer.companyName}의 채용제안을 수락했습니다.`,
+      detail: `${offer.companyName}의 면접제안을 수락했습니다.`,
       life: 3000
     });
     
@@ -114,6 +107,20 @@ const getDaysUntilDeadline = (deadline) => {
   return diffDays;
 };
 
+// 나이 계산 함수 추가
+const calculateAge = (birthDate) => {
+  const today = new Date();
+  const birth = new Date(birthDate.replace(/\./g, '-'));
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--;
+  }
+  
+  return age;
+};
+
 // jobOffers 데이터 예시
 const mockJobOffers = [
   {
@@ -129,7 +136,59 @@ const mockJobOffers = [
     deadline: '2025-03-15',
     status: 'pending',
     isRead: false,
-    resumeSnapshot: null
+    createdAt: '2024-03-11',
+    resumeSnapshot: {
+      basicInfo: {
+        name: '최예지',
+        birthDate: '1996.09.01',
+        gender: '여성',
+        email: 'yeji@naver.com',
+        phone: '010-1234-7496',
+        address: '윙스타워 505호',
+        totalCareer: '5년',
+        lastEducation: '대학교(4년) 졸업'
+      },
+      nationalityInfo: '대한민국',
+      passportInfo: {
+        passportNumber: 'M1234****',
+        surname: 'CHOI',
+        givenNames: 'YEJI',
+        nationality: '대한민국',
+        birthDate: '1996-09-01',
+        issueDate: '2020-01-01',
+        expiryDate: '2030-01-01',
+        issuingCountry: '대한민국',
+        birthPlace: 'SEOUL'
+      },
+      careers: [
+        {
+          companyName: '(주)비티포탈',
+          period: '2023.03 - 2024.03',
+          jobTitle: '프론트엔드 개발자',
+          department: '개발팀',
+          responsibilities: '웹 서비스 프론트엔드 개발'
+        }
+      ],
+      educations: [
+        {
+          educationType: { name: '대학교(4년)', code: 'UNIVERSITY' },
+          schoolName: '한국대학교',
+          period: '2015.03 - 2019.02',
+          major: '컴퓨터공학과',
+          isGraduated: true,
+          details: '웹 개발 동아리 활동'
+        }
+      ],
+      certifications: [
+        // {
+        //   name: '정보처리기사',
+        //   date: '2020-12',
+        //   organization: '한국산업인력공단',
+        //   certificate: 'cert_1.pdf'
+        // }
+      ]
+    },
+    acceptedAt: null
   },
   {
     id: 2,
@@ -143,44 +202,56 @@ const mockJobOffers = [
     deadline: '2025-03-25',
     status: 'accepted',
     isRead: true,
+    createdAt: '2024-03-10',
     resumeSnapshot: {
       basicInfo: {
-        name: '홍길동',
-        email: 'hong@email.com',
-        phone: '010-1234-5678'
+        name: '최예지',
+        birthDate: '1996.09.01',
+        gender: '여성',
+        email: 'yeji@naver.com',
+        phone: '010-1234-7496',
+        address: '윙스타워 505호',
+        totalCareer: '5년',
+        lastEducation: '대학교(4년) 졸업'
+      },
+      nationalityInfo: '대한민국',
+      passportInfo: {
+        passportNumber: 'M1234****',
+        surname: 'CHOI',
+        givenNames: 'YEJI',
+        nationality: '대한민국',
+        birthDate: '1996-09-01',
+        issueDate: '2020-01-01',
+        expiryDate: '2030-01-01',
+        issuingCountry: '대한민국',
+        birthPlace: 'SEOUL'
       },
       careers: [
         {
-          company: '이전회사',
-          position: '항공전자 개발',
-          period: '2020-01 ~ 2023-12',
-          description: '...',
-          certificate: 'career_cert_1.pdf'
+          companyName: '(주)비티포탈',
+          period: '2023.03 - 2024.03',
+          jobTitle: '프론트엔드 개발자',
+          department: '개발팀',
+          responsibilities: '웹 서비스 프론트엔드 개발'
         }
       ],
       educations: [
         {
-          school: '한국대학교',
-          major: '항공우주공학과',
-          degree: '학사',
-          period: '2016-03 ~ 2020-02',
-          status: '졸업',
-          description: '...'
+          educationType: { name: '대학교(4년)', code: 'UNIVERSITY' },
+          schoolName: '한국대학교',
+          period: '2015.03 - 2019.02',
+          major: '컴퓨터공학과',
+          isGraduated: true,
+          details: '웹 개발 동아리 활동'
         }
       ],
       certifications: [
-        {
-          name: '항공정비사 자격증',
-          date: '2021-06',
-          organization: '한국산업인력공단',
-          certificate: 'cert_1.pdf'
-        },
-        {
-          name: '정보처리기사',
-          date: '2020-12',
-          organization: '한국산업인력공단',
-          certificate: 'cert_2.pdf'
-        }
+        // {
+        //   name: '정보처리기사',
+        //   date: '2020-12',
+        //   organization: '한국산업인력공단',
+        //   certificate: 'cert_1.pdf'
+        // }
       ]
     }
   },
@@ -195,7 +266,59 @@ const mockJobOffers = [
     message: '귀하의 프로필을 보고 연락드립니다...',
     deadline: '2025-04-05',
     status: 'rejected',
-    isRead: true
+    isRead: true,
+    createdAt: '2024-03-09',
+    resumeSnapshot: {
+      basicInfo: {
+        name: '최예지',
+        birthDate: '1996.09.01',
+        gender: '여성',
+        email: 'yeji@naver.com',
+        phone: '010-1234-7496',
+        address: '윙스타워 505호',
+        totalCareer: '5년',
+        lastEducation: '대학교(4년) 졸업'
+      },
+      nationalityInfo: '대한민국',
+      passportInfo: {
+        passportNumber: 'M1234****',
+        surname: 'CHOI',
+        givenNames: 'YEJI',
+        nationality: '대한민국',
+        birthDate: '1996-09-01',
+        issueDate: '2020-01-01',
+        expiryDate: '2030-01-01',
+        issuingCountry: '대한민국',
+        birthPlace: 'SEOUL'
+      },
+      careers: [
+        {
+          companyName: '(주)비티포탈',
+          period: '2023.03 - 2024.03',
+          jobTitle: '프론트엔드 개발자',
+          department: '개발팀',
+          responsibilities: '웹 서비스 프론트엔드 개발'
+        }
+      ],
+      educations: [
+        {
+          educationType: { name: '대학교(4년)', code: 'UNIVERSITY' },
+          schoolName: '한국대학교',
+          period: '2015.03 - 2019.02',
+          major: '컴퓨터공학과',
+          isGraduated: true,
+          details: '웹 개발 동아리 활동'
+        }
+      ],
+      certifications: [
+        // {
+        //   name: '정보처리기사',
+        //   date: '2020-12',
+        //   organization: '한국산업인력공단',
+        //   certificate: 'cert_1.pdf'
+        // }
+      ]
+    }
   }
 ];
 </script>
@@ -208,7 +331,7 @@ const mockJobOffers = [
         class="pi pi-angle-left text-4xl text-gray-600 cursor-pointer transition-colors hover:text-[#8FA1FF]"
         @click="router.back()"
       ></i>
-      <h1 class="text-3xl font-bold">채용제안</h1>
+      <h1 class="text-3xl font-bold">면접제안</h1>
     </div>
 
     <!-- 제안 목록 -->
@@ -291,11 +414,21 @@ const mockJobOffers = [
 
       <div v-if="selectedOffer" class="p-6 space-y-6">
         <!-- 회사 기본 정보 -->
-        <div class="flex gap-8 text-gray-600 mb-3">
-          <span class="flex items-center gap-2">
-            <i class="pi pi-briefcase"></i>
-            {{ selectedOffer.business }}
-          </span>
+        <div class="space-y-3">
+          <!-- 회사 사업 분야 -->
+          <div class="flex gap-8 text-gray-600">
+            <span class="flex items-center gap-2">
+              <i class="pi pi-briefcase"></i>
+              {{ selectedOffer.business }}
+            </span>
+          </div>
+          <!-- 회사 주소 추가 -->
+          <div class="flex gap-8 text-gray-600">
+            <span class="flex items-center gap-2">
+              <i class="pi pi-map-marker"></i>
+              {{ selectedOffer.address }}
+            </span>
+          </div>
         </div>
 
         <!-- 채용 중인 포지션 -->
@@ -318,9 +451,9 @@ const mockJobOffers = [
           </div>
         </div>
 
-        <!-- 채용제안 메시지 -->
+        <!-- 면접 제안 메시지 -->
         <div class="bg-gray-50 p-4 rounded-lg">
-          <h4 class="font-medium mb-2">채용제안 메시지</h4>
+          <h4 class="font-medium mb-2">면접 제안 메시지</h4>
           <p class="text-gray-700 whitespace-pre-line">{{ selectedOffer.message }}</p>
         </div>
 
@@ -332,61 +465,110 @@ const mockJobOffers = [
           </div>
         </div>
 
-        <!-- 지원 당시 이력서 정보 표시 (수락된 경우) -->
-        <div v-if="selectedOffer?.status === 'accepted' && selectedOffer?.resumeSnapshot">
+        <!-- 제안 당시 이력서 정보 표시 (모든 상태에서) -->
+        <div v-if="selectedOffer?.resumeSnapshot">
           <div class="border-t mt-6 pt-6">
-            <h4 class="font-medium text-gray-900 mb-4">지원 당시 이력서 정보</h4>
-            <!-- 스냅샷에서 이력서 정보 표시 -->
+            <h4 class="font-medium text-gray-900 mb-4">제안 당시 이력서 정보</h4>
             <div class="space-y-4">
               <!-- 기본 정보 -->
               <div class="bg-gray-50 p-4 rounded-lg">
                 <h5 class="font-medium mb-2">기본 정보</h5>
-                <div class="text-sm text-gray-600">
-                  <p>{{ selectedOffer.resumeSnapshot.basicInfo.name }}</p>
-                  <p>{{ selectedOffer.resumeSnapshot.basicInfo.email }}</p>
-                  <p>{{ selectedOffer.resumeSnapshot.basicInfo.phone }}</p>
+                <div class="grid grid-cols-[80px_auto] gap-y-2 text-sm text-gray-600">
+                  <span class="text-gray-500">이름</span>
+                  <span>{{ selectedOffer.resumeSnapshot.basicInfo.name }}</span>
+                  <span class="text-gray-500">생년월일</span>
+                  <span>{{ selectedOffer.resumeSnapshot.basicInfo.birthDate }} (만 {{ calculateAge(selectedOffer.resumeSnapshot.basicInfo.birthDate) }}세)</span>
+                  <span class="text-gray-500">성별</span>
+                  <span>{{ selectedOffer.resumeSnapshot.basicInfo.gender }}</span>
+                  <span class="text-gray-500">휴대폰</span>
+                  <span>{{ selectedOffer.resumeSnapshot.basicInfo.phone }}</span>
+                  <span class="text-gray-500">이메일</span>
+                  <span>{{ selectedOffer.resumeSnapshot.basicInfo.email }}</span>
+                  <span class="text-gray-500">주소</span>
+                  <span>{{ selectedOffer.resumeSnapshot.basicInfo.address }}</span>
+                  <span class="text-gray-500">경력</span>
+                  <span>{{ selectedOffer.resumeSnapshot.basicInfo.totalCareer }}</span>
+                  <span class="text-gray-500">학력</span>
+                  <span>{{ selectedOffer.resumeSnapshot.basicInfo.lastEducation }}</span>
                 </div>
               </div>
-              
+
+              <!-- 국가 정보 -->
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <h5 class="font-medium mb-2">국가</h5>
+                <div class="text-sm text-gray-600">
+                  {{ selectedOffer.resumeSnapshot.nationalityInfo }}
+                </div>
+              </div>
+
+              <!-- 여권 정보 -->
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <h5 class="font-medium mb-2">여권</h5>
+                <div class="space-y-2 text-sm text-gray-600">
+                  <p>이름: {{ selectedOffer.resumeSnapshot.passportInfo.surname }} {{ selectedOffer.resumeSnapshot.passportInfo.givenNames }}</p>
+                  <p>여권번호: {{ selectedOffer.resumeSnapshot.passportInfo.passportNumber }}</p>
+                  <p>국적: {{ selectedOffer.resumeSnapshot.passportInfo.nationality }}</p>
+                  <p>만료일: {{ selectedOffer.resumeSnapshot.passportInfo.expiryDate }}</p>
+                </div>
+              </div>
+
               <!-- 경력 정보 -->
               <div class="bg-gray-50 p-4 rounded-lg">
                 <h5 class="font-medium mb-2">경력 사항</h5>
-                <div v-for="career in selectedOffer.resumeSnapshot.careers" 
-                    :key="career.company" 
-                    class="mb-3">
-                  <p>{{ career.company }}</p>
-                  <p>{{ career.position }}</p>
-                  <p>{{ career.period }}</p>
-                  <p>{{ career.description }}</p>
-                  <p>{{ career.certificate }}</p>
+                <div v-if="selectedOffer.resumeSnapshot.careers?.length > 0">
+                  <div v-for="career in selectedOffer.resumeSnapshot.careers" 
+                      :key="career.companyName" 
+                      class="mb-4 border-b border-gray-200 pb-4 last:border-0 last:pb-0">
+                    <div class="space-y-1">
+                      <h6 class="font-medium text-gray-900">{{ career.companyName }}</h6>
+                      <p class="text-sm text-gray-600">{{ career.period }}</p>
+                      <p class="text-sm text-gray-600">{{ career.jobTitle }} | {{ career.department }}</p>
+                      <p class="text-sm text-gray-600 mt-2">{{ career.responsibilities }}</p>
+                    </div>
+                  </div>
+                </div>
+                <div v-else class="text-center py-4 text-gray-500">
+                  등록된 경력이 없습니다
                 </div>
               </div>
-              
-              <!-- 교육 정보 -->
+
+              <!-- 학력 정보 -->
               <div class="bg-gray-50 p-4 rounded-lg">
-                <h5 class="font-medium mb-2">교육 사항</h5>
-                <div v-for="education in selectedOffer.resumeSnapshot.educations" 
-                    :key="education.school" 
-                    class="mb-3">
-                  <p>{{ education.school }}</p>
-                  <p>{{ education.major }}</p>
-                  <p>{{ education.degree }}</p>
-                  <p>{{ education.period }}</p>
-                  <p>{{ education.status }}</p>
-                  <p>{{ education.description }}</p>
+                <h5 class="font-medium mb-2">학력 사항</h5>
+                <div v-if="selectedOffer.resumeSnapshot.educations?.length > 0">
+                  <div v-for="education in selectedOffer.resumeSnapshot.educations" 
+                      :key="education.schoolName" 
+                      class="mb-4 border-b border-gray-200 pb-4 last:border-0 last:pb-0">
+                    <div class="space-y-1">
+                      <h6 class="font-medium text-gray-900">{{ education.schoolName }}</h6>
+                      <p class="text-sm text-gray-600">{{ education.educationType.name }}</p>
+                      <p class="text-sm text-gray-600">{{ education.period }}</p>
+                      <p class="text-sm text-gray-600">{{ education.major }}</p>
+                      <p v-if="education.details" class="text-sm text-gray-600 mt-2">{{ education.details }}</p>
+                    </div>
+                  </div>
+                </div>
+                <div v-else class="text-center py-4 text-gray-500">
+                  등록된 학력이 없습니다
                 </div>
               </div>
-              
+
               <!-- 자격증 정보 -->
               <div class="bg-gray-50 p-4 rounded-lg">
                 <h5 class="font-medium mb-2">자격증 사항</h5>
-                <div v-for="certification in selectedOffer.resumeSnapshot.certifications" 
-                    :key="certification.name" 
-                    class="mb-3">
-                  <p>{{ certification.name }}</p>
-                  <p>{{ certification.date }}</p>
-                  <p>{{ certification.organization }}</p>
-                  <p>{{ certification.certificate }}</p>
+                <div v-if="selectedOffer.resumeSnapshot.certifications?.length > 0">
+                  <div v-for="cert in selectedOffer.resumeSnapshot.certifications" 
+                      :key="cert.name" 
+                      class="mb-4 border-b border-gray-200 pb-4 last:border-0 last:pb-0">
+                    <div class="space-y-1">
+                      <p class="text-sm text-gray-900">{{ cert.name }}</p>
+                      <p class="text-sm text-gray-600">취득일: {{ cert.date }}</p>
+                      <p class="text-sm text-gray-600">발급기관: {{ cert.organization }}</p>
+                    </div>
+                  </div>
+                </div>
+                <div v-else class="text-center py-4 text-gray-500">
+                  등록된 자격증이 없습니다
                 </div>
               </div>
             </div>
@@ -407,32 +589,6 @@ const mockJobOffers = [
 </template>
 
 <style scoped>
-.group {
-  position: relative;
-  overflow: hidden;
-}
-
-.group::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: 0.5rem;
-  pointer-events: none;
-  transition: all 0.2s ease;
-}
-
-.group:hover::after {
-  box-shadow: inset 0 0 0 2px #8b8bf5;
-}
-
-/* 호버 시 살짝 들어올리는 효과 */
-.group:hover {
-  transform: translateY(-2px);
-}
-
 :deep(.p-dialog-header) {
   padding: 1.5rem;
   border-bottom: 1px solid #e5e7eb;
