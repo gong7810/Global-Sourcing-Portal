@@ -10,7 +10,7 @@ import { storeToRefs } from 'pinia';
 
 const router = useRouter();
 const userStore = useUserStore();
-const { jobOfferList } = storeToRefs(userStore);
+// const { jobOfferList } = storeToRefs(userStore); api 연동할 때 사용하기
 
 const toast = useToast();
 
