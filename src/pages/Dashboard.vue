@@ -37,32 +37,53 @@ const getJobOfferList = async () => {
 //   return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 // };
 
-// 회사 정보 데이터
+// 회사 정보 데이터 수정
 const companies = ref([
   {
     name: '밥스(주)',
     business: '산업용 CFRP 물러, 디스플레이용 로봇핸드, 자동차 부품',
-    address: '대전 유성구 국제과학로46(신동)'
+    address: '대전 유성구 국제과학로46(신동)',
+    positions: [
+      { title: '항공기계설계', career: '경력 3년 이상', count: 2 },
+      { title: '제품개발', career: '신입/경력', count: 1 }
+    ]
   },
   {
     name: '한국항공우주산업(주)',
     business: '기체구조물, 성능개량, 원재기 제작',
-    address: '서울사무소: 서울특별시 강남구 테헤란로 309 6층 (역삼동, 삼성제일빌딩)\n부사: 경남 사천시 사남면 유천리 802'
+    address: '서울사무소: 서울특별시 강남구 테헤란로 309 6층 (역삼동, 삼성제일빌딩)\n부사: 경남 사천시 사남면 유천리 802',
+    positions: [
+      { title: '항공기계설계', career: '경력 5년 이상', count: 3 },
+      { title: '품질관리', career: '경력 무관', count: 2 }
+    ]
   },
   {
     name: 'LIG넥스원',
     business: '항공전자, 유도 및 수중 무기, 사격통제, 전자광학',
-    address: '경기도 용인시 기흥구 마북로 207'
+    address: '경기도 용인시 기흥구 마북로 207',
+    positions: [
+      { title: '항공전자 개발', career: '경력 3년 이상', count: 2 },
+      { title: '시스템 엔지니어', career: '신입/경력', count: 3 }
+    ]
   },
   {
     name: '대한항공',
     business: '항공기 및 위성 부품 제작, 정비 및 개조',
-    address: '서울시 중구 서소문동 41-3 대한항공 서소문빌딩 10층'
+    address: '서울시 중구 서소문동 41-3 대한항공 서소문빌딩 10층',
+    positions: [
+      { title: '항공정비사', career: '경력 5년 이상', count: 5 },
+      { title: '항공기계설계', career: '경력 3년 이상', count: 2 },
+      { title: '품질관리', career: '신입/경력', count: 3 }
+    ]
   },
   {
     name: '한국로스트왁스',
     business: '항공기 엔진 부품',
-    address: '경기도 안산시 단원구 성곡동 702-5(시화공단 4마 409)'
+    address: '경기도 안산시 단원구 성곡동 702-5(시화공단 4마 409)',
+    positions: [
+      { title: '생산기술', career: '신입/경력', count: 2 },
+      { title: '품질관리', career: '경력 2년 이상', count: 1 }
+    ]
   }
 ]);
 </script>
@@ -254,6 +275,25 @@ const companies = ref([
                   <i class="pi pi-briefcase"></i>
                   {{ company.business }}
                 </span>
+              </div>
+              <!-- 채용 중인 포지션 추가 -->
+              <div class="mb-3">
+                <h4 class="font-medium text-gray-900 mb-2">
+                  <span class="flex items-center gap-2">
+                    <i class="pi pi-users text-[#8B8BF5]"></i>
+                    채용 중인 포지션
+                  </span>
+                </h4>
+                <div class="grid grid-cols-2 gap-3">
+                  <div v-for="position in company.positions" :key="position.title"
+                    class="bg-gray-50 p-3 rounded-lg">
+                    <div class="font-medium text-gray-900">{{ position.title }}</div>
+                    <div class="flex justify-between items-center mt-1">
+                      <span class="text-sm text-gray-600">{{ position.career }}</span>
+                      <span class="text-sm text-[#8B8BF5] font-medium">{{ position.count }}명</span>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div class="flex gap-8 text-gray-600">
                 <span class="flex items-center gap-2 text-sm">
