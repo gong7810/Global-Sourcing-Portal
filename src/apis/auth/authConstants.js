@@ -16,7 +16,7 @@ export const AUTH_EXCLUSIONS_ROUTER_NAME = [
   'findPasswordResult',
   'Resume',
   'UserPage',
-  'SupportDetail',
+  // 'SupportDetail',
   'JobOffers',
   'BusinessPage',
   'PostJobPage',
