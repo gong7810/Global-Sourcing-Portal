@@ -44,7 +44,8 @@ const formatCurrency = (value) => {
   return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 };
 
-// 채용공고 목록 데이터
+// 채용공고 목록 데이터 주석 처리
+/*
 const jobPosts = ref([
   {
     id: 1,
@@ -77,6 +78,7 @@ const jobPosts = ref([
     type: '정규직'
   }
 ]);
+*/
 </script>
 
 <template>
@@ -85,6 +87,8 @@ const jobPosts = ref([
     <div class="grid gap-4">
       <!-- 상단 메뉴 아이콘들 -->
       <div class="flex justify-center gap-32 mb-12">
+        <!-- 공고 등록 메뉴 주석 처리 -->
+        <!--
         <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/postJobPage')">
           <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
             <svg
@@ -102,7 +106,10 @@ const jobPosts = ref([
           </div>
           <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">공고 등록</span>
         </div>
+        -->
 
+        <!-- 공고 관리 메뉴 주석 처리 -->
+        <!--
         <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/JobPostsPage')">
           <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
             <svg
@@ -123,6 +130,7 @@ const jobPosts = ref([
           </div>
           <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">공고 관리</span>
         </div>
+        -->
         
         <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/CandidatesPage')">
           <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
@@ -142,6 +150,25 @@ const jobPosts = ref([
             </svg>
           </div>
           <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">지원자 관리</span>
+        </div>
+
+        <!-- 인재 검색 메뉴 추가 -->
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/TalentSearchPage')">
+          <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#8B8BF5"
+              stroke-width="2.5"
+              class="transition-all duration-200 group-hover:stroke-white"
+            >
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </div>
+          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">인재 검색</span>
         </div>
 
         <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/TalentPoolPage')">
@@ -180,7 +207,8 @@ const jobPosts = ref([
         </div>
       </div>
 
-      <!-- 채용공고 카드 목록 -->
+      <!-- 채용공고 카드 목록 주석 처리 -->
+      <!--
       <div class="space-y-4">
         <div v-for="post in jobPosts" :key="post.id"
           class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg hover:border-[#8B8BF5]">
@@ -210,6 +238,7 @@ const jobPosts = ref([
           </div>
         </div>
       </div>
+      -->
     </div>
   </div>
 </template>

@@ -5,6 +5,7 @@ import { useRouter } from 'vue-router';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import Dropdown from 'primevue/dropdown';
+import Dialog from 'primevue/dialog';
 
 const router = useRouter();
 const businessType = ref(null);
@@ -31,6 +32,7 @@ const businessPhoneNo = ref('');
 const verificationCode = ref('');
 const businessEmail = ref('');
 const formError = ref('');
+const showCompleteDialog = ref(false);
 
 const businessOptions = [
   { label: '대기업', value: '대기업' },
@@ -193,9 +195,8 @@ const terms = ref({
   sms: false,
   service: false,
   privacy: false,
-  optionalPrivacy: false
-  // emailAds: false,
-  // smsAds: false
+  optionalPrivacy: false,
+  emailAds: false
 });
 
 const details = ref({
@@ -233,12 +234,11 @@ const resendVerificationCode = () => {
 const toggleAll = () => {
   const newValue = allAgreed.value;
   terms.value = {
-    age: newValue,
+    sms: newValue,
     service: newValue,
     privacy: newValue,
     optionalPrivacy: newValue,
-    emailAds: newValue,
-    smsAds: newValue
+    emailAds: newValue
   };
 };
 
@@ -246,9 +246,8 @@ const toggleDetail = (key) => {
   details.value[key] = !details.value[key];
 };
 
-const signIn = () => {};
-
 const submitForm = () => {
+  console.log('Form submitted', terms.value); // 디버깅용 로그 추가
   if (
     !businessType.value ||
     !businessType.value.value.trim() ||
@@ -262,19 +261,17 @@ const submitForm = () => {
     !managerName.value.trim() ||
     !businessPhoneNo.value.trim() ||
     !businessEmail.value.trim() ||
-    !terms.value.age ||
     !terms.value.service ||
-    !terms.value.privacy
+    !terms.value.privacy ||
+    !terms.value.sms
   ) {
     formError.value = '모든 필수 항목을 입력하고 체크해주세요.';
     return;
   }
 
-  // 가입 처리 로직
+  // 가입 신청 처리 로직
   formError.value = '';
-  console.log('가입 성공');
-  // 회원가입 완료 페이지로 이동
-  router.push('/business/register/complete');
+  showCompleteDialog.value = true;
 };
 </script>
 
@@ -403,7 +400,7 @@ const submitForm = () => {
               <button type="button" @click="toggleDetail('service')" class="ml-2 text-blue-500">
                 {{ details.service ? '내용닫기' : '내용보기' }}
               </button>
-              <input type="checkbox" v-model="terms.age" class="ml-auto mr-2" />
+              <input type="checkbox" v-model="terms.service" class="ml-auto mr-2" />
             </div>
             <div v-if="details.service" class="p-2 border rounded bg-gray-100" style="height: 200px; overflow-y: auto">
               <p>제 1 조 (목적)</p>
@@ -499,12 +496,30 @@ const submitForm = () => {
           </div>
         </div>
 
-        <!-- 회원가입 버튼 -->
+        <!-- 회원가입 버튼을 신청하기 버튼으로 변경 -->
         <div class="mt-6">
-          <Button type="submit" class="w-full py-3 bt_btn primary" @click="signIn"> 가입하기 </Button>
+          <Button type="submit" class="w-full py-3 bt_btn primary">
+            신청하기
+          </Button>
           <p v-if="formError" class="text-red-500">{{ formError }}</p>
         </div>
       </form>
     </div>
   </div>
+
+  <!-- 신청 완료 모달 추가 -->
+  <Dialog v-model:visible="showCompleteDialog" :modal="true" :closable="false" :style="{ width: '400px' }">
+    <template #header>
+      <h3 class="text-xl font-bold">신청 완료</h3>
+    </template>
+    <div class="p-4">
+      <p class="text-center mb-4">
+        기업회원 신청이 접수되었습니다.<br />
+        관리자 검토 후 승인 이메일이 발송될 예정입니다.
+      </p>
+      <div class="flex justify-center">
+        <Button label="확인" @click="router.push('/')" class="w-32" />
+      </div>
+    </div>
+  </Dialog>
 </template>

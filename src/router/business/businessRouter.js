@@ -44,6 +44,11 @@ export const businessRouter = [
         name: 'CreateJobOfferPage',
         component: () => import('@/pages/business/CreateJobOfferPage.vue')
     },
+    {
+        path: '/business/TalentSearchPage',
+        name: 'TalentSearchPage',
+        component: () => import('@/pages/business/TalentSearchPage.vue')
+    },
     // {
     //     path: '/manageMember',
     //     name: 'manageMember',
