@@ -356,16 +356,17 @@ const test = () => {
                 name="demo[]"
                 url="/api/upload"
                 accept="image/*"
+                chooseLabel="파일 선택"
                 :maxFileSize="1000000"
                 @upload="onUpload"
               />
-              <button
+              <!-- <button
                 type="button"
                 @click="test"
                 class="px-4 py-2 bg-[#F2F4F7] text-gray-500 border border-gray-300 rounded-lg"
               >
                 여권번호 확인
-              </button>
+              </button> -->
             </div>
 
             <!-- 영문 이름 -->
