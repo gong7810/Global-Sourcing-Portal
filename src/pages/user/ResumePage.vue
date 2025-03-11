@@ -678,7 +678,18 @@ const removeCertification = (index) => {
                 <!-- 경력 파일 업로드 -->
                 <div class="mt-4 border-t pt-4">
                   <div class="flex items-center justify-between">
-                    <span class="text-sm text-gray-600">증빙서류</span>
+                    <div>
+                      <span class="text-sm text-gray-600">
+                        {{ career.period.includes('재직중') ? '재직증명서' : '경력증명서' }}
+                        <span class="text-gray-400 ml-1">(선택)</span>
+                      </span>
+                      <p class="text-xs text-gray-400 mt-1">
+                        {{ career.period.includes('재직중') 
+                          ? '현재 재직 중인 회사의 재직증명서를 첨부해 주세요.' 
+                          : '이전 회사의 경력증명서를 첨부해 주세요.' 
+                        }}
+                      </p>
+                    </div>
                     <div>
                       <label class="cursor-pointer px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
                         <span class="text-sm">파일 선택</span>
