@@ -118,7 +118,8 @@ const companies = ref([
             >이력서</span
           >
         </div>
-        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/supportDetail')">
+        <!-- 지원내역 메뉴 아이콘 주석처리 -->
+        <!-- <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/supportDetail')">
           <div
             class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
           >
@@ -137,26 +138,6 @@ const companies = ref([
           </div>
           <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
             >지원내역</span
-          >
-        </div>
-        <!-- <div v-if="bookmarkFlag" class="flex flex-col items-center cursor-pointer group">
-          <div
-            class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
-          >
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#8B8BF5"
-              stroke-width="2.5"
-              class="transition-all duration-200 group-hover:stroke-white"
-            >
-              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-            </svg>
-          </div>
-          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
-            >북마크</span
           >
         </div> -->
         <!-- v-if="proposalFlag" -->
