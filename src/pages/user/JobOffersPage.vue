@@ -38,15 +38,35 @@ const viewOfferDetail = (offer) => {
 };
 
 // 제안 수락
-const acceptOffer = (offer) => {
-  offer.status = 'accepted';
-  toast.add({
-    severity: 'success',
-    summary: '제안 수락',
-    detail: `${offer.companyName}의 채용제안을 수락했습니다.`,
-    life: 3000
-  });
-  showDetailModal.value = false;
+const acceptOffer = async (offer) => {
+  try {
+    // 현재 이력서 정보 가져오기
+    const currentResume = await getCurrentResume();  // API 호출 필요
+    
+    // 제안 수락 처리
+    offer.status = 'accepted';
+    offer.resumeSnapshot = currentResume;  // 현재 이력서 정보를 스냅샷으로 저장
+    
+    // API 호출하여 서버에 저장
+    await updateJobOffer(offer);  // API 호출 필요
+
+    toast.add({
+      severity: 'success',
+      summary: '제안 수락',
+      detail: `${offer.companyName}의 채용제안을 수락했습니다.`,
+      life: 3000
+    });
+    
+    showDetailModal.value = false;
+  } catch (error) {
+    console.error('제안 수락 중 오류 발생:', error);
+    toast.add({
+      severity: 'error',
+      summary: '오류',
+      detail: '제안 수락 중 문제가 발생했습니다.',
+      life: 3000
+    });
+  }
 };
 
 // 제안 거절
@@ -108,7 +128,8 @@ const mockJobOffers = [
     message: '귀하의 경력과 기술이 저희 회사와 잘 맞을 것 같아 채용제안을 드립니다...',
     deadline: '2025-03-15',
     status: 'pending',
-    isRead: false
+    isRead: false,
+    resumeSnapshot: null
   },
   {
     id: 2,
@@ -121,7 +142,47 @@ const mockJobOffers = [
     message: '귀하의 경력이 저희 회사의 항공전자 개발 직무와 잘 맞을 것 같습니다...',
     deadline: '2025-03-25',
     status: 'accepted',
-    isRead: true
+    isRead: true,
+    resumeSnapshot: {
+      basicInfo: {
+        name: '홍길동',
+        email: 'hong@email.com',
+        phone: '010-1234-5678'
+      },
+      careers: [
+        {
+          company: '이전회사',
+          position: '항공전자 개발',
+          period: '2020-01 ~ 2023-12',
+          description: '...',
+          certificate: 'career_cert_1.pdf'
+        }
+      ],
+      educations: [
+        {
+          school: '한국대학교',
+          major: '항공우주공학과',
+          degree: '학사',
+          period: '2016-03 ~ 2020-02',
+          status: '졸업',
+          description: '...'
+        }
+      ],
+      certifications: [
+        {
+          name: '항공정비사 자격증',
+          date: '2021-06',
+          organization: '한국산업인력공단',
+          certificate: 'cert_1.pdf'
+        },
+        {
+          name: '정보처리기사',
+          date: '2020-12',
+          organization: '한국산업인력공단',
+          certificate: 'cert_2.pdf'
+        }
+      ]
+    }
   },
   {
     id: 3,
@@ -268,6 +329,67 @@ const mockJobOffers = [
           <div class="flex items-center gap-2 text-blue-700">
             <i class="pi pi-info-circle"></i>
             <span>회신기한: {{ selectedOffer.deadline }} (D-{{ getDaysUntilDeadline(selectedOffer.deadline) }})</span>
+          </div>
+        </div>
+
+        <!-- 지원 당시 이력서 정보 표시 (수락된 경우) -->
+        <div v-if="selectedOffer?.status === 'accepted' && selectedOffer?.resumeSnapshot">
+          <div class="border-t mt-6 pt-6">
+            <h4 class="font-medium text-gray-900 mb-4">지원 당시 이력서 정보</h4>
+            <!-- 스냅샷에서 이력서 정보 표시 -->
+            <div class="space-y-4">
+              <!-- 기본 정보 -->
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <h5 class="font-medium mb-2">기본 정보</h5>
+                <div class="text-sm text-gray-600">
+                  <p>{{ selectedOffer.resumeSnapshot.basicInfo.name }}</p>
+                  <p>{{ selectedOffer.resumeSnapshot.basicInfo.email }}</p>
+                  <p>{{ selectedOffer.resumeSnapshot.basicInfo.phone }}</p>
+                </div>
+              </div>
+              
+              <!-- 경력 정보 -->
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <h5 class="font-medium mb-2">경력 사항</h5>
+                <div v-for="career in selectedOffer.resumeSnapshot.careers" 
+                    :key="career.company" 
+                    class="mb-3">
+                  <p>{{ career.company }}</p>
+                  <p>{{ career.position }}</p>
+                  <p>{{ career.period }}</p>
+                  <p>{{ career.description }}</p>
+                  <p>{{ career.certificate }}</p>
+                </div>
+              </div>
+              
+              <!-- 교육 정보 -->
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <h5 class="font-medium mb-2">교육 사항</h5>
+                <div v-for="education in selectedOffer.resumeSnapshot.educations" 
+                    :key="education.school" 
+                    class="mb-3">
+                  <p>{{ education.school }}</p>
+                  <p>{{ education.major }}</p>
+                  <p>{{ education.degree }}</p>
+                  <p>{{ education.period }}</p>
+                  <p>{{ education.status }}</p>
+                  <p>{{ education.description }}</p>
+                </div>
+              </div>
+              
+              <!-- 자격증 정보 -->
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <h5 class="font-medium mb-2">자격증 사항</h5>
+                <div v-for="certification in selectedOffer.resumeSnapshot.certifications" 
+                    :key="certification.name" 
+                    class="mb-3">
+                  <p>{{ certification.name }}</p>
+                  <p>{{ certification.date }}</p>
+                  <p>{{ certification.organization }}</p>
+                  <p>{{ certification.certificate }}</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
