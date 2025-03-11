@@ -66,7 +66,7 @@ const toggleStatusMenu = (event, application) => {
 
 const updateApplicationStatus = (newStatus) => {
   if (selectedApplication.value) {
-    const application = applications.value.find(app => app.id === selectedApplication.value.id);
+    const application = applications.value.find((app) => app.id === selectedApplication.value.id);
     if (application) {
       application.status = newStatus;
     }
@@ -107,10 +107,11 @@ const applications = ref([
   },
   {
     id: 3,
-    candidate: {  // candidate 객체 추가
+    candidate: {
+      // candidate 객체 추가
       id: 3,
       name: '이영희',
-      job: '',  // 직무 없음
+      job: '', // 직무 없음
       career: '신입',
       education: '호원대학교(4년) 전자·전기공학과 졸업',
       age: '25',
@@ -128,7 +129,7 @@ const filteredApplications = computed(() => {
   if (!selectedTab || selectedTab.value === 'all') {
     return applications.value;
   }
-  return applications.value.filter(app => app.status === selectedTab.value);
+  return applications.value.filter((app) => app.status === selectedTab.value);
 });
 
 // 상태별 스타일 함수 수정
@@ -153,8 +154,10 @@ const getStatusClass = (status) => {
     <!-- 헤더 -->
     <div class="flex items-center justify-between mb-8">
       <div class="flex items-center gap-4">
-        <i class="pi pi-angle-left text-4xl text-gray-600 cursor-pointer transition-colors hover:text-[#8FA1FF]" 
-          @click="router.back()"></i>
+        <i
+          class="pi pi-angle-left text-4xl text-gray-600 cursor-pointer transition-colors hover:text-[#8FA1FF]"
+          @click="router.back()"
+        ></i>
         <h1 class="text-3xl font-bold">지원자 관리</h1>
       </div>
     </div>
@@ -172,8 +175,11 @@ const getStatusClass = (status) => {
       </div>
 
       <div v-else class="space-y-4">
-        <div v-for="application in filteredApplications" :key="application.id"
-          class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg hover:border-[#8B8BF5] group">
+        <div
+          v-for="application in filteredApplications"
+          :key="application.id"
+          class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg hover:border-[#8B8BF5] group"
+        >
           <div class="flex justify-between items-start">
             <div class="flex-grow">
               <div class="flex items-center gap-2 mb-1">
@@ -215,8 +221,12 @@ const getStatusClass = (status) => {
             </div>
             <div class="flex gap-2">
               <Button label="이력서 보기" icon="pi pi-file" class="p-button-outlined" />
-              <Button label="상태 변경" icon="pi pi-chevron-down" class="p-button-outlined" 
-                @click="(event) => toggleStatusMenu(event, application)" />
+              <Button
+                label="상태 변경"
+                icon="pi pi-chevron-down"
+                class="p-button-outlined"
+                @click="(event) => toggleStatusMenu(event, application)"
+              />
             </div>
           </div>
         </div>
@@ -244,26 +254,26 @@ const getStatusClass = (status) => {
 }
 
 .p-tabmenu .p-tabmenu-nav .p-tabmenuitem.p-highlight .p-menuitem-link {
-  background: #8FA1FF;
+  background: #8fa1ff;
   color: white;
 }
 
 .p-tabmenu .p-tabmenu-nav .p-tabmenuitem:not(.p-highlight):not(.p-disabled):hover .p-menuitem-link {
   background: rgba(143, 161, 255, 0.1);
   border: none;
-  color: #8FA1FF;
+  color: #8fa1ff;
 }
 
 :deep(.p-button.p-button-outlined) {
-  color: #8FA1FF;
-  border-color: #8FA1FF;
+  color: #8fa1ff;
+  border-color: #8fa1ff;
   border-radius: 8px;
 }
 
 :deep(.p-button.p-button-outlined:hover) {
   background: rgba(143, 161, 255, 0.1);
-  border-color: #8FA1FF;
-  color: #8FA1FF;
+  border-color: #8fa1ff;
+  color: #8fa1ff;
 }
 
 :deep(.p-menuitem-icon) {
@@ -308,7 +318,7 @@ const getStatusClass = (status) => {
 }
 
 :deep(.p-menu .p-menuitem-link:hover) {
-  background-color: #F3F4F6;
+  background-color: #f3f4f6;
 }
 
 :deep(.p-menu .p-menuitem-icon) {
