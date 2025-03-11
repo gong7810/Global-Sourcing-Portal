@@ -14,11 +14,11 @@ export const userRouter = [
     name: 'UserPage',
     component: () => import('@/pages/user/UserPage.vue')
   },
-  {
-    path: '/user/supportDetail',
-    name: 'SupportDetail',
-    component: () => import('@/pages/user/SupportDetailPage.vue')
-  },
+  // {
+  //   path: '/user/supportDetail',
+  //   name: 'SupportDetail',
+  //   component: () => import('@/pages/user/SupportDetailPage.vue')
+  // },
   {
     path: '/user/job-offers',
     name: 'JobOffers',
