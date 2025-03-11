@@ -1,10 +1,10 @@
 <script setup>
 import { useLayout } from '@/layout/composables/layout';
-import AppConfigurator from './AppConfigurator.vue';
 import { useRouter } from 'vue-router';
-import { onMounted, ref } from 'vue';
+import { nextTick, onMounted, ref } from 'vue';
 import { useAuthStore } from '@/store/auth/authStore';
 import { useMessagePop } from '@/plugins/commonutils';
+import { setProperty } from '@primevue/themes';
 
 const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
 
@@ -14,6 +14,14 @@ const messagePop = useMessagePop();
 
 const isMenuOpen = ref(false); // 메뉴 열림 상태
 const loginFlag = ref(false); // 로그인 여부 체크
+
+// 다국어 지원 관련
+const selectedLanguage = ref('ko');
+const languages = ref([
+  { name: '한국어', code: 'ko' },
+  { name: 'English', code: 'en' },
+  { name: 'Tiếng Việt', code: 'vi' }
+]);
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
@@ -48,6 +56,45 @@ const handleClickOutside = (event) => {
     isMenuOpen.value = false;
   }
 };
+
+const changeLanguage = async () => {
+  const translateElement = document.getElementById('google_translate_element');
+  const selectElement = translateElement?.querySelector('.goog-te-combo');
+
+  if (selectElement) {
+    selectElement.value = selectedLanguage.value;
+    selectElement.dispatchEvent(new Event('change'));
+
+    setTimeout(() => {
+      checkTranslation();
+    }, 200);
+  }
+};
+
+// 번역 체크 로직
+const checkTranslation = () => {
+  const loginElement = document.getElementsByClassName('loginSpan')[0];
+  if (loginElement) {
+    const currentText = loginElement.textContent.trim();
+
+    // 선택된 언어에 따라 예상되는 텍스트
+    const expectedTranslations = {
+      ko: '로그인',
+      en: 'log in',
+      vi: 'đăng nhập'
+    };
+
+    const isCorrectTranslation = currentText === expectedTranslations[selectedLanguage.value];
+
+    if (!isCorrectTranslation) {
+      changeLanguage();
+    }
+  }
+};
+
+const test = () => {
+  console.log(selectedLanguage.value);
+};
 </script>
 
 <template>
@@ -56,7 +103,7 @@ const handleClickOutside = (event) => {
       <div class="flex justify-between items-center h-20">
         <!-- 왼쪽 로고 -->
         <router-link to="/" class="flex items-center gap-2">
-          <span class="font-bold text-2xl text-white tracking-tight">Global Sourcing Portal</span>
+          <span class="font-bold text-2xl text-white tracking-tight" translate="no">Global Sourcing Portal</span>
         </router-link>
 
         <!-- 오른쪽 메뉴들 -->
@@ -68,7 +115,7 @@ const handleClickOutside = (event) => {
             @click="router.push('/login')"
           >
             <i class="pi pi-user text-white"></i>
-            <span class="text-sm text-white font-medium">로그인</span>
+            <span class="text-sm text-white font-medium loginSpan">로그인</span>
           </button>
           <button
             v-if="loginFlag"
@@ -147,6 +194,28 @@ const handleClickOutside = (event) => {
               </div>
             </div>
           </div>
+
+          <!-- 다국어 지원 -->
+          <!-- <div class="language-selector notranslate" translate="no">
+            <Select
+              v-model="selectedLanguage"
+              class="custom-dropdown notranslate"
+              :options="languages"
+              optionLabel="name"
+              optionValue="code"
+              @change="changeLanguage"
+              placeholder="언어 선택"
+            >
+              <template #option="{ option }">
+                <div class="notranslate">{{ option.name }}</div>
+              </template>
+              <template #value="{ value }">
+                <div class="notranslate">
+                  {{ value ? languages.find((lang) => lang.code === value)?.name : '언어 선택' }}
+                </div>
+              </template>
+            </Select>
+          </div> -->
         </div>
       </div>
     </div>
@@ -168,5 +237,38 @@ const handleClickOutside = (event) => {
     opacity: 1;
     transform: scale(1) translateY(0);
   }
+}
+
+.language-selector :deep(.custom-dropdown) {
+  width: 120px;
+  border: 1px solid #8884d8;
+}
+
+.language-selector :deep(.p-select) {
+  border-color: #8884d8;
+}
+
+.language-selector :deep(.p-select:not(.p-disabled):hover) {
+  border-color: #6c63ff;
+}
+
+.language-selector :deep(.p-select:not(.p-disabled).p-focus) {
+  box-shadow: 0 0 0 1px #8884d8;
+  border-color: #8884d8;
+}
+
+.language-selector :deep(.p-select-panel) {
+  background: #ffffff;
+  border: 1px solid #8884d8;
+}
+
+.language-selector :deep(.p-select-item:hover) {
+  background: #f0f0ff;
+  color: #6c63ff;
+}
+
+.language-selector :deep(.p-select-item.p-highlight) {
+  background: #e8e8ff;
+  color: #6c63ff;
 }
 </style>
