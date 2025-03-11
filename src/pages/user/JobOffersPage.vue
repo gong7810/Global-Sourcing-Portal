@@ -18,7 +18,9 @@ const messagePop = useMessagePop();
 
 // 채용제안 목록 상태
 const jobOffers = computed(() => {
-  return jobOfferList.value;
+  // 실제 API 연동 전까지는 mockJobOffers 사용
+  return mockJobOffers;
+  // return jobOfferList.value; // API 연동 후 사용할 코드
 });
 
 // 상세 보기 모달 상태
@@ -91,6 +93,50 @@ const getDaysUntilDeadline = (deadline) => {
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   return diffDays;
 };
+
+// jobOffers 데이터 예시
+const mockJobOffers = [
+  {
+    id: 1,
+    companyName: '밥스(주)',
+    business: '산업용 CFRP 물러, 디스플레이용 로봇핸드, 자동차 부품',
+    address: '대전 유성구 국제과학로46(신동)',
+    positions: [
+      { title: '항공기계설계', career: '경력 3년 이상', count: 2 },
+      { title: '제품개발', career: '신입/경력', count: 1 }
+    ],
+    message: '귀하의 경력과 기술이 저희 회사와 잘 맞을 것 같아 채용제안을 드립니다...',
+    deadline: '2025-03-15',
+    status: 'pending',
+    isRead: false
+  },
+  {
+    id: 2,
+    companyName: '한국항공우주산업(주)',
+    business: '항공기 제조 및 개발',
+    address: '경상남도 사천시 사남면 공단1로 78',
+    positions: [
+      { title: '항공전자 개발', career: '경력 3년 이상', count: 2 }
+    ],
+    message: '귀하의 경력이 저희 회사의 항공전자 개발 직무와 잘 맞을 것 같습니다...',
+    deadline: '2025-03-25',
+    status: 'accepted',
+    isRead: true
+  },
+  {
+    id: 3,
+    companyName: 'LIG넥스원',
+    business: '방위산업 체계 개발',
+    address: '서울특별시 강남구 언주로 45',
+    positions: [
+      { title: '시스템 엔지니어', career: '신입/경력', count: 3 }
+    ],
+    message: '귀하의 프로필을 보고 연락드립니다...',
+    deadline: '2025-04-05',
+    status: 'rejected',
+    isRead: true
+  }
+];
 </script>
 
 <template>
@@ -109,36 +155,57 @@ const getDaysUntilDeadline = (deadline) => {
       <div
         v-for="offer in jobOffers"
         :key="offer.id"
-        class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg hover:border-[#8B8BF5] cursor-pointer group"
+        class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-lg transition-shadow duration-200 cursor-pointer w-full"
         @click="viewOfferDetail(offer)"
       >
-        <div class="flex justify-between items-start">
-          <div class="flex-grow">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="font-bold">{{ offer.companyName }}</span>
-              <span :class="getStatusClass(offer.status)" class="px-3 py-1 rounded-full text-sm">
-                {{ getStatusText(offer.status) }}
-              </span>
-              <span v-if="!offer.isRead" class="bg-red-500 text-white px-2 py-1 rounded-full text-xs"> New </span>
-            </div>
-            <h3 class="text-xl font-bold mb-4">{{ offer.position }}</h3>
-            <div class="flex gap-8 text-gray-600">
-              <span class="flex items-center gap-2">
+        <div class="p-6">
+          <div class="flex items-start justify-between">
+            <div class="flex-grow">
+              <!-- 회사명과 상태 -->
+              <div class="flex items-center gap-2 mb-4">
+                <h3 class="text-lg font-bold">{{ offer.companyName }}</h3>
+                <span :class="getStatusClass(offer.status)" class="px-2 py-1 text-xs rounded">
+                  {{ getStatusText(offer.status) }}
+                </span>
+                <span v-if="!offer.isRead" class="bg-red-500 text-white px-2 py-1 rounded text-xs">New</span>
+              </div>
+
+              <!-- 회사 사업 분야 -->
+              <p class="text-gray-600 text-sm mb-4">{{ offer.business }}</p>
+
+              <!-- 주소 -->
+              <p class="text-gray-500 text-sm mb-4 flex items-center gap-2">
                 <i class="pi pi-map-marker"></i>
-                {{ offer.location }}
-              </span>
-              <span class="flex items-center gap-2">
+                {{ offer.address }}
+              </p>
+
+              <!-- 채용 중인 포지션 -->
+              <div>
+                <h4 class="font-medium text-gray-900 mb-3">
+                  <span class="flex items-center gap-2">
+                    <i class="pi pi-users text-[#8B8BF5]"></i>
+                    채용 중인 포지션
+                  </span>
+                </h4>
+                <div class="grid grid-cols-2 gap-3">
+                  <div v-for="position in offer.positions" :key="position.title"
+                    class="bg-gray-50 p-3 rounded-lg">
+                    <div class="font-medium text-gray-900">{{ position.title }}</div>
+                    <div class="flex justify-between items-center mt-1">
+                      <span class="text-sm text-gray-600">{{ position.career }}</span>
+                      <span class="text-sm text-[#8B8BF5] font-medium">{{ position.count }}명</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 회신기한 -->
+            <div class="ml-6 text-right">
+              <span class="text-sm text-gray-500 flex items-center gap-2 justify-end">
                 <i class="pi pi-calendar"></i>
                 회신기한: D-{{ getDaysUntilDeadline(offer.deadline) }}
               </span>
-            </div>
-          </div>
-
-          <!-- 상세보기 버튼 추가 -->
-          <div class="flex items-center ml-4">
-            <div class="flex items-center gap-2 text-[#8B8BF5] opacity-0 group-hover:opacity-100 transition-opacity">
-              <span class="text-sm">상세보기</span>
-              <i class="pi pi-angle-right"></i>
             </div>
           </div>
         </div>
@@ -149,22 +216,54 @@ const getDaysUntilDeadline = (deadline) => {
     <Dialog
       v-model:visible="showDetailModal"
       :modal="true"
-      :style="{ width: '50vw' }"
-      :header="selectedOffer?.companyName"
+      :style="{ width: '60vw' }"
     >
-      <div v-if="selectedOffer" class="p-4 space-y-6">
-        <div>
-          <h3 class="text-2xl font-bold mb-2">{{ selectedOffer.position }}</h3>
-          <div class="flex gap-4 text-gray-600">
-            <span>{{ selectedOffer.location }}</span>
+      <!-- 헤더 커스텀 -->
+      <template #header>
+        <div class="flex items-center gap-2">
+          <span class="text-xl font-bold">{{ selectedOffer?.companyName }}</span>
+          <span v-if="selectedOffer" :class="getStatusClass(selectedOffer.status)" class="px-2 py-1 text-xs rounded">
+            {{ getStatusText(selectedOffer.status) }}
+          </span>
+        </div>
+      </template>
+
+      <div v-if="selectedOffer" class="p-6 space-y-6">
+        <!-- 회사 기본 정보 -->
+        <div class="flex gap-8 text-gray-600 mb-3">
+          <span class="flex items-center gap-2">
+            <i class="pi pi-briefcase"></i>
+            {{ selectedOffer.business }}
+          </span>
+        </div>
+
+        <!-- 채용 중인 포지션 -->
+        <div class="mb-3">
+          <h4 class="font-medium text-gray-900 mb-2">
+            <span class="flex items-center gap-2">
+              <i class="pi pi-users text-[#8B8BF5]"></i>
+              채용 중인 포지션
+            </span>
+          </h4>
+          <div class="grid grid-cols-2 gap-3">
+            <div v-for="position in selectedOffer.positions" :key="position.title"
+              class="bg-gray-50 p-3 rounded-lg">
+              <div class="font-medium text-gray-900">{{ position.title }}</div>
+              <div class="flex justify-between items-center mt-1">
+                <span class="text-sm text-gray-600">{{ position.career }}</span>
+                <span class="text-sm text-[#8B8BF5] font-medium">{{ position.count }}명</span>
+              </div>
+            </div>
           </div>
         </div>
 
+        <!-- 채용제안 메시지 -->
         <div class="bg-gray-50 p-4 rounded-lg">
           <h4 class="font-medium mb-2">채용제안 메시지</h4>
-          <p class="text-gray-700">{{ selectedOffer.message }}</p>
+          <p class="text-gray-700 whitespace-pre-line">{{ selectedOffer.message }}</p>
         </div>
 
+        <!-- 회신기한 -->
         <div class="bg-blue-50 p-4 rounded-lg">
           <div class="flex items-center gap-2 text-blue-700">
             <i class="pi pi-info-circle"></i>
@@ -172,6 +271,7 @@ const getDaysUntilDeadline = (deadline) => {
           </div>
         </div>
 
+        <!-- 버튼 -->
         <div v-if="selectedOffer.status === 'pending'" class="flex justify-end gap-4">
           <Button label="거절하기" class="p-button-danger" @click="rejectOffer(selectedOffer)" />
           <Button label="수락하기" class="p-button-success" @click="acceptOffer(selectedOffer)" />
