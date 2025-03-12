@@ -2,6 +2,10 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import Dialog from 'primevue/dialog';
+import Calendar from 'primevue/calendar';
+import Dropdown from 'primevue/dropdown';
+import InputText from 'primevue/inputtext';
+import Button from 'primevue/button';
 
 const router = useRouter();
 
@@ -38,8 +42,7 @@ const interviewOffers = ref([
         major: '컴퓨터공학과',
         period: '2015.03 - 2019.02',
         description: '컴퓨터공학과 활동'
-      },
-      skills: ['JavaScript', 'React', 'Node.js']
+      }
     },
     position: 'Frontend Developer',
     jobDescription: '웹 서비스 프론트엔드 개발 및 유지보수',
@@ -79,8 +82,7 @@ const interviewOffers = ref([
         major: '소프트웨어공학',
         period: '2016.09 - 2020.06',
         description: '소프트웨어공학 전공'
-      },
-      skills: ['Python', 'Django', 'AWS']
+      }
     },
     position: 'Backend Developer',
     jobDescription: 'REST API 개발 및 서버 관리',
@@ -120,8 +122,7 @@ const interviewOffers = ref([
         major: '정보공학',
         period: '2014.04 - 2018.03',
         description: '정보공학 전공'
-      },
-      skills: ['Java', 'Spring', 'MySQL']
+      }
     },
     position: 'Backend Developer',
     jobDescription: '자바 기반 백엔드 서버 개발',
@@ -161,6 +162,60 @@ const openDetailModal = (offer) => {
   selectedOffer.value = offer;
   showDetailModal.value = true;
 };
+
+// 면접 일정 관련 상태
+const showScheduleModal = ref(false);
+const interviewDate = ref(null);
+const interviewHour = ref(null);
+const interviewMinute = ref(null);
+const interviewType = ref(null);
+const interviewLocation = ref('');
+
+// 시간 선택 옵션
+const hours = Array.from({ length: 24 }, (_, i) => ({
+  label: `${i.toString().padStart(2, '0')}`,
+  value: i
+}));
+
+const minutes = [
+  { label: '00', value: 0 },
+  { label: '30', value: 30 }
+];
+
+// 면접 방식 옵션
+const interviewTypes = [
+  { label: '대면 면접', value: 'offline' },
+  { label: '화상 면접', value: 'online' }
+];
+
+const openScheduleModal = (offer) => {
+  selectedOffer.value = offer;
+  showScheduleModal.value = true;
+};
+
+const scheduleInterview = () => {
+  if (!interviewDate.value || !interviewHour.value || !interviewMinute.value || !interviewType.value || !interviewLocation.value) {
+    alert('모든 항목을 입력해주세요.');
+    return;
+  }
+
+  // 선택된 제안의 면접 일정 업데이트
+  selectedOffer.value.interviewScheduled = true;
+  selectedOffer.value.interviewDate = interviewDate.value.toLocaleDateString();
+  selectedOffer.value.interviewTime = `${interviewHour.value.toString().padStart(2, '0')}:${interviewMinute.value.toString().padStart(2, '0')}`;
+  selectedOffer.value.interviewType = interviewType.value;
+  selectedOffer.value.interviewLocation = interviewLocation.value;
+
+  // 여기에 API 호출 추가
+
+  showScheduleModal.value = false;
+  // 입력값 초기화
+  interviewDate.value = null;
+  interviewHour.value = null;
+  interviewMinute.value = null;
+  interviewType.value = null;
+  interviewLocation.value = '';
+};
 </script>
 
 <template>
@@ -195,13 +250,7 @@ const openDetailModal = (offer) => {
         </div>
 
         <div class="mb-4">
-          <p class="text-gray-600 mb-2">{{ offer.candidate.education.school }} · {{ offer.candidate.education.major }}</p>
-          <div class="flex flex-wrap gap-2">
-            <span v-for="skill in offer.candidate.skills" :key="skill"
-              class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm">
-              {{ skill }}
-            </span>
-          </div>
+          <p class="text-gray-600">{{ offer.candidate.education.school }} · {{ offer.candidate.education.major }}</p>
         </div>
 
         <div class="border-t pt-4">
@@ -224,6 +273,25 @@ const openDetailModal = (offer) => {
             <i class="pi pi-check-circle mr-2"></i>
             {{ offer.responseDate }}에 수락되었습니다
           </p>
+          
+          <!-- 면접 일정이 잡히지 않은 경우에만 버튼 표시 -->
+          <div v-if="!offer.interviewScheduled" class="mt-3">
+            <button 
+              @click="openScheduleModal(offer)"
+              class="px-4 py-2 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7A7AE6]"
+            >
+              면접 일정 잡기
+            </button>
+          </div>
+          
+          <!-- 면접 일정이 이미 잡힌 경우 일정 정보 표시 -->
+          <div v-else class="mt-3">
+            <h4 class="font-medium text-gray-900 mb-2">면접 일정</h4>
+            <p class="text-gray-600">날짜: {{ offer.interviewDate }}</p>
+            <p class="text-gray-600">시간: {{ offer.interviewTime }}</p>
+            <p class="text-gray-600">방식: {{ offer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}</p>
+            <p class="text-gray-600">장소: {{ offer.interviewLocation }}</p>
+          </div>
         </div>
 
         <div v-if="offer.status === 'declined'" class="mt-4 border-t pt-4">
@@ -362,6 +430,86 @@ const openDetailModal = (offer) => {
           </div>
         </div>
       </div>
+    </Dialog>
+
+    <!-- 면접 일정 잡기 모달 -->
+    <Dialog 
+      v-model:visible="showScheduleModal" 
+      :modal="true"
+      header="면접 일정 잡기"
+      :style="{ width: '500px' }"
+    >
+      <div class="p-4">
+        <div class="mb-4">
+          <h3 class="font-medium mb-2">후보자</h3>
+          <p>{{ selectedOffer?.candidate.name }}</p>
+        </div>
+
+        <div class="mb-4">
+          <label class="block font-medium mb-2">면접 날짜</label>
+          <Calendar 
+            v-model="interviewDate" 
+            :minDate="new Date()"
+            dateFormat="yy-mm-dd"
+            class="w-full"
+          />
+        </div>
+
+        <div class="mb-4">
+          <label class="block font-medium mb-2">면접 시간</label>
+          <div class="grid grid-cols-2 gap-2">
+            <Dropdown
+              v-model="interviewHour"
+              :options="hours"
+              placeholder="시간"
+              class="w-full"
+            />
+            <Dropdown
+              v-model="interviewMinute"
+              :options="minutes"
+              placeholder="분"
+              class="w-full"
+            />
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="block font-medium mb-2">면접 방식</label>
+          <Dropdown
+            v-model="interviewType"
+            :options="interviewTypes"
+            optionLabel="label"
+            placeholder="면접 방식 선택"
+            class="w-full"
+          />
+        </div>
+
+        <div class="mb-4">
+          <label class="block font-medium mb-2">면접 장소 또는 화상 면접 링크</label>
+          <InputText 
+            v-model="interviewLocation" 
+            class="w-full"
+            :placeholder="interviewType?.value === 'online' ? 'Zoom 링크를 입력해주세요' : '면접 장소를 입력해주세요'"
+          />
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <Button 
+            @click="showScheduleModal = false"
+            class="p-button-text"
+          >
+            취소
+          </Button>
+          <Button 
+            @click="scheduleInterview"
+            class="bg-[#8B8BF5]"
+          >
+            확인
+          </Button>
+        </div>
+      </template>
     </Dialog>
   </div>
 </template>

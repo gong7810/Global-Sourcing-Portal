@@ -131,7 +131,7 @@ const bookmarkedTalents = ref([
         </div>
       </div>
 
-      <!-- 북마크된 인재 목록 섹션 추가 -->
+      <!-- 북마크된 인재 목록 섹션 -->
       <div class="bg-white rounded-lg p-6 shadow-sm mb-6">
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-xl font-bold">북마크된 인재</h2>
@@ -156,13 +156,7 @@ const bookmarkedTalents = ref([
                     경력 {{ talent.career }}
                   </span>
                 </div>
-                <p class="text-gray-600 mb-3">{{ talent.education }} · {{ talent.major }}</p>
-                <div class="flex flex-wrap gap-2">
-                  <span v-for="skill in talent.skills" :key="skill"
-                    class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm">
-                    {{ skill }}
-                  </span>
-                </div>
+                <p class="text-gray-600">{{ talent.education }} · {{ talent.major }}</p>
               </div>
               <div class="flex flex-col items-end gap-3">
                 <span class="text-sm text-gray-500">북마크: {{ talent.bookmarkedDate }}</span>

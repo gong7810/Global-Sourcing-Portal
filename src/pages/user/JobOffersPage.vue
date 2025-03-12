@@ -14,7 +14,7 @@ const userStore = useUserStore();
 
 const toast = useToast();
 
-// 채용제안 목록 상태
+// 면접제안 목록 상태
 const jobOffers = computed(() => {
   return mockJobOffers;
 });
@@ -68,7 +68,7 @@ const rejectOffer = (offer) => {
   toast.add({
     severity: 'info',
     summary: '제안 거절',
-    detail: `${offer.companyName}의 채용제안을 거절했습니다.`,
+    detail: `${offer.companyName}의 면접제안을 거절했습니다.`,
     life: 3000
   });
   showDetailModal.value = false;
@@ -121,6 +121,34 @@ const calculateAge = (birthDate) => {
   return age;
 };
 
+// 제안이 수락된 경우 상태 표시 부분 수정
+const acceptInterviewSchedule = (offer) => {
+  // 상태 변경을 즉시 반영
+  offer.interviewConfirmed = true;
+  offer.interviewProposed = false;
+  offer.interviewConfirmedAt = new Date().toISOString();
+  
+  // 강제로 화면 갱신
+  jobOffers.value = [...jobOffers.value];
+  
+  toast.add({
+    severity: 'success',
+    summary: '면접 일정 수락',
+    detail: '면접 일정이 확정되었습니다.',
+    life: 3000
+  });
+};
+
+const rejectInterviewSchedule = (offer) => {
+  offer.interviewProposed = false;
+  toast.add({
+    severity: 'info',
+    summary: '면접 일정 거절',
+    detail: '면접 일정이 거절되었습니다. 새로운 일정이 제안될 때까지 기다려주세요.',
+    life: 3000
+  });
+};
+
 // jobOffers 데이터 예시
 const mockJobOffers = [
   {
@@ -132,7 +160,7 @@ const mockJobOffers = [
       { title: '항공기계설계', career: '경력 3년 이상', count: 2 },
       { title: '제품개발', career: '신입/경력', count: 1 }
     ],
-    message: '귀하의 경력과 기술이 저희 회사와 잘 맞을 것 같아 채용제안을 드립니다...',
+    message: '귀하의 경력과 기술이 저희 회사와 잘 맞을 것 같아 면접제안을 드립니다...',
     deadline: '2025-03-15',
     status: 'pending',
     isRead: false,
@@ -203,6 +231,13 @@ const mockJobOffers = [
     status: 'accepted',
     isRead: true,
     createdAt: '2024-03-10',
+    acceptedAt: '2024-03-16',
+    interviewProposed: true,
+    interviewConfirmed: false,
+    interviewDate: '2024-03-25',
+    interviewTime: '14:30',
+    interviewType: 'offline',
+    interviewLocation: '경상남도 사천시 사남면 공단1로 78',
     resumeSnapshot: {
       basicInfo: {
         name: '최예지',
@@ -319,6 +354,74 @@ const mockJobOffers = [
         // }
       ]
     }
+  },
+  {
+    id: 4,
+    companyName: '현대로템(주)',
+    business: '철도차량 제작 및 방산장비 개발',
+    address: '경상남도 창원시 성산구 창원대로 1003',
+    positions: [
+      { title: '기계설계', career: '경력 3년 이상', count: 2 }
+    ],
+    message: '귀하의 경력이 저희 회사의 기계설계 직무와 잘 맞을 것 같아 면접 제안을 드립니다...',
+    deadline: '2025-03-20',
+    status: 'accepted',
+    isRead: true,
+    createdAt: '2024-03-12',
+    acceptedAt: '2024-03-17',
+    interviewProposed: false,
+    interviewConfirmed: false,
+    resumeSnapshot: {
+      basicInfo: {
+        name: '최예지',
+        birthDate: '1996.09.01',
+        gender: '여성',
+        email: 'yeji@naver.com',
+        phone: '010-1234-7496',
+        address: '윙스타워 505호',
+        totalCareer: '5년',
+        lastEducation: '대학교(4년) 졸업'
+      },
+      nationalityInfo: '대한민국',
+      passportInfo: {
+        passportNumber: 'M1234****',
+        surname: 'CHOI',
+        givenNames: 'YEJI',
+        nationality: '대한민국',
+        birthDate: '1996-09-01',
+        issueDate: '2020-01-01',
+        expiryDate: '2030-01-01',
+        issuingCountry: '대한민국',
+        birthPlace: 'SEOUL'
+      },
+      careers: [
+        {
+          companyName: '(주)비티포탈',
+          period: '2023.03 - 2024.03',
+          jobTitle: '프론트엔드 개발자',
+          department: '개발팀',
+          responsibilities: '웹 서비스 프론트엔드 개발'
+        }
+      ],
+      educations: [
+        {
+          educationType: { name: '대학교(4년)', code: 'UNIVERSITY' },
+          schoolName: '한국대학교',
+          period: '2015.03 - 2019.02',
+          major: '컴퓨터공학과',
+          isGraduated: true,
+          details: '웹 개발 동아리 활동'
+        }
+      ],
+      certifications: [
+        // {
+        //   name: '정보처리기사',
+        //   date: '2020-12',
+        //   organization: '한국산업인력공단',
+        //   certificate: 'cert_1.pdf'
+        // }
+      ]
+    }
   }
 ];
 </script>
@@ -339,7 +442,10 @@ const mockJobOffers = [
       <div
         v-for="offer in jobOffers"
         :key="offer.id"
-        class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-lg transition-shadow duration-200 cursor-pointer w-full"
+        :class="[
+          'bg-white rounded-lg shadow-sm border hover:shadow-lg transition-shadow duration-200 cursor-pointer w-full',
+          offer.interviewProposed ? 'border-[#8B8BF5] ring-2 ring-[#8B8BF5] ring-opacity-50' : 'border-gray-200'
+        ]"
         @click="viewOfferDetail(offer)"
       >
         <div class="p-6">
@@ -350,6 +456,10 @@ const mockJobOffers = [
                 <h3 class="text-lg font-bold">{{ offer.companyName }}</h3>
                 <span :class="getStatusClass(offer.status)" class="px-2 py-1 text-xs rounded">
                   {{ getStatusText(offer.status) }}
+                </span>
+                <!-- 새로운 면접 일정 제안 뱃지 추가 -->
+                <span v-if="offer.interviewProposed" class="bg-[#8B8BF5] text-white px-2 py-1 rounded text-xs">
+                  새로운 면접 일정
                 </span>
                 <span v-if="!offer.isRead" class="bg-red-500 text-white px-2 py-1 rounded text-xs">New</span>
               </div>
@@ -390,6 +500,95 @@ const mockJobOffers = [
                 <i class="pi pi-calendar"></i>
                 회신기한: D-{{ getDaysUntilDeadline(offer.deadline) }}
               </span>
+            </div>
+          </div>
+
+          <!-- 제안이 수락된 경우 상태 표시 부분 수정 -->
+          <div v-if="offer.status === 'accepted'" class="mt-4 border-t pt-4">
+            <p class="text-green-600">
+              <i class="pi pi-check-circle mr-2"></i>
+              {{ offer.acceptedAt }}에 수락되었습니다
+            </p>
+            
+            <!-- 면접 일정이 제안된 경우 -->
+            <div v-if="offer.interviewProposed && !offer.interviewConfirmed" class="mt-3 bg-blue-50 p-4 rounded-lg">
+              <h4 class="font-medium text-gray-900 mb-2">제안된 면접 일정</h4>
+              <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-calendar text-blue-600"></i>
+                  <span class="text-gray-700">{{ offer.interviewDate }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-clock text-blue-600"></i>
+                  <span class="text-gray-700">{{ offer.interviewTime }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-video text-blue-600"></i>
+                  <span class="text-gray-700">{{ offer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-map-marker text-blue-600"></i>
+                  <span class="text-gray-700">{{ offer.interviewLocation }}</span>
+                </div>
+              </div>
+              <div class="flex gap-2">
+                <Button 
+                  severity="success"
+                  class="p-button-sm"
+                  @click.stop="acceptInterviewSchedule(offer); $event.preventDefault();"
+                >
+                  일정 수락
+                </Button>
+                <Button 
+                  severity="warning"
+                  class="p-button-sm"
+                  @click.stop="requestNewSchedule(offer); $event.preventDefault();"
+                >
+                  다른 일정 요청
+                </Button>
+                <Button 
+                  severity="danger"
+                  class="p-button-sm"
+                  @click.stop="rejectInterviewSchedule(offer); $event.preventDefault();"
+                >
+                  면접 거절
+                </Button>
+              </div>
+            </div>
+            
+            <!-- 면접 일정이 확정된 경우 -->
+            <div v-else-if="offer.interviewConfirmed" class="mt-3 bg-green-50 p-4 rounded-lg">
+              <h4 class="font-medium text-gray-900 mb-2">확정된 면접 일정</h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-calendar text-green-600"></i>
+                  <span class="text-gray-700">{{ offer.interviewDate }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-clock text-green-600"></i>
+                  <span class="text-gray-700">{{ offer.interviewTime }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-video text-green-600"></i>
+                  <span class="text-gray-700">{{ offer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-map-marker text-green-600"></i>
+                  <span class="text-gray-700">{{ offer.interviewLocation }}</span>
+                </div>
+              </div>
+              <p class="mt-4 text-green-600 flex items-center gap-2">
+                <i class="pi pi-check-circle"></i>
+                <span>면접 일정이 확정되었습니다</span>
+              </p>
+            </div>
+            
+            <!-- 아직 면접 일정이 제안되지 않은 경우 -->
+            <div v-else class="mt-3 bg-yellow-50 p-4 rounded-lg">
+              <p class="text-yellow-700">
+                <i class="pi pi-clock mr-2"></i>
+                면접 일정 조율 중입니다. 기업 담당자가 일정을 전달할 예정입니다.
+              </p>
             </div>
           </div>
         </div>
@@ -451,9 +650,9 @@ const mockJobOffers = [
           </div>
         </div>
 
-        <!-- 면접 제안 메시지 -->
+        <!-- 면접제안 메시지 -->
         <div class="bg-gray-50 p-4 rounded-lg">
-          <h4 class="font-medium mb-2">면접 제안 메시지</h4>
+          <h4 class="font-medium mb-2">면접제안 메시지</h4>
           <p class="text-gray-700 whitespace-pre-line">{{ selectedOffer.message }}</p>
         </div>
 
