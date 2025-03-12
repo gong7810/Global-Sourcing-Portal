@@ -17,16 +17,11 @@ export const AUTH_EXCLUSIONS_ROUTER_NAME = [
   'Resume',
   'UserPage',
   // 'SupportDetail',
-  'JobOffers',
-  'BusinessPage',
-  'PostJobPage',
-  'EditJobPage',
-  'JobPostsPage',
+  'CreateInterviewOffer',
   'CandidatesPage',
-  'TalentPoolPage',
   'CompanyInfoPage',
-  'CreateJobOfferPage',
   'FaqPage',
   'InquiryPage',
-  'TalentSearchPage'
+  'TalentSearchPage',
+  'InterviewOffers'
 ];
