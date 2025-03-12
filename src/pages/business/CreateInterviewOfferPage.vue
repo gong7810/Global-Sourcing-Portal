@@ -10,6 +10,15 @@ const jobOffer = ref({
   message: '안녕하세요. 귀하의 프로필을 보고 연락드립니다.'
 });
 
+const candidate = ref({
+  id: 1,
+  name: '홍길동',
+  nationality: '베트남',
+  career: '5년',
+  education: '하노이공과대학교',
+  major: '컴퓨터공학'
+});
+
 const submitOffer = () => {
   console.log('면접 제안 전송:', jobOffer.value);
   // TODO: API 연동
@@ -28,22 +37,17 @@ const submitOffer = () => {
       <h1 class="text-3xl font-bold">면접 제안하기</h1>
     </div>
 
-    <!-- 후보자 정보 -->
+    <!-- 선택된 인재 정보 -->
     <div class="bg-white rounded-lg p-6 shadow-sm mb-6">
-      <div class="flex items-center gap-3 mb-3">
-        <h3 class="text-lg font-bold">홍길동</h3>
-        <span class="text-sm text-gray-600">베트남</span>
+      <h2 class="text-xl font-bold mb-4">인재 정보</h2>
+      <div class="flex items-start gap-3 mb-3">
+        <h3 class="text-lg font-bold">{{ candidate.name }}</h3>
+        <span class="text-sm text-gray-600">{{ candidate.nationality }}</span>
         <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">
-          경력 5년
+          경력 {{ candidate.career }}
         </span>
       </div>
-      <p class="text-gray-600 mb-3">하노이공과대학교 · 컴퓨터공학</p>
-      <div class="flex flex-wrap gap-2">
-        <span v-for="skill in ['JavaScript', 'React', 'Node.js']" :key="skill"
-          class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-sm">
-          {{ skill }}
-        </span>
-      </div>
+      <p class="text-gray-600">{{ candidate.education }} · {{ candidate.major }}</p>
     </div>
 
     <!-- 제안 폼 -->
