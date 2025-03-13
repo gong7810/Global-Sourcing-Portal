@@ -4,45 +4,30 @@ export const businessRouter = [
         name: 'businessIndex',
         component: () => import('@/pages/business/Dashboard.vue')
     },
-    {
-        path: '/business/businessPage',
-        name: 'BusinessPage',
-        component: () => import('@/pages/business/businessPage.vue')
-    },
-    {
-        path: '/business/postJobPage',
-        name: 'PostJobPage',
-        component: () => import('@/pages/business/PostJobPage.vue')
-    },
-    {
-        path: '/business/JobPostsPage',
-        name: 'JobPostsPage',
-        component: () => import('@/pages/business/JobPostsPage.vue')
-    },
-    {
-        path: '/business/CandidatesPage',
-        name: 'CandidatesPage',
-        component: () => import('@/pages/business/CandidatesPage.vue')
-    },
-    {
-        path: '/business/TalentPoolPage',
-        name: 'TalentPoolPage',
-        component: () => import('@/pages/business/TalentPoolPage.vue')
-    },
+    // {
+    //     path: '/business/CandidatesPage',
+    //     name: 'CandidatesPage',
+    //     component: () => import('@/pages/business/CandidatesPage.vue')
+    // },
     {
         path: '/business/CompanyInfoPage',
         name: 'CompanyInfoPage',
         component: () => import('@/pages/business/CompanyInfoPage.vue')
     },
     {
-        path: '/business/post-job/:id',
-        name: 'EditJobPage',
-        component: () => import('@/pages/business/PostJobPage.vue')
+        path: '/business/TalentSearchPage',
+        name: 'TalentSearchPage',
+        component: () => import('@/pages/business/TalentSearchPage.vue')
     },
     {
-        path: '/business/job-offer/create/:candidateId',
-        name: 'CreateJobOfferPage',
-        component: () => import('@/pages/business/CreateJobOfferPage.vue')
+        path: '/business/InterviewOffers',
+        name: 'InterviewOffers',
+        component: () => import('@/pages/business/InterviewOffersPage.vue')
+    },
+    {
+        path: '/business/interview-offer/create/:id',
+        name: 'CreateInterviewOffer',
+        component: () => import('@/pages/business/CreateInterviewOfferPage.vue')
     },
     // {
     //     path: '/manageMember',
