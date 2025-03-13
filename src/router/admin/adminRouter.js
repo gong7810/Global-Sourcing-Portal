@@ -16,6 +16,12 @@ export const adminRouter = [
         component: () => import('@/pages/admin/AdminFaqPage.vue'),
         meta: { authorization: ['ADMIN'] }
     },
+    {
+        path: '/admin/users',
+        name: 'AdminUserMng',
+        component: () => import('@/pages/admin/AdminUserMngPage.vue'),
+        meta: { authorization: ['ADMIN'] }
+    },
     // {
     //     path: '/manageMember',
     //     name: 'manageMember',
