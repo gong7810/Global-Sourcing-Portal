@@ -8,9 +8,9 @@ import Select from 'primevue/select';
 import Menu from 'primevue/menu';
 
 const router = useRouter();
-const goBack = () => {
-  router.back();
-};
+// const goBack = () => {
+//   router.back();
+// };
 
 // 지원자 상태 탭
 const activeTab = ref(0);

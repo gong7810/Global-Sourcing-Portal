@@ -10,11 +10,11 @@ import { storeToRefs } from 'pinia';
 
 const router = useRouter();
 const userStore = useUserStore();
-const { jobOfferList } = storeToRefs(userStore);
+// const { jobOfferList } = storeToRefs(userStore); api 연동할 때 사용하기
 
 const toast = useToast();
 
-// 채용제안 목록 상태
+// 면접제안 목록 상태
 const jobOffers = computed(() => {
   return mockJobOffers;
 });
@@ -22,6 +22,9 @@ const jobOffers = computed(() => {
 // 상세 보기 모달 상태
 const showDetailModal = ref(false);
 const selectedOffer = ref(null);
+
+// 면접 일정 선택을 위한 상태
+const selectedDateIndices = ref({}); // 각 제안별로 선택된 일정을 추적
 
 // 제안 상세 보기
 const viewOfferDetail = (offer) => {
@@ -39,7 +42,7 @@ const acceptOffer = async (offer) => {
     // 제안 수락 처리
     offer.status = 'accepted';
     offer.acceptedAt = new Date().toISOString();
-    
+
     // API 연동 전까지는 주석 처리
     // await updateJobOffer(offer);  // 실제 API 연동 시 사용할 코드
 
@@ -49,7 +52,7 @@ const acceptOffer = async (offer) => {
       detail: `${offer.companyName}의 면접제안을 수락했습니다.`,
       life: 3000
     });
-    
+
     showDetailModal.value = false;
   } catch (error) {
     console.error('제안 수락 중 오류 발생:', error);
@@ -68,7 +71,7 @@ const rejectOffer = (offer) => {
   toast.add({
     severity: 'info',
     summary: '제안 거절',
-    detail: `${offer.companyName}의 채용제안을 거절했습니다.`,
+    detail: `${offer.companyName}의 면접제안을 거절했습니다.`,
     life: 3000
   });
   showDetailModal.value = false;
@@ -93,6 +96,8 @@ const getStatusText = (status) => {
       return '수락됨';
     case 'rejected':
       return '거절됨';
+    case 'pending':
+      return '대기중';
     default:
       return '대기중';
   }
@@ -113,12 +118,73 @@ const calculateAge = (birthDate) => {
   const birth = new Date(birthDate.replace(/\./g, '-'));
   let age = today.getFullYear() - birth.getFullYear();
   const monthDiff = today.getMonth() - birth.getMonth();
-  
+
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
     age--;
   }
-  
+
   return age;
+};
+
+// 면접 일정 수락 함수 수정
+const acceptInterviewSchedule = (offer) => {
+  const selectedIndex = selectedDateIndices.value[offer.id];
+
+  if (selectedIndex === undefined) {
+    toast.add({
+      severity: 'warn',
+      summary: '알림',
+      detail: '면접 일정을 선택해주세요.',
+      life: 3000
+    });
+    return;
+  }
+
+  // 선택된 일정으로 면접 정보 업데이트
+  const selectedDate = offer.proposedDates[selectedIndex];
+  offer.interviewConfirmed = true; // 면접 확정 상태로 변경
+  offer.interviewProposed = false; // 제안 상태 해제
+  offer.interviewDate = selectedDate.date;
+  offer.interviewTime = selectedDate.time;
+  offer.interviewConfirmedAt = new Date().toISOString();
+
+  // 선택된 일정 인덱스 초기화
+  selectedDateIndices.value[offer.id] = undefined;
+
+  toast.add({
+    severity: 'success',
+    summary: '면접 일정 확정',
+    detail: `${selectedDate.date} ${selectedDate.time}에 면접이 확정되었습니다.`,
+    life: 3000
+  });
+};
+
+// 면접 일정 거절 함수 수정
+const rejectInterviewSchedule = (offer) => {
+  offer.interviewProposed = false;
+  offer.status = 'rejected';
+  offer.rejectedAt = new Date().toISOString();
+  selectedDateIndices.value[offer.id] = undefined;
+
+  toast.add({
+    severity: 'info',
+    summary: '면접 일정 거절',
+    detail: '면접 일정이 거절되었습니다.',
+    life: 3000
+  });
+};
+
+// 날짜 포맷팅 함수 추가
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 };
 
 // jobOffers 데이터 예시
@@ -132,75 +198,41 @@ const mockJobOffers = [
       { title: '항공기계설계', career: '경력 3년 이상', count: 2 },
       { title: '제품개발', career: '신입/경력', count: 1 }
     ],
-    message: '귀하의 경력과 기술이 저희 회사와 잘 맞을 것 같아 채용제안을 드립니다...',
+    message: '귀하의 경력과 기술이 저희 회사와 잘 맞을 것 같아 면접제안을 드립니다...',
     deadline: '2025-03-15',
-    status: 'pending',
+    status: 'accepted',
     isRead: false,
-    createdAt: '2024-03-11',
-    resumeSnapshot: {
-      basicInfo: {
-        name: '최예지',
-        birthDate: '1996.09.01',
-        gender: '여성',
-        email: 'yeji@naver.com',
-        phone: '010-1234-7496',
-        address: '윙스타워 505호',
-        totalCareer: '5년',
-        lastEducation: '대학교(4년) 졸업'
+    createdAt: '2024-03-11T10:00:00',
+    acceptedAt: '2024-03-12T14:30:00',
+    interviewProposed: true,
+    interviewProposedAt: '2024-03-13T09:00:00',
+    interviewConfirmed: false,
+    proposedDates: [
+      {
+        date: '2024-03-25',
+        time: '14:00'
       },
-      nationalityInfo: '대한민국',
-      passportInfo: {
-        passportNumber: 'M1234****',
-        surname: 'CHOI',
-        givenNames: 'YEJI',
-        nationality: '대한민국',
-        birthDate: '1996-09-01',
-        issueDate: '2020-01-01',
-        expiryDate: '2030-01-01',
-        issuingCountry: '대한민국',
-        birthPlace: 'SEOUL'
+      {
+        date: '2024-03-26',
+        time: '10:00'
       },
-      careers: [
-        {
-          companyName: '(주)비티포탈',
-          period: '2023.03 - 2024.03',
-          jobTitle: '프론트엔드 개발자',
-          department: '개발팀',
-          responsibilities: '웹 서비스 프론트엔드 개발'
-        }
-      ],
-      educations: [
-        {
-          educationType: { name: '대학교(4년)', code: 'UNIVERSITY' },
-          schoolName: '한국대학교',
-          period: '2015.03 - 2019.02',
-          major: '컴퓨터공학과',
-          isGraduated: true,
-          details: '웹 개발 동아리 활동'
-        }
-      ],
-      certifications: [
-        // {
-        //   name: '정보처리기사',
-        //   date: '2020-12',
-        //   organization: '한국산업인력공단',
-        //   certificate: 'cert_1.pdf'
-        // }
-      ]
-    },
-    acceptedAt: null
+      {
+        date: '2024-03-27',
+        time: '15:30'
+      }
+    ],
+    interviewType: 'offline',
+    interviewLocation: '서울시 강남구 테헤란로 123'
   },
   {
     id: 2,
     companyName: '한국항공우주산업(주)',
     business: '항공기 제조 및 개발',
     address: '경상남도 사천시 사남면 공단1로 78',
-    positions: [
-      { title: '항공전자 개발', career: '경력 3년 이상', count: 2 }
-    ],
+    positions: [{ title: '항공전자 개발', career: '경력 3년 이상', count: 2 }],
     message: '귀하의 경력이 저희 회사의 항공전자 개발 직무와 잘 맞을 것 같습니다...',
     deadline: '2025-03-25',
-    status: 'accepted',
+    status: 'pending',
     isRead: true,
     createdAt: '2024-03-10',
     resumeSnapshot: {
@@ -260,14 +292,79 @@ const mockJobOffers = [
     companyName: 'LIG넥스원',
     business: '방위산업 체계 개발',
     address: '서울특별시 강남구 언주로 45',
-    positions: [
-      { title: '시스템 엔지니어', career: '신입/경력', count: 3 }
-    ],
+    positions: [{ title: '시스템 엔지니어', career: '신입/경력', count: 3 }],
     message: '귀하의 프로필을 보고 연락드립니다...',
     deadline: '2025-04-05',
     status: 'rejected',
     isRead: true,
     createdAt: '2024-03-09',
+    rejectedAt: '2024-03-18T14:30:00',
+    resumeSnapshot: {
+      basicInfo: {
+        name: '최예지',
+        birthDate: '1996.09.01',
+        gender: '여성',
+        email: 'yeji@naver.com',
+        phone: '010-1234-7496',
+        address: '윙스타워 505호',
+        totalCareer: '5년',
+        lastEducation: '대학교(4년) 졸업'
+      },
+      nationalityInfo: '대한민국',
+      passportInfo: {
+        passportNumber: 'M1234****',
+        surname: 'CHOI',
+        givenNames: 'YEJI',
+        nationality: '대한민국',
+        birthDate: '1996-09-01',
+        issueDate: '2020-01-01',
+        expiryDate: '2030-01-01',
+        issuingCountry: '대한민국',
+        birthPlace: 'SEOUL'
+      },
+      careers: [
+        {
+          companyName: '(주)비티포탈',
+          period: '2023.03 - 2024.03',
+          jobTitle: '프론트엔드 개발자',
+          department: '개발팀',
+          responsibilities: '웹 서비스 프론트엔드 개발'
+        }
+      ],
+      educations: [
+        {
+          educationType: { name: '대학교(4년)', code: 'UNIVERSITY' },
+          schoolName: '한국대학교',
+          period: '2015.03 - 2019.02',
+          major: '컴퓨터공학과',
+          isGraduated: true,
+          details: '웹 개발 동아리 활동'
+        }
+      ],
+      certifications: [
+        // {
+        //   name: '정보처리기사',
+        //   date: '2020-12',
+        //   organization: '한국산업인력공단',
+        //   certificate: 'cert_1.pdf'
+        // }
+      ]
+    }
+  },
+  {
+    id: 4,
+    companyName: '현대로템(주)',
+    business: '철도차량 제작 및 방산장비 개발',
+    address: '경상남도 창원시 성산구 창원대로 1003',
+    positions: [{ title: '기계설계', career: '경력 3년 이상', count: 2 }],
+    message: '귀하의 경력이 저희 회사의 기계설계 직무와 잘 맞을 것 같아 면접 제안을 드립니다...',
+    deadline: '2025-03-20',
+    status: 'accepted',
+    isRead: true,
+    createdAt: '2024-03-12',
+    acceptedAt: '2024-03-17',
+    interviewProposed: false,
+    interviewConfirmed: false,
     resumeSnapshot: {
       basicInfo: {
         name: '최예지',
@@ -339,7 +436,10 @@ const mockJobOffers = [
       <div
         v-for="offer in jobOffers"
         :key="offer.id"
-        class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-lg transition-shadow duration-200 cursor-pointer w-full"
+        :class="[
+          'bg-white rounded-lg shadow-sm border hover:shadow-lg transition-shadow duration-200 cursor-pointer w-full',
+          offer.interviewProposed ? 'border-[#8B8BF5] ring-2 ring-[#8B8BF5] ring-opacity-50' : 'border-gray-200'
+        ]"
         @click="viewOfferDetail(offer)"
       >
         <div class="p-6">
@@ -350,6 +450,10 @@ const mockJobOffers = [
                 <h3 class="text-lg font-bold">{{ offer.companyName }}</h3>
                 <span :class="getStatusClass(offer.status)" class="px-2 py-1 text-xs rounded">
                   {{ getStatusText(offer.status) }}
+                </span>
+                <!-- 새로운 면접 일정 제안 뱃지 추가 -->
+                <span v-if="offer.interviewProposed" class="bg-[#8B8BF5] text-white px-2 py-1 rounded text-xs">
+                  새로운 면접 일정
                 </span>
                 <span v-if="!offer.isRead" class="bg-red-500 text-white px-2 py-1 rounded text-xs">New</span>
               </div>
@@ -372,8 +476,7 @@ const mockJobOffers = [
                   </span>
                 </h4>
                 <div class="grid grid-cols-2 gap-3">
-                  <div v-for="position in offer.positions" :key="position.title"
-                    class="bg-gray-50 p-3 rounded-lg">
+                  <div v-for="position in offer.positions" :key="position.title" class="bg-gray-50 p-3 rounded-lg">
                     <div class="font-medium text-gray-900">{{ position.title }}</div>
                     <div class="flex justify-between items-center mt-1">
                       <span class="text-sm text-gray-600">{{ position.career }}</span>
@@ -392,16 +495,133 @@ const mockJobOffers = [
               </span>
             </div>
           </div>
+
+          <!-- 제안이 수락된 경우 상태 표시 부분 수정 -->
+          <div v-if="offer.status === 'accepted'" class="mt-4 border-t pt-4">
+            <div class="space-y-2">
+              <!-- 제안 관련 날짜 정보 -->
+              <p class="text-gray-600">
+                <i class="pi pi-clock mr-2"></i>
+                제안받은 날짜: {{ formatDate(offer.createdAt) }}
+              </p>
+              <p class="text-green-600">
+                <i class="pi pi-check-circle mr-2"></i>
+                수락 날짜: {{ formatDate(offer.acceptedAt) }}
+              </p>
+              <p v-if="offer.interviewProposed || offer.interviewConfirmed" class="text-blue-600">
+                <i class="pi pi-calendar mr-2"></i>
+                면접 일정 제안받은 날짜: {{ formatDate(offer.interviewProposedAt) }}
+              </p>
+            </div>
+
+            <!-- 면접 일정이 확정된 경우 -->
+            <div v-if="offer.interviewConfirmed" class="mt-3 bg-green-50 p-4 rounded-lg">
+              <h4 class="font-medium text-gray-900 mb-2">확정된 면접 일정</h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-calendar text-green-600"></i>
+                  <span class="text-gray-700">{{ offer.interviewDate }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-clock text-green-600"></i>
+                  <span class="text-gray-700">{{ offer.interviewTime }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-video text-green-600"></i>
+                  <span class="text-gray-700">
+                    {{ offer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}
+                  </span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-map-marker text-green-600"></i>
+                  <span class="text-gray-700">{{ offer.interviewLocation }}</span>
+                </div>
+              </div>
+              <p class="mt-4 text-green-600 flex items-center gap-2">
+                <i class="pi pi-check-circle"></i>
+                <span>{{ formatDate(offer.interviewConfirmedAt) }}에 면접 일정이 확정되었습니다</span>
+              </p>
+            </div>
+
+            <!-- 면접 일정이 제안된 경우 (아직 확정되지 않은 경우) -->
+            <div v-else-if="offer.interviewProposed" class="mt-3 bg-blue-50 p-4 rounded-lg" @click.stop>
+              <h4 class="font-medium text-gray-900 mb-2">제안된 면접 일정</h4>
+              <div class="space-y-4 mb-4">
+                <div
+                  v-for="(dateSlot, index) in offer.proposedDates"
+                  :key="index"
+                  class="flex items-center gap-4 p-3 bg-white rounded-lg"
+                >
+                  <input
+                    type="radio"
+                    :name="'interview-date-' + offer.id"
+                    :value="index"
+                    v-model="selectedDateIndices[offer.id]"
+                    @click.stop
+                  />
+                  <div>
+                    <div class="font-medium">{{ dateSlot.date }}</div>
+                    <div class="text-sm text-gray-600">{{ dateSlot.time }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <div class="font-medium mb-2">면접 방식</div>
+                <p class="text-gray-700">
+                  {{ offer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}
+                </p>
+                <p class="text-gray-700">{{ offer.interviewLocation }}</p>
+              </div>
+
+              <div class="flex gap-2">
+                <Button
+                  severity="success"
+                  class="p-button-sm"
+                  @click.stop="acceptInterviewSchedule(offer)"
+                  :disabled="selectedDateIndices[offer.id] === undefined"
+                >
+                  일정 수락
+                </Button>
+                <Button severity="danger" class="p-button-sm" @click.stop="rejectInterviewSchedule(offer)">
+                  면접 거절
+                </Button>
+              </div>
+            </div>
+
+            <!-- 아직 면접 일정이 제안되지 않은 경우 -->
+            <div v-else class="mt-3 bg-yellow-50 p-4 rounded-lg">
+              <p class="text-yellow-700">
+                <i class="pi pi-clock mr-2"></i>
+                면접 일정 조율 중입니다. 기업 담당자가 일정을 전달할 예정입니다.
+              </p>
+            </div>
+          </div>
+
+          <!-- 제안 상태 표시 부분 수정 -->
+          <div v-else-if="offer.status === 'rejected'" class="mt-4 border-t pt-4">
+            <p class="text-red-600">
+              <i class="pi pi-times-circle mr-2"></i>
+              {{ formatDate(offer.rejectedAt) }}에 거절되었습니다
+            </p>
+          </div>
+
+          <!-- 상세정보 보기 버튼 추가 -->
+          <div class="mt-4 flex justify-end">
+            <button
+              class="text-[#8B8BF5] hover:text-[#7A7AE6] flex items-center gap-1"
+              @click.stop="viewOfferDetail(offer)"
+            >
+              <span>상세 정보 보기</span>
+              <i class="pi pi-arrow-right text-sm"></i>
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- 상세 보기 모달 -->
-    <Dialog
-      v-model:visible="showDetailModal"
-      :modal="true"
-      :style="{ width: '60vw' }"
-    >
+    <Dialog v-model:visible="showDetailModal" :modal="true" :style="{ width: '60vw' }">
       <!-- 헤더 커스텀 -->
       <template #header>
         <div class="flex items-center gap-2">
@@ -440,8 +660,7 @@ const mockJobOffers = [
             </span>
           </h4>
           <div class="grid grid-cols-2 gap-3">
-            <div v-for="position in selectedOffer.positions" :key="position.title"
-              class="bg-gray-50 p-3 rounded-lg">
+            <div v-for="position in selectedOffer.positions" :key="position.title" class="bg-gray-50 p-3 rounded-lg">
               <div class="font-medium text-gray-900">{{ position.title }}</div>
               <div class="flex justify-between items-center mt-1">
                 <span class="text-sm text-gray-600">{{ position.career }}</span>
@@ -451,9 +670,9 @@ const mockJobOffers = [
           </div>
         </div>
 
-        <!-- 면접 제안 메시지 -->
+        <!-- 면접제안 메시지 -->
         <div class="bg-gray-50 p-4 rounded-lg">
-          <h4 class="font-medium mb-2">면접 제안 메시지</h4>
+          <h4 class="font-medium mb-2">면접제안 메시지</h4>
           <p class="text-gray-700 whitespace-pre-line">{{ selectedOffer.message }}</p>
         </div>
 
@@ -477,7 +696,10 @@ const mockJobOffers = [
                   <span class="text-gray-500">이름</span>
                   <span>{{ selectedOffer.resumeSnapshot.basicInfo.name }}</span>
                   <span class="text-gray-500">생년월일</span>
-                  <span>{{ selectedOffer.resumeSnapshot.basicInfo.birthDate }} (만 {{ calculateAge(selectedOffer.resumeSnapshot.basicInfo.birthDate) }}세)</span>
+                  <span
+                    >{{ selectedOffer.resumeSnapshot.basicInfo.birthDate }} (만
+                    {{ calculateAge(selectedOffer.resumeSnapshot.basicInfo.birthDate) }}세)</span
+                  >
                   <span class="text-gray-500">성별</span>
                   <span>{{ selectedOffer.resumeSnapshot.basicInfo.gender }}</span>
                   <span class="text-gray-500">휴대폰</span>
@@ -505,7 +727,10 @@ const mockJobOffers = [
               <div class="bg-gray-50 p-4 rounded-lg">
                 <h5 class="font-medium mb-2">여권</h5>
                 <div class="space-y-2 text-sm text-gray-600">
-                  <p>이름: {{ selectedOffer.resumeSnapshot.passportInfo.surname }} {{ selectedOffer.resumeSnapshot.passportInfo.givenNames }}</p>
+                  <p>
+                    이름: {{ selectedOffer.resumeSnapshot.passportInfo.surname }}
+                    {{ selectedOffer.resumeSnapshot.passportInfo.givenNames }}
+                  </p>
                   <p>여권번호: {{ selectedOffer.resumeSnapshot.passportInfo.passportNumber }}</p>
                   <p>국적: {{ selectedOffer.resumeSnapshot.passportInfo.nationality }}</p>
                   <p>만료일: {{ selectedOffer.resumeSnapshot.passportInfo.expiryDate }}</p>
@@ -516,9 +741,11 @@ const mockJobOffers = [
               <div class="bg-gray-50 p-4 rounded-lg">
                 <h5 class="font-medium mb-2">경력 사항</h5>
                 <div v-if="selectedOffer.resumeSnapshot.careers?.length > 0">
-                  <div v-for="career in selectedOffer.resumeSnapshot.careers" 
-                      :key="career.companyName" 
-                      class="mb-4 border-b border-gray-200 pb-4 last:border-0 last:pb-0">
+                  <div
+                    v-for="career in selectedOffer.resumeSnapshot.careers"
+                    :key="career.companyName"
+                    class="mb-4 border-b border-gray-200 pb-4 last:border-0 last:pb-0"
+                  >
                     <div class="space-y-1">
                       <h6 class="font-medium text-gray-900">{{ career.companyName }}</h6>
                       <p class="text-sm text-gray-600">{{ career.period }}</p>
@@ -527,18 +754,18 @@ const mockJobOffers = [
                     </div>
                   </div>
                 </div>
-                <div v-else class="text-center py-4 text-gray-500">
-                  등록된 경력이 없습니다
-                </div>
+                <div v-else class="text-center py-4 text-gray-500">등록된 경력이 없습니다</div>
               </div>
 
               <!-- 학력 정보 -->
               <div class="bg-gray-50 p-4 rounded-lg">
                 <h5 class="font-medium mb-2">학력 사항</h5>
                 <div v-if="selectedOffer.resumeSnapshot.educations?.length > 0">
-                  <div v-for="education in selectedOffer.resumeSnapshot.educations" 
-                      :key="education.schoolName" 
-                      class="mb-4 border-b border-gray-200 pb-4 last:border-0 last:pb-0">
+                  <div
+                    v-for="education in selectedOffer.resumeSnapshot.educations"
+                    :key="education.schoolName"
+                    class="mb-4 border-b border-gray-200 pb-4 last:border-0 last:pb-0"
+                  >
                     <div class="space-y-1">
                       <h6 class="font-medium text-gray-900">{{ education.schoolName }}</h6>
                       <p class="text-sm text-gray-600">{{ education.educationType.name }}</p>
@@ -548,18 +775,18 @@ const mockJobOffers = [
                     </div>
                   </div>
                 </div>
-                <div v-else class="text-center py-4 text-gray-500">
-                  등록된 학력이 없습니다
-                </div>
+                <div v-else class="text-center py-4 text-gray-500">등록된 학력이 없습니다</div>
               </div>
 
               <!-- 자격증 정보 -->
               <div class="bg-gray-50 p-4 rounded-lg">
                 <h5 class="font-medium mb-2">자격증 사항</h5>
                 <div v-if="selectedOffer.resumeSnapshot.certifications?.length > 0">
-                  <div v-for="cert in selectedOffer.resumeSnapshot.certifications" 
-                      :key="cert.name" 
-                      class="mb-4 border-b border-gray-200 pb-4 last:border-0 last:pb-0">
+                  <div
+                    v-for="cert in selectedOffer.resumeSnapshot.certifications"
+                    :key="cert.name"
+                    class="mb-4 border-b border-gray-200 pb-4 last:border-0 last:pb-0"
+                  >
                     <div class="space-y-1">
                       <p class="text-sm text-gray-900">{{ cert.name }}</p>
                       <p class="text-sm text-gray-600">취득일: {{ cert.date }}</p>
@@ -567,9 +794,7 @@ const mockJobOffers = [
                     </div>
                   </div>
                 </div>
-                <div v-else class="text-center py-4 text-gray-500">
-                  등록된 자격증이 없습니다
-                </div>
+                <div v-else class="text-center py-4 text-gray-500">등록된 자격증이 없습니다</div>
               </div>
             </div>
           </div>

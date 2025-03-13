@@ -161,7 +161,7 @@ const togglePasswordCheckVisibility = () => {
 const verifyPassport = async () => {
   // 여권번호 확인 로직
 
-  body = {
+  const body = {
     organization: '0001',
     passportNo: passportNo.value,
     nationality: '12',

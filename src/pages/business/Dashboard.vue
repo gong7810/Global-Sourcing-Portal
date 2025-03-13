@@ -3,12 +3,8 @@ import { onMounted, ref } from 'vue';
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
-import Select from 'primevue/select';
 
 const router = useRouter();
-
-const selectedCareer = ref(null);
-const selectedNationality = ref(null);
 
 const careers = [
   { label: '신입', value: 'entry' },
@@ -44,37 +40,27 @@ const formatCurrency = (value) => {
   return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 };
 
-// 채용공고 목록 데이터
-const jobPosts = ref([
+// 북마크된 인재 데이터 추가
+const bookmarkedTalents = ref([
   {
     id: 1,
-    company: '(주)코아시아',
-    title: '정보전략그룹(IT) 경력직 채용 공고',
-    department: 'IT개발·데이터',
-    location: '경기 화성시',
-    headcount: 0,
-    dday: 49,
-    type: '정규직'
+    name: '홍길동',
+    nationality: '베트남',
+    career: '5년',
+    skills: ['JavaScript', 'React', 'Node.js'],
+    education: '하노이공과대학교',
+    major: '컴퓨터공학',
+    bookmarkedDate: '2024-03-15'
   },
   {
     id: 2,
-    company: '(주)삼성전자',
-    title: '소프트웨어 개발자 채용',
-    department: '웹 개발',
-    location: '서울 서초구',
-    headcount: 5,
-    dday: 30,
-    type: '정규직'
-  },
-  {
-    id: 3,
-    company: '(주)네이버',
-    title: '프론트엔드 개발자 모집',
-    department: '프론트엔드',
-    location: '경기 성남시',
-    headcount: 3,
-    dday: 15,
-    type: '정규직'
+    name: '김철수',
+    nationality: '중국',
+    career: '3년',
+    skills: ['Python', 'Django', 'AWS'],
+    education: '베이징대학교',
+    major: '소프트웨어공학',
+    bookmarkedDate: '2024-03-14'
   }
 ]);
 </script>
@@ -85,7 +71,8 @@ const jobPosts = ref([
     <div class="grid gap-4">
       <!-- 상단 메뉴 아이콘들 -->
       <div class="flex justify-center gap-32 mb-12">
-        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/postJobPage')">
+        <!-- 인재 검색 -->
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/TalentSearchPage')">
           <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
             <svg
               width="32"
@@ -96,14 +83,15 @@ const jobPosts = ref([
               stroke-width="2.5"
               class="transition-all duration-200 group-hover:stroke-white"
             >
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
           </div>
-          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">공고 등록</span>
+          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">인재 검색</span>
         </div>
 
-        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/JobPostsPage')">
+        <!-- 면접 제안 내역 -->
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/InterviewOffers')">
           <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
             <svg
               width="32"
@@ -114,53 +102,16 @@ const jobPosts = ref([
               stroke-width="2.5"
               class="transition-all duration-200 group-hover:stroke-white"
             >
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <path d="M14 2v6h6"></path>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-              <line x1="10" y1="9" x2="8" y2="9"></line>
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
           </div>
-          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">공고 관리</span>
-        </div>
-        
-        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/CandidatesPage')">
-          <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#8B8BF5"
-              stroke-width="2.5"
-              class="transition-all duration-200 group-hover:stroke-white"
-            >
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-          </div>
-          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">지원자 관리</span>
+          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">면접 제안 내역</span>
         </div>
 
-        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/TalentPoolPage')">
-          <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#8B8BF5"
-              stroke-width="2.5"
-              class="transition-all duration-200 group-hover:stroke-white"
-            >
-              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-            </svg>
-          </div>
-          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">북마크</span>
-        </div>
-
+        <!-- 기업 정보 -->
         <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/CompanyInfoPage')">
           <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
             <svg
@@ -180,31 +131,41 @@ const jobPosts = ref([
         </div>
       </div>
 
-      <!-- 채용공고 카드 목록 -->
-      <div class="space-y-4">
-        <div v-for="post in jobPosts" :key="post.id"
-          class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg hover:border-[#8B8BF5]">
-          <div class="flex justify-between items-start">
-            <div>
-              <div class="flex items-center gap-2 mb-2">
-                <span class="font-bold">{{ post.company }}</span>
-                <span class="text-[#8B8BF5]">D-{{ post.dday }}</span>
-                <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">{{ post.type }}</span>
+      <!-- 북마크된 인재 목록 섹션 -->
+      <div class="bg-white rounded-lg p-6 shadow-sm mb-6">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-xl font-bold">북마크된 인재</h2>
+          <router-link 
+            to="/business/TalentSearchPage"
+            class="text-[#8B8BF5] hover:text-[#7A7AE6] text-sm flex items-center gap-1"
+          >
+            <span>인재 더보기</span>
+            <i class="pi pi-arrow-right"></i>
+          </router-link>
+        </div>
+        
+        <div class="grid grid-cols-1 gap-4">
+          <div v-for="talent in bookmarkedTalents" :key="talent.id" 
+            class="border rounded-lg p-6 hover:border-[#8B8BF5] transition-all duration-200">
+            <div class="flex justify-between items-start">
+              <div>
+                <div class="flex items-center gap-3 mb-3">
+                  <h3 class="text-lg font-bold">{{ talent.name }}</h3>
+                  <span class="text-sm text-gray-600">{{ talent.nationality }}</span>
+                  <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">
+                    경력 {{ talent.career }}
+                  </span>
+                </div>
+                <p class="text-gray-600">{{ talent.education }} · {{ talent.major }}</p>
               </div>
-              <h3 class="text-xl font-bold mb-4">{{ post.title }}</h3>
-              <div class="flex gap-8 text-gray-600">
-                <span class="flex items-center gap-2">
-                  <i class="pi pi-briefcase"></i>
-                  {{ post.department }}
-                </span>
-                <span class="flex items-center gap-2">
-                  <i class="pi pi-map-marker"></i>
-                  {{ post.location }}
-                </span>
-                <span class="flex items-center gap-2">
-                  <i class="pi pi-users"></i>
-                  채용인원: {{ post.headcount }}명
-                </span>
+              <div class="flex flex-col items-end gap-3">
+                <span class="text-sm text-gray-500">북마크: {{ talent.bookmarkedDate }}</span>
+                <button 
+                  @click="router.push(`/business/interview-offer/create/${talent.id}`)"
+                  class="px-4 py-2 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7A7AE6] transition-colors"
+                >
+                  면접 제안하기
+                </button>
               </div>
             </div>
           </div>
