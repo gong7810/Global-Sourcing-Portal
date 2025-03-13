@@ -1,8 +1,13 @@
 <script setup>
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
+import { useInterviewStore } from '@/store/interview/interviewStore';
+import { useToast } from 'primevue/usetoast';
 
 const router = useRouter();
+const route = useRoute();
+const toast = useToast();
+const interviewStore = useInterviewStore();
 
 const jobOffer = ref({
   position: '',
@@ -10,19 +15,67 @@ const jobOffer = ref({
   message: '안녕하세요. 귀하의 프로필을 보고 연락드립니다.'
 });
 
+// 전달받은 인재 정보로 초기화
 const candidate = ref({
-  id: 1,
-  name: '홍길동',
-  nationality: '베트남',
-  career: '5년',
-  education: '하노이공과대학교',
-  major: '컴퓨터공학'
+  id: Number(route.query.id),
+  name: route.query.name,
+  nationality: route.query.nationality,
+  career: route.query.career,
+  education: route.query.education,
+  major: route.query.major
 });
 
 const submitOffer = () => {
-  console.log('면접 제안 전송:', jobOffer.value);
-  // TODO: API 연동
-  // 제안 전송 후 완료 페이지나 목록으로 이동
+  try {
+    const formattedOffer = {
+      id: Date.now(),
+      candidate: {
+        id: Number(route.params.id),
+        name: candidate.value.name,
+        nationality: candidate.value.nationality,
+        career: candidate.value.career,
+        education: {
+          school: candidate.value.education,
+          major: candidate.value.major
+        }
+      },
+      position: jobOffer.value.position,
+      jobDescription: jobOffer.value.jobDescription,
+      message: jobOffer.value.message,
+      status: 'pending',
+      offerDate: new Date().toISOString().split('T')[0],
+      responseDate: null
+    };
+
+    console.log('Creating offer with data:', formattedOffer);
+
+    // 면접 제안 생성
+    interviewStore.createInterviewOffer(formattedOffer, {
+      companyName: '(주)비티포탈',
+      managerName: '김관리',
+      email: 'manager@btportal.com',
+      phoneNumber: '010-1234-5678'
+    });
+
+    // 성공 메시지 표시
+    toast.add({
+      severity: 'success',
+      summary: '면접 제안 완료',
+      detail: `${candidate.value.name}님께 면접을 제안했습니다.`,
+      life: 3000
+    });
+
+    // 면접 제안 내역 페이지로 이동
+    router.push('/business/InterviewOffers');
+  } catch (error) {
+    console.error('면접 제안 에러:', error);
+    toast.add({
+      severity: 'error',
+      summary: '면접 제안 실패',
+      detail: '면접 제안 중 오류가 발생했습니다.',
+      life: 3000
+    });
+  }
 };
 </script>
 

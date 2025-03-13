@@ -3,8 +3,12 @@ import { onMounted, ref } from 'vue';
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
+import { useBookmarkStore } from '@/store/bookmark/bookmarkStore';
+import { useInterviewStore } from '@/store/interview/interviewStore';
+import { useToast } from 'primevue/usetoast';
 
 const router = useRouter();
+const toast = useToast();
 
 const careers = [
   { label: '신입', value: 'entry' },
@@ -23,11 +27,27 @@ const nationalities = [
 const authStore = useAuthStore();
 const { userInfo } = storeToRefs(authStore);
 
+const bookmarkStore = useBookmarkStore();
+const { bookmarkedTalents } = storeToRefs(bookmarkStore);
+
+const interviewStore = useInterviewStore();
+
 const bookmarkFlag = ref(true);
 
-// 북마크 토글 함수 추가
-const toggleBookmark = (candidate) => {
-  candidate.isBookmarked = !candidate.isBookmarked;
+const toggleBookmark = (talent) => {
+  const fullTalent = {
+    id: talent.id,
+    basicInfo: {
+      name: talent.name,
+      totalCareer: talent.career
+    },
+    nationalityInfo: talent.nationality,
+    educations: [{
+      schoolName: talent.education,
+      major: talent.major
+    }]
+  };
+  bookmarkStore.toggleBookmark(fullTalent);
 };
 
 onMounted(() => {
@@ -40,29 +60,31 @@ const formatCurrency = (value) => {
   return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 };
 
-// 북마크된 인재 데이터 추가
-const bookmarkedTalents = ref([
-  {
-    id: 1,
-    name: '홍길동',
-    nationality: '베트남',
-    career: '5년',
-    skills: ['JavaScript', 'React', 'Node.js'],
-    education: '하노이공과대학교',
-    major: '컴퓨터공학',
-    bookmarkedDate: '2024-03-15'
-  },
-  {
-    id: 2,
-    name: '김철수',
-    nationality: '중국',
-    career: '3년',
-    skills: ['Python', 'Django', 'AWS'],
-    education: '베이징대학교',
-    major: '소프트웨어공학',
-    bookmarkedDate: '2024-03-14'
-  }
-]);
+const proposeInterview = (talent) => {
+  // 라우터 경로를 '/business/interview-offer/create/:id' 형식에 맞게 수정
+  router.push({
+    name: 'CreateInterviewOffer', // name으로 라우팅
+    params: { id: talent.id }, // URL 파라미터로 id 전달
+    query: { // 나머지 정보는 query로 전달
+      name: talent.name,
+      nationality: talent.nationality,
+      career: talent.career,
+      education: talent.education,
+      major: talent.major
+    }
+  });
+};
+
+const getInterviewButtonStyle = (talentId) => {
+  const hasProposed = interviewStore.hasProposedInterview(talentId);
+  return {
+    class: hasProposed 
+      ? 'px-4 py-2 text-gray-500 border border-gray-300 rounded-lg cursor-default'
+      : 'px-4 py-2 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7A7AE6] transition-colors',
+    text: hasProposed ? '제안 완료' : '면접 제안하기',
+    disabled: hasProposed
+  };
+};
 </script>
 
 <template>
@@ -159,12 +181,21 @@ const bookmarkedTalents = ref([
                 <p class="text-gray-600">{{ talent.education }} · {{ talent.major }}</p>
               </div>
               <div class="flex flex-col items-end gap-3">
-                <span class="text-sm text-gray-500">북마크: {{ talent.bookmarkedDate }}</span>
+                <div class="flex items-center gap-4">
+                  <button 
+                    @click="toggleBookmark(talent)"
+                    class="text-[#8B8BF5] hover:text-[#7A7AE6] transition-colors"
+                  >
+                    <i class="pi pi-bookmark-fill text-xl"></i>
+                  </button>
+                  <span class="text-sm text-gray-500">북마크: {{ talent.bookmarkedDate }}</span>
+                </div>
                 <button 
-                  @click="router.push(`/business/interview-offer/create/${talent.id}`)"
-                  class="px-4 py-2 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7A7AE6] transition-colors"
+                  @click="proposeInterview(talent)"
+                  :class="getInterviewButtonStyle(talent.id).class"
+                  :disabled="getInterviewButtonStyle(talent.id).disabled"
                 >
-                  면접 제안하기
+                  {{ getInterviewButtonStyle(talent.id).text }}
                 </button>
               </div>
             </div>
