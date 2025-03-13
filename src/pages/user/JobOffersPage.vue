@@ -302,6 +302,7 @@ const mockJobOffers = [
     status: 'rejected',
     isRead: true,
     createdAt: '2024-03-09',
+    rejectedAt: '2024-03-18T14:30:00',
     resumeSnapshot: {
       basicInfo: {
         name: '최예지',
