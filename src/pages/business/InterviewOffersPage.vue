@@ -165,9 +165,11 @@ const openDetailModal = (offer) => {
 
 // 면접 일정 관련 상태
 const showScheduleModal = ref(false);
-const interviewDate = ref(null);
-const interviewHour = ref(null);
-const interviewMinute = ref(null);
+const interviewDates = ref([
+  { date: null, hour: null, minute: null },
+  { date: null, hour: null, minute: null },
+  { date: null, hour: null, minute: null }
+]);
 const interviewType = ref(null);
 const interviewLocation = ref('');
 
@@ -194,25 +196,38 @@ const openScheduleModal = (offer) => {
 };
 
 const scheduleInterview = () => {
-  if (!interviewDate.value || !interviewHour.value || !interviewMinute.value || !interviewType.value || !interviewLocation.value) {
-    alert('모든 항목을 입력해주세요.');
+  // 최소 하나의 일정은 필수
+  if (!interviewDates.value[0].date || !interviewDates.value[0].hour || !interviewDates.value[0].minute) {
+    alert('최소 하나의 면접 일정을 입력해주세요.');
     return;
   }
 
+  if (!interviewType.value || !interviewLocation.value) {
+    alert('면접 방식과 장소를 입력해주세요.');
+    return;
+  }
+
+  // 제안된 일정들 필터링 (날짜가 입력된 것만)
+  const proposedDates = interviewDates.value
+    .filter(d => d.date)
+    .map(d => ({
+      date: d.date.toLocaleDateString(),
+      time: `${d.hour.toString().padStart(2, '0')}:${d.minute.toString().padStart(2, '0')}`
+    }));
+
   // 선택된 제안의 면접 일정 업데이트
   selectedOffer.value.interviewScheduled = true;
-  selectedOffer.value.interviewDate = interviewDate.value.toLocaleDateString();
-  selectedOffer.value.interviewTime = `${interviewHour.value.toString().padStart(2, '0')}:${interviewMinute.value.toString().padStart(2, '0')}`;
+  selectedOffer.value.proposedDates = proposedDates;
   selectedOffer.value.interviewType = interviewType.value;
   selectedOffer.value.interviewLocation = interviewLocation.value;
 
-  // 여기에 API 호출 추가
-
   showScheduleModal.value = false;
   // 입력값 초기화
-  interviewDate.value = null;
-  interviewHour.value = null;
-  interviewMinute.value = null;
+  interviewDates.value = [
+    { date: null, hour: null, minute: null },
+    { date: null, hour: null, minute: null },
+    { date: null, hour: null, minute: null }
+  ];
   interviewType.value = null;
   interviewLocation.value = '';
 };
@@ -287,8 +302,8 @@ const scheduleInterview = () => {
           <!-- 면접 일정이 이미 잡힌 경우 일정 정보 표시 -->
           <div v-else class="mt-3">
             <h4 class="font-medium text-gray-900 mb-2">면접 일정</h4>
-            <p class="text-gray-600">날짜: {{ offer.interviewDate }}</p>
-            <p class="text-gray-600">시간: {{ offer.interviewTime }}</p>
+            <p class="text-gray-600">날짜: {{ offer.proposedDates[0].date }}</p>
+            <p class="text-gray-600">시간: {{ offer.proposedDates[0].time }}</p>
             <p class="text-gray-600">방식: {{ offer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}</p>
             <p class="text-gray-600">장소: {{ offer.interviewLocation }}</p>
           </div>
@@ -436,7 +451,7 @@ const scheduleInterview = () => {
     <Dialog 
       v-model:visible="showScheduleModal" 
       :modal="true"
-      header="면접 일정 잡기"
+      header="면접 일정 제안하기"
       :style="{ width: '500px' }"
     >
       <div class="p-4">
@@ -445,31 +460,37 @@ const scheduleInterview = () => {
           <p>{{ selectedOffer?.candidate.name }}</p>
         </div>
 
-        <div class="mb-4">
-          <label class="block font-medium mb-2">면접 날짜</label>
-          <Calendar 
-            v-model="interviewDate" 
-            :minDate="new Date()"
-            dateFormat="yy-mm-dd"
-            class="w-full"
-          />
-        </div>
-
-        <div class="mb-4">
-          <label class="block font-medium mb-2">면접 시간</label>
+        <!-- 3개의 면접 일정 입력 -->
+        <div v-for="(dateSlot, index) in interviewDates" :key="index" class="mb-6">
+          <h4 class="font-medium mb-2">면접 일정 {{ index + 1 }}</h4>
+          <div class="mb-2">
+            <label class="block text-sm mb-1">날짜</label>
+            <Calendar 
+              v-model="dateSlot.date" 
+              :minDate="new Date()"
+              dateFormat="yy-mm-dd"
+              class="w-full"
+            />
+          </div>
           <div class="grid grid-cols-2 gap-2">
-            <Dropdown
-              v-model="interviewHour"
-              :options="hours"
-              placeholder="시간"
-              class="w-full"
-            />
-            <Dropdown
-              v-model="interviewMinute"
-              :options="minutes"
-              placeholder="분"
-              class="w-full"
-            />
+            <div>
+              <label class="block text-sm mb-1">시간</label>
+              <Dropdown
+                v-model="dateSlot.hour"
+                :options="hours"
+                placeholder="시간"
+                class="w-full"
+              />
+            </div>
+            <div>
+              <label class="block text-sm mb-1">분</label>
+              <Dropdown
+                v-model="dateSlot.minute"
+                :options="minutes"
+                placeholder="분"
+                class="w-full"
+              />
+            </div>
           </div>
         </div>
 
@@ -506,7 +527,7 @@ const scheduleInterview = () => {
             @click="scheduleInterview"
             class="bg-[#8B8BF5]"
           >
-            확인
+            일정 제안하기
           </Button>
         </div>
       </template>
