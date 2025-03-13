@@ -20,7 +20,7 @@ export const userRouter = [
   //   component: () => import('@/pages/user/SupportDetailPage.vue')
   // },
   {
-    path: '/user/job-offers',
+    path: '/user/jobOffers',
     name: 'JobOffers',
     component: () => import('@/pages/user/JobOffersPage.vue')
   }

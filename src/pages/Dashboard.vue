@@ -140,7 +140,7 @@ const companies = ref([
             >지원내역</span
           >
         </div> -->
-        <div v-if="proposalFlag" class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/job-offers')">
+        <div v-if="proposalFlag" class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/jobOffers')">
           <div
             class="relative w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
           >
@@ -164,7 +164,7 @@ const companies = ref([
             </div>
           </div>
           <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">
-            채용제안
+            면접제안
           </span>
         </div>
         <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/userPage')">
