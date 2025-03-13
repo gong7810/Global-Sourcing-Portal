@@ -61,6 +61,7 @@ const changeLanguage = async () => {
   const translateElement = document.getElementById('google_translate_element');
   const selectElement = translateElement?.querySelector('.goog-te-combo');
 
+  console.log(selectElement);
   if (selectElement) {
     selectElement.value = selectedLanguage.value;
     selectElement.dispatchEvent(new Event('change'));
@@ -196,7 +197,7 @@ const test = () => {
           </div>
 
           <!-- 다국어 지원 -->
-          <!-- <div class="language-selector notranslate" translate="no">
+          <div class="language-selector notranslate" translate="no">
             <Select
               v-model="selectedLanguage"
               class="custom-dropdown notranslate"
@@ -215,7 +216,7 @@ const test = () => {
                 </div>
               </template>
             </Select>
-          </div> -->
+          </div>
         </div>
       </div>
     </div>
