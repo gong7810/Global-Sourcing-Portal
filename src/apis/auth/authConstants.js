@@ -23,5 +23,6 @@ export const AUTH_EXCLUSIONS_ROUTER_NAME = [
   'FaqPage',
   'InquiryPage',
   'TalentSearchPage',
-  'InterviewOffers'
+  'InterviewOffers',
+  'AdminFaq'
 ];

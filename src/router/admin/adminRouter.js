@@ -1,5 +1,22 @@
 export const adminRouter = [
     // {
+    //     path: '/admin/login',
+    //     name: 'adminLogin',
+    //     component: () => import('@/pages/admin/AdminLoginPage.vue')
+    // },
+    {
+        path: '/admin',
+        name: 'admin',
+        component: () => import('@/pages/admin/AdminPage.vue'),
+        meta: { authorization: ['ADMIN'] }
+    },
+    {
+        path: '/admin/faq',
+        name: 'AdminFaq',
+        component: () => import('@/pages/admin/AdminFaqPage.vue'),
+        meta: { authorization: ['ADMIN'] }
+    },
+    // {
     //     path: '/manageMember',
     //     name: 'manageMember',
     //     component: () => import('@/pages/common/ManageMemberPage.vue'),
