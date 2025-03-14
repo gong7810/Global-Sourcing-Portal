@@ -9,7 +9,7 @@ const defaultParam = {
   isConfirm: false,
   labelConfirm: '확인',
   labelYes: '확인',
-  labelNo: '최소',
+  labelNo: '취소',
   onCloseYes: null,
   onCloseNo: null
 };
@@ -56,12 +56,12 @@ const onCloseNo = () => {
   <div class="modal_custom_wrap modal_sm">
     <div class="modal_header">
       <button @click="onClose">
-        <span class="material-symbols-rounded">close</span>
+        <span class="material-symbols-rounded notranslate">close</span>
       </button>
     </div>
     <div class="modal_body">
       <div v-if="param.icon" class="area_icon_circle" :class="param.icon">
-        <span class="material-symbols-rounded"> {{ iconTranslate }} </span>
+        <span class="material-symbols-rounded notranslate"> {{ iconTranslate }} </span>
       </div>
       <p v-html="htmlTranslate"></p>
     </div>
