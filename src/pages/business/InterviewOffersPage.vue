@@ -250,8 +250,7 @@ const interviewOffers = ref([
     message: '백엔드 개발자 포지션에 관심 있으신가요?',
     status: 'declined',
     offerDate: '2024-03-10',
-    responseDate: '2024-03-11',
-    declineReason: '현재 회사에서 계속 근무하기로 결정했습니다.'
+    responseDate: '2024-03-11'
   }
 ]);
 
@@ -489,9 +488,6 @@ const scheduleInterview = () => {
           <p class="text-red-600">
             <i class="pi pi-times-circle mr-2"></i>
             {{ offer.responseDate }}에 거절되었습니다
-          </p>
-          <p class="text-gray-600 mt-2">
-            거절 사유: {{ offer.declineReason }}
           </p>
         </div>
 
