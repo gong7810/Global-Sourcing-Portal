@@ -369,6 +369,16 @@ const scheduleInterview = () => {
   interviewType.value = null;
   interviewLocation.value = '';
 };
+
+const completeInterview = (offer) => {
+  // 면접 완료 처리
+  offer.interviewCompleted = true;
+  offer.interviewCompletedDate = new Date().toISOString().split('T')[0];
+};
+
+const goToInterviewResults = (offer) => {
+  router.push('/business/InterviewResults');
+};
 </script>
 
 <template>
@@ -466,8 +476,31 @@ const scheduleInterview = () => {
               <div class="space-y-2 ml-4">
                 <p class="text-gray-600">날짜: {{ offer.confirmedDate.date }}</p>
                 <p class="text-gray-600">시간: {{ offer.confirmedDate.time }}</p>
-            <p class="text-gray-600">방식: {{ offer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}</p>
-            <p class="text-gray-600">장소: {{ offer.interviewLocation }}</p>
+                <p class="text-gray-600">방식: {{ offer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}</p>
+                <p class="text-gray-600">장소: {{ offer.interviewLocation }}</p>
+              </div>
+              
+              <!-- 면접 완료 버튼 추가 -->
+              <div v-if="!offer.interviewCompleted" class="mt-4">
+                <Button 
+                  @click="completeInterview(offer)"
+                  class="bg-[#8B8BF5] text-white"
+                >
+                  면접 완료
+                </Button>
+              </div>
+              <!-- 면접 완료된 경우 표시 -->
+              <div v-else class="mt-4">
+                <p class="text-blue-600">
+                  <i class="pi pi-check-circle mr-2"></i>
+                  면접 완료
+                </p>
+                <Button 
+                  @click="goToInterviewResults(offer)"
+                  class="mt-2 p-button-text text-[#8B8BF5]"
+                >
+                  면접 결과 관리로 이동
+                </Button>
               </div>
             </div>
 

@@ -24,6 +24,11 @@ export const businessRouter = [
         name: 'CreateInterviewOffer',
         component: () => import('@/pages/business/CreateInterviewOfferPage.vue')
     },
+    {
+        path: '/business/InterviewResults',
+        name: 'InterviewResults',
+        component: () => import('@/pages/business/InterviewResultsPage.vue')
+    },
     // {
     //     path: '/manageMember',
     //     name: 'manageMember',
