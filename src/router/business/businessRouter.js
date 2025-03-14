@@ -4,11 +4,11 @@ export const businessRouter = [
         name: 'businessIndex',
         component: () => import('@/pages/business/Dashboard.vue')
     },
-    // {
-    //     path: '/business/CandidatesPage',
-    //     name: 'CandidatesPage',
-    //     component: () => import('@/pages/business/CandidatesPage.vue')
-    // },
+    {
+        path: '/business/CandidatesPage',
+        name: 'CandidatesPage',
+        component: () => import('@/pages/business/CandidatesPage.vue')
+    },
     {
         path: '/business/CompanyInfoPage',
         name: 'CompanyInfoPage',

@@ -15,6 +15,7 @@ export const AUTH_EXCLUSIONS_ROUTER_NAME = [
   'findIdResult',
   'findPasswordResult',
   'Resume',
+  'JobOffers',
   'UserPage',
   // 'SupportDetail',
   'CreateInterviewOffer',
@@ -23,5 +24,8 @@ export const AUTH_EXCLUSIONS_ROUTER_NAME = [
   'FaqPage',
   'InquiryPage',
   'TalentSearchPage',
-  'InterviewOffers'
+  'InterviewOffers',
+  'AdminFaq',
+  'admin',
+  'AdminUserMng'
 ];

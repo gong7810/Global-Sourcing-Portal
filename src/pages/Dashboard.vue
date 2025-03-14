@@ -14,7 +14,7 @@ const { userInfo } = storeToRefs(authStore);
 const bookmarkFlag = ref(true);
 const proposalFlag = ref(false);
 
-const unreadOffers = ref(3);
+const unreadOffers = ref(4);
 
 onMounted(() => {
   if (userInfo.value?.type === 'user') {
