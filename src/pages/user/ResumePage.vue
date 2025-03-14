@@ -543,7 +543,7 @@ const removeCertification = (index) => {
                 <span class="text-gray-500">휴대폰</span>
                 <span>{{ basicInfo.phone }}</span>
                 <span class="text-gray-500">이메일</span>
-                <span>{{ basicInfo.email }}</span>
+                <span class="notranslate">{{ basicInfo.email }}</span>
                 <span class="text-gray-500">주소</span>
                 <span>{{ basicInfo.address }}</span>
                 <span class="text-gray-500">경력</span>

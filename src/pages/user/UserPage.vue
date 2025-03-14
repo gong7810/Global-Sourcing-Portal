@@ -323,7 +323,7 @@ const removeImage = () => {
                 <InputText 
                   v-model="basicInfo.email" 
                   placeholder="이메일을 입력해주세요" 
-                  class="w-full" 
+                  class="w-full notranslate" 
                 />
               </div>
             </div>
