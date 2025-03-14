@@ -12,6 +12,7 @@ import { useMessagePop } from '@/plugins/commonutils';
 import { random, randomInt } from 'es-toolkit/compat';
 import { useUserStore } from '@/store/user/userStore';
 import { computed } from 'vue';
+import Dropdown from 'primevue/dropdown';
 
 const router = useRouter();
 const messagePop = useMessagePop();
@@ -63,6 +64,7 @@ const careerList = ref([
   {
     companyName: '(주)비티포탈',
     period: '2023.03 - 2024.03',
+    jobCategory: { label: 'IT개발·데이터', value: 'it' },
     jobTitle: '프론트엔드 개발자',
     department: '개발팀',
     responsibilities: '웹 서비스 프론트엔드 개발'
@@ -103,6 +105,7 @@ const careerInfo = ref({
   startDate: null,
   endDate: null,
   isCurrentJob: false,
+  jobCategory: null,
   jobTitle: '',
   department: '',
   responsibilities: ''
@@ -241,6 +244,7 @@ watch(
         startDate: null,
         endDate: null,
         isCurrentJob: false,
+        jobCategory: null,
         jobTitle: '',
         department: '',
         responsibilities: ''
@@ -268,6 +272,7 @@ const saveCareerInfo = () => {
     period: careerInfo.value.isCurrentJob
       ? `${careerInfo.value.startDate.getFullYear()}.${(careerInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')} - 재직중`
       : `${careerInfo.value.startDate.getFullYear()}.${(careerInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')} - ${careerInfo.value.endDate.getFullYear()}.${(careerInfo.value.endDate.getMonth() + 1).toString().padStart(2, '0')}`,
+    jobCategory: careerInfo.value.jobCategory,
     jobTitle: careerInfo.value.jobTitle,
     department: careerInfo.value.department,
     responsibilities: careerInfo.value.responsibilities
@@ -306,6 +311,7 @@ const modifyCareer = (index) => {
 
   careerInfo.value = {
     companyName: careerList.value[index].companyName,
+    jobCategory: careerList.value[index].jobCategory,
     startDate: new Date(startDate),
     endDate: endDate.trim() !== '재직중' ? new Date(endDate.trim()) : null,
     isCurrentJob: endDate.trim() !== '재직중' ? false : true,
@@ -480,6 +486,32 @@ const addCertification = () => {
 const removeCertification = (index) => {
   certificationList.value.splice(index, 1);
 };
+
+// 경력 정보 모달의 직무 부분을 수정
+// 직무
+const jobCategories = [
+  { label: '기획·전략', value: 'planning' },
+  { label: '마케팅·홍보·조사', value: 'marketing' },
+  { label: '회계·세무·재무', value: 'accounting' },
+  { label: '인사·노무·HRD', value: 'hr' },
+  { label: '총무·법무·사무', value: 'admin' },
+  { label: 'IT개발·데이터', value: 'it' },
+  { label: '디자인', value: 'design' },
+  { label: '영업·판매·무역', value: 'sales' },
+  { label: '고객상담·TM', value: 'cs' },
+  { label: '구매·자재·물류', value: 'purchasing' },
+  { label: '상품기획·MD', value: 'md' },
+  { label: '운전·운송·배송', value: 'delivery' },
+  { label: '서비스', value: 'service' },
+  { label: '생산', value: 'production' },
+  { label: '건설·건축', value: 'construction' },
+  { label: '의료', value: 'medical' },
+  { label: '연구·R&D', value: 'research' },
+  { label: '교육', value: 'education' },
+  { label: '미디어·문화·스포츠', value: 'media' },
+  { label: '금융·보험', value: 'finance' },
+  { label: '공공·복지', value: 'public' }
+];
 </script>
 
 <template>
@@ -662,7 +694,7 @@ const removeCertification = (index) => {
                   <div>
                     <h4 class="font-medium text-lg">{{ career.companyName }}</h4>
                     <p class="text-gray-600 mt-1">{{ career.period }}</p>
-                    <p class="text-gray-600">{{ career.jobTitle }} | {{ career.department }}</p>
+                    <p class="text-gray-600">{{ career.jobCategory?.label || '' }} | {{ career.jobTitle }} | {{ career.department }}</p>
                     <p class="text-gray-600 mt-2">{{ career.responsibilities }}</p>
                   </div>
                   <div class="flex gap-2">
@@ -907,7 +939,13 @@ const removeCertification = (index) => {
         <!-- 직무 -->
         <div class="space-y-2">
           <label class="block text-sm font-medium text-gray-700"> 직무<span class="text-red-500">*</span> </label>
-          <InputText v-model="careerInfo.jobTitle" placeholder="직무 입력" class="w-full" />
+          <Dropdown
+            v-model="careerInfo.jobCategory"
+            :options="jobCategories"
+            optionLabel="label"
+            placeholder="직무를 선택해주세요"
+            class="w-full"
+          />
         </div>
 
         <!-- 부서 -->

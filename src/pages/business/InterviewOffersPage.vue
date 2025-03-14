@@ -592,10 +592,10 @@ const scheduleInterview = () => {
           >
             <div class="font-medium">{{ career.company }}</div>
             <div class="text-gray-600">{{ career.period }}</div>
-            <div class="text-gray-600">{{ career.position }}</div>
+            <div class="text-gray-600">{{ career.jobCategory?.label || 'IT개발·데이터' }} | {{ career.position.replace('/', ' | ') }}</div>
             <div class="mt-2">{{ career.description }}</div>
           </div>
-            </div>
+        </div>
 
         <!-- 학력 사항 -->
         <div class="bg-gray-50 p-6 rounded-lg mb-6">

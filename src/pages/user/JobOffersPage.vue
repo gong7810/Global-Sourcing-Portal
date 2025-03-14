@@ -241,6 +241,7 @@ const mockJobOffers = [
         {
           companyName: '(주)비티포탈',
           period: '2023.03 - 2024.03',
+          jobCategory: { label: 'IT개발·데이터', value: 'it' },
           jobTitle: '프론트엔드 개발자',
           department: '개발팀',
           responsibilities: '웹 서비스 프론트엔드 개발'
@@ -304,6 +305,7 @@ const mockJobOffers = [
         {
           companyName: '(주)비티포탈',
           period: '2023.03 - 2024.03',
+          jobCategory: { label: 'IT개발·데이터', value: 'it' },
           jobTitle: '프론트엔드 개발자',
           department: '개발팀',
           responsibilities: '웹 서비스 프론트엔드 개발'
@@ -368,6 +370,7 @@ const mockJobOffers = [
         {
           companyName: '(주)비티포탈',
           period: '2023.03 - 2024.03',
+          jobCategory: { label: 'IT개발·데이터', value: 'it' },
           jobTitle: '프론트엔드 개발자',
           department: '개발팀',
           responsibilities: '웹 서비스 프론트엔드 개발'
@@ -434,74 +437,7 @@ const mockJobOffers = [
         {
           companyName: '(주)비티포탈',
           period: '2023.03 - 2024.03',
-          jobTitle: '프론트엔드 개발자',
-          department: '개발팀',
-          responsibilities: '웹 서비스 프론트엔드 개발'
-        }
-      ],
-      educations: [
-        {
-          educationType: { name: '대학교(4년)', code: 'UNIVERSITY' },
-          schoolName: '한국대학교',
-          period: '2015.03 - 2019.02',
-          major: '컴퓨터공학과',
-          isGraduated: true,
-          details: '웹 개발 동아리 활동'
-        }
-      ],
-      certifications: [
-        // {
-        //   name: '정보처리기사',
-        //   date: '2020-12',
-        //   organization: '한국산업인력공단',
-        //   certificate: 'cert_1.pdf'
-        // }
-      ]
-    }
-  },
-  {
-    id: 4,
-    companyName: '현대로템(주)',
-    business: '철도차량 제작 및 방산장비 개발',
-    address: '경상남도 창원시 성산구 창원대로 1003',
-    positions: [
-      { title: '기계설계', career: '경력 3년 이상', count: 2 }
-    ],
-    message: '귀하의 경력이 저희 회사의 기계설계 직무와 잘 맞을 것 같아 면접 제안을 드립니다...',
-    deadline: '2025-03-20',
-    status: 'accepted',
-    isRead: true,
-    createdAt: '2024-03-12',
-    acceptedAt: '2024-03-17',
-    interviewProposed: false,
-    interviewConfirmed: false,
-    resumeSnapshot: {
-      basicInfo: {
-        name: '최예지',
-        birthDate: '1996.09.01',
-        gender: '여성',
-        email: 'yeji@naver.com',
-        phone: '010-1234-7496',
-        address: '윙스타워 505호',
-        totalCareer: '5년',
-        lastEducation: '대학교(4년) 졸업'
-      },
-      nationalityInfo: '대한민국',
-      passportInfo: {
-        passportNumber: 'M1234****',
-        surname: 'CHOI',
-        givenNames: 'YEJI',
-        nationality: '대한민국',
-        birthDate: '1996-09-01',
-        issueDate: '2020-01-01',
-        expiryDate: '2030-01-01',
-        issuingCountry: '대한민국',
-        birthPlace: 'SEOUL'
-      },
-      careers: [
-        {
-          companyName: '(주)비티포탈',
-          period: '2023.03 - 2024.03',
+          jobCategory: { label: 'IT개발·데이터', value: 'it' },
           jobTitle: '프론트엔드 개발자',
           department: '개발팀',
           responsibilities: '웹 서비스 프론트엔드 개발'
@@ -871,7 +807,9 @@ const mockJobOffers = [
                   <div class="space-y-1">
                     <h6 class="font-medium text-gray-900">{{ career.companyName }}</h6>
                     <p class="text-sm text-gray-600">{{ career.period }}</p>
-                    <p class="text-sm text-gray-600">{{ career.jobTitle }} | {{ career.department }}</p>
+                    <p class="text-sm text-gray-600">
+                      {{ career.jobCategory?.label || 'IT개발·데이터' }} | {{ career.jobTitle }} | {{ career.department }}
+                    </p>
                     <p class="text-sm text-gray-600 mt-2">{{ career.responsibilities }}</p>
                   </div>
                 </div>
