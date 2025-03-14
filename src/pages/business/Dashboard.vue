@@ -23,11 +23,27 @@ const nationalities = [
 const authStore = useAuthStore();
 const { userInfo } = storeToRefs(authStore);
 
+const bookmarkStore = useBookmarkStore();
+const { bookmarkedTalents } = storeToRefs(bookmarkStore);
+
+const interviewStore = useInterviewStore();
+
 const bookmarkFlag = ref(true);
 
-// 북마크 토글 함수 추가
-const toggleBookmark = (candidate) => {
-  candidate.isBookmarked = !candidate.isBookmarked;
+const toggleBookmark = (talent) => {
+  const fullTalent = {
+    id: talent.id,
+    basicInfo: {
+      name: talent.name,
+      totalCareer: talent.career
+    },
+    nationalityInfo: talent.nationality,
+    educations: [{
+      schoolName: talent.education,
+      major: talent.major
+    }]
+  };
+  bookmarkStore.toggleBookmark(fullTalent);
 };
 
 onMounted(() => {
