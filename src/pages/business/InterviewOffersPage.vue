@@ -89,12 +89,13 @@ const interviewOffers = ref([
     message: '안녕하세요. 귀하의 프로필을 보고 연락드립니다.',
     status: 'accepted',
     offerDate: '2024-03-15',
-    responseDate: '2024-03-16'
+    responseDate: '2024-03-16',
+    interviewScheduled: false
   },
   {
     id: 3,
     candidate: {
-      name: '이영희',
+      name: '박지민',
       nationality: '일본',
       career: '4년',
       birth: '1995.12.20',
@@ -124,12 +125,132 @@ const interviewOffers = ref([
         description: '정보공학 전공'
       }
     },
-    position: 'Backend Developer',
-    jobDescription: '자바 기반 백엔드 서버 개발',
-    message: '안녕하세요. 귀하의 프로필을 보고 연락드립니다.',
-    status: 'declined',
+    position: 'Frontend Developer',
+    jobDescription: '웹 애플리케이션 프론트엔드 개발',
+    message: '귀하의 프로필을 보고 면접 제안드립니다.',
+    status: 'accepted',
     offerDate: '2024-03-14',
     responseDate: '2024-03-15',
+    interviewScheduled: true,
+    proposedDates: [
+      {
+        date: '2024-03-25',
+        time: '14:00'
+      },
+      {
+        date: '2024-03-26',
+        time: '10:00'
+      },
+      {
+        date: '2024-03-27',
+        time: '15:30'
+      }
+    ],
+    interviewType: 'offline',
+    interviewLocation: '서울시 강남구 테헤란로 123 OO빌딩 8층',
+    interviewConfirmed: false
+  },
+  {
+    id: 4,
+    candidate: {
+      name: '이영희',
+      nationality: '베트남',
+      career: '6년',
+      birth: '1995.12.20',
+      gender: '여성',
+      phone: '010-9012-3456',
+      email: 'lee@example.com',
+      address: '서울시 서초구',
+      passportName: 'LEE YOUNGHEE',
+      visaInfo: {
+        type: 'M9012****',
+        country: '일본',
+        expiryDate: '2026-06-30'
+      },
+      careerHistory: [
+        {
+          company: '(주)소프트뱅크',
+          period: '2020.04 - 2024.03',
+          position: '백엔드 개발자/서버개발팀',
+          description: '자바 기반 백엔드 서버 개발'
+        }
+      ],
+      education: {
+        school: '도쿄대학교',
+        degree: '대학교(4년)',
+        major: '정보공학',
+        period: '2014.04 - 2018.03',
+        description: '정보공학 전공'
+      }
+    },
+    position: 'Full Stack Developer',
+    jobDescription: '웹 서비스 풀스택 개발',
+    message: '귀하의 경력이 저희 회사와 잘 맞을 것 같습니다.',
+    status: 'accepted',
+    offerDate: '2024-03-12',
+    responseDate: '2024-03-13',
+    interviewScheduled: true,
+    proposedDates: [
+      {
+        date: '2024-03-22',
+        time: '10:00'
+      },
+      {
+        date: '2024-03-23',
+        time: '14:00'
+      },
+      {
+        date: '2024-03-24',
+        time: '11:00'
+      }
+    ],
+    interviewType: 'online',
+    interviewLocation: 'https://zoom.us/j/123456789',
+    interviewConfirmed: true,
+    confirmedDate: {
+      date: '2024-03-22',
+      time: '10:00'
+    }
+  },
+  {
+    id: 5,
+    candidate: {
+      name: '홍길동',
+      nationality: '중국',
+      career: '3년',
+      birth: '1997.05.15',
+      gender: '남성',
+      phone: '010-5678-1234',
+      email: 'kim@example.com',
+      address: '서울시 강남구',
+      passportName: 'KIM CHULSOO',
+      visaInfo: {
+        type: 'M5678****',
+        country: '중국',
+        expiryDate: '2025-12-31'
+      },
+      careerHistory: [
+        {
+          company: '(주)테크솔루션',
+          period: '2021.01 - 2024.03',
+          position: '백엔드 개발자/서버팀',
+          description: 'REST API 개발 및 서버 관리'
+        }
+      ],
+      education: {
+        school: '베이징대학교',
+        degree: '대학교(4년)',
+        major: '소프트웨어공학',
+        period: '2016.09 - 2020.06',
+        description: '소프트웨어공학 전공'
+      }
+    },
+    position: 'Backend Developer',
+    jobDescription: '백엔드 서버 개발',
+    message: '백엔드 개발자 포지션에 관심 있으신가요?',
+    status: 'declined',
+    offerDate: '2024-03-10',
+    responseDate: '2024-03-11',
     declineReason: '현재 회사에서 계속 근무하기로 결정했습니다.'
   }
 ]);
@@ -173,16 +294,30 @@ const interviewDates = ref([
 const interviewType = ref(null);
 const interviewLocation = ref('');
 
-// 시간 선택 옵션
-const hours = Array.from({ length: 24 }, (_, i) => ({
-  label: `${i.toString().padStart(2, '0')}`,
+// 시간 선택 옵션 수정
+const hours = Array.from({ length: 24 }, (_, i) => {
+  const hourStr = i.toString().padStart(2, '0');
+  return {
+    label: hourStr,  // "00", "01", "02" 등의 형식으로 표시
   value: i
-}));
+  };
+});
 
-const minutes = [
-  { label: '00', value: 0 },
-  { label: '30', value: 30 }
-];
+// 분 선택 옵션을 10분 단위로 수정
+const minutes = Array.from({ length: 6 }, (_, i) => {
+  const minuteValue = i * 10;
+  return {
+    label: minuteValue.toString().padStart(2, '0'),  // "00", "10", "20", "30", "40", "50"
+    value: minuteValue
+  };
+});
+
+// 시간 포맷팅 함수 수정
+const formatTime = (hour, minute) => {
+  const hourValue = typeof hour === 'object' ? hour.value : hour;
+  const minuteValue = typeof minute === 'object' ? minute.value : minute;
+  return `${hourValue.toString().padStart(2, '0')}:${minuteValue.toString().padStart(2, '0')}`;
+};
 
 // 면접 방식 옵션
 const interviewTypes = [
@@ -209,10 +344,14 @@ const scheduleInterview = () => {
 
   // 제안된 일정들 필터링 (날짜가 입력된 것만)
   const proposedDates = interviewDates.value
-    .filter(d => d.date)
+    .filter(d => d.date && d.hour !== null && d.minute !== null)
     .map(d => ({
-      date: d.date.toLocaleDateString(),
-      time: `${d.hour.toString().padStart(2, '0')}:${d.minute.toString().padStart(2, '0')}`
+      date: d.date.toLocaleDateString('ko-KR', { 
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).replace(/\. /g, '-').replace('.', ''),
+      time: formatTime(d.hour, d.minute)
     }));
 
   // 선택된 제안의 면접 일정 업데이트
@@ -246,7 +385,26 @@ const scheduleInterview = () => {
 
     <!-- 제안 목록 -->
     <div class="grid grid-cols-1 gap-4">
-      <div v-for="offer in interviewOffers" :key="offer.id"
+      <!-- 면접 제안이 없을 때 표시할 빈 상태 -->
+      <div v-if="interviewOffers.length === 0" class="bg-white rounded-lg p-12 shadow-sm text-center">
+        <div class="flex flex-col items-center gap-4">
+          <div class="w-16 h-16 rounded-full bg-[#8B8BF5] bg-opacity-10 flex items-center justify-center mb-2">
+            <i class="pi pi-users text-[#8B8BF5] text-3xl"></i>
+          </div>
+          <h3 class="text-xl font-medium text-gray-900">아직 면접 제안 내역이 없습니다</h3>
+          <p class="text-gray-500 mb-6">인재 검색 페이지에서 적합한 인재를 찾아 면접을 제안해보세요</p>
+          <router-link 
+            to="/business/TalentSearchPage"
+            class="inline-flex items-center px-6 py-3 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7A7AE6] transition-colors"
+          >
+            <i class="pi pi-search mr-2"></i>
+            인재 검색하기
+          </router-link>
+        </div>
+      </div>
+
+      <!-- 기존 면접 제안 목록 -->
+      <div v-else v-for="offer in interviewOffers" :key="offer.id"
         class="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200">
         <div class="flex justify-between items-start mb-4">
           <div class="flex items-center gap-3">
@@ -302,10 +460,28 @@ const scheduleInterview = () => {
           <!-- 면접 일정이 이미 잡힌 경우 일정 정보 표시 -->
           <div v-else class="mt-3">
             <h4 class="font-medium text-gray-900 mb-2">면접 일정</h4>
-            <p class="text-gray-600">날짜: {{ offer.proposedDates[0].date }}</p>
-            <p class="text-gray-600">시간: {{ offer.proposedDates[0].time }}</p>
+            
+            <!-- 확정된 면접 일정이 있는 경우 -->
+            <div v-if="offer.interviewConfirmed" class="p-4 bg-green-50 rounded-lg">
+              <p class="text-green-600 font-medium mb-3">확정된 면접 일정</p>
+              <div class="space-y-2 ml-4">
+                <p class="text-gray-600">날짜: {{ offer.confirmedDate.date }}</p>
+                <p class="text-gray-600">시간: {{ offer.confirmedDate.time }}</p>
             <p class="text-gray-600">방식: {{ offer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}</p>
             <p class="text-gray-600">장소: {{ offer.interviewLocation }}</p>
+              </div>
+            </div>
+
+            <!-- 아직 확정되지 않은 경우 제안된 일정들 표시 -->
+            <div v-else class="space-y-4">
+              <div v-for="(date, index) in offer.proposedDates" :key="index" class="mb-2">
+                <p class="text-gray-600">제안 {{ index + 1 }}</p>
+                <p class="text-gray-600 ml-4">날짜: {{ date.date }}</p>
+                <p class="text-gray-600 ml-4">시간: {{ date.time }}</p>
+              </div>
+              <p class="text-gray-600">방식: {{ offer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}</p>
+              <p class="text-gray-600">장소: {{ offer.interviewLocation }}</p>
+            </div>
           </div>
         </div>
 
@@ -423,7 +599,7 @@ const scheduleInterview = () => {
             <div class="text-gray-600">{{ career.position }}</div>
             <div class="mt-2">{{ career.description }}</div>
           </div>
-        </div>
+            </div>
 
         <!-- 학력 사항 -->
         <div class="bg-gray-50 p-6 rounded-lg mb-6">
@@ -434,8 +610,8 @@ const scheduleInterview = () => {
             <div class="text-gray-600">{{ selectedOffer.candidate.education.major }}</div>
             <div class="text-gray-600">{{ selectedOffer.candidate.education.period }}</div>
             <div>{{ selectedOffer.candidate.education.description }}</div>
-          </div>
-        </div>
+            </div>
+            </div>
 
         <!-- 자격증 사항 -->
         <div class="bg-gray-50 p-6 rounded-lg">
@@ -465,31 +641,33 @@ const scheduleInterview = () => {
           <h4 class="font-medium mb-2">면접 일정 {{ index + 1 }}</h4>
           <div class="mb-2">
             <label class="block text-sm mb-1">날짜</label>
-            <Calendar 
+          <Calendar 
               v-model="dateSlot.date" 
-              :minDate="new Date()"
-              dateFormat="yy-mm-dd"
-              class="w-full"
-            />
-          </div>
+            :minDate="new Date()"
+            dateFormat="yy-mm-dd"
+            class="w-full"
+          />
+        </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="block text-sm mb-1">시간</label>
-              <Dropdown
+            <Dropdown
                 v-model="dateSlot.hour"
-                :options="hours"
-                placeholder="시간"
-                class="w-full"
-              />
+              :options="hours"
+                optionLabel="label"
+                placeholder="시"
+              class="w-full"
+            />
             </div>
             <div>
               <label class="block text-sm mb-1">분</label>
-              <Dropdown
+            <Dropdown
                 v-model="dateSlot.minute"
-                :options="minutes"
-                placeholder="분"
-                class="w-full"
-              />
+              :options="minutes"
+                optionLabel="label"
+              placeholder="분"
+              class="w-full"
+            />
             </div>
           </div>
         </div>

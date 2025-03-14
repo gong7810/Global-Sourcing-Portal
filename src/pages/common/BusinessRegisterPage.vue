@@ -33,6 +33,9 @@ const verificationCode = ref('');
 const businessEmail = ref('');
 const formError = ref('');
 const showCompleteDialog = ref(false);
+const businessRegistrationFile = ref(null);
+const businessRegistrationFileName = ref('');
+const fileError = ref('');
 
 const businessOptions = [
   { label: '대기업', value: '대기업' },
@@ -246,8 +249,39 @@ const toggleDetail = (key) => {
   details.value[key] = !details.value[key];
 };
 
+const handleFileUpload = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    // 파일 크기 제한 (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      fileError.value = '파일 크기는 10MB 이하여야 합니다.';
+      businessRegistrationFile.value = null;
+      businessRegistrationFileName.value = '';
+      return;
+    }
+
+    // 파일 형식 검사
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+    if (!allowedTypes.includes(file.type)) {
+      fileError.value = 'PDF, JPG, PNG 형식의 파일만 업로드 가능합니다.';
+      businessRegistrationFile.value = null;
+      businessRegistrationFileName.value = '';
+      return;
+    }
+
+    businessRegistrationFile.value = file;
+    businessRegistrationFileName.value = file.name;
+    fileError.value = '';
+  }
+};
+
+const removeFile = () => {
+  businessRegistrationFile.value = null;
+  businessRegistrationFileName.value = '';
+  fileError.value = '';
+};
+
 const submitForm = () => {
-  console.log('Form submitted', terms.value); // 디버깅용 로그 추가
   if (
     !businessType.value ||
     !businessType.value.value.trim() ||
@@ -255,7 +289,7 @@ const submitForm = () => {
     !businessName.value.trim() ||
     !ownerName.value.trim() ||
     !businessAddress.value.trim() ||
-    !certificateIssueNo.value.trim() ||
+    !businessRegistrationFile.value ||
     !businessId.value.trim() ||
     !businessPw.value.trim() ||
     !managerName.value.trim() ||
@@ -302,13 +336,37 @@ const submitForm = () => {
           <InputText v-model="ownerName" type="text" placeholder="대표자명" class="w-full px-4 py-3" />
           <InputText v-model="businessAddress" type="text" placeholder="회사주소" class="w-full px-4 py-3" />
           <div class="mb-2">
-            <InputText
-              v-model="certificateIssueNo"
-              placeholder="사업자등록증명원 발급번호"
-              class="w-full"
-              maxlength="17"
-            />
-            <p v-if="certificateNoError" class="text-red-500">{{ certificateNoError }}</p>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-sm font-medium text-gray-700">사업자등록증명원</span>
+            </div>
+            <div class="flex items-center space-x-2">
+              <div class="flex-1 relative">
+                <input
+                  type="file"
+                  class="hidden"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  @change="handleFileUpload"
+                  ref="fileInput"
+                />
+                <div
+                  class="w-full px-4 py-3 border rounded-lg bg-white flex items-center justify-between cursor-pointer"
+                  @click="$refs.fileInput.click()"
+                >
+                  <span class="text-gray-500">{{ businessRegistrationFileName || '파일을 선택해주세요' }}</span>
+                  <i class="pi pi-upload text-gray-400"></i>
+                </div>
+              </div>
+              <button
+                v-if="businessRegistrationFileName"
+                @click="removeFile"
+                type="button"
+                class="px-3 py-2 text-gray-500 hover:text-red-500"
+              >
+                <i class="pi pi-times"></i>
+              </button>
+            </div>
+            <p class="mt-1 text-sm text-gray-500">* PDF, JPG, PNG 형식의 파일만 업로드 가능합니다. (최대 10MB)</p>
+            <p v-if="fileError" class="mt-1 text-sm text-red-500">{{ fileError }}</p>
           </div>
           <div>
             <div class="flex space-x-2">

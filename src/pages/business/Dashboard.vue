@@ -36,27 +36,35 @@ const formatCurrency = (value) => {
   return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 };
 
-// 북마크된 인재 데이터 추가
+// 북마크 토글 함수 추가
+const toggleBookmark = (talent) => {
+  const index = bookmarkedTalents.value.findIndex(t => t.id === talent.id);
+  if (index !== -1) {
+    bookmarkedTalents.value.splice(index, 1); // 북마크 제거
+  }
+};
+
+// bookmarkedTalents ref 수정 (isBookmarked 속성 추가)
 const bookmarkedTalents = ref([
   {
     id: 1,
     name: '홍길동',
     nationality: '베트남',
     career: '5년',
-    skills: ['JavaScript', 'React', 'Node.js'],
     education: '하노이공과대학교',
     major: '컴퓨터공학',
-    bookmarkedDate: '2024-03-15'
+    bookmarkedDate: '2024-03-15',
+    isBookmarked: true
   },
   {
     id: 2,
     name: '김철수',
     nationality: '중국',
     career: '3년',
-    skills: ['Python', 'Django', 'AWS'],
     education: '베이징대학교',
     major: '소프트웨어공학',
-    bookmarkedDate: '2024-03-14'
+    bookmarkedDate: '2024-03-14',
+    isBookmarked: true
   }
 ]);
 </script>
@@ -140,7 +148,24 @@ const bookmarkedTalents = ref([
           </router-link>
         </div>
         
-        <div class="grid grid-cols-1 gap-4">
+        <!-- 북마크된 인재가 없을 때 표시할 빈 상태 -->
+        <div v-if="bookmarkedTalents.length === 0" class="text-center py-12">
+          <div class="flex flex-col items-center gap-4">
+            <i class="pi pi-bookmark text-gray-300 text-5xl mb-2"></i>
+            <p class="text-gray-500 mb-2">북마크된 인재가 없습니다</p>
+            <p class="text-gray-400 text-sm mb-4">관심있는 인재를 북마크하고 관리해보세요</p>
+            <router-link 
+              to="/business/TalentSearchPage"
+              class="inline-flex items-center px-4 py-2 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7A7AE6] transition-colors"
+            >
+              <i class="pi pi-search mr-2"></i>
+              인재 검색하기
+            </router-link>
+          </div>
+        </div>
+        
+        <!-- 북마크된 인재가 있을 때 표시할 목록 -->
+        <div v-else class="grid grid-cols-1 gap-4">
           <div v-for="talent in bookmarkedTalents" :key="talent.id" 
             class="border rounded-lg p-6 hover:border-[#8B8BF5] transition-all duration-200">
             <div class="flex justify-between items-start">
@@ -155,6 +180,9 @@ const bookmarkedTalents = ref([
                 <p class="text-gray-600">{{ talent.education }} · {{ talent.major }}</p>
               </div>
               <div class="flex flex-col items-end gap-3">
+                <button @click="toggleBookmark(talent)" class="text-[#8B8BF5]">
+                  <i class="pi pi-bookmark-fill"></i>
+                </button>
                 <span class="text-sm text-gray-500">북마크: {{ talent.bookmarkedDate }}</span>
                 <button 
                   @click="router.push(`/business/interview-offer/create/${talent.id}`)"

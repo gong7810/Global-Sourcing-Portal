@@ -45,12 +45,28 @@ const talents = ref([
     name: '홍길동',
     nationality: '베트남',
     career: '5년',
-    skills: ['JavaScript', 'React', 'Node.js'],
     education: '하노이공과대학교',
     major: '컴퓨터공학',
-    isBookmarked: false
+    isBookmarked: true
   },
-  // 더미 데이터 추가 가능
+  {
+    id: 2,
+    name: '김철수',
+    nationality: '중국',
+    career: '3년',
+    education: '베이징대학교',
+    major: '소프트웨어공학',
+    isBookmarked: true
+  },
+  {
+    id: 3,
+    name: '이영희',
+    nationality: '일본',
+    career: '7년',
+    education: '도쿄대학교',
+    major: '전자공학',
+    isBookmarked: false
+  }
 ]);
 
 const showResumeModal = ref(false);
@@ -63,8 +79,8 @@ const openResumeModal = (candidate) => {
   showResumeModal.value = true;
 };
 
-const toggleBookmark = () => {
-  isBookmarked.value = !isBookmarked.value;
+const toggleBookmark = (talent) => {
+  talent.isBookmarked = !talent.isBookmarked;
 };
 
 const openInterviewOffer = (talent) => {
@@ -159,8 +175,14 @@ const searchTalents = () => {
           </div>
 
           <div class="flex flex-col items-end gap-3">
-            <button @click="toggleBookmark" class="text-gray-400 hover:text-[#8B8BF5]">
-              <i :class="['pi', isBookmarked ? 'pi-bookmark-fill' : 'pi-bookmark']"></i>
+            <button 
+              @click="toggleBookmark(talent)" 
+              :class="[
+                'hover:text-[#8B8BF5]', 
+                talent.isBookmarked ? 'text-[#8B8BF5]' : 'text-gray-400'
+              ]"
+            >
+              <i :class="['pi', talent.isBookmarked ? 'pi-bookmark-fill' : 'pi-bookmark']"></i>
             </button>
             <button 
               @click="openResumeModal(talent)" 
@@ -285,10 +307,16 @@ const searchTalents = () => {
       <template #footer>
         <div class="flex justify-end gap-4">
           <Button 
-            @click="toggleBookmark" 
-            :class="['p-button-text', isBookmarked ? 'text-[#8B8BF5]' : 'text-gray-400']"
+            @click="toggleBookmark(selectedCandidate)" 
+            :class="[
+              'p-button-text', 
+              selectedCandidate?.isBookmarked ? 'text-[#8B8BF5]' : 'text-gray-400'
+            ]"
           >
-            <i :class="['pi', isBookmarked ? 'pi-bookmark-fill' : 'pi-bookmark']" style="font-size: 1.5rem"></i>
+            <i 
+              :class="['pi', selectedCandidate?.isBookmarked ? 'pi-bookmark-fill' : 'pi-bookmark']" 
+              style="font-size: 1.5rem"
+            ></i>
           </Button>
           <Button 
             @click="openInterviewOffer(selectedCandidate)" 
