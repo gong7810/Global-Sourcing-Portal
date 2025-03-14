@@ -57,28 +57,28 @@ const formatCurrency = (value) => {
 };
 
 // 북마크된 인재 데이터 추가
-const bookmarkedTalents = ref([
-  {
-    id: 1,
-    name: '홍길동',
-    nationality: '베트남',
-    career: '5년',
-    skills: ['JavaScript', 'React', 'Node.js'],
-    education: '하노이공과대학교',
-    major: '컴퓨터공학',
-    bookmarkedDate: '2024-03-15'
-  },
-  {
-    id: 2,
-    name: '김철수',
-    nationality: '중국',
-    career: '3년',
-    skills: ['Python', 'Django', 'AWS'],
-    education: '베이징대학교',
-    major: '소프트웨어공학',
-    bookmarkedDate: '2024-03-14'
-  }
-]);
+// const bookmarkedTalents = ref([
+//   {
+//     id: 1,
+//     name: '홍길동',
+//     nationality: '베트남',
+//     career: '5년',
+//     skills: ['JavaScript', 'React', 'Node.js'],
+//     education: '하노이공과대학교',
+//     major: '컴퓨터공학',
+//     bookmarkedDate: '2024-03-15'
+//   },
+//   {
+//     id: 2,
+//     name: '김철수',
+//     nationality: '중국',
+//     career: '3년',
+//     skills: ['Python', 'Django', 'AWS'],
+//     education: '베이징대학교',
+//     major: '소프트웨어공학',
+//     bookmarkedDate: '2024-03-14'
+//   }
+// ]);
 </script>
 
 <template>

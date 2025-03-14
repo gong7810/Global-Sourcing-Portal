@@ -274,7 +274,7 @@ const removeImage = () => {
             </div>
             <div class="flex items-center gap-4">
               <i class="pi pi-envelope"></i>
-              <InputText v-model="basicInfo.email" placeholder="이메일을 입력해주세요" class="w-full" />
+              <InputText v-model="basicInfo.email" placeholder="이메일을 입력해주세요" class="w-full notranslate" />
             </div>
             <div class="flex items-center gap-4">
               <i class="pi pi-phone"></i>
