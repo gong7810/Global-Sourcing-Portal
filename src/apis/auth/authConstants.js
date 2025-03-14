@@ -19,7 +19,6 @@ export const AUTH_EXCLUSIONS_ROUTER_NAME = [
   'UserPage',
   // 'SupportDetail',
   'CreateInterviewOffer',
-  // 'CandidatesPage',
   'CompanyInfoPage',
   'FaqPage',
   'InquiryPage',

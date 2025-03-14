@@ -5,11 +5,6 @@ export const businessRouter = [
         component: () => import('@/pages/business/Dashboard.vue')
     },
     {
-        path: '/business/CandidatesPage',
-        name: 'CandidatesPage',
-        component: () => import('@/pages/business/CandidatesPage.vue')
-    },
-    {
         path: '/business/CompanyInfoPage',
         name: 'CompanyInfoPage',
         component: () => import('@/pages/business/CompanyInfoPage.vue')
