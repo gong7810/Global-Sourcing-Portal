@@ -208,21 +208,56 @@ const mockJobOffers = [
     interviewProposedAt: '2024-03-13T09:00:00',
     interviewConfirmed: false,
     proposedDates: [
-      {
-        date: '2024-03-25',
-        time: '14:00'
-      },
-      {
-        date: '2024-03-26',
-        time: '10:00'
-      },
-      {
-        date: '2024-03-27',
-        time: '15:30'
-      }
+      { date: '2024-03-25', time: '14:00' },
+      { date: '2024-03-26', time: '10:00' },
+      { date: '2024-03-27', time: '15:30' }
     ],
     interviewType: 'offline',
-    interviewLocation: '서울시 강남구 테헤란로 123'
+    interviewLocation: '서울시 강남구 테헤란로 123',
+    resumeSnapshot: {
+      basicInfo: {
+        name: '최예지',
+        birthDate: '1996.09.01',
+        gender: '여성',
+        email: 'yeji@naver.com',
+        phone: '010-1234-7496',
+        address: '윙스타워 505호',
+        totalCareer: '5년',
+        lastEducation: '대학교(4년) 졸업'
+      },
+      nationalityInfo: '대한민국',
+      passportInfo: {
+        passportNumber: 'M1234****',
+        surname: 'CHOI',
+        givenNames: 'YEJI',
+        nationality: '대한민국',
+        birthDate: '1996-09-01',
+        issueDate: '2020-01-01',
+        expiryDate: '2030-01-01',
+        issuingCountry: '대한민국',
+        birthPlace: 'SEOUL'
+      },
+      careers: [
+        {
+          companyName: '(주)비티포탈',
+          period: '2023.03 - 2024.03',
+          jobTitle: '프론트엔드 개발자',
+          department: '개발팀',
+          responsibilities: '웹 서비스 프론트엔드 개발'
+        }
+      ],
+      educations: [
+        {
+          educationType: { name: '대학교(4년)', code: 'UNIVERSITY' },
+          schoolName: '한국대학교',
+          period: '2015.03 - 2019.02',
+          major: '컴퓨터공학과',
+          isGraduated: true,
+          details: '웹 개발 동아리 활동'
+        }
+      ],
+      certifications: []
+    }
   },
   {
     id: 2,
@@ -598,12 +633,26 @@ const mockJobOffers = [
             </div>
           </div>
 
-          <!-- 제안 상태 표시 부분 수정 -->
-          <div v-else-if="offer.status === 'rejected'" class="mt-4 border-t pt-4">
-            <p class="text-red-600">
-              <i class="pi pi-times-circle mr-2"></i>
-              {{ formatDate(offer.rejectedAt) }}에 거절되었습니다
+          <!-- 제안이 대기중인 경우 상태 표시 부분 추가 -->
+          <div v-if="offer.status === 'pending'" class="mt-4 border-t pt-4">
+            <p class="text-gray-600">
+              <i class="pi pi-clock mr-2"></i>
+              제안받은 날짜: {{ formatDate(offer.createdAt) }}
             </p>
+          </div>
+
+          <!-- 제안이 거절된 경우 상태 표시 부분 수정 -->
+          <div v-else-if="offer.status === 'rejected'" class="mt-4 border-t pt-4">
+            <div class="space-y-2">
+              <p class="text-gray-600">
+                <i class="pi pi-clock mr-2"></i>
+                제안받은 날짜: {{ formatDate(offer.createdAt) }}
+              </p>
+              <p class="text-red-600">
+                <i class="pi pi-times-circle mr-2"></i>
+                {{ formatDate(offer.rejectedAt) }}에 거절되었습니다
+              </p>
+            </div>
           </div>
 
           <!-- 상세정보 보기 버튼 추가 -->
@@ -685,117 +734,110 @@ const mockJobOffers = [
         </div>
 
         <!-- 제안 당시 이력서 정보 표시 (모든 상태에서) -->
-        <div v-if="selectedOffer?.resumeSnapshot">
-          <div class="border-t mt-6 pt-6">
-            <h4 class="font-medium text-gray-900 mb-4">제안 당시 이력서 정보</h4>
-            <div class="space-y-4">
-              <!-- 기본 정보 -->
-              <div class="bg-gray-50 p-4 rounded-lg">
-                <h5 class="font-medium mb-2">기본 정보</h5>
-                <div class="grid grid-cols-[80px_auto] gap-y-2 text-sm text-gray-600">
-                  <span class="text-gray-500">이름</span>
-                  <span>{{ selectedOffer.resumeSnapshot.basicInfo.name }}</span>
-                  <span class="text-gray-500">생년월일</span>
-                  <span
-                    >{{ selectedOffer.resumeSnapshot.basicInfo.birthDate }} (만
-                    {{ calculateAge(selectedOffer.resumeSnapshot.basicInfo.birthDate) }}세)</span
-                  >
-                  <span class="text-gray-500">성별</span>
-                  <span>{{ selectedOffer.resumeSnapshot.basicInfo.gender }}</span>
-                  <span class="text-gray-500">휴대폰</span>
-                  <span>{{ selectedOffer.resumeSnapshot.basicInfo.phone }}</span>
-                  <span class="text-gray-500">이메일</span>
-                  <span>{{ selectedOffer.resumeSnapshot.basicInfo.email }}</span>
-                  <span class="text-gray-500">주소</span>
-                  <span>{{ selectedOffer.resumeSnapshot.basicInfo.address }}</span>
-                  <span class="text-gray-500">경력</span>
-                  <span>{{ selectedOffer.resumeSnapshot.basicInfo.totalCareer }}</span>
-                  <span class="text-gray-500">학력</span>
-                  <span>{{ selectedOffer.resumeSnapshot.basicInfo.lastEducation }}</span>
-                </div>
-              </div>
+        <div v-if="selectedOffer?.resumeSnapshot" class="border-t mt-6 pt-6">
+          <div class="flex items-center justify-between mb-4">
+            <h4 class="font-medium text-gray-900">제안 당시 이력서 정보</h4>
+            <div class="text-sm text-gray-500">
+              <i class="pi pi-clock mr-1"></i>
+              {{ formatDate(selectedOffer.createdAt) }} 기준
+            </div>
+          </div>
 
-              <!-- 국가 정보 -->
-              <div class="bg-gray-50 p-4 rounded-lg">
-                <h5 class="font-medium mb-2">국가</h5>
-                <div class="text-sm text-gray-600">
-                  {{ selectedOffer.resumeSnapshot.nationalityInfo }}
-                </div>
+          <div class="space-y-4">
+            <!-- 기본 정보 -->
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h5 class="font-medium mb-2">기본 정보</h5>
+              <div class="grid grid-cols-[80px_auto] gap-y-2 text-sm text-gray-600">
+                <span class="text-gray-500">이름</span>
+                <span>{{ selectedOffer.resumeSnapshot.basicInfo.name }}</span>
+                <span class="text-gray-500">생년월일</span>
+                <span>{{ selectedOffer.resumeSnapshot.basicInfo.birthDate }} (만 {{ calculateAge(selectedOffer.resumeSnapshot.basicInfo.birthDate) }}세)</span>
+                <span class="text-gray-500">성별</span>
+                <span>{{ selectedOffer.resumeSnapshot.basicInfo.gender }}</span>
+                <span class="text-gray-500">휴대폰</span>
+                <span>{{ selectedOffer.resumeSnapshot.basicInfo.phone }}</span>
+                <span class="text-gray-500">이메일</span>
+                <span>{{ selectedOffer.resumeSnapshot.basicInfo.email }}</span>
+                <span class="text-gray-500">주소</span>
+                <span>{{ selectedOffer.resumeSnapshot.basicInfo.address }}</span>
+                <span class="text-gray-500">경력</span>
+                <span>{{ selectedOffer.resumeSnapshot.basicInfo.totalCareer }}</span>
+                <span class="text-gray-500">학력</span>
+                <span>{{ selectedOffer.resumeSnapshot.basicInfo.lastEducation }}</span>
               </div>
+            </div>
 
-              <!-- 여권 정보 -->
-              <div class="bg-gray-50 p-4 rounded-lg">
-                <h5 class="font-medium mb-2">여권</h5>
-                <div class="space-y-2 text-sm text-gray-600">
-                  <p>
-                    이름: {{ selectedOffer.resumeSnapshot.passportInfo.surname }}
-                    {{ selectedOffer.resumeSnapshot.passportInfo.givenNames }}
-                  </p>
-                  <p>여권번호: {{ selectedOffer.resumeSnapshot.passportInfo.passportNumber }}</p>
-                  <p>국적: {{ selectedOffer.resumeSnapshot.passportInfo.nationality }}</p>
-                  <p>만료일: {{ selectedOffer.resumeSnapshot.passportInfo.expiryDate }}</p>
-                </div>
+            <!-- 국가 정보 -->
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h5 class="font-medium mb-2">국가</h5>
+              <div class="text-sm text-gray-600">
+                {{ selectedOffer.resumeSnapshot.nationalityInfo }}
               </div>
+            </div>
 
-              <!-- 경력 정보 -->
-              <div class="bg-gray-50 p-4 rounded-lg">
-                <h5 class="font-medium mb-2">경력 사항</h5>
-                <div v-if="selectedOffer.resumeSnapshot.careers?.length > 0">
-                  <div
-                    v-for="career in selectedOffer.resumeSnapshot.careers"
-                    :key="career.companyName"
-                    class="mb-4 border-b border-gray-200 pb-4 last:border-0 last:pb-0"
-                  >
-                    <div class="space-y-1">
-                      <h6 class="font-medium text-gray-900">{{ career.companyName }}</h6>
-                      <p class="text-sm text-gray-600">{{ career.period }}</p>
-                      <p class="text-sm text-gray-600">{{ career.jobTitle }} | {{ career.department }}</p>
-                      <p class="text-sm text-gray-600 mt-2">{{ career.responsibilities }}</p>
-                    </div>
+            <!-- 여권 정보 -->
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h5 class="font-medium mb-2">여권</h5>
+              <div class="space-y-2 text-sm text-gray-600">
+                <p>이름: {{ selectedOffer.resumeSnapshot.passportInfo.surname }} {{ selectedOffer.resumeSnapshot.passportInfo.givenNames }}</p>
+                <p>여권번호: {{ selectedOffer.resumeSnapshot.passportInfo.passportNumber }}</p>
+                <p>국적: {{ selectedOffer.resumeSnapshot.passportInfo.nationality }}</p>
+                <p>만료일: {{ selectedOffer.resumeSnapshot.passportInfo.expiryDate }}</p>
+              </div>
+            </div>
+
+            <!-- 경력 정보 -->
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h5 class="font-medium mb-2">경력 사항</h5>
+              <div v-if="selectedOffer.resumeSnapshot.careers?.length > 0">
+                <div v-for="career in selectedOffer.resumeSnapshot.careers" 
+                     :key="career.companyName" 
+                     class="mb-4 border-b border-gray-200 pb-4 last:border-0 last:pb-0">
+                  <div class="space-y-1">
+                    <h6 class="font-medium text-gray-900">{{ career.companyName }}</h6>
+                    <p class="text-sm text-gray-600">{{ career.period }}</p>
+                    <p class="text-sm text-gray-600">{{ career.jobTitle }} | {{ career.department }}</p>
+                    <p class="text-sm text-gray-600 mt-2">{{ career.responsibilities }}</p>
                   </div>
                 </div>
-                <div v-else class="text-center py-4 text-gray-500">등록된 경력이 없습니다</div>
               </div>
+              <div v-else class="text-center py-4 text-gray-500">등록된 경력이 없습니다</div>
+            </div>
 
-              <!-- 학력 정보 -->
-              <div class="bg-gray-50 p-4 rounded-lg">
-                <h5 class="font-medium mb-2">학력 사항</h5>
-                <div v-if="selectedOffer.resumeSnapshot.educations?.length > 0">
-                  <div
-                    v-for="education in selectedOffer.resumeSnapshot.educations"
-                    :key="education.schoolName"
-                    class="mb-4 border-b border-gray-200 pb-4 last:border-0 last:pb-0"
-                  >
-                    <div class="space-y-1">
-                      <h6 class="font-medium text-gray-900">{{ education.schoolName }}</h6>
-                      <p class="text-sm text-gray-600">{{ education.educationType.name }}</p>
-                      <p class="text-sm text-gray-600">{{ education.period }}</p>
-                      <p class="text-sm text-gray-600">{{ education.major }}</p>
-                      <p v-if="education.details" class="text-sm text-gray-600 mt-2">{{ education.details }}</p>
-                    </div>
+            <!-- 학력 정보 -->
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h5 class="font-medium mb-2">학력 사항</h5>
+              <div v-if="selectedOffer.resumeSnapshot.educations?.length > 0">
+                <div v-for="education in selectedOffer.resumeSnapshot.educations" 
+                     :key="education.schoolName" 
+                     class="mb-4 border-b border-gray-200 pb-4 last:border-0 last:pb-0">
+                  <div class="space-y-1">
+                    <h6 class="font-medium text-gray-900">{{ education.schoolName }}</h6>
+                    <p class="text-sm text-gray-600">{{ education.educationType.name }}</p>
+                    <p class="text-sm text-gray-600">{{ education.period }}</p>
+                    <p class="text-sm text-gray-600">{{ education.major }}</p>
+                    <p v-if="education.details" class="text-sm text-gray-600 mt-2">{{ education.details }}</p>
                   </div>
                 </div>
-                <div v-else class="text-center py-4 text-gray-500">등록된 학력이 없습니다</div>
               </div>
+              <div v-else class="text-center py-4 text-gray-500">등록된 학력이 없습니다</div>
+            </div>
 
-              <!-- 자격증 정보 -->
-              <div class="bg-gray-50 p-4 rounded-lg">
-                <h5 class="font-medium mb-2">자격증 사항</h5>
-                <div v-if="selectedOffer.resumeSnapshot.certifications?.length > 0">
-                  <div
-                    v-for="cert in selectedOffer.resumeSnapshot.certifications"
-                    :key="cert.name"
-                    class="mb-4 border-b border-gray-200 pb-4 last:border-0 last:pb-0"
-                  >
-                    <div class="space-y-1">
-                      <p class="text-sm text-gray-900">{{ cert.name }}</p>
-                      <p class="text-sm text-gray-600">취득일: {{ cert.date }}</p>
-                      <p class="text-sm text-gray-600">발급기관: {{ cert.organization }}</p>
-                    </div>
+            <!-- 자격증 정보 -->
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <h5 class="font-medium mb-2">자격증 사항</h5>
+              <div v-if="selectedOffer.resumeSnapshot.certifications?.length > 0">
+                <div v-for="cert in selectedOffer.resumeSnapshot.certifications" 
+                     :key="cert.name" 
+                     class="mb-4 border-b border-gray-200 pb-4 last:border-0 last:pb-0">
+                  <div class="space-y-1">
+                    <p class="text-sm text-gray-900">{{ cert.name }}</p>
+                    <p class="text-sm text-gray-600">취득일: {{ cert.date }}</p>
+                    <p class="text-sm text-gray-600">발급기관: {{ cert.organization }}</p>
                   </div>
                 </div>
-                <div v-else class="text-center py-4 text-gray-500">등록된 자격증이 없습니다</div>
               </div>
+              <div v-else class="text-center py-4 text-gray-500">등록된 자격증이 없습니다</div>
             </div>
           </div>
         </div>
