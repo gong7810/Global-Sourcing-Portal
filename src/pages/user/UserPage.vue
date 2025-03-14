@@ -101,14 +101,32 @@ const cancelEdit = () => {
 };
 
 const saveAll = () => {
+  // 필수 필드 검사
+  if (!basicInfo.value.profileImage) {
+    messagePop.toast('프로필 사진을 등록해주세요.', 'warn');
+    return;
+  }
+  if (!basicInfo.value.name) {
+    messagePop.toast('이름을 입력해주세요.', 'warn');
+    return;
+  }
+  if (!basicInfo.value.birthDate) {
+    messagePop.toast('생년월일을 선택해주세요.', 'warn');
+    return;
+  }
+  if (!basicInfo.value.gender) {
+    messagePop.toast('성별을 선택해주세요.', 'warn');
+    return;
+  }
+  if (!basicInfo.value.email) {
+    messagePop.toast('이메일을 입력해주세요.', 'warn');
+    return;
+  }
+
   messagePop.confirm({
     message: '변경사항을 저장하시겠습니까?',
     onCloseYes: () => {
       // TODO: 내 정보 수정 api
-      // const body = {
-      //   id: user.id,
-      //   userInfo: basicInfo.value
-      // }
       messagePop.alert('저장되었습니다.', 'good');
       router.back();
     }
@@ -213,6 +231,7 @@ const removeImage = () => {
         <div class="bg-white rounded-lg p-6 mb-6">
           <div class="flex justify-between items-center mb-4">
             <h2 class="text-lg font-bold">기본 정보</h2>
+            <span class="text-sm text-red-500">* 필수 입력 항목</span>
           </div>
           <div class="mb-6 flex flex-col items-center">
             <div class="relative w-[120px] h-[160px] mb-4">
@@ -241,7 +260,9 @@ const removeImage = () => {
               </button>
             </div>
             <div class="text-center space-y-1">
-              <p class="text-sm text-gray-700 font-medium">증명사진 규격 (3x4)</p>
+              <p class="text-sm text-gray-700 font-medium">
+                증명사진 규격 (3x4) <span class="text-red-500">*</span>
+              </p>
               <p class="text-xs text-gray-500">
                 - 이미지 크기: 120px x 160px (권장)<br/>
                 - 파일 형식: JPG, PNG<br/>
@@ -252,37 +273,81 @@ const removeImage = () => {
           <div class="space-y-4 text-gray-600">
             <div class="flex items-center gap-4">
               <i class="pi pi-user"></i>
-              <InputText v-model="basicInfo.name" placeholder="이름을 입력해주세요" class="w-full" />
+              <div class="flex-grow">
+                <label class="flex items-center gap-1 mb-1 text-sm">
+                  이름 <span class="text-red-500">*</span>
+                </label>
+                <InputText 
+                  v-model="basicInfo.name" 
+                  placeholder="이름을 입력해주세요" 
+                  class="w-full" 
+                />
+              </div>
             </div>
             <div class="flex items-center gap-4">
               <i class="pi pi-calendar"></i>
-              <DatePicker
-                v-model="basicInfo.birthDate"
-                format="yyyy-MM-dd"
-                placeholder="생년월일을 선택해주세요"
-                class="w-32"
-              />
-              <Select
-                class="w-32"
-                v-model="basicInfo.gender"
-                :options="genders"
-                optionLabel="label"
-                placeholder="성별"
-                checkmark
-                highlightOnSelect
-              />
+              <div class="flex gap-4">
+                <div>
+                  <label class="flex items-center gap-1 mb-1 text-sm">
+                    생년월일 <span class="text-red-500">*</span>
+                  </label>
+                  <DatePicker
+                    v-model="basicInfo.birthDate"
+                    format="yyyy-MM-dd"
+                    placeholder="생년월일을 선택해주세요"
+                    class="w-32"
+                  />
+                </div>
+                <div>
+                  <label class="flex items-center gap-1 mb-1 text-sm">
+                    성별 <span class="text-red-500">*</span>
+                  </label>
+                  <Select
+                    class="w-32"
+                    v-model="basicInfo.gender"
+                    :options="genders"
+                    optionLabel="label"
+                    placeholder="성별"
+                    checkmark
+                    highlightOnSelect
+                  />
+                </div>
+              </div>
             </div>
             <div class="flex items-center gap-4">
               <i class="pi pi-envelope"></i>
-              <InputText v-model="basicInfo.email" placeholder="이메일을 입력해주세요" class="w-full notranslate" />
+              <div class="flex-grow">
+                <label class="flex items-center gap-1 mb-1 text-sm">
+                  이메일 <span class="text-red-500">*</span>
+                </label>
+                <InputText 
+                  v-model="basicInfo.email" 
+                  placeholder="이메일을 입력해주세요" 
+                  class="w-full notranslate" 
+                />
+              </div>
             </div>
             <div class="flex items-center gap-4">
               <i class="pi pi-phone"></i>
-              <InputText v-model="basicInfo.phone" placeholder="전화번호를 입력해주세요" class="w-full" />
+              <div class="flex-grow">
+                <label class="mb-1 text-sm">전화번호</label>
+                <InputText 
+                  v-model="basicInfo.phone" 
+                  placeholder="전화번호를 입력해주세요" 
+                  class="w-full" 
+                />
+              </div>
             </div>
             <div class="flex items-center gap-4">
               <i class="pi pi-map-marker"></i>
-              <InputText v-model="basicInfo.address" placeholder="주소를 입력해주세요" class="w-full" />
+              <div class="flex-grow">
+                <label class="mb-1 text-sm">주소</label>
+                <InputText 
+                  v-model="basicInfo.address" 
+                  placeholder="주소를 입력해주세요" 
+                  class="w-full" 
+                />
+              </div>
             </div>
             <!-- 버튼 영역 -->
             <div class="px-8 py-6 bg-gray-50 border-t flex justify-center gap-4">
