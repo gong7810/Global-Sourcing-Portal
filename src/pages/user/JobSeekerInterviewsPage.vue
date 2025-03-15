@@ -13,6 +13,7 @@ const interviews = ref([
       name: '(주)테크솔루션',
       logo: '/images/company-logo.png'
     },
+    jobCategory: { label: 'IT개발·데이터', value: 'it' },
     position: 'Frontend Developer',
     interviewDate: '2024-03-22',
     interviewType: 'online',
@@ -25,6 +26,7 @@ const interviews = ref([
     company: {
       name: '(주)비티포탈',
     },
+    jobCategory: { label: 'IT개발·데이터', value: 'it' },
     position: 'Frontend Developer',
     interviewDate: '2024-03-15',
     interviewType: 'offline',
@@ -149,10 +151,11 @@ const isInterviewCompleted = (interview) => {
 
         <!-- 면접 정보 -->
         <div class="border-t pt-4">
-          <!-- 제안 포지션을 여기로 이동 -->
           <div class="mb-3">
-            <h4 class="font-medium text-gray-900 mb-1">제안 포지션</h4>
-            <p class="text-gray-600">{{ interview.position }}</p>
+            <h4 class="font-medium text-gray-900 mb-1">직무 · 제안 포지션</h4>
+            <p class="text-gray-600">
+              {{ interview.jobCategory?.label || 'IT개발·데이터' }} | {{ interview.position }}
+            </p>
           </div>
           
           <div class="mb-3">
