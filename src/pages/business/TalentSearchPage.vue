@@ -260,24 +260,24 @@ const filteredCandidates = computed(() => {
     <!-- 검색 필터 섹션 -->
     <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
       <div class="flex items-center gap-4">
-        <!-- 경력 필터 -->
-        <div class="w-[150px]">
-          <label class="block text-sm font-medium text-gray-700 mb-1">경력</label>
-          <Dropdown
-            v-model="selectedCareer"
-            :options="careerOptions"
-            optionLabel="label"
-            placeholder="전체"
-            class="w-full"
-          />
-        </div>
-
         <!-- 국적 필터 -->
         <div class="w-[200px]">
           <label class="block text-sm font-medium text-gray-700 mb-1">국적</label>
           <MultiSelect
             v-model="selectedNationalities"
             :options="nationalityOptions"
+            optionLabel="label"
+            placeholder="전체"
+            class="w-full"
+          />
+        </div>
+
+        <!-- 경력 필터 -->
+        <div class="w-[150px]">
+          <label class="block text-sm font-medium text-gray-700 mb-1">경력</label>
+          <Dropdown
+            v-model="selectedCareer"
+            :options="careerOptions"
             optionLabel="label"
             placeholder="전체"
             class="w-full"
@@ -449,8 +449,10 @@ const filteredCandidates = computed(() => {
           <div v-for="(career, index) in selectedCandidate?.careers" :key="index" class="mb-4">
             <div class="font-medium">{{ career.company }}</div>
             <div class="text-gray-600">{{ career.period }}</div>
-            <div class="text-gray-600">{{ career.position }}/{{ career.department }}</div>
-            <div class="mt-2">{{ career.description }}</div>
+            <div class="text-gray-600">
+              {{ career.jobCategory.label }} | {{ career.position }}
+            </div>
+            <div class="mt-2 whitespace-pre-line">{{ career.description }}</div>
           </div>
         </div>
 

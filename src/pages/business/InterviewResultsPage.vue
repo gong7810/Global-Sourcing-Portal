@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
@@ -115,6 +115,29 @@ const getResultInfo = (result) => {
       };
   }
 };
+
+// 필터 상태 추가
+const selectedFilter = ref('all');
+
+// 필터 옵션
+const filterOptions = [
+  { label: '전체', value: 'all' },
+  { label: '결과 미입력', value: 'none' },
+  { label: '합격', value: 'passed' },
+  { label: '불합격', value: 'failed' },
+  { label: '보류', value: 'pending' }
+];
+
+// 필터링된 결과 목록
+const filteredResults = computed(() => {
+  if (selectedFilter.value === 'all') {
+    return interviewResults.value;
+  }
+  if (selectedFilter.value === 'none') {
+    return interviewResults.value.filter(interview => interview.result === null);
+  }
+  return interviewResults.value.filter(interview => interview.result === selectedFilter.value);
+});
 </script>
 
 <template>
@@ -130,9 +153,49 @@ const getResultInfo = (result) => {
       </div>
     </div>
 
-    <!-- 결과 목록 -->
+    <!-- 필터 버튼 그룹 추가 -->
+    <div class="flex gap-2 mb-6">
+      <button
+        v-for="option in filterOptions"
+        :key="option.value"
+        @click="selectedFilter = option.value"
+        :class="[
+          'px-4 py-2 rounded-full text-sm transition-colors',
+          selectedFilter === option.value
+            ? 'bg-[#8B8BF5] text-white'
+            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+        ]"
+      >
+        {{ option.label }}
+        <!-- 각 상태의 개수 표시 -->
+        <span class="ml-1" v-if="option.value !== 'all'">
+          ({{ 
+            option.value === 'none' 
+              ? interviewResults.filter(interview => interview.result === null).length 
+              : interviewResults.filter(interview => interview.result === option.value).length 
+          }})
+        </span>
+        <!-- 전체 개수 표시 -->
+        <span class="ml-1" v-else>
+          ({{ interviewResults.length }})
+        </span>
+      </button>
+    </div>
+
+    <!-- 결과 목록 (filteredResults로 변경) -->
     <div class="grid grid-cols-1 gap-4">
-      <div v-for="interview in interviewResults" :key="interview.id"
+      <!-- 필터링된 결과가 없을 때 표시할 메시지 -->
+      <div v-if="filteredResults.length === 0" class="bg-white rounded-lg p-12 shadow-sm text-center">
+        <div class="flex flex-col items-center gap-4">
+          <div class="w-16 h-16 rounded-full bg-[#8B8BF5] bg-opacity-10 flex items-center justify-center mb-2">
+            <i class="pi pi-users text-[#8B8BF5] text-3xl"></i>
+          </div>
+          <h3 class="text-xl font-medium text-gray-900">해당하는 면접 결과가 없습니다</h3>
+        </div>
+      </div>
+
+      <!-- 기존 결과 목록 (filteredResults 사용) -->
+      <div v-else v-for="interview in filteredResults" :key="interview.id"
         class="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200">
         <div class="flex justify-between items-start mb-4">
           <div class="flex items-center gap-3">

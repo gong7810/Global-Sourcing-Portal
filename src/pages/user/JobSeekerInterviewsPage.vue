@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import Button from 'primevue/button';
 
@@ -34,6 +34,24 @@ const interviews = ref([
   }
   // ... 다른 면접 데이터
 ]);
+
+// 필터 상태 추가
+const selectedFilter = ref('all'); // 'all', 'passed', 'failed'
+
+// 필터 옵션
+const filterOptions = [
+  { label: '전체', value: 'all' },
+  { label: '합격', value: 'passed' },
+  { label: '불합격', value: 'failed' }
+];
+
+// 필터링된 면접 목록
+const filteredInterviews = computed(() => {
+  if (selectedFilter.value === 'all') {
+    return interviews.value;
+  }
+  return interviews.value.filter(interview => interview.result === selectedFilter.value);
+});
 
 // 결과에 따른 스타일과 텍스트
 const getResultInfo = (result) => {
@@ -79,9 +97,34 @@ const isInterviewCompleted = (interview) => {
       </div>
     </div>
 
-    <!-- 면접 목록 -->
+    <!-- 필터 버튼 그룹 추가 -->
+    <div class="flex gap-2 mb-6">
+      <button
+        v-for="option in filterOptions"
+        :key="option.value"
+        @click="selectedFilter = option.value"
+        :class="[
+          'px-4 py-2 rounded-full text-sm transition-colors',
+          selectedFilter === option.value
+            ? 'bg-[#8B8BF5] text-white'
+            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+        ]"
+      >
+        {{ option.label }}
+        <!-- 각 상태의 개수 표시 -->
+        <span class="ml-1" v-if="option.value !== 'all'">
+          ({{ interviews.filter(interview => interview.result === option.value).length }})
+        </span>
+        <!-- 전체 개수 표시 -->
+        <span class="ml-1" v-else>
+          ({{ interviews.length }})
+        </span>
+      </button>
+    </div>
+
+    <!-- 면접 목록 (filteredInterviews로 변경) -->
     <div class="grid grid-cols-1 gap-4">
-      <div v-for="interview in interviews" :key="interview.id"
+      <div v-for="interview in filteredInterviews" :key="interview.id"
         class="bg-white rounded-lg p-6 shadow-sm">
         <div class="flex justify-between items-start mb-4">
           <!-- 회사 정보 -->
@@ -128,6 +171,14 @@ const isInterviewCompleted = (interview) => {
             <p class="text-gray-600">{{ interview.feedback }}</p>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- 필터링된 결과가 없을 때 표시할 메시지 -->
+    <div v-if="filteredInterviews.length === 0" class="text-center py-12">
+      <div class="text-gray-500">
+        <i class="pi pi-inbox text-4xl mb-4"></i>
+        <p class="text-lg">해당하는 면접 결과가 없습니다</p>
       </div>
     </div>
   </div>

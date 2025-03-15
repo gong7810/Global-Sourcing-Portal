@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import Dialog from 'primevue/dialog';
 import Calendar from 'primevue/calendar';
@@ -254,6 +254,25 @@ const interviewOffers = ref([
   }
 ]);
 
+// 필터 상태 추가
+const selectedFilter = ref('all');
+
+// 필터 옵션
+const filterOptions = [
+  { label: '전체', value: 'all' },
+  { label: '대기중', value: 'pending' },
+  { label: '수락됨', value: 'accepted' },
+  { label: '거절됨', value: 'declined' }
+];
+
+// 필터링된 제안 목록
+const filteredOffers = computed(() => {
+  if (selectedFilter.value === 'all') {
+    return interviewOffers.value;
+  }
+  return interviewOffers.value.filter(offer => offer.status === selectedFilter.value);
+});
+
 // 상태에 따른 스타일과 텍스트
 const getStatusInfo = (status) => {
   switch (status) {
@@ -392,17 +411,47 @@ const goToInterviewResults = (offer) => {
       <h1 class="text-3xl font-bold">면접 제안 내역</h1>
     </div>
 
-    <!-- 제안 목록 -->
+    <!-- 필터 버튼 그룹 추가 -->
+    <div class="flex gap-2 mb-6">
+      <button
+        v-for="option in filterOptions"
+        :key="option.value"
+        @click="selectedFilter = option.value"
+        :class="[
+          'px-4 py-2 rounded-full text-sm transition-colors',
+          selectedFilter === option.value
+            ? 'bg-[#8B8BF5] text-white'
+            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+        ]"
+      >
+        {{ option.label }}
+        <!-- 각 상태의 개수 표시 -->
+        <span class="ml-1" v-if="option.value !== 'all'">
+          ({{ interviewOffers.filter(offer => offer.status === option.value).length }})
+        </span>
+        <!-- 전체 개수 표시 -->
+        <span class="ml-1" v-else>
+          ({{ interviewOffers.length }})
+        </span>
+      </button>
+    </div>
+
+    <!-- 제안 목록 (filteredOffers로 변경) -->
     <div class="grid grid-cols-1 gap-4">
       <!-- 면접 제안이 없을 때 표시할 빈 상태 -->
-      <div v-if="interviewOffers.length === 0" class="bg-white rounded-lg p-12 shadow-sm text-center">
+      <div v-if="filteredOffers.length === 0" class="bg-white rounded-lg p-12 shadow-sm text-center">
         <div class="flex flex-col items-center gap-4">
           <div class="w-16 h-16 rounded-full bg-[#8B8BF5] bg-opacity-10 flex items-center justify-center mb-2">
             <i class="pi pi-users text-[#8B8BF5] text-3xl"></i>
           </div>
-          <h3 class="text-xl font-medium text-gray-900">아직 면접 제안 내역이 없습니다</h3>
-          <p class="text-gray-500 mb-6">인재 검색 페이지에서 적합한 인재를 찾아 면접을 제안해보세요</p>
+          <h3 class="text-xl font-medium text-gray-900">
+            {{ selectedFilter === 'all' ? '아직 면접 제안 내역이 없습니다' : '해당하는 면접 제안이 없습니다' }}
+          </h3>
+          <p class="text-gray-500 mb-6">
+            {{ selectedFilter === 'all' ? '인재 검색 페이지에서 적합한 인재를 찾아 면접을 제안해보세요' : '' }}
+          </p>
           <router-link 
+            v-if="selectedFilter === 'all'"
             to="/business/TalentSearchPage"
             class="inline-flex items-center px-6 py-3 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7A7AE6] transition-colors"
           >
@@ -412,8 +461,8 @@ const goToInterviewResults = (offer) => {
         </div>
       </div>
 
-      <!-- 기존 면접 제안 목록 -->
-      <div v-else v-for="offer in interviewOffers" :key="offer.id"
+      <!-- 기존 면접 제안 목록 (filteredOffers 사용) -->
+      <div v-else v-for="offer in filteredOffers" :key="offer.id"
         class="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200">
         <div class="flex justify-between items-start mb-4">
           <div class="flex items-center gap-3">

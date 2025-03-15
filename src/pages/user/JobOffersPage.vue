@@ -26,6 +26,25 @@ const selectedOffer = ref(null);
 // 면접 일정 선택을 위한 상태
 const selectedDateIndices = ref({}); // 각 제안별로 선택된 일정을 추적
 
+// 필터 상태 추가
+const selectedFilter = ref('all'); // 'all', 'accepted', 'pending', 'rejected'
+
+// 필터 옵션
+const filterOptions = [
+  { label: '전체', value: 'all' },
+  { label: '수락됨', value: 'accepted' },
+  { label: '대기중', value: 'pending' },
+  { label: '거절됨', value: 'rejected' }
+];
+
+// 필터링된 제안 목록 computed 속성 추가
+const filteredJobOffers = computed(() => {
+  if (selectedFilter.value === 'all') {
+    return jobOffers.value;
+  }
+  return jobOffers.value.filter(offer => offer.status === selectedFilter.value);
+});
+
 // 제안 상세 보기
 const viewOfferDetail = (offer) => {
   selectedOffer.value = offer;
@@ -477,10 +496,35 @@ const mockJobOffers = [
       <h1 class="text-3xl font-bold">면접제안</h1>
     </div>
 
-    <!-- 제안 목록 -->
+    <!-- 필터 버튼 그룹 추가 -->
+    <div class="flex gap-2 mb-6">
+      <button
+        v-for="option in filterOptions"
+        :key="option.value"
+        @click="selectedFilter = option.value"
+        :class="[
+          'px-4 py-2 rounded-full text-sm transition-colors',
+          selectedFilter === option.value
+            ? 'bg-[#8B8BF5] text-white'
+            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+        ]"
+      >
+        {{ option.label }}
+        <!-- 각 상태의 개수 표시 -->
+        <span class="ml-1" v-if="option.value !== 'all'">
+          ({{ jobOffers.filter(offer => offer.status === option.value).length }})
+        </span>
+        <!-- 전체 개수 표시 -->
+        <span class="ml-1" v-else>
+          ({{ jobOffers.length }})
+        </span>
+      </button>
+    </div>
+
+    <!-- 제안 목록 (filteredJobOffers로 변경) -->
     <div class="space-y-4">
       <div
-        v-for="offer in jobOffers"
+        v-for="offer in filteredJobOffers"
         :key="offer.id"
         :class="[
           'bg-white rounded-lg shadow-sm border hover:shadow-lg transition-shadow duration-200 cursor-pointer w-full',
@@ -677,6 +721,14 @@ const mockJobOffers = [
             </button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- 필터링된 결과가 없을 때 표시할 메시지 -->
+    <div v-if="filteredJobOffers.length === 0" class="text-center py-12">
+      <div class="text-gray-500">
+        <i class="pi pi-inbox text-4xl mb-4"></i>
+        <p class="text-lg">해당하는 면접 제안이 없습니다</p>
       </div>
     </div>
 
