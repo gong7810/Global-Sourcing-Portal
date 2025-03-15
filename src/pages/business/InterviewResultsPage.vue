@@ -15,7 +15,7 @@ const resultOptions = [
   { label: '보류', value: 'pending' }
 ];
 
-// 면접 완료된 후보자 목록
+// 면접 완료된 후보자 목록 데이터 구조 수정
 const interviewResults = ref([
   {
     id: 1,
@@ -23,11 +23,34 @@ const interviewResults = ref([
       name: '최예지',
       nationality: '베트남',
       career: '5년',
+      birth: '1996.09.01',
+      gender: '여성',
+      phone: '010-1234-7496',
+      email: 'yeji@naver.com',
+      address: '홍스타워 505호',
+      passportName: 'CHOI YEJI',
+      visaInfo: {
+        type: 'M1234****',
+        country: '대한민국',
+        expiryDate: '2030-01-01'
+      },
+      careerHistory: [
+        {
+          company: '(주)비티로봇',
+          period: '2023.03 - 2024.03',
+          position: '프론트엔드 개발자/개발팀',
+          description: '웹 서비스 프론트엔드 개발'
+        }
+      ],
       education: {
         school: '한국대학교',
-        major: '컴퓨터공학과'
+        degree: '대학교(4년)',
+        major: '컴퓨터공학과',
+        period: '2015.03 - 2019.02',
+        description: '컴퓨터공학과 활동'
       }
     },
+    jobCategory: { label: 'IT개발·데이터', value: 'it' },
     position: 'Frontend Developer',
     interviewDate: '2024-03-22',
     interviewType: 'online',
@@ -42,11 +65,35 @@ const interviewResults = ref([
       name: '김철수',
       nationality: '중국',
       career: '3년',
+      birth: '1997.05.15',
+      gender: '남성',
+      phone: '010-2345-6789',
+      email: 'kim@example.com',
+      address: '서울시 서초구 서초대로 456',
+      passportName: 'KIM CHEOLSOO',
+      visaInfo: {
+        type: 'M5678****',
+        country: '중국',
+        expiryDate: '2027-05-15'
+      },
+      careerHistory: [
+        {
+          company: '(주)데이터테크',
+          period: '2021.01 - 2024.03',
+          jobCategory: { label: 'IT개발·데이터', value: 'it' },
+          position: '백엔드 개발자 | 서버개발팀',
+          description: '백엔드 서버 개발 및 운영\n- Spring Boot 기반 REST API 개발\n- MSA 아키텍처 설계 및 구현\n- 대용량 데이터 처리 시스템 구축'
+        }
+      ],
       education: {
         school: '베이징대학교',
-        major: '소프트웨어공학'
+        degree: '대학교(4년)',
+        major: '소프트웨어공학',
+        period: '2016.09 - 2020.08',
+        description: '학점 3.8/4.0\n클라우드 컴퓨팅 연구실 인턴\n교내 프로그래밍 대회 2위'
       }
     },
+    jobCategory: { label: 'IT개발·데이터', value: 'it' },
     position: 'Backend Developer',
     interviewDate: '2024-03-21',
     interviewType: 'offline',
@@ -138,6 +185,16 @@ const filteredResults = computed(() => {
   }
   return interviewResults.value.filter(interview => interview.result === selectedFilter.value);
 });
+
+// 상세 정보 모달 관련 상태 추가
+const showDetailModal = ref(false);
+const selectedDetailInterview = ref(null);
+
+// 상세 정보 모달 열기 함수
+const openDetailModal = (interview) => {
+  selectedDetailInterview.value = interview;
+  showDetailModal.value = true;
+};
 </script>
 
 <template>
@@ -224,8 +281,10 @@ const filteredResults = computed(() => {
 
         <div class="border-t pt-4">
           <div class="mb-3">
-            <h4 class="font-medium text-gray-900 mb-1">제안 포지션</h4>
-            <p class="text-gray-600">{{ interview.position }}</p>
+            <h4 class="font-medium text-gray-900 mb-1">직무 · 제안 포지션</h4>
+            <p class="text-gray-600">
+              {{ interview.jobCategory?.label || 'IT개발·데이터' }} | {{ interview.position }}
+            </p>
           </div>
           <div class="mb-3">
             <h4 class="font-medium text-gray-900 mb-1">면접 방식</h4>
@@ -241,7 +300,16 @@ const filteredResults = computed(() => {
           </div>
         </div>
 
-        <div class="mt-4 flex justify-end">
+        <div class="mt-4 flex justify-between items-center">
+          <!-- 상세 정보 보기 버튼 추가 -->
+          <button
+            class="text-[#8B8BF5] hover:text-[#7A7AE6] flex items-center gap-1"
+            @click="openDetailModal(interview)"
+          >
+            <span>상세 정보 보기</span>
+            <i class="pi pi-arrow-right text-sm"></i>
+          </button>
+          
           <Button 
             @click="openResultModal(interview)"
             class="bg-[#8B8BF5] text-white"
@@ -299,6 +367,133 @@ const filteredResults = computed(() => {
           </Button>
         </div>
       </template>
+    </Dialog>
+
+    <!-- 상세 정보 모달 추가 -->
+    <Dialog 
+      v-model:visible="showDetailModal"
+      modal
+      :style="{ width: '80vw', maxHeight: '90vh' }"
+      :header="'제안 당시 이력서 정보'"
+      :closable="true"
+      :closeOnEscape="true"
+    >
+      <div v-if="selectedDetailInterview" class="p-4">
+        <!-- 기본 정보 -->
+        <div class="bg-gray-50 p-6 rounded-lg mb-6">
+          <h3 class="text-lg font-medium mb-4">기본 정보</h3>
+          <div class="grid grid-cols-2 gap-y-4">
+            <div class="flex gap-8">
+              <span class="text-gray-600 w-20">이름</span>
+              <span>{{ selectedDetailInterview.candidate.name }}</span>
+            </div>
+            <div class="flex gap-8">
+              <span class="text-gray-600 w-20">생년월일</span>
+              <span>{{ selectedDetailInterview.candidate.birth || '-' }}</span>
+            </div>
+            <div class="flex gap-8">
+              <span class="text-gray-600 w-20">성별</span>
+              <span>{{ selectedDetailInterview.candidate.gender || '-' }}</span>
+            </div>
+            <div class="flex gap-8">
+              <span class="text-gray-600 w-20">휴대폰</span>
+              <span>{{ selectedDetailInterview.candidate.phone || '-' }}</span>
+            </div>
+            <div class="flex gap-8">
+              <span class="text-gray-600 w-20">이메일</span>
+              <span>{{ selectedDetailInterview.candidate.email || '-' }}</span>
+            </div>
+            <div class="flex gap-8">
+              <span class="text-gray-600 w-20">주소</span>
+              <span>{{ selectedDetailInterview.candidate.address || '-' }}</span>
+            </div>
+            <div class="flex gap-8">
+              <span class="text-gray-600 w-20">경력</span>
+              <span>{{ selectedDetailInterview.candidate.career }}</span>
+            </div>
+            <div class="flex gap-8">
+              <span class="text-gray-600 w-20">학력</span>
+              <span>{{ selectedDetailInterview.candidate.education?.degree || '-' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 국가 -->
+        <div class="bg-gray-50 p-6 rounded-lg mb-6">
+          <h3 class="text-lg font-medium mb-4">국가</h3>
+          <div>
+            <span>{{ selectedDetailInterview.candidate.visaInfo?.country || selectedDetailInterview.candidate.nationality }}</span>
+          </div>
+        </div>
+
+        <!-- 여권 -->
+        <div class="bg-gray-50 p-6 rounded-lg mb-6">
+          <h3 class="text-lg font-medium mb-4">여권</h3>
+          <div v-if="selectedDetailInterview.candidate.passportName || selectedDetailInterview.candidate.visaInfo" class="grid gap-y-4">
+            <div class="flex gap-8">
+              <span class="text-gray-600 w-20">이름</span>
+              <span>{{ selectedDetailInterview.candidate.passportName || '-' }}</span>
+            </div>
+            <div class="flex gap-8">
+              <span class="text-gray-600 w-20">여권번호</span>
+              <span>{{ selectedDetailInterview.candidate.visaInfo?.type || '-' }}</span>
+            </div>
+            <div class="flex gap-8">
+              <span class="text-gray-600 w-20">국적</span>
+              <span>{{ selectedDetailInterview.candidate.visaInfo?.country || selectedDetailInterview.candidate.nationality }}</span>
+            </div>
+            <div class="flex gap-8">
+              <span class="text-gray-600 w-20">만료일</span>
+              <span>{{ selectedDetailInterview.candidate.visaInfo?.expiryDate || '-' }}</span>
+            </div>
+          </div>
+          <div v-else class="text-center text-gray-500">
+            등록된 여권 정보가 없습니다
+          </div>
+        </div>
+
+        <!-- 경력 사항 -->
+        <div class="bg-gray-50 p-6 rounded-lg mb-6">
+          <h3 class="text-lg font-medium mb-4">경력 사항</h3>
+          <div v-if="selectedDetailInterview.candidate.careerHistory?.length">
+            <div v-for="(career, index) in selectedDetailInterview.candidate.careerHistory" 
+              :key="index" 
+              class="mb-4"
+            >
+              <div class="font-medium">{{ career.company }}</div>
+              <div class="text-gray-600">{{ career.period }}</div>
+              <div class="text-gray-600">{{ career.position.replace('/', ' | ') }}</div>
+              <div class="mt-2">{{ career.description }}</div>
+            </div>
+          </div>
+          <div v-else class="text-center text-gray-500">
+            등록된 경력 사항이 없습니다
+          </div>
+        </div>
+
+        <!-- 학력 사항 -->
+        <div class="bg-gray-50 p-6 rounded-lg mb-6">
+          <h3 class="text-lg font-medium mb-4">학력 사항</h3>
+          <div v-if="selectedDetailInterview.candidate.education">
+            <div class="mb-2">{{ selectedDetailInterview.candidate.education.school }}</div>
+            <div class="text-gray-600">{{ selectedDetailInterview.candidate.education.degree || '-' }}</div>
+            <div class="text-gray-600">{{ selectedDetailInterview.candidate.education.major }}</div>
+            <div class="text-gray-600">{{ selectedDetailInterview.candidate.education.period || '-' }}</div>
+            <div>{{ selectedDetailInterview.candidate.education.description || '-' }}</div>
+          </div>
+          <div v-else class="text-center text-gray-500">
+            등록된 학력 사항이 없습니다
+          </div>
+        </div>
+
+        <!-- 자격증 사항 -->
+        <div class="bg-gray-50 p-6 rounded-lg">
+          <h3 class="text-lg font-medium mb-4">자격증 사항</h3>
+          <div class="text-center text-gray-500">
+            등록된 자격증이 없습니다
+          </div>
+        </div>
+      </div>
     </Dialog>
   </div>
 </template> 

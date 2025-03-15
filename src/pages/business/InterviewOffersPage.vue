@@ -265,13 +265,54 @@ const filterOptions = [
   { label: '거절됨', value: 'declined' }
 ];
 
+// 직무 필터 상태 추가
+const selectedJobFilter = ref('all');
+
+// 전체 직무 카테고리 옵션 (TalentSearchPage와 동일하게 사용)
+const jobCategories = [
+  { label: '기획·전략', value: 'planning' },
+  { label: '마케팅·홍보·조사', value: 'marketing' },
+  { label: '회계·세무·재무', value: 'accounting' },
+  { label: '인사·노무·HRD', value: 'hr' },
+  { label: '총무·법무·사무', value: 'admin' },
+  { label: 'IT개발·데이터', value: 'it' },
+  { label: '디자인', value: 'design' },
+  { label: '영업·판매·무역', value: 'sales' },
+  { label: '고객상담·TM', value: 'cs' },
+  { label: '구매·자재·물류', value: 'purchasing' },
+  { label: '상품기획·MD', value: 'md' },
+  { label: '운전·운송·배송', value: 'delivery' },
+  { label: '서비스', value: 'service' },
+  { label: '생산', value: 'production' },
+  { label: '건설·건축', value: 'construction' },
+  { label: '의료', value: 'medical' },
+  { label: '연구·R&D', value: 'research' },
+  { label: '교육', value: 'education' },
+  { label: '미디어·문화·스포츠', value: 'media' },
+  { label: '금융·보험', value: 'finance' },
+  { label: '공공·복지', value: 'public' }
+];
+
 // 필터링된 제안 목록
 const filteredOffers = computed(() => {
-  if (selectedFilter.value === 'all') {
-    return interviewOffers.value;
-  }
-  return interviewOffers.value.filter(offer => offer.status === selectedFilter.value);
+  return interviewOffers.value.filter(offer => {
+    // 상태 필터
+    const statusMatch = selectedFilter.value === 'all' || offer.status === selectedFilter.value;
+    
+    // 직무 필터
+    const jobMatch = selectedJobFilter.value === 'all' || 
+      (offer.jobCategory?.value || 'it') === selectedJobFilter.value;
+
+    return statusMatch && jobMatch;
+  });
 });
+
+// 각 직무별 제안 수를 계산하는 함수
+const getJobCount = (jobValue) => {
+  return interviewOffers.value.filter(offer => 
+    (offer.jobCategory?.value || 'it') === jobValue
+  ).length;
+};
 
 // 상태에 따른 스타일과 텍스트
 const getStatusInfo = (status) => {
@@ -411,29 +452,56 @@ const goToInterviewResults = (offer) => {
       <h1 class="text-3xl font-bold">면접 제안 내역</h1>
     </div>
 
-    <!-- 필터 버튼 그룹 추가 -->
-    <div class="flex gap-2 mb-6">
-      <button
-        v-for="option in filterOptions"
-        :key="option.value"
-        @click="selectedFilter = option.value"
-        :class="[
-          'px-4 py-2 rounded-full text-sm transition-colors',
-          selectedFilter === option.value
-            ? 'bg-[#8B8BF5] text-white'
-            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-        ]"
-      >
-        {{ option.label }}
-        <!-- 각 상태의 개수 표시 -->
-        <span class="ml-1" v-if="option.value !== 'all'">
-          ({{ interviewOffers.filter(offer => offer.status === option.value).length }})
-        </span>
-        <!-- 전체 개수 표시 -->
-        <span class="ml-1" v-else>
-          ({{ interviewOffers.length }})
-        </span>
-      </button>
+    <!-- 필터 섹션 수정 -->
+    <div class="flex flex-col gap-4 mb-6">
+      <!-- 상태 필터 -->
+      <div class="flex gap-2">
+        <button
+          v-for="option in filterOptions"
+          :key="option.value"
+          @click="selectedFilter = option.value"
+          :class="[
+            'px-4 py-2 rounded-full text-sm transition-colors',
+            selectedFilter === option.value
+              ? 'bg-[#8B8BF5] text-white'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          ]"
+        >
+          {{ option.label }}
+          <span class="ml-1">
+            ({{ interviewOffers.filter(offer => option.value === 'all' || offer.status === option.value).length }})
+          </span>
+        </button>
+      </div>
+
+      <!-- 직무 필터를 드롭다운으로 변경 -->
+      <div class="flex items-center gap-2">
+        <label class="text-sm font-medium text-gray-700">직무</label>
+        <Dropdown
+          v-model="selectedJobFilter"
+          :options="[{ label: '전체', value: 'all' }, ...jobCategories]"
+          optionLabel="label"
+          placeholder="직무 선택"
+          class="w-[200px]"
+        >
+          <template #value="slotProps">
+            <div class="flex items-center gap-2">
+              <span>{{ slotProps.value?.label || '전체' }}</span>
+              <span v-if="slotProps.value?.value !== 'all'" class="text-sm text-gray-500">
+                ({{ getJobCount(slotProps.value?.value) }})
+              </span>
+            </div>
+          </template>
+          <template #option="slotProps">
+            <div class="flex items-center justify-between">
+              <span>{{ slotProps.option.label }}</span>
+              <span v-if="slotProps.option.value !== 'all'" class="text-sm text-gray-500">
+                ({{ getJobCount(slotProps.option.value) }})
+              </span>
+            </div>
+          </template>
+        </Dropdown>
+      </div>
     </div>
 
     <!-- 제안 목록 (filteredOffers로 변경) -->
@@ -486,8 +554,10 @@ const goToInterviewResults = (offer) => {
 
         <div class="border-t pt-4">
           <div class="mb-3">
-            <h4 class="font-medium text-gray-900 mb-1">제안 포지션</h4>
-            <p class="text-gray-600">{{ offer.position }}</p>
+            <h4 class="font-medium text-gray-900 mb-1">직무 · 제안 포지션</h4>
+            <p class="text-gray-600">
+              {{ offer.jobCategory?.label || 'IT개발·데이터' }} | {{ offer.position }}
+            </p>
           </div>
           <div class="mb-3">
             <h4 class="font-medium text-gray-900 mb-1">상세 업무</h4>
@@ -560,8 +630,8 @@ const goToInterviewResults = (offer) => {
                 <p class="text-gray-600 ml-4">날짜: {{ date.date }}</p>
                 <p class="text-gray-600 ml-4">시간: {{ date.time }}</p>
               </div>
-              <p class="text-gray-600">방식: {{ offer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}</p>
-              <p class="text-gray-600">장소: {{ offer.interviewLocation }}</p>
+            <p class="text-gray-600">방식: {{ offer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}</p>
+            <p class="text-gray-600">장소: {{ offer.interviewLocation }}</p>
             </div>
           </div>
         </div>
@@ -677,7 +747,7 @@ const goToInterviewResults = (offer) => {
             <div class="text-gray-600">{{ career.jobCategory?.label || 'IT개발·데이터' }} | {{ career.position.replace('/', ' | ') }}</div>
             <div class="mt-2">{{ career.description }}</div>
           </div>
-        </div>
+            </div>
 
         <!-- 학력 사항 -->
         <div class="bg-gray-50 p-6 rounded-lg mb-6">
