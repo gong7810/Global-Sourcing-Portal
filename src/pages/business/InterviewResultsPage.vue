@@ -168,9 +168,13 @@ const getResultInfo = (result) => {
             <h4 class="font-medium text-gray-900 mb-1">면접 방식</h4>
             <p class="text-gray-600">{{ interview.interviewType === 'online' ? '화상 면접' : '대면 면접' }}</p>
           </div>
+          <div v-if="interview.updatedAt" class="mb-3">
+            <h4 class="font-medium text-gray-900 mb-1">결과 발표일</h4>
+            <p class="text-gray-600">{{ interview.updatedAt }}</p>
+          </div>
           <div>
             <h4 class="font-medium text-gray-900 mb-1">면접 피드백</h4>
-            <p class="text-gray-600">{{ interview.feedback }}</p>
+            <p class="text-gray-600">{{ interview.feedback || '아직 입력된 피드백이 없습니다.' }}</p>
           </div>
         </div>
 

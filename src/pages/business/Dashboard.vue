@@ -115,6 +115,25 @@ const bookmarkedTalents = ref([
           <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">면접 제안 내역</span>
         </div>
 
+        <!-- 면접 결과 내역 -->
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/InterviewResults')">
+          <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#8B8BF5"
+              stroke-width="2.5"
+              class="transition-all duration-200 group-hover:stroke-white"
+            >
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">면접 결과 내역</span>
+        </div>
+
         <!-- 기업 정보 -->
         <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/CompanyInfoPage')">
           <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">

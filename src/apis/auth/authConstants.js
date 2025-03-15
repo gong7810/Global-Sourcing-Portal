@@ -27,5 +27,6 @@ export const AUTH_EXCLUSIONS_ROUTER_NAME = [
   'AdminFaq',
   'admin',
   'AdminUserMng',
-  'InterviewResults'
+  'InterviewResults',
+  'JobSeekerInterviews'
 ];
