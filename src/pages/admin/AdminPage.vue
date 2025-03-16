@@ -3,7 +3,8 @@ import { ref } from 'vue'
 
 const menuItems = ref([
     { label: '사용자 관리', icon: 'pi pi-users', to: '/admin/users' },
-    { label: 'FAQ 관리', icon: 'pi pi-question-circle', to: '/admin/faq' }
+    { label: 'FAQ 관리', icon: 'pi pi-question-circle', to: '/admin/faq' },
+    { label: '기업회원 신청', icon: 'pi pi-briefcase', to: '/admin/businessApplications' }
     // { label: '대시보드', icon: 'pi pi-home', to: '/admin' },
     // { label: '설정', icon: 'pi pi-cog', to: '/admin/settings' }
 ])

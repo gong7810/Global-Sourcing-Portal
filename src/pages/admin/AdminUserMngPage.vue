@@ -148,7 +148,8 @@ const getStatusStyle = (status) => {
 // 사이드바 메뉴 아이템
 const menuItems = ref([
     { label: '사용자 관리', icon: 'pi pi-users', to: '/admin/users' },
-    { label: 'FAQ 관리', icon: 'pi pi-question-circle', to: '/admin/faq' }
+    { label: 'FAQ 관리', icon: 'pi pi-question-circle', to: '/admin/faq' },
+    { label: '기업회원 신청', icon: 'pi pi-briefcase', to: '/admin/businessApplications' }
 ]);
 
 // 뒤로가기 함수
