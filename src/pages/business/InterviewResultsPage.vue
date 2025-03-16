@@ -195,6 +195,39 @@ const openDetailModal = (interview) => {
   selectedDetailInterview.value = interview;
   showDetailModal.value = true;
 };
+
+// 샘플 파일 정보 추가
+const sampleFiles = {
+  passport: {
+    name: '여권사본.pdf',
+    size: '2.1MB',
+    exists: true
+  },
+  career: {
+    name: '경력증명서.pdf',
+    size: '1.5MB',
+    exists: false // 파일 없음
+  },
+  education: {
+    name: '졸업증명서.pdf',
+    size: '1.8MB',
+    exists: true
+  },
+  certificate: {
+    name: '자격증.pdf',
+    size: '1.2MB',
+    exists: false // 파일 없음
+  }
+};
+
+// 파일 다운로드 함수
+const downloadFile = (fileType, fileInfo) => {
+  if (!fileInfo.exists) {
+    alert('업로드된 파일이 없습니다.');
+    return;
+  }
+  alert(`${fileType} 파일 다운로드 시도\n파일명: ${fileInfo.name}\n(실제 다운로드는 백엔드 연동 후 구현 예정)`);
+};
 </script>
 
 <template>
@@ -428,7 +461,23 @@ const openDetailModal = (interview) => {
         </div>
 
         <div class="bg-gray-50 p-6 rounded-lg mb-6">
-          <h3 class="text-lg font-bold mb-4">여권</h3>
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold">여권</h3>
+            <div>
+              <button
+                v-if="sampleFiles.passport.exists"
+                @click="downloadFile('여권', sampleFiles.passport)"
+                class="flex items-center gap-2 text-[#8B8BF5] hover:text-[#7A7AE6]"
+              >
+                <i class="pi pi-download"></i>
+                <span>파일 다운로드</span>
+                <span class="text-sm text-gray-500">({{ sampleFiles.passport.size }})</span>
+              </button>
+              <span v-else class="text-sm text-gray-500">
+                업로드된 파일 없음
+              </span>
+            </div>
+          </div>
           <div v-if="selectedDetailInterview.candidate.passportName || selectedDetailInterview.candidate.visaInfo" class="grid gap-y-4">
             <div class="flex gap-8">
               <span class="text-gray-600 w-20">이름</span>
@@ -453,7 +502,23 @@ const openDetailModal = (interview) => {
         </div>
 
         <div class="bg-gray-50 p-6 rounded-lg mb-6">
-          <h3 class="text-lg font-bold mb-4">경력 사항</h3>
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold">경력 사항</h3>
+            <div>
+              <button
+                v-if="sampleFiles.career.exists"
+                @click="downloadFile('경력증명서', sampleFiles.career)"
+                class="flex items-center gap-2 text-[#8B8BF5] hover:text-[#7A7AE6]"
+              >
+                <i class="pi pi-download"></i>
+                <span>파일 다운로드</span>
+                <span class="text-sm text-gray-500">({{ sampleFiles.career.size }})</span>
+              </button>
+              <span v-else class="text-sm text-gray-500">
+                업로드된 파일 없음
+              </span>
+            </div>
+          </div>
           <div v-if="selectedDetailInterview.candidate.careerHistory?.length">
             <div v-for="(career, index) in selectedDetailInterview.candidate.careerHistory" 
               :key="index" 
@@ -471,7 +536,23 @@ const openDetailModal = (interview) => {
         </div>
 
         <div class="bg-gray-50 p-6 rounded-lg mb-6">
-          <h3 class="text-lg font-bold mb-4">학력 사항</h3>
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold">학력 사항</h3>
+            <div>
+              <button
+                v-if="sampleFiles.education.exists"
+                @click="downloadFile('졸업증명서', sampleFiles.education)"
+                class="flex items-center gap-2 text-[#8B8BF5] hover:text-[#7A7AE6]"
+              >
+                <i class="pi pi-download"></i>
+                <span>파일 다운로드</span>
+                <span class="text-sm text-gray-500">({{ sampleFiles.education.size }})</span>
+              </button>
+              <span v-else class="text-sm text-gray-500">
+                업로드된 파일 없음
+              </span>
+            </div>
+          </div>
           <div v-if="selectedDetailInterview.candidate.education">
             <div class="mb-2">{{ selectedDetailInterview.candidate.education.school }}</div>
             <div class="text-gray-600">{{ selectedDetailInterview.candidate.education.degree || '-' }}</div>
@@ -485,7 +566,23 @@ const openDetailModal = (interview) => {
         </div>
 
         <div class="bg-gray-50 p-6 rounded-lg">
-          <h3 class="text-lg font-bold mb-4">자격증 사항</h3>
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold">자격증 사항</h3>
+            <div>
+              <button
+                v-if="sampleFiles.certificate.exists"
+                @click="downloadFile('자격증', sampleFiles.certificate)"
+                class="flex items-center gap-2 text-[#8B8BF5] hover:text-[#7A7AE6]"
+              >
+                <i class="pi pi-download"></i>
+                <span>파일 다운로드</span>
+                <span class="text-sm text-gray-500">({{ sampleFiles.certificate.size }})</span>
+              </button>
+              <span v-else class="text-sm text-gray-500">
+                업로드된 파일 없음
+              </span>
+            </div>
+          </div>
           <div class="text-center text-gray-500">
             등록된 자격증이 없습니다
           </div>
