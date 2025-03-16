@@ -2,9 +2,10 @@
 import { ref } from 'vue'
 
 const menuItems = ref([
-    { label: '대시보드', icon: 'pi pi-home', to: '/admin' },
     { label: '사용자 관리', icon: 'pi pi-users', to: '/admin/users' },
-    { label: '설정', icon: 'pi pi-cog', to: '/admin/settings' }
+    { label: 'FAQ 관리', icon: 'pi pi-question-circle', to: '/admin/faq' }
+    // { label: '대시보드', icon: 'pi pi-home', to: '/admin' },
+    // { label: '설정', icon: 'pi pi-cog', to: '/admin/settings' }
 ])
 </script>
 
@@ -12,14 +13,13 @@ const menuItems = ref([
     <div class="admin-layout">
         <!-- 사이드바 -->
         <div class="admin-sidebar">
-            <div class="logo">
-                <h2>관리자 페이지</h2>
-            </div>
             <ul class="menu-list">
                 <li v-for="item in menuItems" :key="item.label" class="menu-item">
-                    <router-link :to="item.to" class="menu-link">
-                        <i :class="item.icon"></i>
-                        <span>{{ item.label }}</span>
+                    <router-link :to="item.to" class="menu-link" v-slot="{ isActive }">
+                        <div :class="['menu-link-content', { 'active': isActive }]">
+                            <i :class="[item.icon, 'text-xl']"></i>
+                            <span>{{ item.label }}</span>
+                        </div>
                     </router-link>
                 </li>
             </ul>
@@ -29,27 +29,37 @@ const menuItems = ref([
         <div class="admin-content">
             <header class="admin-header">
                 <div class="header-content">
-                    <h1>관리자 대시보드</h1>
+                    <div class="flex items-center gap-2">
+                        <i class="pi pi-shield text-[#8B8BF5] text-2xl"></i>
+                        <h1 class="text-xl font-bold text-gray-800">관리자 페이지</h1>
+                    </div>
                     <div class="user-info">
-                        <span>관리자</span>
+                        <span class="text-gray-600">관리자</span>
+                        <i class="pi pi-user ml-2 text-gray-600"></i>
                     </div>
                 </div>
             </header>
             
             <main class="admin-main">
                 <div class="dashboard-cards">
-                    <div class="card">
-                        <h3>총 사용자</h3>
-                        <p>0명</p>
-                    </div>
-                    <div class="card">
-                        <h3>오늘의 방문자</h3>
-                        <p>0명</p>
-                    </div>
-                    <div class="card">
-                        <h3>신규 가입자</h3>
-                        <p>0명</p>
-                    </div>
+                    <router-link to="/admin/users" class="card">
+                        <div class="card-content">
+                            <i class="pi pi-users text-[#8B8BF5] text-4xl"></i>
+                            <div class="card-text">
+                                <h3>사용자 관리</h3>
+                                <p class="text-gray-600">사용자 목록 및 관리</p>
+                            </div>
+                        </div>
+                    </router-link>
+                    <router-link to="/admin/faq" class="card">
+                        <div class="card-content">
+                            <i class="pi pi-question-circle text-[#8B8BF5] text-4xl"></i>
+                            <div class="card-text">
+                                <h3>FAQ 관리</h3>
+                                <p class="text-gray-600">자주 묻는 질문 관리</p>
+                            </div>
+                        </div>
+                    </router-link>
                 </div>
             </main>
         </div>
@@ -64,39 +74,43 @@ const menuItems = ref([
 
 .admin-sidebar {
     width: 250px;
-    background-color: #2c3e50;
-    color: white;
-    padding: 1rem;
-
-    .logo {
-        padding: 1rem 0;
-        text-align: center;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
+    background-color: white;
+    border-right: 1px solid #e5e7eb;
+    padding: 1.5rem 1rem;
+    padding-top: 2rem;
 
     .menu-list {
         list-style: none;
         padding: 0;
-        margin: 1rem 0;
+        margin: 0;
 
         .menu-item {
             margin: 0.5rem 0;
 
             .menu-link {
-                display: flex;
-                align-items: center;
-                padding: 0.75rem 1rem;
-                color: white;
                 text-decoration: none;
-                border-radius: 4px;
-                transition: background-color 0.3s;
+                
+                .menu-link-content {
+                    display: flex;
+                    align-items: center;
+                    padding: 0.75rem 1rem;
+                    color: #4b5563;
+                    border-radius: 8px;
+                    transition: all 0.3s;
 
-                &:hover {
-                    background-color: rgba(255, 255, 255, 0.1);
-                }
+                    i {
+                        margin-right: 0.75rem;
+                    }
 
-                i {
-                    margin-right: 0.5rem;
+                    &:hover {
+                        background-color: #f3f4f6;
+                        color: #8B8BF5;
+                    }
+
+                    &.active {
+                        background-color: #8B8BF5;
+                        color: white;
+                    }
                 }
             }
         }
@@ -105,13 +119,13 @@ const menuItems = ref([
 
 .admin-content {
     flex: 1;
-    background-color: #f5f6fa;
+    background-color: #f9fafb;
 }
 
 .admin-header {
     background-color: white;
     padding: 1rem 2rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid #e5e7eb;
 
     .header-content {
         display: flex;
@@ -126,27 +140,48 @@ const menuItems = ref([
 
 .dashboard-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-top: 2rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+    margin-top: 1rem;
 
     .card {
         background-color: white;
-        padding: 1.5rem;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-
-        h3 {
-            margin: 0;
-            color: #2c3e50;
-            font-size: 1rem;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
+        text-decoration: none;
+        height: 200px;
+        
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
-        p {
-            margin: 0.5rem 0 0;
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #3498db;
+        .card-content {
+            height: 100%;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+
+            .card-text {
+                text-align: center;
+
+                h3 {
+                    margin: 0;
+                    color: #1f2937;
+                    font-size: 1.25rem;
+                    font-weight: bold;
+                    margin-bottom: 0.5rem;
+                }
+
+                p {
+                    margin: 0;
+                    font-size: 0.875rem;
+                }
+            }
         }
     }
 }

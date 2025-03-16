@@ -3,6 +3,9 @@ import { ref, computed } from 'vue';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import Dropdown from 'primevue/dropdown';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 // 사용자 상태 정의
 const USER_STATUS = {
@@ -141,153 +144,190 @@ const getStatusStyle = (status) => {
             return 'bg-gray-100 text-gray-800';
     }
 };
+
+// 사이드바 메뉴 아이템
+const menuItems = ref([
+    { label: '사용자 관리', icon: 'pi pi-users', to: '/admin/users' },
+    { label: 'FAQ 관리', icon: 'pi pi-question-circle', to: '/admin/faq' }
+]);
+
+// 뒤로가기 함수
+const goBack = () => {
+    router.push('/admin');
+};
 </script>
 
 <template>
-    <div class="admin-user-mng-page">
-        <div class="page-header">
-            <h1>회원 관리</h1>
+    <div class="admin-layout">
+        <!-- 사이드바 -->
+        <div class="admin-sidebar">
+            <ul class="menu-list">
+                <li v-for="item in menuItems" :key="item.label" class="menu-item">
+                    <router-link :to="item.to" class="menu-link" v-slot="{ isActive }">
+                        <div :class="['menu-link-content', { 'active': isActive }]">
+                            <i :class="[item.icon, 'text-xl']"></i>
+                            <span>{{ item.label }}</span>
+                        </div>
+                    </router-link>
+                </li>
+            </ul>
         </div>
 
-        <!-- 검색 및 필터 -->
-        <div class="search-filter-section">
-            <div class="search-box">
-                <input 
-                    v-model="searchQuery" 
-                    type="text" 
-                    class="search-input" 
-                    placeholder="이름 또는 이메일로 검색" 
-                />
-            </div>
-            <div class="filter-box">
-                <Dropdown
-                    v-model="selectedStatus"
-                    :options="statusOptions"
-                    optionLabel="label"
-                    optionValue="value"
-                    placeholder="상태별 필터"
-                    class="w-full md:w-14rem"
-                />
-            </div>
-        </div>
-
-        <!-- 사용자 목록 -->
-        <div class="user-list">
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>이름</th>
-                            <th>이메일</th>
-                            <th>회원구분</th>
-                            <th>상태</th>
-                            <th>최근 로그인</th>
-                            <th>가입일</th>
-                            <th>관리</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="user in filteredUsers" :key="user.id">
-                            <td>{{ user.name }}</td>
-                            <td>{{ user.email }}</td>
-                            <td>{{ user.role }}</td>
-                            <td>
-                                <span :class="['status-badge', getStatusStyle(user.status)]">
-                                    {{ user.status }}
-                                </span>
-                            </td>
-                            <td>{{ user.lastLogin }}</td>
-                            <td>{{ user.joinDate }}</td>
-                            <td>
-                                <Button 
-                                    icon="pi pi-cog" 
-                                    class="p-button-text" 
-                                    @click="openStatusModal(user)"
-                                />
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- 상태 변경 모달 -->
-        <div v-if="showStatusModal" class="modal-overlay">
-            <div class="modal-content">
-                <h2>계정 상태 변경</h2>
-                <div class="user-info">
-                    <p><strong>이름:</strong> {{ selectedUser?.name }}</p>
-                    <p><strong>이메일:</strong> {{ selectedUser?.email }}</p>
-                    <p><strong>현재 상태:</strong> {{ selectedUser?.status }}</p>
+        <!-- 메인 컨텐츠 -->
+        <div class="admin-content">
+            <div class="admin-user-mng-page">
+                <div class="page-header">
+                    <div class="header-content">
+                        <Button 
+                            icon="pi pi-arrow-left" 
+                            class="p-button-text p-button-rounded" 
+                            @click="goBack"
+                        />
+                        <h1>사용자 관리</h1>
+                    </div>
                 </div>
 
-                <!-- 상태 변경 이력 -->
-                <div class="status-history" v-if="selectedUser?.statusHistory?.length">
-                    <h3>상태 변경 이력</h3>
-                    <div class="history-list">
-                        <div v-for="(history, index) in selectedUser.statusHistory.slice(0, 3)" 
-                             :key="index" 
-                             class="history-item">
-                            <div class="history-status">
-                                <span :class="['status-badge', getStatusStyle(history.status)]">
-                                    {{ history.status }}
-                                </span>
-                            </div>
-                            <div class="history-details">
-                                <p class="history-reason">{{ history.reason }}</p>
-                                <p class="history-date">{{ history.date }} ({{ history.by }})</p>
+                <!-- 검색 및 필터 -->
+                <div class="search-filter-section">
+                    <div class="search-box">
+                        <input 
+                            v-model="searchQuery" 
+                            type="text" 
+                            class="search-input" 
+                            placeholder="이름 또는 이메일로 검색" 
+                        />
+                    </div>
+                    <div class="filter-box">
+                        <Dropdown
+                            v-model="selectedStatus"
+                            :options="statusOptions"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="상태별 필터"
+                            class="w-full md:w-14rem"
+                        />
+                    </div>
+                </div>
+
+                <!-- 사용자 목록 -->
+                <div class="user-list">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>이름</th>
+                                    <th>이메일</th>
+                                    <th>회원구분</th>
+                                    <th>상태</th>
+                                    <th>최근 로그인</th>
+                                    <th>가입일</th>
+                                    <th>관리</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="user in filteredUsers" :key="user.id">
+                                    <td>{{ user.name }}</td>
+                                    <td>{{ user.email }}</td>
+                                    <td>{{ user.role }}</td>
+                                    <td>
+                                        <span :class="['status-badge', getStatusStyle(user.status)]">
+                                            {{ user.status }}
+                                        </span>
+                                    </td>
+                                    <td>{{ user.lastLogin }}</td>
+                                    <td>{{ user.joinDate }}</td>
+                                    <td>
+                                        <Button 
+                                            icon="pi pi-cog" 
+                                            class="p-button-text" 
+                                            @click="openStatusModal(user)"
+                                        />
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 상태 변경 모달 -->
+                <div v-if="showStatusModal" class="modal-overlay">
+                    <div class="modal-content">
+                        <h2>계정 상태 변경</h2>
+                        <div class="user-info">
+                            <p><strong>이름:</strong> {{ selectedUser?.name }}</p>
+                            <p><strong>이메일:</strong> {{ selectedUser?.email }}</p>
+                            <p><strong>현재 상태:</strong> {{ selectedUser?.status }}</p>
+                        </div>
+
+                        <!-- 상태 변경 이력 -->
+                        <div class="status-history" v-if="selectedUser?.statusHistory?.length">
+                            <h3>상태 변경 이력</h3>
+                            <div class="history-list">
+                                <div v-for="(history, index) in selectedUser.statusHistory.slice(0, 3)" 
+                                     :key="index" 
+                                     class="history-item">
+                                    <div class="history-status">
+                                        <span :class="['status-badge', getStatusStyle(history.status)]">
+                                            {{ history.status }}
+                                        </span>
+                                    </div>
+                                    <div class="history-details">
+                                        <p class="history-reason">{{ history.reason }}</p>
+                                        <p class="history-date">{{ history.date }} ({{ history.by }})</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                        
+                        <div class="form-group">
+                            <label>변경할 상태</label>
+                            <div class="status-buttons">
+                                <Button 
+                                    :label="USER_STATUS.ACTIVE" 
+                                    class="p-button-success" 
+                                    :outlined="selectedNewStatus !== USER_STATUS.ACTIVE"
+                                    @click="selectStatus(USER_STATUS.ACTIVE)"
+                                />
+                                <Button 
+                                    :label="USER_STATUS.SUSPENDED" 
+                                    class="p-button-danger" 
+                                    :outlined="selectedNewStatus !== USER_STATUS.SUSPENDED"
+                                    @click="selectStatus(USER_STATUS.SUSPENDED)"
+                                />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>변경 사유</label>
+                            <textarea 
+                                v-model="statusReason" 
+                                class="form-input" 
+                                rows="3"
+                                :placeholder="'상태 변경 사유를 입력하세요'"
+                                required
+                            ></textarea>
+                        </div>
+
+                        <div v-if="selectedNewStatus === USER_STATUS.SUSPENDED" class="form-group">
+                            <label>정지 기간</label>
+                            <input 
+                                type="date" 
+                                v-model="suspendEndDate" 
+                                class="form-input"
+                                required
+                            />
+                        </div>
+
+                        <div class="modal-actions">
+                            <Button label="취소" class="p-button-text" @click="closeStatusModal" />
+                            <Button 
+                                label="변경" 
+                                class="p-button-primary" 
+                                :disabled="!statusReason || !selectedNewStatus || (selectedNewStatus === USER_STATUS.SUSPENDED && !suspendEndDate)"
+                                @click="updateUserStatus"
+                            />
+                        </div>
                     </div>
-                </div>
-                
-                <div class="form-group">
-                    <label>변경할 상태</label>
-                    <div class="status-buttons">
-                        <Button 
-                            :label="USER_STATUS.ACTIVE" 
-                            class="p-button-success" 
-                            :outlined="selectedNewStatus !== USER_STATUS.ACTIVE"
-                            @click="selectStatus(USER_STATUS.ACTIVE)"
-                        />
-                        <Button 
-                            :label="USER_STATUS.SUSPENDED" 
-                            class="p-button-danger" 
-                            :outlined="selectedNewStatus !== USER_STATUS.SUSPENDED"
-                            @click="selectStatus(USER_STATUS.SUSPENDED)"
-                        />
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>변경 사유</label>
-                    <textarea 
-                        v-model="statusReason" 
-                        class="form-input" 
-                        rows="3"
-                        :placeholder="'상태 변경 사유를 입력하세요'"
-                        required
-                    ></textarea>
-                </div>
-
-                <div v-if="selectedNewStatus === USER_STATUS.SUSPENDED" class="form-group">
-                    <label>정지 기간</label>
-                    <input 
-                        type="date" 
-                        v-model="suspendEndDate" 
-                        class="form-input"
-                        required
-                    />
-                </div>
-
-                <div class="modal-actions">
-                    <Button label="취소" class="p-button-text" @click="closeStatusModal" />
-                    <Button 
-                        label="변경" 
-                        class="p-button-primary" 
-                        :disabled="!statusReason || !selectedNewStatus || (selectedNewStatus === USER_STATUS.SUSPENDED && !suspendEndDate)"
-                        @click="updateUserStatus"
-                    />
                 </div>
             </div>
         </div>
@@ -295,16 +335,86 @@ const getStatusStyle = (status) => {
 </template>
 
 <style lang="scss" scoped>
+.admin-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.admin-sidebar {
+    width: 250px;
+    background-color: white;
+    border-right: 1px solid #e5e7eb;
+    padding: 1.5rem 1rem;
+    padding-top: 2rem;
+
+    .menu-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        .menu-item {
+            margin: 0.5rem 0;
+
+            .menu-link {
+                text-decoration: none;
+                
+                .menu-link-content {
+                    display: flex;
+                    align-items: center;
+                    padding: 0.75rem 1rem;
+                    color: #4b5563;
+                    border-radius: 8px;
+                    transition: all 0.3s;
+
+                    i {
+                        margin-right: 0.75rem;
+                    }
+
+                    &:hover {
+                        background-color: #f3f4f6;
+                        color: #8B8BF5;
+                    }
+
+                    &.active {
+                        background-color: #8B8BF5;
+                        color: white;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.admin-content {
+    flex: 1;
+    background-color: #f9fafb;
+}
+
 .admin-user-mng-page {
     padding: 2rem;
 
     .page-header {
         margin-bottom: 2rem;
 
-        h1 {
-            margin: 0;
-            font-size: 1.5rem;
-            color: #2c3e50;
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            h1 {
+                margin: 0;
+                font-size: 1.5rem;
+                color: #2c3e50;
+            }
+
+            :deep(.p-button.p-button-text) {
+                color: #2c3e50;
+                padding: 0.5rem;
+
+                &:hover {
+                    background-color: #f3f4f6;
+                }
+            }
         }
     }
 

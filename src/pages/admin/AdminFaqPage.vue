@@ -3,6 +3,8 @@ import { ref, computed } from 'vue';
 import Button from 'primevue/button';
 import { useRouter } from 'vue-router';
 
+const router = useRouter();
+
 const faqItems = ref([
     {
         id: 1,
@@ -110,68 +112,105 @@ const deleteFaq = (id) => {
         faqItems.value = faqItems.value.filter(item => item.id !== id);
     }
 };
+
+// 사이드바 메뉴 아이템
+const menuItems = ref([
+    { label: '사용자 관리', icon: 'pi pi-users', to: '/admin/users' },
+    { label: 'FAQ 관리', icon: 'pi pi-question-circle', to: '/admin/faq' }
+]);
+
+// 뒤로가기 함수
+const goBack = () => {
+    router.push('/admin');
+};
 </script>
 
 <template>
-    <div class="admin-faq-page">
-        <div class="page-header">
-            <h1>FAQ 관리</h1>
-            <Button label="새 FAQ 추가" icon="pi pi-plus" class="p-button-primary" @click="showAddModal = true" />
+    <div class="admin-layout">
+        <!-- 사이드바 -->
+        <div class="admin-sidebar">
+            <ul class="menu-list">
+                <li v-for="item in menuItems" :key="item.label" class="menu-item">
+                    <router-link :to="item.to" class="menu-link" v-slot="{ isActive }">
+                        <div :class="['menu-link-content', { 'active': isActive }]">
+                            <i :class="[item.icon, 'text-xl']"></i>
+                            <span>{{ item.label }}</span>
+                        </div>
+                    </router-link>
+                </li>
+            </ul>
         </div>
 
-        <!-- 카테고리 필터 -->
-        <div class="category-filter">
-            <div v-for="category in categories" 
-                 :key="category"
-                 :class="['category-item', { active: selectedCategory === category }]"
-                 @click="selectedCategory = category">
-                {{ category }}
-            </div>
-        </div>
+        <!-- 메인 컨텐츠 -->
+        <div class="admin-content">
+            <div class="admin-faq-page">
+                <div class="page-header">
+                    <div class="header-left">
+                        <Button 
+                            icon="pi pi-arrow-left" 
+                            class="p-button-text p-button-rounded" 
+                            @click="goBack"
+                        />
+                        <h1>FAQ 관리</h1>
+                    </div>
+                    <Button label="새 FAQ 추가" icon="pi pi-plus" class="p-button-primary" @click="showAddModal = true" />
+                </div>
 
-        <!-- FAQ 목록 -->
-        <div class="faq-list">
-            <div v-for="item in filteredFaqs" 
-                 :key="item.id" 
-                 class="faq-item">
-                <div class="faq-header" @click="toggleFaq(item.id)">
-                    <div class="faq-category">{{ item.category }}</div>
-                    <div class="faq-question">{{ item.question }}</div>
-                    <i :class="['pi', item.isExpanded ? 'pi-chevron-up' : 'pi-chevron-down']"></i>
+                <!-- 카테고리 필터 -->
+                <div class="category-filter">
+                    <div v-for="category in categories" 
+                         :key="category"
+                         :class="['category-item', { active: selectedCategory === category }]"
+                         @click="selectedCategory = category">
+                        {{ category }}
+                    </div>
                 </div>
-                <div v-if="item.isExpanded" class="faq-answer">
-                    {{ item.answer }}
-                </div>
-                <div class="faq-actions">
-                    <Button icon="pi pi-pencil" class="p-button-text" @click="openEditModal(item)" />
-                    <Button icon="pi pi-trash" class="p-button-text p-button-danger" @click="deleteFaq(item.id)" />
-                </div>
-            </div>
-        </div>
 
-        <!-- FAQ 추가/수정 모달 -->
-        <div v-if="showAddModal" class="modal-overlay">
-            <div class="modal-content">
-                <h2>{{ isEditMode ? 'FAQ 수정' : '새 FAQ 추가' }}</h2>
-                <div class="form-group">
-                    <label>질문</label>
-                    <input v-model="newFaq.question" type="text" class="form-input" />
+                <!-- FAQ 목록 -->
+                <div class="faq-list">
+                    <div v-for="item in filteredFaqs" 
+                         :key="item.id" 
+                         class="faq-item">
+                        <div class="faq-header" @click="toggleFaq(item.id)">
+                            <div class="faq-category">{{ item.category }}</div>
+                            <div class="faq-question">{{ item.question }}</div>
+                            <i :class="['pi', item.isExpanded ? 'pi-chevron-up' : 'pi-chevron-down']"></i>
+                        </div>
+                        <div v-if="item.isExpanded" class="faq-answer">
+                            {{ item.answer }}
+                        </div>
+                        <div class="faq-actions">
+                            <Button icon="pi pi-pencil" class="p-button-text" @click="openEditModal(item)" />
+                            <Button icon="pi pi-trash" class="p-button-text p-button-danger" @click="deleteFaq(item.id)" />
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>답변</label>
-                    <textarea v-model="newFaq.answer" class="form-input" rows="4"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>카테고리</label>
-                    <select v-model="newFaq.category" class="form-input">
-                        <option v-for="category in categories.slice(1)" :key="category" :value="category">
-                            {{ category }}
-                        </option>
-                    </select>
-                </div>
-                <div class="modal-actions">
-                    <Button label="취소" class="p-button-text" @click="closeModal" />
-                    <Button :label="isEditMode ? '수정' : '추가'" class="p-button-primary" @click="addFaq" />
+
+                <!-- FAQ 추가/수정 모달 -->
+                <div v-if="showAddModal" class="modal-overlay">
+                    <div class="modal-content">
+                        <h2>{{ isEditMode ? 'FAQ 수정' : '새 FAQ 추가' }}</h2>
+                        <div class="form-group">
+                            <label>질문</label>
+                            <input v-model="newFaq.question" type="text" class="form-input" />
+                        </div>
+                        <div class="form-group">
+                            <label>답변</label>
+                            <textarea v-model="newFaq.answer" class="form-input" rows="4"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>카테고리</label>
+                            <select v-model="newFaq.category" class="form-input">
+                                <option v-for="category in categories.slice(1)" :key="category" :value="category">
+                                    {{ category }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="modal-actions">
+                            <Button label="취소" class="p-button-text" @click="closeModal" />
+                            <Button :label="isEditMode ? '수정' : '추가'" class="p-button-primary" @click="addFaq" />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -179,6 +218,61 @@ const deleteFaq = (id) => {
 </template>
 
 <style lang="scss" scoped>
+.admin-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+.admin-sidebar {
+    width: 250px;
+    background-color: white;
+    border-right: 1px solid #e5e7eb;
+    padding: 1.5rem 1rem;
+    padding-top: 2rem;
+
+    .menu-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+
+        .menu-item {
+            margin: 0.5rem 0;
+
+            .menu-link {
+                text-decoration: none;
+                
+                .menu-link-content {
+                    display: flex;
+                    align-items: center;
+                    padding: 0.75rem 1rem;
+                    color: #4b5563;
+                    border-radius: 8px;
+                    transition: all 0.3s;
+
+                    i {
+                        margin-right: 0.75rem;
+                    }
+
+                    &:hover {
+                        background-color: #f3f4f6;
+                        color: #8B8BF5;
+                    }
+
+                    &.active {
+                        background-color: #8B8BF5;
+                        color: white;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.admin-content {
+    flex: 1;
+    background-color: #f9fafb;
+}
+
 .admin-faq-page {
     padding: 2rem;
 
@@ -188,10 +282,25 @@ const deleteFaq = (id) => {
         align-items: center;
         margin-bottom: 2rem;
 
-        h1 {
-            margin: 0;
-            font-size: 1.5rem;
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            h1 {
+                margin: 0;
+                font-size: 1.5rem;
+                color: #2c3e50;
+            }
+        }
+
+        :deep(.p-button.p-button-text) {
             color: #2c3e50;
+            padding: 0.5rem;
+
+            &:hover {
+                background-color: #f3f4f6;
+            }
         }
     }
 
