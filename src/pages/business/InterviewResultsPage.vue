@@ -327,7 +327,7 @@ const openDetailModal = (interview) => {
     <Dialog 
       v-model:visible="showResultModal"
       modal
-      header="면접 결과 수정"
+      :header="selectedInterview?.result === null ? '면접 결과 입력' : '면접 결과 수정'"
       :style="{ width: '500px' }"
     >
       <div class="p-4 space-y-4">
@@ -366,7 +366,7 @@ const openDetailModal = (interview) => {
             @click="saveResult"
             class="bg-[#8B8BF5]"
           >
-            저장
+            {{ selectedInterview?.result === null ? '입력' : '수정' }}
           </Button>
         </div>
       </template>
