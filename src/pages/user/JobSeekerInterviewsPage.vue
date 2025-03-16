@@ -151,27 +151,29 @@ const isInterviewCompleted = (interview) => {
 
         <!-- 면접 정보 -->
         <div class="border-t pt-4">
-          <div class="mb-3">
-            <h4 class="font-medium text-gray-900 mb-1">직무 · 제안 포지션</h4>
+          <div class="mb-4">
+            <h4 class="text-base font-bold text-gray-900 mb-2">직무 · 제안 포지션</h4>
             <p class="text-gray-600">
               {{ interview.jobCategory?.label || 'IT개발·데이터' }} | {{ interview.position }}
             </p>
           </div>
           
-          <div class="mb-3">
-            <h4 class="font-medium text-gray-900 mb-1">면접 일시</h4>
+          <div class="mb-4">
+            <h4 class="text-base font-bold text-gray-900 mb-2">면접 일시</h4>
             <p class="text-gray-600">{{ interview.interviewDate }}</p>
           </div>
-          <div class="mb-3">
-            <h4 class="font-medium text-gray-900 mb-1">면접 방식</h4>
+
+          <div class="mb-4">
+            <h4 class="text-base font-bold text-gray-900 mb-2">면접 방식</h4>
             <p class="text-gray-600">
               {{ interview.interviewType === 'online' ? '화상 면접' : '대면 면접' }}
             </p>
           </div>
+
           <!-- 합격/불합격 피드백 표시 -->
           <div v-if="interview.result && interview.result !== 'pending' && interview.feedback">
-            <h4 class="font-medium text-gray-900 mb-1">피드백</h4>
-            <p class="text-gray-600">{{ interview.feedback }}</p>
+            <h4 class="text-base font-bold text-gray-900 mb-2">피드백</h4>
+            <p class="text-gray-600 whitespace-pre-line">{{ interview.feedback }}</p>
           </div>
         </div>
       </div>

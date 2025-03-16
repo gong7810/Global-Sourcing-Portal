@@ -553,18 +553,20 @@ const goToInterviewResults = (offer) => {
         </div>
 
         <div class="border-t pt-4">
-          <div class="mb-3">
-            <h4 class="font-medium text-gray-900 mb-1">직무 · 제안 포지션</h4>
+          <div class="mb-4">
+            <h4 class="text-base font-bold text-gray-900 mb-2">직무 · 제안 포지션</h4>
             <p class="text-gray-600">
               {{ offer.jobCategory?.label || 'IT개발·데이터' }} | {{ offer.position }}
             </p>
           </div>
-          <div class="mb-3">
-            <h4 class="font-medium text-gray-900 mb-1">상세 업무</h4>
+
+          <div class="mb-4">
+            <h4 class="text-base font-bold text-gray-900 mb-2">상세 업무</h4>
             <p class="text-gray-600">{{ offer.jobDescription }}</p>
           </div>
-          <div>
-            <h4 class="font-medium text-gray-900 mb-1">메시지</h4>
+
+          <div class="mb-4">
+            <h4 class="text-base font-bold text-gray-900 mb-2">메시지</h4>
             <p class="text-gray-600">{{ offer.message }}</p>
           </div>
         </div>

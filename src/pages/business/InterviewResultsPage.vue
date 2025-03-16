@@ -280,22 +280,25 @@ const openDetailModal = (interview) => {
         </div>
 
         <div class="border-t pt-4">
-          <div class="mb-3">
-            <h4 class="font-medium text-gray-900 mb-1">직무 · 제안 포지션</h4>
+          <div class="mb-4">
+            <h4 class="text-base font-bold text-gray-900 mb-2">직무 · 제안 포지션</h4>
             <p class="text-gray-600">
               {{ interview.jobCategory?.label || 'IT개발·데이터' }} | {{ interview.position }}
             </p>
           </div>
-          <div class="mb-3">
-            <h4 class="font-medium text-gray-900 mb-1">면접 방식</h4>
+
+          <div class="mb-4">
+            <h4 class="text-base font-bold text-gray-900 mb-2">면접 방식</h4>
             <p class="text-gray-600">{{ interview.interviewType === 'online' ? '화상 면접' : '대면 면접' }}</p>
           </div>
-          <div v-if="interview.updatedAt" class="mb-3">
-            <h4 class="font-medium text-gray-900 mb-1">결과 발표일</h4>
+
+          <div v-if="interview.updatedAt" class="mb-4">
+            <h4 class="text-base font-bold text-gray-900 mb-2">결과 발표일</h4>
             <p class="text-gray-600">{{ interview.updatedAt }}</p>
           </div>
-          <div>
-            <h4 class="font-medium text-gray-900 mb-1">면접 피드백</h4>
+
+          <div class="mb-4">
+            <h4 class="text-base font-bold text-gray-900 mb-2">면접 피드백</h4>
             <p class="text-gray-600">{{ interview.feedback || '아직 입력된 피드백이 없습니다.' }}</p>
           </div>
         </div>
@@ -379,9 +382,8 @@ const openDetailModal = (interview) => {
       :closeOnEscape="true"
     >
       <div v-if="selectedDetailInterview" class="p-4">
-        <!-- 기본 정보 -->
         <div class="bg-gray-50 p-6 rounded-lg mb-6">
-          <h3 class="text-lg font-medium mb-4">기본 정보</h3>
+          <h3 class="text-lg font-bold mb-4">기본 정보</h3>
           <div class="grid grid-cols-2 gap-y-4">
             <div class="flex gap-8">
               <span class="text-gray-600 w-20">이름</span>
@@ -418,17 +420,15 @@ const openDetailModal = (interview) => {
           </div>
         </div>
 
-        <!-- 국가 -->
         <div class="bg-gray-50 p-6 rounded-lg mb-6">
-          <h3 class="text-lg font-medium mb-4">국가</h3>
+          <h3 class="text-lg font-bold mb-4">국가</h3>
           <div>
             <span>{{ selectedDetailInterview.candidate.visaInfo?.country || selectedDetailInterview.candidate.nationality }}</span>
           </div>
         </div>
 
-        <!-- 여권 -->
         <div class="bg-gray-50 p-6 rounded-lg mb-6">
-          <h3 class="text-lg font-medium mb-4">여권</h3>
+          <h3 class="text-lg font-bold mb-4">여권</h3>
           <div v-if="selectedDetailInterview.candidate.passportName || selectedDetailInterview.candidate.visaInfo" class="grid gap-y-4">
             <div class="flex gap-8">
               <span class="text-gray-600 w-20">이름</span>
@@ -452,9 +452,8 @@ const openDetailModal = (interview) => {
           </div>
         </div>
 
-        <!-- 경력 사항 -->
         <div class="bg-gray-50 p-6 rounded-lg mb-6">
-          <h3 class="text-lg font-medium mb-4">경력 사항</h3>
+          <h3 class="text-lg font-bold mb-4">경력 사항</h3>
           <div v-if="selectedDetailInterview.candidate.careerHistory?.length">
             <div v-for="(career, index) in selectedDetailInterview.candidate.careerHistory" 
               :key="index" 
@@ -471,9 +470,8 @@ const openDetailModal = (interview) => {
           </div>
         </div>
 
-        <!-- 학력 사항 -->
         <div class="bg-gray-50 p-6 rounded-lg mb-6">
-          <h3 class="text-lg font-medium mb-4">학력 사항</h3>
+          <h3 class="text-lg font-bold mb-4">학력 사항</h3>
           <div v-if="selectedDetailInterview.candidate.education">
             <div class="mb-2">{{ selectedDetailInterview.candidate.education.school }}</div>
             <div class="text-gray-600">{{ selectedDetailInterview.candidate.education.degree || '-' }}</div>
@@ -486,9 +484,8 @@ const openDetailModal = (interview) => {
           </div>
         </div>
 
-        <!-- 자격증 사항 -->
         <div class="bg-gray-50 p-6 rounded-lg">
-          <h3 class="text-lg font-medium mb-4">자격증 사항</h3>
+          <h3 class="text-lg font-bold mb-4">자격증 사항</h3>
           <div class="text-center text-gray-500">
             등록된 자격증이 없습니다
           </div>

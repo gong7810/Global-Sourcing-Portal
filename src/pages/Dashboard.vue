@@ -13,6 +13,7 @@ const { userInfo } = storeToRefs(authStore);
 
 const bookmarkFlag = ref(true);
 const proposalFlag = ref(false);
+const interviewFlag = ref(false);
 
 const unreadOffers = ref(4);
 
@@ -20,6 +21,7 @@ onMounted(() => {
   if (userInfo.value?.type === 'user') {
     bookmarkFlag.value = false;
     proposalFlag.value = true;
+    interviewFlag.value = true;
   }
 
   // getJobOfferList();
@@ -167,7 +169,7 @@ const companies = ref([
             면접제안
           </span>
         </div>
-        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/jobSeekerInterviews')">
+        <div v-if="interviewFlag" class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/jobSeekerInterviews')">
           <div
             class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
           >
