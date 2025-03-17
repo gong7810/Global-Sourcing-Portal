@@ -6,6 +6,10 @@ import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import Dropdown from 'primevue/dropdown';
 import Dialog from 'primevue/dialog';
+import BusinessServiceTerms from '@/components/terms/BusinessServiceTerms.vue';
+import BusinessPrivacyTerms from '@/components/terms/BusinessPrivacyTerms.vue';
+import SmsServiceTerms from '@/components/terms/SmsServiceTerms.vue';
+import BusinessOptionalPrivacyTerms from '@/components/terms/BusinessOptionalPrivacyTerms.vue';
 
 const router = useRouter();
 const businessType = ref(null);
@@ -457,8 +461,9 @@ const submitForm = () => {
               <input type="checkbox" v-model="terms.service" class="ml-auto mr-2" />
             </div>
             <div v-if="details.service" class="p-2 border rounded bg-gray-100" style="height: 200px; overflow-y: auto">
-              
+              <BusinessServiceTerms />
             </div>
+            
             <div class="flex items-center">
               <span>[필수] 개인정보 수집 및 이용 동의</span>
               <button type="button" @click="toggleDetail('privacy')" class="ml-2 text-blue-500">
@@ -467,8 +472,9 @@ const submitForm = () => {
               <input type="checkbox" v-model="terms.privacy" class="ml-auto mr-2" />
             </div>
             <div v-if="details.privacy" class="p-2 border rounded bg-gray-100" style="height: 200px; overflow-y: auto">
-              
+              <BusinessPrivacyTerms />
             </div>
+            
             <div class="flex items-center">
               <span>[필수] 문자서비스 이용약관 동의</span>
               <button type="button" @click="toggleDetail('sms')" class="ml-2 text-blue-500">
@@ -476,6 +482,10 @@ const submitForm = () => {
               </button>
               <input type="checkbox" v-model="terms.sms" class="ml-auto mr-2" />
             </div>
+            <div v-if="details.sms" class="p-2 border rounded bg-gray-100" style="height: 200px; overflow-y: auto">
+              <SmsServiceTerms />
+            </div>
+            
             <hr class="my-2 border-gray-200" />
             <div class="flex items-center">
               <span>[선택] 개인정보 수집 및 이용 동의</span>
@@ -483,6 +493,9 @@ const submitForm = () => {
                 {{ details.optionalPrivacy ? '내용닫기' : '내용보기' }}
               </button>
               <input type="checkbox" v-model="terms.optionalPrivacy" class="ml-auto mr-2" />
+            </div>
+            <div v-if="details.optionalPrivacy" class="p-2 border rounded bg-gray-100" style="height: 200px; overflow-y: auto">
+              <BusinessOptionalPrivacyTerms />
             </div>
           </div>
         </div>

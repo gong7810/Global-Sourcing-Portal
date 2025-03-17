@@ -1,8 +1,8 @@
 <template>
   <div class="privacy-terms">
     <p class="mb-4 text-sm leading-6">
-      글로벌 소싱 플랫폼 서비스 이용을 위해 아래와 같이 개인정보를 수집 및 이용합니다. <br>
-      동의를 거부할 권리가 있으며, 동의 거부 시 글로벌 소싱 플랫폼 서비스 이용이 불가합니다.
+      ONOP(이하 "회사")의 글로벌 소싱 플랫폼 서비스 이용을 위해 아래와 같이 개인정보를 수집 및 이용합니다. <br>
+      동의를 거부할 권리가 있으며, 동의 거부 시 회사의 서비스 이용이 불가합니다.
     </p>
 
     <table class="policy-table w-full border-collapse">
