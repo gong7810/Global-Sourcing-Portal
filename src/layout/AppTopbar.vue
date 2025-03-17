@@ -42,7 +42,7 @@ const companyNotifications = ref([
     id: 2,
     type: 'schedule_selected',
     title: '면접 일정 선택됨',
-    candidate: '이엔지니어',
+    candidate: '이둘리',
     position: '시스템 엔지니어',
     message: '3월 25일 오후 2시 면접 일정이 선택되었습니다.',
     date: '2024-03-19',
@@ -287,7 +287,7 @@ const test = () => {
                       <!-- 기업용 알림일 경우 -->
                       <template v-if="userInfo?.type === 'company'">
                         <div class="text-sm text-gray-600 mb-1">
-                          지원자: {{ notification.candidate }} | 포지션: {{ notification.position }}
+                          이름: {{ notification.candidate }} | 포지션: {{ notification.position }}
                         </div>
                       </template>
                       <!-- 구직자용 알림일 경우 -->

@@ -7,23 +7,23 @@ export const useAuthStore = defineStore(
   'authStore',
   () => {
     const router = useRouter();
-    let userInfo = ref({}); // 사용자정보
+    let userInfo = ref(null); // 사용자정보
     let lineState = ref('12345abcde');
 
     /* 로그인 완료후 사용자 정보 설정 */
-    const setUser = (param) => {
-      userInfo.value = param;
+    const setUserInfo = (info) => {
+      userInfo.value = info;
     };
 
     /* 사용자 정보 초기화 - 로그아웃 시 */
     const reset = () => {
-      userInfo.value = {};
+      userInfo.value = null;
       // referer.value = '';
     };
 
     /* 로그인 여부 */
     const isLogin = () => {
-      return !isEmpty(userInfo.value);
+      return !!userInfo.value;
     };
 
     /* 로그인 */
@@ -41,7 +41,7 @@ export const useAuthStore = defineStore(
       userInfo,
       lineState,
       setState,
-      setUser,
+      setUserInfo,
       reset,
       isLogin,
       login

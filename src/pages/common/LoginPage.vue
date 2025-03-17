@@ -23,16 +23,24 @@ const setActiveTab = (tab) => {
 };
 
 const login = () => {
-  // 로그인 검증을 비활성화하고 바로 페이지 이동
-  let targetPage;
-
+  // 로그인 시 사용자 정보 설정
   if (activeTab.value === 'personal') {
-    targetPage = 'userIndex'; // 개인회원 페이지
+    authStore.setUserInfo({
+      id: 'user1',
+      type: 'user',
+      name: '김지원',
+      email: 'user@test.com'
+    });
+    router.push({ name: 'userIndex' });
   } else if (activeTab.value === 'business') {
-    targetPage = 'businessIndex'; // 기업회원 페이지
+    authStore.setUserInfo({
+      id: 'company1',
+      type: 'company',
+      name: '한국항공우주산업',
+      email: 'company@test.com'
+    });
+    router.push({ name: 'businessIndex' });
   }
-
-  router.push({ name: targetPage }); // 해당 메인 페이지로 이동, ToDo: 라우터 수정하기
 };
 
 const { lineState } = storeToRefs(authStore);
