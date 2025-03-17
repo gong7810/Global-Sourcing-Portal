@@ -63,8 +63,26 @@ const changeLanguage = async () => {
 
   console.log(selectElement);
   if (selectElement) {
-    selectElement.value = selectedLanguage.value;
-    selectElement.dispatchEvent(new Event('change'));
+    if (selectedLanguage.value === 'ko') {
+      // 한국어로 변경 시 번역을 취소하고 원본으로 복원
+      const googleFrame = document.querySelector('.VIpgJd-ZVi9od-ORHb-OEVmcd');
+      if (googleFrame) {
+        // 구글 번역 쿠키 제거
+        document.cookie.split(';').forEach((cookie) => {
+          const [name] = cookie.split('=');
+          if (name.trim().startsWith('googtrans')) {
+            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${window.location.hostname};`;
+          }
+        });
+        // 페이지 새로고침하여 원본 상태로 복원
+        window.location.reload();
+      }
+    } else {
+      // 다른 언어로 변경 시 기존 번역 로직 실행
+      selectElement.value = selectedLanguage.value;
+      selectElement.dispatchEvent(new Event('change'));
+    }
 
     setTimeout(() => {
       checkTranslation();
@@ -104,7 +122,7 @@ const test = () => {
       <div class="flex justify-between items-center h-20">
         <!-- 왼쪽 로고 -->
         <router-link to="/" class="flex items-center gap-2">
-          <span class="font-bold text-2xl text-white tracking-tight" translate="no">Global Sourcing Portal</span>
+          <span class="font-bold text-2xl text-white tracking-tight notranslate">Global Sourcing Portal</span>
         </router-link>
 
         <!-- 오른쪽 메뉴들 -->
@@ -197,7 +215,7 @@ const test = () => {
           </div>
 
           <!-- 다국어 지원 -->
-          <div class="language-selector notranslate" translate="no">
+          <div class="language-selector notranslate">
             <Select
               v-model="selectedLanguage"
               class="custom-dropdown notranslate"

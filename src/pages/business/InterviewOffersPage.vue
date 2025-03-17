@@ -1,11 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import Dialog from 'primevue/dialog';
-import Calendar from 'primevue/calendar';
-import Dropdown from 'primevue/dropdown';
-import InputText from 'primevue/inputtext';
-import Button from 'primevue/button';
 
 const router = useRouter();
 
@@ -295,13 +290,13 @@ const jobCategories = [
 
 // 필터링된 제안 목록
 const filteredOffers = computed(() => {
-  return interviewOffers.value.filter(offer => {
+  return interviewOffers.value.filter((offer) => {
     // 상태 필터
     const statusMatch = selectedFilter.value === 'all' || offer.status === selectedFilter.value;
-    
+
     // 직무 필터
-    const jobMatch = selectedJobFilter.value === 'all' || 
-      (offer.jobCategory?.value || 'it') === selectedJobFilter.value;
+    const jobMatch =
+      selectedJobFilter.value === 'all' || (offer.jobCategory?.value || 'it') === selectedJobFilter.value;
 
     return statusMatch && jobMatch;
   });
@@ -309,9 +304,7 @@ const filteredOffers = computed(() => {
 
 // 각 직무별 제안 수를 계산하는 함수
 const getJobCount = (jobValue) => {
-  return interviewOffers.value.filter(offer => 
-    (offer.jobCategory?.value || 'it') === jobValue
-  ).length;
+  return interviewOffers.value.filter((offer) => (offer.jobCategory?.value || 'it') === jobValue).length;
 };
 
 // 상태에 따른 스타일과 텍스트
@@ -357,8 +350,8 @@ const interviewLocation = ref('');
 const hours = Array.from({ length: 24 }, (_, i) => {
   const hourStr = i.toString().padStart(2, '0');
   return {
-    label: hourStr,  // "00", "01", "02" 등의 형식으로 표시
-  value: i
+    label: hourStr, // "00", "01", "02" 등의 형식으로 표시
+    value: i
   };
 });
 
@@ -366,7 +359,7 @@ const hours = Array.from({ length: 24 }, (_, i) => {
 const minutes = Array.from({ length: 6 }, (_, i) => {
   const minuteValue = i * 10;
   return {
-    label: minuteValue.toString().padStart(2, '0'),  // "00", "10", "20", "30", "40", "50"
+    label: minuteValue.toString().padStart(2, '0'), // "00", "10", "20", "30", "40", "50"
     value: minuteValue
   };
 });
@@ -403,13 +396,16 @@ const scheduleInterview = () => {
 
   // 제안된 일정들 필터링 (날짜가 입력된 것만)
   const proposedDates = interviewDates.value
-    .filter(d => d.date && d.hour !== null && d.minute !== null)
-    .map(d => ({
-      date: d.date.toLocaleDateString('ko-KR', { 
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-      }).replace(/\. /g, '-').replace('.', ''),
+    .filter((d) => d.date && d.hour !== null && d.minute !== null)
+    .map((d) => ({
+      date: d.date
+        .toLocaleDateString('ko-KR', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        })
+        .replace(/\. /g, '-')
+        .replace('.', ''),
       time: formatTime(d.hour, d.minute)
     }));
 
@@ -495,14 +491,12 @@ const downloadFile = (fileType, fileInfo) => {
           @click="selectedFilter = option.value"
           :class="[
             'px-4 py-2 rounded-full text-sm transition-colors',
-            selectedFilter === option.value
-              ? 'bg-[#8B8BF5] text-white'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            selectedFilter === option.value ? 'bg-[#8B8BF5] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           ]"
         >
           {{ option.label }}
           <span class="ml-1">
-            ({{ interviewOffers.filter(offer => option.value === 'all' || offer.status === option.value).length }})
+            ({{ interviewOffers.filter((offer) => option.value === 'all' || offer.status === option.value).length }})
           </span>
         </button>
       </div>
@@ -551,7 +545,7 @@ const downloadFile = (fileType, fileInfo) => {
           <p class="text-gray-500 mb-6">
             {{ selectedFilter === 'all' ? '인재 검색 페이지에서 적합한 인재를 찾아 면접을 제안해보세요' : '' }}
           </p>
-          <router-link 
+          <router-link
             v-if="selectedFilter === 'all'"
             to="/business/TalentSearchPage"
             class="inline-flex items-center px-6 py-3 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7A7AE6] transition-colors"
@@ -563,8 +557,12 @@ const downloadFile = (fileType, fileInfo) => {
       </div>
 
       <!-- 기존 면접 제안 목록 (filteredOffers 사용) -->
-      <div v-else v-for="offer in filteredOffers" :key="offer.id"
-        class="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200">
+      <div
+        v-else
+        v-for="offer in filteredOffers"
+        :key="offer.id"
+        class="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200"
+      >
         <div class="flex justify-between items-start mb-4">
           <div class="flex items-center gap-3">
             <h3 class="text-lg font-bold">{{ offer.candidate.name }}</h3>
@@ -576,9 +574,7 @@ const downloadFile = (fileType, fileInfo) => {
               {{ getStatusInfo(offer.status).text }}
             </span>
           </div>
-          <div class="text-sm text-gray-500">
-            제안일: {{ offer.offerDate }}
-          </div>
+          <div class="text-sm text-gray-500">제안일: {{ offer.offerDate }}</div>
         </div>
 
         <div class="mb-4">
@@ -588,9 +584,7 @@ const downloadFile = (fileType, fileInfo) => {
         <div class="border-t pt-4">
           <div class="mb-4">
             <h4 class="text-base font-bold text-gray-900 mb-2">직무 · 제안 포지션</h4>
-            <p class="text-gray-600">
-              {{ offer.jobCategory?.label || 'IT개발·데이터' }} | {{ offer.position }}
-            </p>
+            <p class="text-gray-600">{{ offer.jobCategory?.label || 'IT개발·데이터' }} | {{ offer.position }}</p>
           </div>
 
           <div class="mb-4">
@@ -609,21 +603,21 @@ const downloadFile = (fileType, fileInfo) => {
             <i class="pi pi-check-circle mr-2"></i>
             {{ offer.responseDate }}에 수락되었습니다
           </p>
-          
+
           <!-- 면접 일정이 잡히지 않은 경우에만 버튼 표시 -->
           <div v-if="!offer.interviewScheduled" class="mt-3">
-            <button 
+            <button
               @click="openScheduleModal(offer)"
               class="px-4 py-2 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7A7AE6]"
             >
               면접 일정 잡기
             </button>
           </div>
-          
+
           <!-- 면접 일정이 이미 잡힌 경우 일정 정보 표시 -->
           <div v-else class="mt-3">
             <h4 class="font-medium text-gray-900 mb-2">면접 일정</h4>
-            
+
             <!-- 확정된 면접 일정이 있는 경우 -->
             <div v-if="offer.interviewConfirmed" class="p-4 bg-green-50 rounded-lg">
               <p class="text-green-600 font-medium mb-3">확정된 면접 일정</p>
@@ -633,15 +627,10 @@ const downloadFile = (fileType, fileInfo) => {
                 <p class="text-gray-600">방식: {{ offer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}</p>
                 <p class="text-gray-600">장소: {{ offer.interviewLocation }}</p>
               </div>
-              
+
               <!-- 면접 완료 버튼 추가 -->
               <div v-if="!offer.interviewCompleted" class="mt-4">
-                <Button 
-                  @click="completeInterview(offer)"
-                  class="bg-[#8B8BF5] text-white"
-                >
-                  면접 완료
-                </Button>
+                <Button @click="completeInterview(offer)" class="bg-[#8B8BF5] text-white"> 면접 완료 </Button>
               </div>
               <!-- 면접 완료된 경우 표시 -->
               <div v-else class="mt-4">
@@ -649,10 +638,7 @@ const downloadFile = (fileType, fileInfo) => {
                   <i class="pi pi-check-circle mr-2"></i>
                   면접 완료
                 </p>
-                <Button 
-                  @click="goToInterviewResults(offer)"
-                  class="mt-2 p-button-text text-[#8B8BF5]"
-                >
+                <Button @click="goToInterviewResults(offer)" class="mt-2 p-button-text text-[#8B8BF5]">
                   면접 결과 관리로 이동
                 </Button>
               </div>
@@ -665,8 +651,8 @@ const downloadFile = (fileType, fileInfo) => {
                 <p class="text-gray-600 ml-4">날짜: {{ date.date }}</p>
                 <p class="text-gray-600 ml-4">시간: {{ date.time }}</p>
               </div>
-            <p class="text-gray-600">방식: {{ offer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}</p>
-            <p class="text-gray-600">장소: {{ offer.interviewLocation }}</p>
+              <p class="text-gray-600">방식: {{ offer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}</p>
+              <p class="text-gray-600">장소: {{ offer.interviewLocation }}</p>
             </div>
           </div>
         </div>
@@ -691,7 +677,7 @@ const downloadFile = (fileType, fileInfo) => {
     </div>
 
     <!-- 상세 정보 모달 -->
-    <Dialog 
+    <Dialog
       v-model:visible="showDetailModal"
       modal
       :style="{ width: '80vw', maxHeight: '90vh' }"
@@ -761,9 +747,7 @@ const downloadFile = (fileType, fileInfo) => {
                 <span>파일 다운로드</span>
                 <span class="text-sm text-gray-500">({{ sampleFiles.passport.size }})</span>
               </button>
-              <span v-else class="text-sm text-gray-500">
-                업로드된 파일 없음
-              </span>
+              <span v-else class="text-sm text-gray-500"> 업로드된 파일 없음 </span>
             </div>
           </div>
           <div class="grid gap-y-4">
@@ -800,18 +784,15 @@ const downloadFile = (fileType, fileInfo) => {
                 <span>파일 다운로드</span>
                 <span class="text-sm text-gray-500">({{ sampleFiles.career.size }})</span>
               </button>
-              <span v-else class="text-sm text-gray-500">
-                업로드된 파일 없음
-              </span>
+              <span v-else class="text-sm text-gray-500"> 업로드된 파일 없음 </span>
             </div>
           </div>
-          <div v-for="(career, index) in selectedOffer.candidate.careerHistory" 
-            :key="index" 
-            class="mb-4"
-          >
+          <div v-for="(career, index) in selectedOffer.candidate.careerHistory" :key="index" class="mb-4">
             <div class="font-medium">{{ career.company }}</div>
             <div class="text-gray-600">{{ career.period }}</div>
-            <div class="text-gray-600">{{ career.jobCategory?.label || 'IT개발·데이터' }} | {{ career.position.replace('/', ' | ') }}</div>
+            <div class="text-gray-600">
+              {{ career.jobCategory?.label || 'IT개발·데이터' }} | {{ career.position.replace('/', ' | ') }}
+            </div>
             <div class="mt-2">{{ career.description }}</div>
           </div>
         </div>
@@ -830,9 +811,7 @@ const downloadFile = (fileType, fileInfo) => {
                 <span>파일 다운로드</span>
                 <span class="text-sm text-gray-500">({{ sampleFiles.education.size }})</span>
               </button>
-              <span v-else class="text-sm text-gray-500">
-                업로드된 파일 없음
-              </span>
+              <span v-else class="text-sm text-gray-500"> 업로드된 파일 없음 </span>
             </div>
           </div>
           <div>
@@ -858,25 +837,16 @@ const downloadFile = (fileType, fileInfo) => {
                 <span>파일 다운로드</span>
                 <span class="text-sm text-gray-500">({{ sampleFiles.certificate.size }})</span>
               </button>
-              <span v-else class="text-sm text-gray-500">
-                업로드된 파일 없음
-              </span>
+              <span v-else class="text-sm text-gray-500"> 업로드된 파일 없음 </span>
             </div>
           </div>
-          <div class="text-center text-gray-500">
-            등록된 자격증이 없습니다
-          </div>
+          <div class="text-center text-gray-500">등록된 자격증이 없습니다</div>
         </div>
       </div>
     </Dialog>
 
     <!-- 면접 일정 잡기 모달 -->
-    <Dialog 
-      v-model:visible="showScheduleModal" 
-      :modal="true"
-      header="면접 일정 제안하기"
-      :style="{ width: '500px' }"
-    >
+    <Dialog v-model:visible="showScheduleModal" :modal="true" header="면접 일정 제안하기" :style="{ width: '500px' }">
       <div class="p-4">
         <div class="mb-4">
           <h3 class="font-medium mb-2">후보자</h3>
@@ -888,33 +858,22 @@ const downloadFile = (fileType, fileInfo) => {
           <h4 class="font-medium mb-2">면접 일정 {{ index + 1 }}</h4>
           <div class="mb-2">
             <label class="block text-sm mb-1">날짜</label>
-          <Calendar 
-              v-model="dateSlot.date" 
-            :minDate="new Date()"
-            dateFormat="yy-mm-dd"
-            class="w-full"
-          />
-        </div>
+            <DatePicker v-model="dateSlot.date" class="w-full" :minDate="new Date()" dateFormat="yy-mm-dd" />
+          </div>
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="block text-sm mb-1">시간</label>
-            <Dropdown
-                v-model="dateSlot.hour"
-              :options="hours"
-                optionLabel="label"
-                placeholder="시"
-              class="w-full"
-            />
+              <Dropdown v-model="dateSlot.hour" :options="hours" optionLabel="label" placeholder="시" class="w-full" />
             </div>
             <div>
               <label class="block text-sm mb-1">분</label>
-            <Dropdown
+              <Dropdown
                 v-model="dateSlot.minute"
-              :options="minutes"
+                :options="minutes"
                 optionLabel="label"
-              placeholder="분"
-              class="w-full"
-            />
+                placeholder="분"
+                class="w-full"
+              />
             </div>
           </div>
         </div>
@@ -932,8 +891,8 @@ const downloadFile = (fileType, fileInfo) => {
 
         <div class="mb-4">
           <label class="block font-medium mb-2">면접 장소 또는 화상 면접 링크</label>
-          <InputText 
-            v-model="interviewLocation" 
+          <InputText
+            v-model="interviewLocation"
             class="w-full"
             :placeholder="interviewType?.value === 'online' ? 'Zoom 링크를 입력해주세요' : '면접 장소를 입력해주세요'"
           />
@@ -942,18 +901,8 @@ const downloadFile = (fileType, fileInfo) => {
 
       <template #footer>
         <div class="flex justify-end gap-2">
-          <Button 
-            @click="showScheduleModal = false"
-            class="p-button-text"
-          >
-            취소
-          </Button>
-          <Button 
-            @click="scheduleInterview"
-            class="bg-[#8B8BF5]"
-          >
-            일정 제안하기
-          </Button>
+          <Button @click="showScheduleModal = false" class="p-button-text"> 취소 </Button>
+          <Button @click="scheduleInterview" class="bg-[#8B8BF5]"> 일정 제안하기 </Button>
         </div>
       </template>
     </Dialog>
@@ -966,4 +915,7 @@ const downloadFile = (fileType, fileInfo) => {
   border-radius: 12px;
   border: 1px solid #e5e7eb;
 }
-</style> 
+
+::v-deep.p-datepicker-header {
+}
+</style>

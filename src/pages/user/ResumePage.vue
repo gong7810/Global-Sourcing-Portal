@@ -3,16 +3,10 @@ import { onMounted, ref, toRaw, watch, onBeforeUnmount } from 'vue';
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
-import Button from 'primevue/button';
-import Select from 'primevue/select';
-import DatePicker from 'primevue/datepicker';
-import InputText from 'primevue/inputtext';
-import Checkbox from 'primevue/checkbox';
 import { useMessagePop } from '@/plugins/commonutils';
 import { random, randomInt } from 'es-toolkit/compat';
 import { useUserStore } from '@/store/user/userStore';
 import { computed } from 'vue';
-import Dropdown from 'primevue/dropdown';
 
 const router = useRouter();
 const messagePop = useMessagePop();
@@ -186,12 +180,11 @@ onMounted(() => {
 const calculateTotalCareer = (careerList) => {
   // 모든 경력 기간을 합산하는 로직
   let totalMonths = 0;
-  careerList.forEach(career => {
+  careerList.forEach((career) => {
     const [start, end] = career.period.split(' - ');
     const startDate = new Date(start);
     const endDate = end === '재직중' ? new Date() : new Date(end);
-    const months = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
-                  (endDate.getMonth() - startDate.getMonth());
+    const months = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
     totalMonths += months;
   });
   return `${Math.floor(totalMonths / 12)}년 ${totalMonths % 12}개월`;
@@ -201,24 +194,24 @@ const getLastEducation = (educationList) => {
   // 최종학력 찾기
   const sortedEducation = [...educationList].sort((a, b) => {
     const eduOrder = {
-      'PHD': 5,
-      'MASTERS': 4,
-      'UNIVERSITY': 3,
-      'COLLEGE': 2,
-      'HIGH_SCHOOL': 1
+      PHD: 5,
+      MASTERS: 4,
+      UNIVERSITY: 3,
+      COLLEGE: 2,
+      HIGH_SCHOOL: 1
     };
     return eduOrder[b.educationType.code] - eduOrder[a.educationType.code];
   });
-  
+
   if (sortedEducation.length === 0) return '학력 정보 없음';
-  
+
   const lastEdu = sortedEducation[0];
   return `${lastEdu.educationType.name} ${lastEdu.isGraduated ? '졸업' : '재학중'}`;
 };
 
 const getResume = async () => {
   // ... existing code ...
-  
+
   // 총 경력과 최종학력 계산
   basicInfo.value.totalCareer = calculateTotalCareer(careerList.value);
   basicInfo.value.lastEducation = getLastEducation(educationList.value);
@@ -569,7 +562,7 @@ const jobCategories = [
                 <span class="text-xl font-medium">{{ basicInfo.name }}</span>
                 <span class="ml-4 text-gray-500">{{ basicInfo.gender }} | {{ basicInfo.birthDate }} (만 28세)</span>
               </div>
-              
+
               <!-- 연락처 정보 그룹 -->
               <div class="grid grid-cols-[80px_auto] gap-y-2">
                 <span class="text-gray-500">휴대폰</span>
@@ -584,15 +577,11 @@ const jobCategories = [
                 <span>{{ basicInfo.lastEducation }}</span>
               </div>
             </div>
-            
+
             <!-- 프로필 이미지 -->
             <div class="flex-shrink-0 ml-8">
               <div class="w-[120px] h-[160px] overflow-hidden border border-gray-200 rounded-sm">
-                <img
-                  :src="profileImage"
-                  alt="프로필 이미지"
-                  class="w-full h-full object-cover"
-                />
+                <img :src="profileImage" alt="프로필 이미지" class="w-full h-full object-cover" />
               </div>
             </div>
           </div>
@@ -657,11 +646,7 @@ const jobCategories = [
                 <div>
                   <label class="cursor-pointer px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
                     <span class="text-sm">파일 선택</span>
-                    <input
-                      type="file"
-                      class="hidden"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                    />
+                    <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" />
                   </label>
                 </div>
               </div>
@@ -694,7 +679,9 @@ const jobCategories = [
                   <div>
                     <h4 class="font-medium text-lg">{{ career.companyName }}</h4>
                     <p class="text-gray-600 mt-1">{{ career.period }}</p>
-                    <p class="text-gray-600">{{ career.jobCategory?.label || '' }} | {{ career.jobTitle }} | {{ career.department }}</p>
+                    <p class="text-gray-600">
+                      {{ career.jobCategory?.label || '' }} | {{ career.jobTitle }} | {{ career.department }}
+                    </p>
                     <p class="text-gray-600 mt-2">{{ career.responsibilities }}</p>
                   </div>
                   <div class="flex gap-2">
@@ -716,20 +703,19 @@ const jobCategories = [
                         <span class="text-gray-400 ml-1">(선택)</span>
                       </span>
                       <p class="text-xs text-gray-400 mt-1">
-                        {{ career.period.includes('재직중') 
-                          ? '현재 재직 중인 회사의 재직증명서를 첨부해 주세요.' 
-                          : '이전 회사의 경력증명서를 첨부해 주세요.' 
+                        {{
+                          career.period.includes('재직중')
+                            ? '현재 재직 중인 회사의 재직증명서를 첨부해 주세요.'
+                            : '이전 회사의 경력증명서를 첨부해 주세요.'
                         }}
                       </p>
                     </div>
                     <div>
-                      <label class="cursor-pointer px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+                      <label
+                        class="cursor-pointer px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                      >
                         <span class="text-sm">파일 선택</span>
-                        <input
-                          type="file"
-                          class="hidden"
-                          accept=".pdf,.jpg,.jpeg,.png"
-                        />
+                        <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" />
                       </label>
                     </div>
                   </div>
@@ -783,16 +769,16 @@ const jobCategories = [
                   <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
                       <span class="text-sm text-gray-600">졸업증명서</span>
-                      <span v-if="education.educationType.code === 'UNIVERSITY'" class="text-red-500 text-sm">*필수</span>
+                      <span v-if="education.educationType.code === 'UNIVERSITY'" class="text-red-500 text-sm"
+                        >*필수</span
+                      >
                     </div>
                     <div>
-                      <label class="cursor-pointer px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+                      <label
+                        class="cursor-pointer px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+                      >
                         <span class="text-sm">파일 선택</span>
-                        <input
-                          type="file"
-                          class="hidden"
-                          accept=".pdf,.jpg,.jpeg,.png"
-                        />
+                        <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" />
                       </label>
                     </div>
                   </div>
@@ -818,20 +804,22 @@ const jobCategories = [
 
             <div class="space-y-4">
               <!-- 자격증이 없을 때 -->
-              <div v-if="certificationList.length === 0" 
-                  class="text-center py-8 text-gray-500 border border-dashed rounded-lg">
+              <div
+                v-if="certificationList.length === 0"
+                class="text-center py-8 text-gray-500 border border-dashed rounded-lg"
+              >
                 등록된 자격증이 없습니다
               </div>
 
               <!-- 자격증 목록 -->
-              <div v-for="(cert, index) in certificationList" :key="cert.id" 
-                  class="border border-gray-200 rounded-lg p-6 hover:border-[#8FA1FF] transition-colors">
+              <div
+                v-for="(cert, index) in certificationList"
+                :key="cert.id"
+                class="border border-gray-200 rounded-lg p-6 hover:border-[#8FA1FF] transition-colors"
+              >
                 <div class="flex justify-between items-start mb-4">
                   <h4 class="font-medium">자격증 #{{ index + 1 }}</h4>
-                  <button 
-                    class="text-gray-400 hover:text-red-500"
-                    @click="removeCertification(index)"
-                  >
+                  <button class="text-gray-400 hover:text-red-500" @click="removeCertification(index)">
                     <i class="pi pi-times"></i>
                   </button>
                 </div>
@@ -839,11 +827,7 @@ const jobCategories = [
                 <div class="grid grid-cols-2 gap-4 mb-4">
                   <div class="space-y-2">
                     <label class="block text-sm font-medium text-gray-700">자격증명</label>
-                    <InputText 
-                      v-model="cert.name" 
-                      placeholder="자격증 이름을 입력하세요" 
-                      class="w-full"
-                    />
+                    <InputText v-model="cert.name" placeholder="자격증 이름을 입력하세요" class="w-full" />
                   </div>
                   <div class="space-y-2">
                     <label class="block text-sm font-medium text-gray-700">취득일</label>
@@ -863,20 +847,14 @@ const jobCategories = [
                   <div>
                     <label class="cursor-pointer px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
                       <span class="text-sm">파일 선택</span>
-                      <input
-                        type="file"
-                        class="hidden"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                      />
+                      <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" />
                     </label>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="mt-4 text-sm text-gray-500">
-              * PDF, JPG, PNG 형식의 파일만 업로드 가능합니다. (최대 10MB)
-            </div>
+            <div class="mt-4 text-sm text-gray-500">* PDF, JPG, PNG 형식의 파일만 업로드 가능합니다. (최대 10MB)</div>
           </div>
         </div>
       </div>
