@@ -1,16 +1,19 @@
 <script setup>
 import { useLayout } from '@/layout/composables/layout';
 import { useRouter } from 'vue-router';
-import { nextTick, onMounted, ref } from 'vue';
+import { nextTick, onMounted, ref, computed } from 'vue';
 import { useAuthStore } from '@/store/auth/authStore';
 import { useMessagePop } from '@/plugins/commonutils';
 import { setProperty } from '@primevue/themes';
+import OverlayPanel from 'primevue/overlaypanel';
+import { storeToRefs } from 'pinia';
 
 const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
 
 const router = useRouter();
 const authStore = useAuthStore();
 const messagePop = useMessagePop();
+const { userInfo } = storeToRefs(authStore);
 
 const isMenuOpen = ref(false); // 메뉴 열림 상태
 const loginFlag = ref(false); // 로그인 여부 체크
@@ -22,6 +25,122 @@ const languages = ref([
   { name: 'English', code: 'en' },
   { name: 'Tiếng Việt', code: 'vi' }
 ]);
+
+// 기업용 알림 데이터
+const companyNotifications = ref([
+  {
+    id: 1,
+    type: 'interview_accepted',
+    title: '면접 제안 수락',
+    candidate: '김지원',
+    position: '항공기계설계',
+    message: '면접 제안을 수락했습니다.',
+    date: '2024-03-20',
+    isRead: false
+  },
+  {
+    id: 2,
+    type: 'schedule_selected',
+    title: '면접 일정 선택됨',
+    candidate: '이엔지니어',
+    position: '시스템 엔지니어',
+    message: '3월 25일 오후 2시 면접 일정이 선택되었습니다.',
+    date: '2024-03-19',
+    isRead: false
+  },
+  {
+    id: 3,
+    type: 'interview_declined',
+    title: '면접 제안 거절',
+    candidate: '박항공',
+    position: '항공정비사',
+    message: '면접 제안을 거절했습니다.',
+    date: '2024-03-18',
+    isRead: true
+  }
+]);
+
+// 구직자용 알림 데이터
+const jobSeekerNotifications = ref([
+  {
+    id: 1,
+    type: 'interview_offer',
+    title: '새로운 면접 제안',
+    company: '한국항공우주산업(주)',
+    position: '항공기계설계',
+    message: '항공기계설계 포지션에 대한 면접 제안이 도착했습니다.',
+    date: '2024-03-20',
+    isRead: false
+  },
+  {
+    id: 2,
+    type: 'interview_schedule',
+    title: '면접 일정 확정',
+    company: 'LIG넥스원',
+    position: '시스템 엔지니어',
+    message: '3월 25일 오후 2시 화상면접이 확정되었습니다.',
+    date: '2024-03-19',
+    isRead: false
+  },
+  {
+    id: 3,
+    type: 'result',
+    title: '면접 결과',
+    company: '대한항공',
+    position: '항공정비사',
+    message: '항공정비사 포지션 합격입니다.',
+    date: '2024-03-18',
+    isRead: true
+  }
+]);
+
+// 사용자 타입에 따라 알림 데이터 선택
+const notifications = computed(() => {
+  return userInfo.value?.type === 'company' ? companyNotifications.value : jobSeekerNotifications.value;
+});
+
+const unreadCount = computed(() => {
+  return notifications.value.filter(notif => !notif.isRead).length;
+});
+
+const overlayPanel = ref();
+
+const toggleNotificationPanel = (event) => {
+  overlayPanel.value.toggle(event);
+};
+
+const markAsRead = (notification) => {
+  notification.isRead = true;
+};
+
+// 알림 아이콘 및 색상 매핑
+const getNotificationIcon = (type) => {
+  const iconMap = {
+    // 구직자용 알림 아이콘
+    interview_offer: 'pi-envelope',
+    interview_schedule: 'pi-calendar',
+    result: 'pi-check-circle',
+    // 기업용 알림 아이콘
+    interview_accepted: 'pi-check',
+    schedule_selected: 'pi-calendar-plus',
+    interview_declined: 'pi-times-circle'
+  };
+  return iconMap[type] || 'pi-bell';
+};
+
+const getNotificationColor = (type) => {
+  const colorMap = {
+    // 구직자용 알림 색상
+    interview_offer: 'text-blue-500',
+    interview_schedule: 'text-green-500',
+    result: 'text-purple-500',
+    // 기업용 알림 색상
+    interview_accepted: 'text-green-500',
+    schedule_selected: 'text-blue-500',
+    interview_declined: 'text-red-500'
+  };
+  return colorMap[type] || 'text-gray-500';
+};
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
@@ -127,6 +246,65 @@ const test = () => {
 
         <!-- 오른쪽 메뉴들 -->
         <div class="flex items-center gap-4">
+          <!-- 알림 버튼 (로그인 시에만 표시) -->
+          <button
+            v-if="loginFlag"
+            class="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 rounded-full transition-all relative"
+            @click="toggleNotificationPanel"
+          >
+            <i class="pi pi-bell text-white"></i>
+            <!-- 읽지 않은 알림이 있을 경우 표시되는 배지 -->
+            <div
+              v-if="unreadCount > 0"
+              class="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center bg-red-500 text-white text-xs rounded-full"
+            >
+              {{ unreadCount }}
+            </div>
+          </button>
+
+          <!-- 알림 패널 -->
+          <OverlayPanel ref="overlayPanel" :showCloseIcon="true" class="w-96">
+            <div class="p-3">
+              <h3 class="text-lg font-bold mb-4">알림</h3>
+              <div v-if="notifications.length === 0" class="text-gray-500 text-center py-4">
+                새로운 알림이 없습니다.
+              </div>
+              <div v-else class="space-y-3">
+                <div
+                  v-for="notification in notifications"
+                  :key="notification.id"
+                  class="p-3 rounded-lg hover:bg-gray-50 cursor-pointer"
+                  :class="{ 'bg-blue-50': !notification.isRead }"
+                  @click="markAsRead(notification)"
+                >
+                  <div class="flex items-start gap-3">
+                    <i
+                      class="pi"
+                      :class="[getNotificationIcon(notification.type), getNotificationColor(notification.type)]"
+                    ></i>
+                    <div class="flex-1">
+                      <div class="font-semibold text-gray-900">{{ notification.title }}</div>
+                      <!-- 기업용 알림일 경우 -->
+                      <template v-if="userInfo?.type === 'company'">
+                        <div class="text-sm text-gray-600 mb-1">
+                          지원자: {{ notification.candidate }} | 포지션: {{ notification.position }}
+                        </div>
+                      </template>
+                      <!-- 구직자용 알림일 경우 -->
+                      <template v-else>
+                        <div class="text-sm text-gray-600 mb-1">
+                          {{ notification.company }} | {{ notification.position }}
+                        </div>
+                      </template>
+                      <div class="text-sm text-gray-700">{{ notification.message }}</div>
+                      <div class="text-xs text-gray-500 mt-1">{{ notification.date }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </OverlayPanel>
+
           <!-- 로그인 버튼 -->
           <button
             v-if="!loginFlag"
@@ -289,5 +467,20 @@ const test = () => {
 .language-selector :deep(.p-select-item.p-highlight) {
   background: #e8e8ff;
   color: #6c63ff;
+}
+
+/* 알림 패널 스타일 */
+:deep(.p-overlaypanel) {
+  border-radius: 12px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+:deep(.p-overlaypanel-content) {
+  padding: 0;
+}
+
+:deep(.p-overlaypanel::before),
+:deep(.p-overlaypanel::after) {
+  border-bottom-color: white;
 }
 </style>
