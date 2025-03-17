@@ -2,8 +2,10 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import Dropdown from 'primevue/dropdown';
+import { useMessagePop } from '@/plugins/commonutils';
 
 const router = useRouter();
+const messagePop = useMessagePop();
 
 // 직무 카테고리 데이터
 const jobCategories = [
@@ -52,9 +54,28 @@ const submitOffer = () => {
     alert('직무 카테고리를 선택해주세요.');
     return;
   }
-  console.log('면접 제안 전송:', jobOffer.value);
-  // TODO: API 연동
-  // 제안 전송 후 완료 페이지나 목록으로 이동
+
+  // 확인 팝업 표시
+  messagePop.confirm({
+    icon: 'info',
+    message: `${candidate.value.name}님께 ${jobOffer.value.position} 포지션에 대한 면접을 제안하시겠습니까?`,
+    detail: '제안이 전송되면 취소할 수 없습니다.',
+    acceptLabel: '제안하기',
+    rejectLabel: '취소',
+    onCloseYes: () => {
+      console.log('면접 제안 전송:', jobOffer.value);
+      // TODO: API 연동
+      messagePop.confirm({
+        icon: 'info',
+        message: '면접 제안이 전송되었습니다.',
+        acceptLabel: '확인',
+        showReject: false,
+        onCloseYes: () => {
+          router.back();
+        }
+      });
+    }
+  });
 };
 </script>
 
