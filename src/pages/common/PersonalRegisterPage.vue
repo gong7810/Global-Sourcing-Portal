@@ -431,7 +431,7 @@ const test = () => {
         <div class="mt-6">
           <div class="flex items-center mb-2">
             <span
-              >필수동의 항목 및 개인정보 수집 및 이용 동의(선택), <br />광고성 정보 수신(선택)에 모두 동의합니다.</span
+              >필수동의 항목 및 개인정보 수집 및 이용 동의(선택)에 <br>모두 동의합니다.</span
             >
             <input type="checkbox" v-model="allAgreed" @change="toggleAll" class="ml-auto mr-2" />
           </div>
