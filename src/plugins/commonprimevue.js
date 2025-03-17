@@ -27,6 +27,7 @@ import ConfirmationService from 'primevue/confirmationservice';
 import ContextMenu from 'primevue/contextmenu';
 import DataTable from 'primevue/datatable';
 import DataView from 'primevue/dataview';
+import DatePicker from 'primevue/datepicker';
 // import DataViewLayoutOptions from 'primevue/dataviewlayoutoptions';
 import DeferredContent from 'primevue/deferredcontent';
 import Dialog from 'primevue/dialog';
@@ -142,6 +143,7 @@ export default {
     app.component('ContextMenu', ContextMenu);
     app.component('DataTable', DataTable);
     app.component('DataView', DataView);
+    app.component('DatePicker', DatePicker);
     // app.component('DataViewLayoutOptions', DataViewLayoutOptions);
     app.component('DeferredContent', DeferredContent);
     app.component('Dialog', Dialog);
