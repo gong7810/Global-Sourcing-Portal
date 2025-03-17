@@ -14,7 +14,7 @@ onMounted(() => {
     console.log(code);
     // code가 존재하면 백엔드로 전송
     // sendCodeToBackend(code);
-    authStore.setUser({
+    authStore.setUserInfo({
       user: '공성욱',
       email: 'testmail@gmail.com',
       type: 'user'
