@@ -5,8 +5,10 @@ import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
 import Dropdown from 'primevue/dropdown';
 import InputTextarea from 'primevue/textarea';
+import { useMessagePop } from '@/plugins/commonutils';
 
 const router = useRouter();
+const messagePop = useMessagePop();
 
 // 면접 결과 상태 옵션
 const resultOptions = [
@@ -124,17 +126,80 @@ const saveResult = () => {
     return;
   }
 
-  if (selectedInterview.value) {
-    selectedInterview.value.result = editResult.value;
-    selectedInterview.value.feedback = editFeedback.value;
-    selectedInterview.value.updatedAt = new Date().toISOString().split('T')[0];
-    showResultModal.value = false;
-    
-    // 상태 초기화
-    editResult.value = null;
-    editFeedback.value = '';
-    selectedInterview.value = null;
-  }
+  // 결과 입력/수정 확인 메시지 설정
+  const isNewResult = !selectedInterview.value.result;
+  const isChangingToPass = !isNewResult && 
+    selectedInterview.value.result === 'failed' && 
+    editResult.value === 'passed';
+
+  // 알림이 필요한지 확인 (최초 입력 시 합격/불합격만, 수정 시 불합격→합격만)
+  const needsNotification = (isNewResult && editResult.value !== 'pending') || isChangingToPass;
+
+  const confirmMessage = isNewResult
+    ? `${selectedInterview.value.candidate.name}님의 면접 결과를 입력하시겠습니까?`
+    : `${selectedInterview.value.candidate.name}님의 면접 결과를 수정하시겠습니까?`;
+
+  const detailMessage = needsNotification
+    ? `\n\n결과: ${resultOptions.find(opt => opt.value === editResult.value).label}\n` +
+      `피드백: ${editFeedback.value || '(없음)'}\n\n` +
+      '* 확인 시 구직자에게 알림과 이메일이 발송됩니다.'
+    : `\n\n결과: ${resultOptions.find(opt => opt.value === editResult.value).label}\n` +
+      `피드백: ${editFeedback.value || '(없음)'}`;
+
+  messagePop.confirm({
+    icon: 'info',
+    message: `<div class="text-center">
+      <p class="text-xl mb-2">${confirmMessage}</p>
+      <div class="text-sm text-gray-600 text-left mt-4">
+        ${detailMessage.replace(/\n/g, '<br>')}
+      </div>
+    </div>`,
+    acceptLabel: '확인',
+    rejectLabel: '취소',
+    onCloseYes: () => {
+      // 기존 결과 저장
+      selectedInterview.value.result = editResult.value;
+      selectedInterview.value.feedback = editFeedback.value;
+      selectedInterview.value.updatedAt = new Date().toISOString().split('T')[0];
+      
+      // 알림/이메일 발송이 필요한 경우에만 성공 메시지에 알림 발송 문구 포함
+      if (needsNotification) {
+        messagePop.confirm({
+          icon: 'info',
+          message: `<div class="text-center">
+            <p class="text-xl mb-2">면접 결과가 저장되었습니다.</p>
+            <p class="text-sm text-gray-600">${selectedInterview.value.candidate.name}님께 알림과 이메일이 발송되었습니다.</p>
+          </div>`,
+          acceptLabel: '확인',
+          showReject: false,
+          onCloseYes: () => {
+            showResultModal.value = false;
+            // 상태 초기화
+            editResult.value = null;
+            editFeedback.value = '';
+            selectedInterview.value = null;
+          }
+        });
+      } else {
+        // 알림/이메일이 발송되지 않는 경우
+        messagePop.confirm({
+          icon: 'info',
+          message: `<div class="text-center">
+            <p class="text-xl mb-2">면접 결과가 저장되었습니다.</p>
+          </div>`,
+          acceptLabel: '확인',
+          showReject: false,
+          onCloseYes: () => {
+            showResultModal.value = false;
+            // 상태 초기화
+            editResult.value = null;
+            editFeedback.value = '';
+            selectedInterview.value = null;
+          }
+        });
+      }
+    }
+  });
 };
 
 // 결과에 따른 스타일과 텍스트
