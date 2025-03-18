@@ -1,8 +1,10 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useMessagePop } from '@/plugins/commonutils';
 
 const router = useRouter();
+const messagePop = useMessagePop();
 
 // 면접 제안 내역 데이터
 const interviewOffers = ref([
@@ -383,7 +385,7 @@ const openScheduleModal = (offer) => {
 };
 
 const scheduleInterview = () => {
-  // 최소 하나의 일정은 필수
+  // 기존 유효성 검사
   if (!interviewDates.value[0].date || !interviewDates.value[0].hour || !interviewDates.value[0].minute) {
     alert('최소 하나의 면접 일정을 입력해주세요.');
     return;
@@ -409,21 +411,51 @@ const scheduleInterview = () => {
       time: formatTime(d.hour, d.minute)
     }));
 
-  // 선택된 제안의 면접 일정 업데이트
-  selectedOffer.value.interviewScheduled = true;
-  selectedOffer.value.proposedDates = proposedDates;
-  selectedOffer.value.interviewType = interviewType.value;
-  selectedOffer.value.interviewLocation = interviewLocation.value;
+  // 첫 번째 확인 팝업 표시
+  messagePop.confirm({
+    icon: 'info',
+    message: `<div class="text-center">
+      <p class="text-xl mb-2">${selectedOffer.value.candidate.name}님께 면접 일정을 제안하시겠습니까?</p>
+      <div class="text-sm text-gray-600 text-left mt-4">
+        <p class="font-medium mb-2">제안된 일정:</p>
+        ${proposedDates.map((d, i) => `<p>${i + 1}. ${d.date} ${d.time}</p>`).join('')}
+        <p class="mt-2">면접 방식: ${interviewType.value.label}</p>
+        <p>장소: ${interviewLocation.value}</p>
+        <p class="mt-4 text-red-500">* 확인 시 알림과 이메일이 발송됩니다.</p>
+      </div>
+    </div>`,
+    acceptLabel: '제안하기',
+    rejectLabel: '취소',
+    onCloseYes: () => {
+      // 기존 로직 실행
+      selectedOffer.value.interviewScheduled = true;
+      selectedOffer.value.proposedDates = proposedDates;
+      selectedOffer.value.interviewType = interviewType.value;
+      selectedOffer.value.interviewLocation = interviewLocation.value;
 
-  showScheduleModal.value = false;
-  // 입력값 초기화
-  interviewDates.value = [
-    { date: null, hour: null, minute: null },
-    { date: null, hour: null, minute: null },
-    { date: null, hour: null, minute: null }
-  ];
-  interviewType.value = null;
-  interviewLocation.value = '';
+      // 성공 메시지 표시
+      messagePop.confirm({
+        icon: 'info',
+        message: `<div class="text-center">
+          <p class="text-xl mb-2">면접 일정이 제안되었습니다.</p>
+          <p class="text-sm text-gray-600">${selectedOffer.value.candidate.name}님께 알림과 이메일이 발송되었습니다.</p>
+        </div>`,
+        acceptLabel: '확인',
+        showReject: false,
+        onCloseYes: () => {
+          showScheduleModal.value = false;
+          // 입력값 초기화
+          interviewDates.value = [
+            { date: null, hour: null, minute: null },
+            { date: null, hour: null, minute: null },
+            { date: null, hour: null, minute: null }
+          ];
+          interviewType.value = null;
+          interviewLocation.value = '';
+        }
+      });
+    }
+  });
 };
 
 const completeInterview = (offer) => {
