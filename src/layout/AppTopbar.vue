@@ -111,6 +111,32 @@ const toggleNotificationPanel = (event) => {
 
 const markAsRead = (notification) => {
   notification.isRead = true;
+  overlayPanel.value.hide(); // 알림 패널 닫기
+
+  // 알림 타입에 따라 페이지 이동
+  switch (notification.type) {
+    // 구직자용 알림 라우팅
+    case 'interview_offer':
+      router.push('/user/jobOffers'); // 면접제안 페이지로 이동
+      break;
+    case 'interview_schedule':
+      router.push('/user/jobOffers'); // 면접제안 페이지로 이동
+      break;
+    case 'result':
+      router.push('/user/jobSeekerInterviews'); // 면접결과 페이지로 이동
+      break;
+
+    // 기업용 알림 라우팅
+    case 'interview_accepted':
+      router.push('/business/InterviewOffers'); // 면접제안 관리 페이지로 이동
+      break;
+    case 'schedule_selected':
+      router.push('/business/InterviewOffers'); // 면접제안 관리 페이지로 이동
+      break;
+    case 'interview_declined':
+      router.push('/business/InterviewOffers'); // 면접제안 관리 페이지로 이동
+      break;
+  }
 };
 
 // 알림 아이콘 및 색상 매핑
