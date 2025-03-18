@@ -915,7 +915,4 @@ const downloadFile = (fileType, fileInfo) => {
   border-radius: 12px;
   border: 1px solid #e5e7eb;
 }
-
-::v-deep.p-datepicker-header {
-}
 </style>

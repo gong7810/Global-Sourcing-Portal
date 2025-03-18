@@ -138,7 +138,7 @@ const horizontalEvents = ref(['2020', '2021', '2022', '2023']);
 
 <style lang="scss" scoped>
 @media screen and (max-width: 960px) {
-    ::v-deep(.customized-timeline) {
+    :deep(.customized-timeline) {
         .p-timeline-event:nth-child(even) {
             flex-direction: row !important;
 
