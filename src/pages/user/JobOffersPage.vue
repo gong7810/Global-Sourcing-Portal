@@ -7,12 +7,15 @@ import Toast from 'primevue/toast';
 import { useToast } from 'primevue/usetoast';
 import { useUserStore } from '@/store/user/userStore';
 import { storeToRefs } from 'pinia';
+import { useMessagePop } from '@/plugins/commonutils';
+import MessagePop from 'primevue/message';
 
 const router = useRouter();
 const userStore = useUserStore();
 // const { jobOfferList } = storeToRefs(userStore); api 연동할 때 사용하기
 
 const toast = useToast();
+const messagePop = useMessagePop();
 
 // 면접제안 목록 상태
 const jobOffers = computed(() => {
@@ -57,43 +60,67 @@ const viewOfferDetail = (offer) => {
 
 // 제안 수락
 const acceptOffer = async (offer) => {
-  try {
-    // 제안 수락 처리
-    offer.status = 'accepted';
-    offer.acceptedAt = new Date().toISOString();
+  messagePop.confirm({
+    icon: 'info',
+    message: `<div class="text-center">
+      <p class="text-xl mb-2">${offer.companyName}의 면접 제안을 수락하시겠습니까?</p>
+      <p class="text-sm text-gray-600">수락 시 기업 담당자에게 알림과 메일이 발송됩니다.</p>
+      <p class="text-sm text-gray-600">이후 면접 일정 조율이 진행됩니다.</p>
+    </div>`,
+    acceptLabel: '수락',
+    rejectLabel: '취소',
+    onCloseYes: async () => {
+      try {
+        offer.status = 'accepted';
+        offer.acceptedAt = new Date().toISOString();
 
-    // API 연동 전까지는 주석 처리
-    // await updateJobOffer(offer);  // 실제 API 연동 시 사용할 코드
+        toast.add({
+          severity: 'success',
+          summary: '제안 수락',
+          detail: `${offer.companyName}의 면접제안을 수락했습니다.`,
+          life: 3000
+        });
 
-    toast.add({
-      severity: 'success',
-      summary: '제안 수락',
-      detail: `${offer.companyName}의 면접제안을 수락했습니다.`,
-      life: 3000
-    });
-
-    showDetailModal.value = false;
-  } catch (error) {
-    console.error('제안 수락 중 오류 발생:', error);
-    toast.add({
-      severity: 'error',
-      summary: '오류',
-      detail: '제안 수락 중 문제가 발생했습니다.',
-      life: 3000
-    });
-  }
+        showDetailModal.value = false;
+      } catch (error) {
+        console.error('제안 수락 중 오류 발생:', error);
+        toast.add({
+          severity: 'error',
+          summary: '오류',
+          detail: '제안 수락 중 문제가 발생했습니다.',
+          life: 3000
+        });
+      }
+    }
+  });
 };
 
 // 제안 거절
 const rejectOffer = (offer) => {
-  offer.status = 'rejected';
-  toast.add({
-    severity: 'info',
-    summary: '제안 거절',
-    detail: `${offer.companyName}의 면접제안을 거절했습니다.`,
-    life: 3000
+  messagePop.confirm({
+    icon: 'info',
+    message: `<div class="text-center">
+      <p class="text-xl mb-2">${offer.companyName}의 면접 제안을 거절하시겠습니까?</p>
+      <p class="text-sm text-gray-600">거절 시 기업 담당자에게 알림과 메일이 발송됩니다.</p>
+      <p class="text-sm text-red-500">이 결정은 되돌릴 수 없습니다.</p>
+    </div>`,
+    acceptLabel: '거절',
+    rejectLabel: '취소',
+    acceptClass: 'p-button-danger',
+    onCloseYes: () => {
+      offer.status = 'rejected';
+      offer.rejectedAt = new Date().toISOString();
+      
+      toast.add({
+        severity: 'info',
+        summary: '제안 거절',
+        detail: `${offer.companyName}의 면접제안을 거절했습니다.`,
+        life: 3000
+      });
+      
+      showDetailModal.value = false;
+    }
   });
-  showDetailModal.value = false;
 };
 
 // 제안 상태에 따른 스타일 클래스
@@ -145,51 +172,65 @@ const calculateAge = (birthDate) => {
   return age;
 };
 
-// 면접 일정 수락 함수 수정
+// 면접 일정 수락
 const acceptInterviewSchedule = (offer) => {
   const selectedIndex = selectedDateIndices.value[offer.id];
-
-  if (selectedIndex === undefined) {
-    toast.add({
-      severity: 'warn',
-      summary: '알림',
-      detail: '면접 일정을 선택해주세요.',
-      life: 3000
-    });
-    return;
-  }
-
-  // 선택된 일정으로 면접 정보 업데이트
   const selectedDate = offer.proposedDates[selectedIndex];
-  offer.interviewConfirmed = true; // 면접 확정 상태로 변경
-  offer.interviewProposed = false; // 제안 상태 해제
-  offer.interviewDate = selectedDate.date;
-  offer.interviewTime = selectedDate.time;
-  offer.interviewConfirmedAt = new Date().toISOString();
+  
+  messagePop.confirm({
+    icon: 'info',
+    message: `<div class="text-center">
+      <p class="text-xl mb-2">면접 일정을 수락하시겠습니까?</p>
+      <p class="text-sm text-gray-600 mb-2">일시: ${selectedDate.date} ${selectedDate.time}</p>
+      <p class="text-sm text-gray-600">면접 방식: ${offer.interviewType === 'online' ? '화상 면접' : '대면 면접'}</p>
+      <p class="text-sm text-gray-600 mb-4">장소: ${offer.interviewLocation}</p>
+      <p class="text-sm text-blue-600">확인 시 기업 담당자에게 알림과 메일이 발송됩니다.</p>
+    </div>`,
+    acceptLabel: '수락',
+    rejectLabel: '취소',
+    onCloseYes: () => {
+      offer.interviewConfirmed = true;
+      offer.interviewProposed = false;
+      offer.interviewDate = selectedDate.date;
+      offer.interviewTime = selectedDate.time;
+      offer.interviewConfirmedAt = new Date().toISOString();
+      selectedDateIndices.value[offer.id] = undefined;
 
-  // 선택된 일정 인덱스 초기화
-  selectedDateIndices.value[offer.id] = undefined;
-
-  toast.add({
-    severity: 'success',
-    summary: '면접 일정 확정',
-    detail: `${selectedDate.date} ${selectedDate.time}에 면접이 확정되었습니다.`,
-    life: 3000
+      toast.add({
+        severity: 'success',
+        summary: '면접 일정 확정',
+        detail: `${selectedDate.date} ${selectedDate.time}에 면접이 확정되었습니다.`,
+        life: 3000
+      });
+    }
   });
 };
 
-// 면접 일정 거절 함수 수정
+// 면접 일정 거절
 const rejectInterviewSchedule = (offer) => {
-  offer.interviewProposed = false;
-  offer.status = 'rejected';
-  offer.rejectedAt = new Date().toISOString();
-  selectedDateIndices.value[offer.id] = undefined;
+  messagePop.confirm({
+    icon: 'info',
+    message: `<div class="text-center">
+      <p class="text-xl mb-2">면접을 거절하시겠습니까?</p>
+      <p class="text-sm text-gray-600">거절 시 기업 담당자에게 알림과 메일이 발송됩니다.</p>
+      <p class="text-sm text-red-500">이 결정은 되돌릴 수 없습니다.</p>
+    </div>`,
+    acceptLabel: '거절',
+    rejectLabel: '취소',
+    acceptClass: 'p-button-danger',
+    onCloseYes: () => {
+      offer.interviewProposed = false;
+      offer.status = 'rejected';
+      offer.rejectedAt = new Date().toISOString();
+      selectedDateIndices.value[offer.id] = undefined;
 
-  toast.add({
-    severity: 'info',
-    summary: '면접 일정 거절',
-    detail: '면접 일정이 거절되었습니다.',
-    life: 3000
+      toast.add({
+        severity: 'info',
+        summary: '면접 거절',
+        detail: '면접이 거절되었습니다.',
+        life: 3000
+      });
+    }
   });
 };
 
@@ -290,11 +331,11 @@ const mockJobOffers = [
     status: 'pending',
     isRead: true,
     createdAt: '2024-03-10',
-    acceptedAt: '2024-03-16',
-    interviewProposed: true,
+    acceptedAt: null,
+    interviewProposed: false,
     interviewConfirmed: false,
-    interviewDate: '2024-03-25',
-    interviewTime: '14:30',
+    interviewDate: null,
+    interviewTime: null,
     interviewType: 'offline',
     interviewLocation: '경상남도 사천시 사남면 공단1로 78',
     resumeSnapshot: {
@@ -917,6 +958,9 @@ const mockJobOffers = [
 
     <!-- 토스트 메시지 -->
     <Toast />
+    
+    <!-- 메시지팝 추가 -->
+    <MessagePop />
   </div>
 </template>
 

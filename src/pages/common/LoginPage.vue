@@ -23,16 +23,22 @@ const setActiveTab = (tab) => {
 };
 
 const login = () => {
-  // 로그인 검증을 비활성화하고 바로 페이지 이동
-  let targetPage;
+  // 예시 사용자 정보 설정
+  const userInfo = {
+    id: 1,
+    type: activeTab.value === 'personal' ? 'user' : 'company',
+    name: '테스트 사용자'
+  };
+  
+  // 사용자 정보 저장
+  authStore.setUserInfo(userInfo);
 
+  // 탭에 따라 다른 경로로 이동
   if (activeTab.value === 'personal') {
-    targetPage = 'userIndex'; // 개인회원 페이지
+    router.push('/');  // 개인회원 메인 페이지
   } else if (activeTab.value === 'business') {
-    targetPage = 'businessIndex'; // 기업회원 페이지
+    router.push('/business/index');  // 기업회원 대시보드
   }
-
-  router.push({ name: targetPage }); // 해당 메인 페이지로 이동, ToDo: 라우터 수정하기
 };
 
 const { lineState } = storeToRefs(authStore);
