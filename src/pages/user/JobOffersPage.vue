@@ -957,10 +957,7 @@ const mockJobOffers = [
     </Dialog>
 
     <!-- 토스트 메시지 -->
-    <Toast />
-    
-    <!-- 메시지팝 추가 -->
-    <MessagePop />
+    <Toast />    
   </div>
 </template>
 
