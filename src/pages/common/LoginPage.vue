@@ -1,9 +1,9 @@
 <script setup>
-import { useAuthStore } from '@/store/auth/authStore';
-import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import Button from 'primevue/button';
+import { useAuthStore } from '@/store/auth/authStore';
+import { storeToRefs } from 'pinia';
+import { login } from '@/apis/auth/authApis';
 
 const authStore = useAuthStore();
 const activeTab = ref('personal');
@@ -22,23 +22,32 @@ const setActiveTab = (tab) => {
   activeTab.value = tab;
 };
 
-const login = () => {
-  // 예시 사용자 정보 설정
-  const userInfo = {
-    id: 1,
-    type: activeTab.value === 'personal' ? 'user' : 'company',
-    name: '테스트 사용자'
+const getLogin = async () => {
+  const body = {
+    userId: id.value,
+    password: pw.value
   };
-  
-  // 사용자 정보 저장
-  authStore.setUserInfo(userInfo);
 
-  // 탭에 따라 다른 경로로 이동
-  if (activeTab.value === 'personal') {
-    router.push('/');  // 개인회원 메인 페이지
-  } else if (activeTab.value === 'business') {
-    router.push('/business/index');  // 기업회원 대시보드
-  }
+  const response = await login(body);
+
+  console.log(response);
+
+  // 예시 사용자 정보 설정
+  // const userInfo = {
+  //   id: 1,
+  //   type: activeTab.value === 'personal' ? 'user' : 'company',
+  //   name: '테스트 사용자'
+  // };
+
+  // // 사용자 정보 저장
+  // authStore.setUserInfo(userInfo);
+
+  // // 탭에 따라 다른 경로로 이동
+  // if (activeTab.value === 'personal') {
+  //   router.push('/'); // 개인회원 메인 페이지
+  // } else if (activeTab.value === 'business') {
+  //   router.push('/business/index'); // 기업회원 대시보드
+  // }
 };
 
 const { lineState } = storeToRefs(authStore);
@@ -119,9 +128,7 @@ const loginLine = () => {
       </div>
 
       <!-- 로그인 버튼 -->
-      <Button class="w-full py-3 bt_btn primary" @click="login">
-        로그인
-      </Button>
+      <Button class="w-full py-3 bt_btn primary" @click="getLogin"> 로그인 </Button>
 
       <!-- 아이디/비밀번호 찾기, 회원가입 -->
       <div class="flex justify-center items-center gap-4 my-4 text-sm text-gray-500">
@@ -130,16 +137,26 @@ const loginLine = () => {
         <router-link to="/find-password" class="hover:text-[#8FA1FF] transition-colors">비밀번호찾기</router-link>
         <div class="w-px h-4 bg-gray-300"></div>
         <!-- <button class="hover:text-[#8FA1FF] transition-colors">회원가입</button> -->
-        <router-link to="/personal/register" v-if="activeTab === 'personal'" class="hover:text-[#8FA1FF] transition-colors">회원가입</router-link>
-        <router-link to="/business/register" v-if="activeTab === 'business'" class="hover:text-[#8FA1FF] transition-colors">회원가입</router-link>
+        <router-link
+          to="/personal/register"
+          v-if="activeTab === 'personal'"
+          class="hover:text-[#8FA1FF] transition-colors"
+          >회원가입</router-link
+        >
+        <router-link
+          to="/business/register"
+          v-if="activeTab === 'business'"
+          class="hover:text-[#8FA1FF] transition-colors"
+          >회원가입</router-link
+        >
       </div>
 
       <!-- 소셜 로그인 -->
       <div v-if="activeTab === 'personal'">
         <div class="flex items-center text-sm text-gray-500 mt-6 mb-4">
-            <div class="flex-grow border-t border-gray-300"></div>
-            <span class="mx-4">소셜 계정 로그인</span>
-            <div class="flex-grow border-t border-gray-300"></div>
+          <div class="flex-grow border-t border-gray-300"></div>
+          <span class="mx-4">소셜 계정 로그인</span>
+          <div class="flex-grow border-t border-gray-300"></div>
         </div>
 
         <!-- Google 로그인 버튼 -->

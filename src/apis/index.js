@@ -3,7 +3,7 @@ import axios from 'axios';
 // Axios 인스턴스 생성
 const api = axios.create({
   // baseURL: import.meta.env.VITE_API_URL,
-  baseURL: 'http://localhost:5173',
+  baseURL: 'http://localhost:5173/api',
   headers: {
     'Content-Type': 'application/json'
   },
@@ -14,7 +14,11 @@ const api = axios.create({
 const request = async (method, url, data = null, config = {}) => {
   try {
     const response =
-      method === 'GET' ? await api.get(url, { params: data, ...config }) : await api.post(url, data, config);
+      method === 'GET'
+        ? await api.get(url, { params: data, ...config })
+        : method === 'POST'
+          ? await api.post(url, data, config)
+          : await api.delete(url, data, config);
 
     return {
       status: response?.status,
@@ -32,5 +36,6 @@ const request = async (method, url, data = null, config = {}) => {
 // API 호출 유틸 함수 제공
 export const get = (url, params, config) => request('GET', url, params, config);
 export const post = (url, params, config) => request('POST', url, params, config);
+export const deletes = (url, params, config) => request('DELETE', url, params, config);
 
 export default api;

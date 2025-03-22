@@ -1,10 +1,9 @@
 import api from '@/apis/index';
-import axios from 'axios';
 
-// 회원가입 여권 확인 API
-export const verifypassportNo = async (body) => {
+// 로그인 API
+export const login = async (body) => {
   try {
-    const response = await api.get('/passport', body);
+    const response = await api.post('/auth/login', body);
 
     return response;
   } catch (error) {

@@ -1,7 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { isEmpty } from 'es-toolkit/compat';
-import { verifypassportNo } from '@/apis/auth/authApis';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import { useRouter } from 'vue-router';
@@ -159,26 +158,6 @@ const togglePasswordVisibility = () => {
 
 const togglePasswordCheckVisibility = () => {
   showPwCheck.value = !showPwCheck.value;
-};
-
-const verifyPassport = async () => {
-  // 여권번호 확인 로직
-
-  const body = {
-    organization: '0001',
-    passportNo: passportNo.value,
-    nationality: '12',
-    country: '',
-    birthDate: '19980814'
-  };
-
-  try {
-    const response = await verifypassportNo(body);
-
-    console.log(response);
-  } catch (error) {
-    console.error(error);
-  }
 };
 
 const toggleAll = () => {
@@ -430,9 +409,7 @@ const test = () => {
         <!-- 이용약관 -->
         <div class="mt-6">
           <div class="flex items-center mb-2">
-            <span
-              >필수동의 항목 및 개인정보 수집 및 이용 동의(선택)에 <br>모두 동의합니다.</span
-            >
+            <span>필수동의 항목 및 개인정보 수집 및 이용 동의(선택)에 <br />모두 동의합니다.</span>
             <input type="checkbox" v-model="allAgreed" @change="toggleAll" class="ml-auto mr-2" />
           </div>
           <hr class="my-4 border-gray-300" />
@@ -470,7 +447,11 @@ const test = () => {
               <input type="checkbox" v-model="terms.optionalPrivacy" class="ml-auto mr-2" />
             </div>
           </div>
-          <div v-if="details.optionalPrivacy" class="p-2 border rounded bg-gray-100" style="height: 200px; overflow-y: auto">
+          <div
+            v-if="details.optionalPrivacy"
+            class="p-2 border rounded bg-gray-100"
+            style="height: 200px; overflow-y: auto"
+          >
             <OptionalPrivacyTerms />
           </div>
         </div>
