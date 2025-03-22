@@ -11,8 +11,8 @@ const activeTab = ref('personal');
 const router = useRouter();
 
 // 개인회원 입력 필드
-const id = ref(''); // 정의
-const pw = ref(''); // 정의
+const id = ref('user1'); // 정의
+const pw = ref('1q2w3e4r5t!'); // 정의
 
 // 기업회원 입력 필드
 const businessId = ref('');
@@ -24,13 +24,15 @@ const setActiveTab = (tab) => {
 
 const getLogin = async () => {
   const body = {
-    userId: id.value,
+    loginId: id.value,
     password: pw.value
   };
 
   const response = await login(body);
 
-  console.log(response);
+  if (response) {
+    authStore.setToken(response?.accessToken, response?.refreshToken);
+  }
 
   // 예시 사용자 정보 설정
   // const userInfo = {

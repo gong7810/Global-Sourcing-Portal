@@ -1,10 +1,9 @@
 <script setup>
 import { useLayout } from '@/layout/composables/layout';
 import { useRouter } from 'vue-router';
-import { nextTick, onMounted, ref, computed } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { useAuthStore } from '@/store/auth/authStore';
 import { useMessagePop } from '@/plugins/commonutils';
-import { setProperty } from '@primevue/themes';
 import OverlayPanel from 'primevue/overlaypanel';
 import { storeToRefs } from 'pinia';
 
@@ -100,7 +99,7 @@ const notifications = computed(() => {
 });
 
 const unreadCount = computed(() => {
-  return notifications.value.filter(notif => !notif.isRead).length;
+  return notifications.value.filter((notif) => !notif.isRead).length;
 });
 
 const overlayPanel = ref();
@@ -498,7 +497,9 @@ const test = () => {
 /* 알림 패널 스타일 */
 :deep(.p-overlaypanel) {
   border-radius: 12px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 :deep(.p-overlaypanel-content) {

@@ -9,6 +9,13 @@ export const useAuthStore = defineStore(
     const router = useRouter();
     let userInfo = ref(null); // 사용자정보
     let lineState = ref('12345abcde');
+    let tokenInfo = ref({});
+
+    /* 로그인 완료후 토큰 정보 설정 */
+    const setToken = (accessToken, refreshToken) => {
+      tokenInfo.value.accessToken = accessToken;
+      tokenInfo.value.refreshToken = refreshToken;
+    };
 
     /* 로그인 완료후 사용자 정보 설정 */
     const setUserInfo = (info) => {
@@ -39,6 +46,8 @@ export const useAuthStore = defineStore(
 
     return {
       userInfo,
+      tokenInfo,
+      setToken,
       lineState,
       setState,
       setUserInfo,

@@ -1,13 +1,13 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { isEmpty } from 'es-toolkit/compat';
-import InputText from 'primevue/inputtext';
-import Button from 'primevue/button';
 import { useRouter } from 'vue-router';
-import ServiceTerms from '@/components/terms/ServiceTerms.vue';
-import PrivacyTerms from '@/components/terms/PrivacyTerms.vue';
-import OptionalPrivacyTerms from '@/components/terms/OptionalPrivacyTerms.vue';
+import { checkDuplicate } from '@/apis/auth/authApis';
+import { useAuthStore } from '@/store/auth/authStore';
+import { storeToRefs } from 'pinia';
 
+const authStore = useAuthStore();
+const { tokenInfo } = storeToRefs(authStore);
 const router = useRouter();
 
 const fileupload = ref();
@@ -56,6 +56,7 @@ const countryOptions = [
 
 const formError = ref('');
 
+// 아이디 중복체크
 const checkIdDuplication = async () => {
   if (!id.value.trim()) {
     idCheckMessage.value = '아이디를 입력해주세요.';
@@ -63,14 +64,12 @@ const checkIdDuplication = async () => {
     return;
   }
 
+  console.log(tokenInfo.value);
+
   try {
-    // 여기에 실제 API 호출을 추가하세요.
-    // 예시: const response = await axios.post('/api/check-id', { id: id.value });
+    const response = await checkDuplicate(id.value);
 
-    // 임시로 중복 확인 로직을 추가합니다.
-    const isDuplicate = id.value === 'existingId'; // 'existingId'는 이미 존재하는 아이디 예시입니다.
-
-    if (isDuplicate) {
+    if (response) {
       idCheckMessage.value = '이미 사용 중인 아이디입니다.';
       idCheckSuccess.value = false;
     } else {
