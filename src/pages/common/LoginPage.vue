@@ -16,8 +16,8 @@ const id = ref('user1'); // 정의
 const pw = ref('1q2w3e4r5t!'); // 정의
 
 // 기업회원 입력 필드
-const businessId = ref('');
-const businessPassword = ref('');
+const businessId = ref('user2');
+const businessPassword = ref('1q2w3e4r5t!');
 
 const setActiveTab = (tab) => {
   activeTab.value = tab;
@@ -26,8 +26,8 @@ const setActiveTab = (tab) => {
 // 로그인
 const getLogin = async () => {
   const body = {
-    loginId: id.value,
-    password: pw.value
+    loginId: activeTab.value === 'personal' ? id.value : businessId.value,
+    password: activeTab.value === 'personal' ? pw.value : businessPassword.value
   };
 
   const response = await login(body);
@@ -41,7 +41,6 @@ const getLogin = async () => {
 
 // 사용자 정보 조회
 const getUserInfo = async () => {
-  console.log(toRaw(tokenInfo.value).accessToken);
   const response = await getAccount();
 
   // 사용자 정보 저장

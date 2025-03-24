@@ -4,6 +4,7 @@ import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
 import Dialog from 'primevue/dialog';
+import { isNil } from 'es-toolkit';
 
 const router = useRouter();
 
@@ -11,7 +12,7 @@ const careers = [
   { label: '신입', value: 'entry' },
   { label: '1~3년', value: 'junior' },
   { label: '4~7년', value: 'middle' },
-  { label: '8년 이상', value: 'senior' },
+  { label: '8년 이상', value: 'senior' }
 ];
 
 const nationalities = [
@@ -28,7 +29,7 @@ const { userInfo } = storeToRefs(authStore);
 const bookmarkFlag = ref(true);
 
 onMounted(() => {
-  if (userInfo.value?.type === 'user') {
+  if (!isNil(userInfo.value?.isCompany) && !userInfo.value?.isCompany) {
     bookmarkFlag.value = false;
   }
 });
@@ -40,14 +41,14 @@ const formatCurrency = (value) => {
 // 북마크 토글 함수 수정
 const toggleBookmark = (talent) => {
   if (!talent) return;
-  
+
   // bookmarkedTalents에서 해당 인재 찾기
-  const index = bookmarkedTalents.value.findIndex(t => t.id === talent.id);
+  const index = bookmarkedTalents.value.findIndex((t) => t.id === talent.id);
   if (index !== -1) {
     // 북마크 상태 토글
     const updatedTalent = { ...bookmarkedTalents.value[index] };
     updatedTalent.isBookmarked = !updatedTalent.isBookmarked;
-    
+
     // 북마크가 해제되면 목록에서 제거
     if (!updatedTalent.isBookmarked) {
       bookmarkedTalents.value.splice(index, 1);
@@ -92,7 +93,8 @@ const bookmarkedTalents = ref([
         period: '2021.03 - 2024.03',
         jobCategory: { label: 'IT개발·데이터', value: 'it' },
         position: '프론트엔드 개발자 | 개발팀',
-        description: '웹 서비스 프론트엔드 개발 및 유지보수\n- React, TypeScript 기반 웹 애플리케이션 개발\n- 성능 최적화 및 사용자 경험 개선'
+        description:
+          '웹 서비스 프론트엔드 개발 및 유지보수\n- React, TypeScript 기반 웹 애플리케이션 개발\n- 성능 최적화 및 사용자 경험 개선'
       },
       {
         company: '(주)스타트업',
@@ -136,7 +138,8 @@ const bookmarkedTalents = ref([
         period: '2021.01 - 2024.03',
         jobCategory: { label: 'IT개발·데이터', value: 'it' },
         position: '백엔드 개발자 | 서버개발팀',
-        description: '백엔드 서버 개발 및 운영\n- Spring Boot 기반 REST API 개발\n- MSA 아키텍처 설계 및 구현\n- 대용량 데이터 처리 시스템 구축'
+        description:
+          '백엔드 서버 개발 및 운영\n- Spring Boot 기반 REST API 개발\n- MSA 아키텍처 설계 및 구현\n- 대용량 데이터 처리 시스템 구축'
       }
     ],
     education: [
@@ -186,24 +189,25 @@ const selectedJobCategory = ref(null);
 
 // 필터링된 북마크 목록
 const filteredBookmarks = computed(() => {
-  return bookmarkedTalents.value.filter(talent => {
+  return bookmarkedTalents.value.filter((talent) => {
     // 경력 필터
-    const careerMatch = !selectedCareer.value || 
-      talent.career === careers.find(c => c.value === selectedCareer.value)?.label;
-    
+    const careerMatch =
+      !selectedCareer.value || talent.career === careers.find((c) => c.value === selectedCareer.value)?.label;
+
     // 국적 필터
-    const nationalityMatch = selectedNationalities.value.length === 0 || 
-      selectedNationalities.value.some(n => 
-        talent.nationality === nationalities.find(nat => nat.value === n)?.label
+    const nationalityMatch =
+      selectedNationalities.value.length === 0 ||
+      selectedNationalities.value.some(
+        (n) => talent.nationality === nationalities.find((nat) => nat.value === n)?.label
       );
-    
+
     // 직무 필터 추가
-    const jobCategoryMatch = !selectedJobCategory.value || 
-      talent.jobCategory?.value === selectedJobCategory.value;
-    
+    const jobCategoryMatch = !selectedJobCategory.value || talent.jobCategory?.value === selectedJobCategory.value;
+
     // 키워드 검색 (이름, 학교, 전공)
     const keyword = searchKeyword.value.toLowerCase();
-    const keywordMatch = !keyword || 
+    const keywordMatch =
+      !keyword ||
       talent.name.toLowerCase().includes(keyword) ||
       talent.education.toLowerCase().includes(keyword) ||
       talent.major.toLowerCase().includes(keyword);
@@ -247,7 +251,9 @@ const getEducationDisplay = (talent) => {
       <div class="flex justify-center gap-32 mb-12">
         <!-- 인재 검색 -->
         <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/TalentSearchPage')">
-          <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
+          <div
+            class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
+          >
             <svg
               width="32"
               height="32"
@@ -261,12 +267,16 @@ const getEducationDisplay = (talent) => {
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
           </div>
-          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">인재 검색</span>
+          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
+            >인재 검색</span
+          >
         </div>
 
         <!-- 면접 제안 내역 -->
         <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/InterviewOffers')">
-          <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
+          <div
+            class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
+          >
             <svg
               width="32"
               height="32"
@@ -282,12 +292,16 @@ const getEducationDisplay = (talent) => {
               <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
           </div>
-          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">면접 제안 내역</span>
+          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
+            >면접 제안 내역</span
+          >
         </div>
 
         <!-- 면접 결과 내역 -->
         <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/InterviewResults')">
-          <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
+          <div
+            class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
+          >
             <svg
               width="32"
               height="32"
@@ -301,12 +315,16 @@ const getEducationDisplay = (talent) => {
               <polyline points="22 4 12 14.01 9 11.01"></polyline>
             </svg>
           </div>
-          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">면접 결과 내역</span>
+          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
+            >면접 결과 내역</span
+          >
         </div>
 
         <!-- 기업 정보 -->
         <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/CompanyInfoPage')">
-          <div class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg">
+          <div
+            class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
+          >
             <svg
               width="32"
               height="32"
@@ -320,7 +338,9 @@ const getEducationDisplay = (talent) => {
               <polyline points="9 22 9 12 15 12 15 22"></polyline>
             </svg>
           </div>
-          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">기업 정보</span>
+          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
+            >기업 정보</span
+          >
         </div>
       </div>
 
@@ -328,7 +348,7 @@ const getEducationDisplay = (talent) => {
       <div class="bg-white rounded-lg p-6 shadow-sm mb-6">
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-xl font-bold">북마크된 인재</h2>
-          <router-link 
+          <router-link
             to="/business/TalentSearchPage"
             class="text-[#8B8BF5] hover:text-[#7A7AE6] text-sm flex items-center gap-1"
           >
@@ -336,7 +356,7 @@ const getEducationDisplay = (talent) => {
             <i class="pi pi-arrow-right"></i>
           </router-link>
         </div>
-        
+
         <!-- 검색 필터 섹션 수정 -->
         <div class="flex items-center gap-4 mb-6">
           <!-- 국적 필터 -->
@@ -378,21 +398,17 @@ const getEducationDisplay = (talent) => {
           <!-- 키워드 검색 -->
           <div class="flex-1">
             <label class="block text-sm font-medium text-gray-700 mb-1">키워드</label>
-            <InputText 
-              v-model="searchKeyword"
-              placeholder="이름, 학교, 전공 등"
-              class="w-full"
-            />
+            <InputText v-model="searchKeyword" placeholder="이름, 학교, 전공 등" class="w-full" />
           </div>
         </div>
-        
+
         <!-- 북마크된 인재가 없을 때 표시할 빈 상태 -->
         <div v-if="bookmarkedTalents.length === 0" class="text-center py-12">
           <div class="flex flex-col items-center gap-4">
             <i class="pi pi-bookmark text-gray-300 text-5xl mb-2"></i>
             <p class="text-gray-500 mb-2">북마크된 인재가 없습니다</p>
             <p class="text-gray-400 text-sm mb-4">관심있는 인재를 북마크하고 관리해보세요</p>
-            <router-link 
+            <router-link
               to="/business/TalentSearchPage"
               class="inline-flex items-center px-4 py-2 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7A7AE6] transition-colors"
             >
@@ -401,7 +417,7 @@ const getEducationDisplay = (talent) => {
             </router-link>
           </div>
         </div>
-        
+
         <!-- 북마크된 인재는 있지만 필터링 결과가 없을 때 -->
         <div v-else-if="filteredBookmarks.length === 0" class="text-center py-12">
           <div class="flex flex-col items-center gap-4">
@@ -410,11 +426,14 @@ const getEducationDisplay = (talent) => {
             <p class="text-gray-400 text-sm mb-4">다른 검색 조건을 시도해보세요</p>
           </div>
         </div>
-        
+
         <!-- 북마크된 인재가 있을 때 표시할 목록 -->
         <div v-else class="grid grid-cols-1 gap-4">
-          <div v-for="talent in filteredBookmarks" :key="talent.id" 
-            class="border rounded-lg p-6 hover:border-[#8B8BF5] transition-all duration-200">
+          <div
+            v-for="talent in filteredBookmarks"
+            :key="talent.id"
+            class="border rounded-lg p-6 hover:border-[#8B8BF5] transition-all duration-200"
+          >
             <div class="flex justify-between items-start">
               <div>
                 <div class="flex items-center gap-3 mb-3">
@@ -432,13 +451,13 @@ const getEducationDisplay = (talent) => {
                 </button>
                 <span class="text-sm text-gray-500">북마크: {{ talent.bookmarkedDate }}</span>
                 <!-- 이력서 보기 버튼 추가 -->
-                <button 
-                  @click="openResumeModal(talent)" 
+                <button
+                  @click="openResumeModal(talent)"
                   class="w-[140px] px-4 py-2 border border-[#8B8BF5] text-[#8B8BF5] rounded-lg hover:bg-gray-50"
                 >
                   이력서 보기
                 </button>
-                <button 
+                <button
                   @click="openInterviewOffer(talent)"
                   class="w-[140px] px-4 py-2 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7A7AE6] transition-colors"
                 >
@@ -453,12 +472,7 @@ const getEducationDisplay = (talent) => {
   </div>
 
   <!-- 이력서 상세 모달 추가 -->
-  <Dialog 
-    v-model:visible="showResumeModal" 
-    :modal="true"
-    :style="{ width: '80vw' }"
-    :maximizable="true"
-  >
+  <Dialog v-model:visible="showResumeModal" :modal="true" :style="{ width: '80vw' }" :maximizable="true">
     <template #header>
       <div class="text-2xl font-bold">이력서</div>
     </template>
@@ -537,9 +551,7 @@ const getEducationDisplay = (talent) => {
         <div v-for="(career, index) in selectedCandidate?.careers" :key="index" class="mb-4">
           <div class="font-medium">{{ career.company }}</div>
           <div class="text-gray-600">{{ career.period }}</div>
-          <div class="text-gray-600">
-            {{ career.jobCategory.label }} | {{ career.position }}
-          </div>
+          <div class="text-gray-600">{{ career.jobCategory.label }} | {{ career.position }}</div>
           <div class="mt-2 whitespace-pre-line">{{ career.description }}</div>
         </div>
       </div>
@@ -559,23 +571,20 @@ const getEducationDisplay = (talent) => {
 
     <template #footer>
       <div class="flex justify-end gap-4">
-        <Button 
-          @click="toggleBookmark(selectedCandidate)" 
+        <Button
+          @click="toggleBookmark(selectedCandidate)"
           class="p-button-text"
           :class="{
             'text-[#8B8BF5]': selectedCandidate?.isBookmarked,
             'text-gray-400': !selectedCandidate?.isBookmarked
           }"
         >
-          <i 
-            :class="['pi', selectedCandidate?.isBookmarked ? 'pi-bookmark-fill' : 'pi-bookmark']" 
+          <i
+            :class="['pi', selectedCandidate?.isBookmarked ? 'pi-bookmark-fill' : 'pi-bookmark']"
             style="font-size: 1.5rem"
           ></i>
         </Button>
-        <Button 
-          @click="openInterviewOffer(selectedCandidate)" 
-          class="bg-[#8B8BF5] hover:bg-[#7A7AE6]"
-        >
+        <Button @click="openInterviewOffer(selectedCandidate)" class="bg-[#8B8BF5] hover:bg-[#7A7AE6]">
           면접 제안하기
         </Button>
       </div>
@@ -623,4 +632,3 @@ const getEducationDisplay = (talent) => {
   width: 100%;
 }
 </style>
-

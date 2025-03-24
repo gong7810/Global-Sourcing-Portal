@@ -15,7 +15,10 @@ const messagePop = useMessagePop();
 const { userInfo } = storeToRefs(authStore);
 
 const isMenuOpen = ref(false); // 메뉴 열림 상태
-const loginFlag = ref(false); // 로그인 여부 체크
+// 로그인 여부 체크
+const loginFlag = computed(() => {
+  return authStore.isLogin();
+});
 
 // 다국어 지원 관련
 const selectedLanguage = ref('ko');
@@ -95,7 +98,7 @@ const jobSeekerNotifications = ref([
 
 // 사용자 타입에 따라 알림 데이터 선택
 const notifications = computed(() => {
-  return userInfo.value?.type === 'company' ? companyNotifications.value : jobSeekerNotifications.value;
+  return userInfo.value?.isCompany ? companyNotifications.value : jobSeekerNotifications.value;
 });
 
 const unreadCount = computed(() => {
@@ -169,12 +172,6 @@ const getNotificationColor = (type) => {
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
-
-  if (authStore.isLogin()) {
-    loginFlag.value = true;
-  } else {
-    loginFlag.value = false;
-  }
 });
 
 const toggleMenu = () => {
@@ -189,6 +186,7 @@ const getLogout = () => {
       authStore.reset();
 
       window.location.reload();
+      // router.push('/');
     }
   });
   // messagePop.alert('test', 'info');

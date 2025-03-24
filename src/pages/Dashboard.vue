@@ -1,9 +1,10 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, toRaw } from 'vue';
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '@/store/user/userStore';
+import { isNil } from 'es-toolkit/compat';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -18,7 +19,7 @@ const interviewFlag = ref(false);
 const unreadOffers = ref(4);
 
 onMounted(() => {
-  if (userInfo.value?.type === 'user') {
+  if (!isNil(userInfo.value?.isCompany) && !userInfo.value?.isCompany) {
     bookmarkFlag.value = false;
     proposalFlag.value = true;
     interviewFlag.value = true;
@@ -53,7 +54,8 @@ const companies = ref([
   {
     name: '한국항공우주산업(주)',
     business: '기체구조물, 성능개량, 원재기 제작',
-    address: '서울사무소: 서울특별시 강남구 테헤란로 309 6층 (역삼동, 삼성제일빌딩)\n부사: 경남 사천시 사남면 유천리 802',
+    address:
+      '서울사무소: 서울특별시 강남구 테헤란로 309 6층 (역삼동, 삼성제일빌딩)\n부사: 경남 사천시 사남면 유천리 802',
     positions: [
       { title: '항공기계설계', career: '경력 5년 이상', count: 3 },
       { title: '품질관리', career: '경력 무관', count: 2 }
@@ -142,7 +144,11 @@ const companies = ref([
             >지원내역</span
           >
         </div> -->
-        <div v-if="proposalFlag" class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/jobOffers')">
+        <div
+          v-if="proposalFlag"
+          class="flex flex-col items-center cursor-pointer group"
+          @click="router.push('/user/jobOffers')"
+        >
           <div
             class="relative w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
           >
@@ -169,7 +175,11 @@ const companies = ref([
             면접제안
           </span>
         </div>
-        <div v-if="interviewFlag" class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/jobSeekerInterviews')">
+        <div
+          v-if="interviewFlag"
+          class="flex flex-col items-center cursor-pointer group"
+          @click="router.push('/user/jobSeekerInterviews')"
+        >
           <div
             class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
           >
@@ -268,8 +278,11 @@ const companies = ref([
       <!-- 메뉴 아이콘들 아래에 추가 -->
       <div class="space-y-4 mt-8">
         <!-- 회사 정보 카드 -->
-        <div v-for="company in companies" :key="company.name"
-          class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg hover:border-[#8B8BF5]">
+        <div
+          v-for="company in companies"
+          :key="company.name"
+          class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg hover:border-[#8B8BF5]"
+        >
           <div class="flex justify-between items-start">
             <div class="flex-grow">
               <div class="flex items-center gap-2 mb-3">
@@ -290,8 +303,7 @@ const companies = ref([
                   </span>
                 </h4>
                 <div class="grid grid-cols-2 gap-3">
-                  <div v-for="position in company.positions" :key="position.title"
-                    class="bg-gray-50 p-3 rounded-lg">
+                  <div v-for="position in company.positions" :key="position.title" class="bg-gray-50 p-3 rounded-lg">
                     <div class="font-medium text-gray-900">{{ position.title }}</div>
                     <div class="flex justify-between items-center mt-1">
                       <span class="text-sm text-gray-600">{{ position.career }}</span>
