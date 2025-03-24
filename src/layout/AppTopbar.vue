@@ -385,10 +385,10 @@ const test = () => {
                   <i class="pi pi-file-edit text-[#8FA1FF]"></i>
                   <span class="font-medium">이력서 관리</span>
                 </a>
-                <a class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50" style="cursor: pointer">
+                <!-- <a class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50" style="cursor: pointer">
                   <i class="pi pi-chart-line text-[#8FA1FF]"></i>
                   <span class="font-medium">지원 현황</span>
-                </a>
+                </a> -->
                 <a
                   class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50"
                   style="cursor: pointer"
