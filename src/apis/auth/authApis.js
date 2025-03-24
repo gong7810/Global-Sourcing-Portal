@@ -13,6 +13,15 @@ export const login = async (body) => {
   }
 };
 
+// 로그아웃 API
+export const logout = async () => {
+  try {
+    await api.get('/auth/logout');
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 // 토큰 갱신 API
 export const getRefreshToken = async (body) => {
   try {
@@ -24,7 +33,7 @@ export const getRefreshToken = async (body) => {
   }
 };
 
-// 내 정보 조회 API
+// 내 정보 조회 API (토큰으로 내정보를 가져옴)
 export const getAccount = async () => {
   try {
     const response = await api.get('/auth/account');
@@ -97,14 +106,14 @@ export const checkMobile = async (body) => {
 
     return response.data;
   } catch (error) {
-    console.error(error); 
+    console.error(error);
   }
 };
 
 // 로그인 ID 찾기 API
 export const findId = async (body) => {
   try {
-    const response = await api.post('/auth/findId', body); 
+    const response = await api.post('/auth/findId', body);
 
     return response.data;
   } catch (error) {
@@ -115,15 +124,10 @@ export const findId = async (body) => {
 // 로그인 비밀번호 찾기 API
 export const findPassword = async (body) => {
   try {
-    const response = await api.post('/auth/findPassword', body);  
+    const response = await api.post('/auth/findPassword', body);
 
     return response.data;
   } catch (error) {
     console.error(error);
   }
 };
-
-
-
-
-

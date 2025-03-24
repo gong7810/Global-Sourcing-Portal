@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { isEmpty } from 'es-toolkit/compat';
 import { useRouter } from 'vue-router';
 
 export const useAuthStore = defineStore(
@@ -12,9 +11,8 @@ export const useAuthStore = defineStore(
     let tokenInfo = ref({});
 
     /* 로그인 완료후 토큰 정보 설정 */
-    const setToken = (accessToken, refreshToken) => {
+    const setToken = (accessToken) => {
       tokenInfo.value.accessToken = accessToken;
-      tokenInfo.value.refreshToken = refreshToken;
     };
 
     /* 로그인 완료후 사용자 정보 설정 */
@@ -25,6 +23,7 @@ export const useAuthStore = defineStore(
     /* 사용자 정보 초기화 - 로그아웃 시 */
     const reset = () => {
       userInfo.value = null;
+      tokenInfo.value = {};
       // referer.value = '';
     };
 

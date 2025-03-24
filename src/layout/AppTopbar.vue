@@ -181,7 +181,7 @@ const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value; // 메뉴 토글
 };
 
-const logout = () => {
+const getLogout = () => {
   messagePop.confirm({
     icon: 'info',
     message: '로그아웃 하시겠습니까?',
@@ -342,7 +342,7 @@ const test = () => {
           <button
             v-if="loginFlag"
             class="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 rounded-full transition-all"
-            @click="logout"
+            @click="getLogout"
           >
             <i class="pi pi-user text-white"></i>
             <span class="text-sm text-white font-medium">로그아웃</span>

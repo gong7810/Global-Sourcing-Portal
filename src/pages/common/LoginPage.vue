@@ -1,11 +1,12 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, toRaw } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
-import { login } from '@/apis/auth/authApis';
+import { getAccount, login } from '@/apis/auth/authApis';
 
 const authStore = useAuthStore();
+const { tokenInfo } = storeToRefs(authStore);
 const activeTab = ref('personal');
 
 const router = useRouter();
@@ -22,6 +23,7 @@ const setActiveTab = (tab) => {
   activeTab.value = tab;
 };
 
+// 로그인
 const getLogin = async () => {
   const body = {
     loginId: id.value,
@@ -31,25 +33,26 @@ const getLogin = async () => {
   const response = await login(body);
 
   if (response) {
-    authStore.setToken(response?.accessToken, response?.refreshToken);
+    authStore.setToken(response?.accessToken);
+
+    getUserInfo();
   }
+};
 
-  // 예시 사용자 정보 설정
-  // const userInfo = {
-  //   id: 1,
-  //   type: activeTab.value === 'personal' ? 'user' : 'company',
-  //   name: '테스트 사용자'
-  // };
+// 사용자 정보 조회
+const getUserInfo = async () => {
+  console.log(toRaw(tokenInfo.value).accessToken);
+  const response = await getAccount();
 
-  // // 사용자 정보 저장
-  // authStore.setUserInfo(userInfo);
+  // 사용자 정보 저장
+  authStore.setUserInfo(response);
 
-  // // 탭에 따라 다른 경로로 이동
-  // if (activeTab.value === 'personal') {
-  //   router.push('/'); // 개인회원 메인 페이지
-  // } else if (activeTab.value === 'business') {
-  //   router.push('/business/index'); // 기업회원 대시보드
-  // }
+  // 탭에 따라 다른 경로로 이동
+  if (!response.isCompany) {
+    router.push('/'); // 개인회원 메인 페이지
+  } else if (response.isCompany) {
+    router.push('/business/index'); // 기업회원 대시보드
+  }
 };
 
 const { lineState } = storeToRefs(authStore);

@@ -11,8 +11,7 @@ export function useApi() {
     baseURL: 'http://localhost:5173/api',
     headers: {
       'Content-Type': 'application/json',
-      'Access-Token': tokenInfo.value?.accessToken ? tokenInfo.value.accessToken : '',
-      'Refresh-Token': tokenInfo.value?.refreshToken ? tokenInfo.value.refreshToken : ''
+      Authorization: tokenInfo.value?.accessToken ? `Bearer ${tokenInfo.value.accessToken}` : ''
     },
     timeout: 1800000 // 30분 타임아웃
   });
@@ -20,12 +19,17 @@ export function useApi() {
   // API 호출 함수 (공통 함수)
   const request = async (method, url, data = null, config = {}) => {
     try {
+      const headers = {
+        ...config.headers,
+        Authorization: tokenInfo.value?.accessToken ? `Bearer ${tokenInfo.value.accessToken}` : ''
+      };
+
       const response =
         method === 'GET'
-          ? await api.get(url, { params: data, ...config })
+          ? await api.get(url, { params: data, headers, ...config })
           : method === 'POST'
-            ? await api.post(url, data, config)
-            : await api.delete(url, data, config);
+            ? await api.post(url, data, { headers, ...config })
+            : await api.delete(url, data, { headers, ...config });
 
       return {
         status: response?.status,
