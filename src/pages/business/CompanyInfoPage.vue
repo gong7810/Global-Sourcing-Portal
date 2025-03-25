@@ -108,12 +108,12 @@ const cancelEdit = () => {
               highlightOnSelect />
           </div>
 
-          <!-- 담당자명 -->
+          <!-- 가입자명 -->
           <div class="flex items-center gap-4">
             <i class="pi pi-user"></i>
             <InputText v-model="editedInfo.managerName" 
               :disabled="!isEditing"
-              placeholder="담당자명을 입력해주세요"
+              placeholder="가입자명을 입력해주세요"
               class="w-full" />
           </div>
 
