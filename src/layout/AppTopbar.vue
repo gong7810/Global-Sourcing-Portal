@@ -36,30 +36,30 @@ const companyNotifications = ref([
     id: 1,
     type: 'interview_accepted',
     title: '면접 제안 수락',
-    candidate: '김지원',
-    position: '항공기계설계',
+    userName: '김지원',
+    position: '시스템 엔지니어',
     message: '면접 제안을 수락했습니다.',
-    date: '2024-03-20',
+    createdAt: '2024-03-20',
     isRead: false
   },
   {
     id: 2,
     type: 'schedule_selected',
     title: '면접 일정 선택됨',
-    candidate: '이둘리',
+    userName: '이둘리',
     position: '시스템 엔지니어',
     message: '3월 25일 오후 2시 면접 일정이 선택되었습니다.',
-    date: '2024-03-19',
+    createdAt: '2024-03-19',
     isRead: false
   },
   {
     id: 3,
     type: 'interview_declined',
     title: '면접 제안 거절',
-    candidate: '박항공',
+    userName: '박항공',
     position: '항공정비사',
     message: '면접 제안을 거절했습니다.',
-    date: '2024-03-18',
+    createdAt: '2024-03-18',
     isRead: true
   }
 ]);
@@ -70,30 +70,30 @@ const jobSeekerNotifications = ref([
     id: 1,
     type: 'interview_offer',
     title: '새로운 면접 제안',
-    company: '한국항공우주산업(주)',
+    companyName: '한국항공우주산업(주)',
     position: '항공기계설계',
     message: '항공기계설계 포지션에 대한 면접 제안이 도착했습니다.',
-    date: '2024-03-20',
+    createdAt: '2024-03-20',
     isRead: false
   },
   {
     id: 2,
     type: 'interview_schedule',
     title: '면접 일정 확정',
-    company: 'LIG넥스원',
+    companyName: 'LIG넥스원',
     position: '시스템 엔지니어',
     message: '3월 25일 오후 2시 화상면접이 확정되었습니다.',
-    date: '2024-03-19',
+    createdAt: '2024-03-19',
     isRead: false
   },
   {
     id: 3,
     type: 'result',
     title: '면접 결과',
-    company: '대한항공',
+    companyName: '대한항공',
     position: '항공정비사',
     message: '항공정비사 포지션 합격입니다.',
-    date: '2024-03-18',
+    createdAt: '2024-03-18',
     isRead: true
   }
 ]);
@@ -261,6 +261,17 @@ const checkTranslation = () => {
 const test = () => {
   console.log(selectedLanguage.value);
 };
+
+// formatDate 함수 추가
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+};
 </script>
 
 <template>
@@ -312,20 +323,16 @@ const test = () => {
                     ></i>
                     <div class="flex-1">
                       <div class="font-semibold text-gray-900">{{ notification.title }}</div>
-                      <!-- 기업용 알림일 경우 -->
-                      <template v-if="userInfo?.type === 'company'">
-                        <div class="text-sm text-gray-600 mb-1">
-                          이름: {{ notification.candidate }} | 포지션: {{ notification.position }}
-                        </div>
-                      </template>
                       <!-- 구직자용 알림일 경우 -->
-                      <template v-else>
-                        <div class="text-sm text-gray-600 mb-1">
-                          {{ notification.company }} | {{ notification.position }}
-                        </div>
-                      </template>
+                      <div v-if="!userInfo?.isCompany" class="text-sm text-gray-600 mb-1">
+                        {{ notification.companyName }} | {{ notification.position }}
+                      </div>
+                      <!-- 기업용 알림일 경우 -->
+                      <div v-else class="text-sm text-gray-600 mb-1">
+                        {{ notification.userName }} | {{ notification.position }}
+                      </div>
                       <div class="text-sm text-gray-700">{{ notification.message }}</div>
-                      <div class="text-xs text-gray-500 mt-1">{{ notification.date }}</div>
+                      <div class="text-xs text-gray-500 mt-1">{{ formatDate(notification.createdAt) }}</div>
                     </div>
                   </div>
                 </div>

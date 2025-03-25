@@ -128,12 +128,13 @@ const saveResult = () => {
 
   // 결과 입력/수정 확인 메시지 설정
   const isNewResult = !selectedInterview.value.result;
-  const isChangingToPass = !isNewResult && 
-    selectedInterview.value.result === 'failed' && 
-    editResult.value === 'passed';
+  const isResultChanged = !isNewResult && selectedInterview.value.result !== editResult.value;
 
-  // 알림이 필요한지 확인 (최초 입력 시 합격/불합격만, 수정 시 불합격→합격만)
-  const needsNotification = (isNewResult && editResult.value !== 'pending') || isChangingToPass;
+  // 알림이 필요한 경우:
+  // 1. 최초 결과 입력 시 (합격/불합격만)
+  // 2. 기존 결과에서 다른 결과로 변경 시 (모든 변경)
+  const needsNotification = (isNewResult && editResult.value !== 'pending') || 
+                          (isResultChanged);
 
   const confirmMessage = isNewResult
     ? `${selectedInterview.value.candidate.name}님의 면접 결과를 입력하시겠습니까?`

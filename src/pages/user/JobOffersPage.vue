@@ -149,12 +149,18 @@ const getStatusText = (status) => {
   }
 };
 
-// 남은 기한 계산
+// 남은 기한 계산 함수 수정
 const getDaysUntilDeadline = (deadline) => {
   const today = new Date();
   const deadlineDate = new Date(deadline);
   const diffTime = deadlineDate - today;
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  // 기한이 지난 경우 '마감' 표시
+  if (diffDays < 0) {
+    return '마감';
+  }
+  
   return diffDays;
 };
 
@@ -254,13 +260,13 @@ const mockJobOffers = [
     companyName: '밥스(주)',
     business: '산업용 CFRP 물러, 디스플레이용 로봇핸드, 자동차 부품',
     address: '대전 유성구 국제과학로46(신동)',
-    positions: [
-      { title: '항공기계설계', career: '경력 3년 이상', count: 2 },
-      { title: '제품개발', career: '신입/경력', count: 1 }
-    ],
-    message: '귀하의 경력과 기술이 저희 회사와 잘 맞을 것 같아 면접제안을 드립니다...',
+    jobOffer: {
+      title: 'IT개발·데이터 | Frontend Developer',
+      detailedWork: '웹 서비스 프론트엔드 개발 및 유지보수',
+      message: '안녕하세요. 귀하의 프로필을 보고 연락드립니다.'
+    },
     deadline: '2025-03-15',
-    status: 'accepted',
+    status: 'pending',
     isRead: false,
     createdAt: '2024-03-11T10:00:00',
     acceptedAt: '2024-03-12T14:30:00',
@@ -325,8 +331,11 @@ const mockJobOffers = [
     companyName: '한국항공우주산업(주)',
     business: '항공기 제조 및 개발',
     address: '경상남도 사천시 사남면 공단1로 78',
-    positions: [{ title: '항공전자 개발', career: '경력 3년 이상', count: 2 }],
-    message: '귀하의 경력이 저희 회사의 항공전자 개발 직무와 잘 맞을 것 같습니다...',
+    jobOffer: {
+      title: 'IT개발·데이터 | 항공전자 개발',
+      detailedWork: '항공전자 시스템 개발',
+      message: '귀하의 경력이 저희 회사의 항공전자 개발 직무와 잘 맞을 것 같습니다.'
+    },
     deadline: '2025-03-25',
     status: 'pending',
     isRead: true,
@@ -396,10 +405,13 @@ const mockJobOffers = [
     companyName: 'LIG넥스원',
     business: '방위산업 체계 개발',
     address: '서울특별시 강남구 언주로 45',
-    positions: [{ title: '시스템 엔지니어', career: '신입/경력', count: 3 }],
-    message: '귀하의 프로필을 보고 연락드립니다...',
+    jobOffer: {
+      title: 'IT개발·데이터 | 시스템 엔지니어',
+      detailedWork: '방산 체계 시스템 설계 및 개발',
+      message: '안녕하세요. 귀하의 프로필을 보고 연락드립니다. 저희 회사의 시스템 엔지니어 포지션에 적합한 경력을 보유하고 계신 것 같아 면접을 제안드립니다.'
+    },
     deadline: '2025-04-05',
-    status: 'rejected',
+    status: 'pending',
     isRead: true,
     createdAt: '2024-03-09',
     rejectedAt: '2024-03-18T14:30:00',
@@ -461,10 +473,13 @@ const mockJobOffers = [
     companyName: '현대로템(주)',
     business: '철도차량 제작 및 방산장비 개발',
     address: '경상남도 창원시 성산구 창원대로 1003',
-    positions: [{ title: '기계설계', career: '경력 3년 이상', count: 2 }],
-    message: '귀하의 경력이 저희 회사의 기계설계 직무와 잘 맞을 것 같아 면접 제안을 드립니다...',
+    jobOffer: {
+      title: 'IT개발·데이터 | 기계설계 엔지니어',
+      detailedWork: '철도차량 기계설계 및 시스템 개발',
+      message: '안녕하세요. 귀하의 프로필을 검토한 결과, 저희 회사의 기계설계 엔지니어 포지션과 잘 맞을 것 같아 면접을 제안드립니다. 철도차량 분야에서 귀하의 IT 개발 경험을 활용하실 수 있는 좋은 기회가 될 것 같습니다.'
+    },
     deadline: '2025-03-20',
-    status: 'accepted',
+    status: 'pending',
     isRead: true,
     createdAt: '2024-03-12',
     acceptedAt: '2024-03-17',
@@ -574,192 +589,213 @@ const mockJobOffers = [
         @click="viewOfferDetail(offer)"
       >
         <div class="p-6">
-          <div class="flex items-start justify-between">
-            <div class="flex-grow">
-              <!-- 회사명과 상태 -->
-              <div class="flex items-center gap-2 mb-4">
+          <!-- 최상위 컨테이너를 flex-col로 변경 -->
+          <div class="flex flex-col">
+            <!-- 회사 정보 및 상태 -->
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-2">
                 <h3 class="text-lg font-bold">{{ offer.companyName }}</h3>
                 <span :class="getStatusClass(offer.status)" class="px-2 py-1 text-xs rounded">
                   {{ getStatusText(offer.status) }}
                 </span>
-                <!-- 새로운 면접 일정 제안 뱃지 추가 -->
-                <span v-if="offer.interviewProposed" class="bg-[#8B8BF5] text-white px-2 py-1 rounded text-xs">
-                  새로운 면접 일정
-                </span>
                 <span v-if="!offer.isRead" class="bg-red-500 text-white px-2 py-1 rounded text-xs">New</span>
               </div>
+              <!-- 회신기한을 상단으로 이동 -->
+              <div v-if="offer.status === 'pending'" class="text-right">
+                <span 
+                  :class="[
+                    'text-sm flex items-center gap-2 justify-end',
+                    getDaysUntilDeadline(offer.deadline) === '마감' 
+                      ? 'text-red-500' 
+                      : getDaysUntilDeadline(offer.deadline) <= 3 
+                        ? 'text-orange-500' 
+                        : 'text-gray-500'
+                  ]"
+                >
+                  <i class="pi pi-calendar"></i>
+                  회신기한: {{ getDaysUntilDeadline(offer.deadline) === '마감' ? '마감' : 'D-' + getDaysUntilDeadline(offer.deadline) }}
+                </span>
+              </div>
+            </div>
 
-              <!-- 회사 사업 분야 -->
-              <p class="text-gray-600 text-sm mb-4">{{ offer.business }}</p>
-
-              <!-- 주소 -->
-              <p class="text-gray-500 text-sm mb-4 flex items-center gap-2">
+            <!-- 회사 정보 -->
+            <div class="mb-4">
+              <p v-if="offer.business" class="text-gray-600 text-sm mb-2">{{ offer.business }}</p>
+              <p class="text-gray-500 text-sm flex items-center gap-2">
                 <i class="pi pi-map-marker"></i>
                 {{ offer.address }}
               </p>
+            </div>
 
-              <!-- 채용 중인 포지션 -->
+            <!-- 제안 내용 섹션 -->
+            <div class="space-y-4">
+              <!-- 직무·제안 포지션 -->
               <div>
-                <h4 class="font-medium text-gray-900 mb-3">
+                <h4 class="font-medium text-gray-900 mb-2">
                   <span class="flex items-center gap-2">
-                    <i class="pi pi-users text-[#8B8BF5]"></i>
-                    채용 중인 포지션
+                    <i class="pi pi-briefcase text-[#8B8BF5]"></i>
+                    직무·제안 포지션
                   </span>
                 </h4>
-                <div class="grid grid-cols-2 gap-3">
-                  <div v-for="position in offer.positions" :key="position.title" class="bg-gray-50 p-3 rounded-lg">
-                    <div class="font-medium text-gray-900">{{ position.title }}</div>
-                    <div class="flex justify-between items-center mt-1">
-                      <span class="text-sm text-gray-600">{{ position.career }}</span>
-                      <span class="text-sm text-[#8B8BF5] font-medium">{{ position.count }}명</span>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <p class="text-base text-gray-700">{{ offer.jobOffer.title }}</p>
+                </div>
+              </div>
+
+              <!-- 상세 업무 -->
+              <div>
+                <h4 class="font-medium text-gray-900 mb-2">
+                  <span class="flex items-center gap-2">
+                    <i class="pi pi-list text-[#8B8BF5]"></i>
+                    상세 업무
+                  </span>
+                </h4>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <p class="text-base text-gray-700">{{ offer.jobOffer.detailedWork }}</p>
+                </div>
+              </div>
+
+              <!-- 면접제안 메시지 -->
+              <div>
+                <h4 class="font-medium text-gray-900 mb-2">
+                  <span class="flex items-center gap-2">
+                    <i class="pi pi-comments text-[#8B8BF5]"></i>
+                    면접제안 메시지
+                  </span>
+                </h4>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <p class="text-base text-gray-700 whitespace-pre-line">{{ offer.jobOffer.message }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 상태별 다른 내용 표시 -->
+            <div class="mt-4 border-t pt-4">
+              <!-- 대기중인 경우 -->
+              <div v-if="offer.status === 'pending'" class="space-y-4">
+                <p class="text-gray-600">
+                  <i class="pi pi-clock mr-2"></i>
+                  제안받은 날짜: {{ formatDate(offer.createdAt) }}
+                </p>
+                <div class="bg-blue-50 p-4 rounded-lg">
+                  <p class="text-blue-700">
+                    <i class="pi pi-info-circle mr-2"></i>
+                    회신기한: {{ getDaysUntilDeadline(offer.deadline) === '마감' ? '마감' : 'D-' + getDaysUntilDeadline(offer.deadline) }}
+                  </p>
+                </div>
+                <div class="flex gap-2 justify-end">
+                  <Button label="거절하기" class="p-button-danger" @click.stop="rejectOffer(offer)" />
+                  <Button label="수락하기" class="p-button-success" @click.stop="acceptOffer(offer)" />
+                </div>
+              </div>
+
+              <!-- 수락된 경우 -->
+              <div v-else-if="offer.status === 'accepted'" class="space-y-4">
+                <div class="space-y-2">
+                  <p class="text-gray-600">
+                    <i class="pi pi-clock mr-2"></i>
+                    제안받은 날짜: {{ formatDate(offer.createdAt) }}
+                  </p>
+                  <p class="text-green-600">
+                    <i class="pi pi-check-circle mr-2"></i>
+                    수락 날짜: {{ formatDate(offer.acceptedAt) }}
+                  </p>
+                </div>
+
+                <!-- 면접 일정 관련 정보 -->
+                <div v-if="offer.interviewConfirmed" class="bg-green-50 p-4 rounded-lg">
+                  <h4 class="font-medium text-gray-900 mb-2">확정된 면접 일정</h4>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div class="flex items-center gap-2">
+                      <i class="pi pi-calendar text-green-600"></i>
+                      <span class="text-gray-700">{{ offer.interviewDate }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <i class="pi pi-clock text-green-600"></i>
+                      <span class="text-gray-700">{{ offer.interviewTime }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <i class="pi pi-video text-green-600"></i>
+                      <span class="text-gray-700">
+                        {{ offer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}
+                      </span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <i class="pi pi-map-marker text-green-600"></i>
+                      <span class="text-gray-700">{{ offer.interviewLocation }}</span>
                     </div>
                   </div>
+                  <p class="mt-4 text-green-600 flex items-center gap-2">
+                    <i class="pi pi-check-circle"></i>
+                    <span>{{ formatDate(offer.interviewConfirmedAt) }}에 면접 일정이 확정되었습니다</span>
+                  </p>
                 </div>
-              </div>
-            </div>
+                <div v-else-if="offer.interviewProposed" class="bg-blue-50 p-4 rounded-lg">
+                  <h4 class="font-medium text-gray-900 mb-2">제안된 면접 일정</h4>
+                  <div class="space-y-4 mb-4">
+                    <div
+                      v-for="(dateSlot, index) in offer.proposedDates"
+                      :key="index"
+                      class="flex items-center gap-4 p-3 bg-white rounded-lg"
+                    >
+                      <input
+                        type="radio"
+                        :name="'interview-date-' + offer.id"
+                        :value="index"
+                        v-model="selectedDateIndices[offer.id]"
+                        @click.stop
+                      />
+                      <div>
+                        <div class="font-medium">{{ dateSlot.date }}</div>
+                        <div class="text-sm text-gray-600">{{ dateSlot.time }}</div>
+                      </div>
+                    </div>
+                  </div>
 
-            <!-- 회신기한 -->
-            <div class="ml-6 text-right">
-              <span class="text-sm text-gray-500 flex items-center gap-2 justify-end">
-                <i class="pi pi-calendar"></i>
-                회신기한: D-{{ getDaysUntilDeadline(offer.deadline) }}
-              </span>
-            </div>
-          </div>
+                  <div class="mb-4">
+                    <div class="font-medium mb-2">면접 방식</div>
+                    <p class="text-gray-700">
+                      {{ offer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}
+                    </p>
+                    <p class="text-gray-700">{{ offer.interviewLocation }}</p>
+                  </div>
 
-          <!-- 제안이 수락된 경우 상태 표시 부분 수정 -->
-          <div v-if="offer.status === 'accepted'" class="mt-4 border-t pt-4">
-            <div class="space-y-2">
-              <!-- 제안 관련 날짜 정보 -->
-              <p class="text-gray-600">
-                <i class="pi pi-clock mr-2"></i>
-                제안받은 날짜: {{ formatDate(offer.createdAt) }}
-              </p>
-              <p class="text-green-600">
-                <i class="pi pi-check-circle mr-2"></i>
-                수락 날짜: {{ formatDate(offer.acceptedAt) }}
-              </p>
-              <p v-if="offer.interviewProposed || offer.interviewConfirmed" class="text-blue-600">
-                <i class="pi pi-calendar mr-2"></i>
-                면접 일정 제안받은 날짜: {{ formatDate(offer.interviewProposedAt) }}
-              </p>
-            </div>
-
-            <!-- 면접 일정이 확정된 경우 -->
-            <div v-if="offer.interviewConfirmed" class="mt-3 bg-green-50 p-4 rounded-lg">
-              <h4 class="font-medium text-gray-900 mb-2">확정된 면접 일정</h4>
-              <div class="grid grid-cols-2 gap-4">
-                <div class="flex items-center gap-2">
-                  <i class="pi pi-calendar text-green-600"></i>
-                  <span class="text-gray-700">{{ offer.interviewDate }}</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <i class="pi pi-clock text-green-600"></i>
-                  <span class="text-gray-700">{{ offer.interviewTime }}</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <i class="pi pi-video text-green-600"></i>
-                  <span class="text-gray-700">
-                    {{ offer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}
-                  </span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <i class="pi pi-map-marker text-green-600"></i>
-                  <span class="text-gray-700">{{ offer.interviewLocation }}</span>
-                </div>
-              </div>
-              <p class="mt-4 text-green-600 flex items-center gap-2">
-                <i class="pi pi-check-circle"></i>
-                <span>{{ formatDate(offer.interviewConfirmedAt) }}에 면접 일정이 확정되었습니다</span>
-              </p>
-            </div>
-
-            <!-- 면접 일정이 제안된 경우 (아직 확정되지 않은 경우) -->
-            <div v-else-if="offer.interviewProposed" class="mt-3 bg-blue-50 p-4 rounded-lg" @click.stop>
-              <h4 class="font-medium text-gray-900 mb-2">제안된 면접 일정</h4>
-              <div class="space-y-4 mb-4">
-                <div
-                  v-for="(dateSlot, index) in offer.proposedDates"
-                  :key="index"
-                  class="flex items-center gap-4 p-3 bg-white rounded-lg"
-                >
-                  <input
-                    type="radio"
-                    :name="'interview-date-' + offer.id"
-                    :value="index"
-                    v-model="selectedDateIndices[offer.id]"
-                    @click.stop
-                  />
-                  <div>
-                    <div class="font-medium">{{ dateSlot.date }}</div>
-                    <div class="text-sm text-gray-600">{{ dateSlot.time }}</div>
+                  <div class="flex gap-2">
+                    <Button
+                      severity="success"
+                      class="p-button-sm"
+                      @click.stop="acceptInterviewSchedule(offer)"
+                      :disabled="selectedDateIndices[offer.id] === undefined"
+                    >
+                      일정 수락
+                    </Button>
+                    <Button severity="danger" class="p-button-sm" @click.stop="rejectInterviewSchedule(offer)">
+                      면접 거절
+                    </Button>
                   </div>
                 </div>
+                <div v-else class="bg-yellow-50 p-4 rounded-lg">
+                  <p class="text-yellow-700">
+                    <i class="pi pi-clock mr-2"></i>
+                    면접 일정 조율 중입니다. 기업 담당자가 일정을 전달할 예정입니다.
+                  </p>
+                </div>
               </div>
 
-              <div class="mb-4">
-                <div class="font-medium mb-2">면접 방식</div>
-                <p class="text-gray-700">
-                  {{ offer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}
-                </p>
-                <p class="text-gray-700">{{ offer.interviewLocation }}</p>
-              </div>
-
-              <div class="flex gap-2">
-                <Button
-                  severity="success"
-                  class="p-button-sm"
-                  @click.stop="acceptInterviewSchedule(offer)"
-                  :disabled="selectedDateIndices[offer.id] === undefined"
-                >
-                  일정 수락
-                </Button>
-                <Button severity="danger" class="p-button-sm" @click.stop="rejectInterviewSchedule(offer)">
-                  면접 거절
-                </Button>
+              <!-- 거절된 경우 -->
+              <div v-else-if="offer.status === 'rejected'" class="space-y-4">
+                <div class="space-y-2">
+                  <p class="text-gray-600">
+                    <i class="pi pi-clock mr-2"></i>
+                    제안받은 날짜: {{ formatDate(offer.createdAt) }}
+                  </p>
+                  <p class="text-red-600">
+                    <i class="pi pi-times-circle mr-2"></i>
+                    {{ formatDate(offer.rejectedAt) }}에 거절되었습니다
+                  </p>
+                </div>
               </div>
             </div>
-
-            <!-- 아직 면접 일정이 제안되지 않은 경우 -->
-            <div v-else class="mt-3 bg-yellow-50 p-4 rounded-lg">
-              <p class="text-yellow-700">
-                <i class="pi pi-clock mr-2"></i>
-                면접 일정 조율 중입니다. 기업 담당자가 일정을 전달할 예정입니다.
-              </p>
-            </div>
-          </div>
-
-          <!-- 제안이 대기중인 경우 상태 표시 부분 추가 -->
-          <div v-if="offer.status === 'pending'" class="mt-4 border-t pt-4">
-            <p class="text-gray-600">
-              <i class="pi pi-clock mr-2"></i>
-              제안받은 날짜: {{ formatDate(offer.createdAt) }}
-            </p>
-          </div>
-
-          <!-- 제안이 거절된 경우 상태 표시 부분 수정 -->
-          <div v-else-if="offer.status === 'rejected'" class="mt-4 border-t pt-4">
-            <div class="space-y-2">
-              <p class="text-gray-600">
-                <i class="pi pi-clock mr-2"></i>
-                제안받은 날짜: {{ formatDate(offer.createdAt) }}
-              </p>
-              <p class="text-red-600">
-                <i class="pi pi-times-circle mr-2"></i>
-                {{ formatDate(offer.rejectedAt) }}에 거절되었습니다
-              </p>
-            </div>
-          </div>
-
-          <!-- 상세정보 보기 버튼 추가 -->
-          <div class="mt-4 flex justify-end">
-            <button
-              class="text-[#8B8BF5] hover:text-[#7A7AE6] flex items-center gap-1"
-              @click.stop="viewOfferDetail(offer)"
-            >
-              <span>상세 정보 보기</span>
-              <i class="pi pi-arrow-right text-sm"></i>
-            </button>
           </div>
         </div>
       </div>
@@ -788,14 +824,14 @@ const mockJobOffers = [
       <div v-if="selectedOffer" class="p-6 space-y-6">
         <!-- 회사 기본 정보 -->
         <div class="space-y-3">
-          <!-- 회사 사업 분야 -->
-          <div class="flex gap-8 text-gray-600">
+          <!-- 회사 사업 분야 (business가 있을 때만 표시) -->
+          <div v-if="selectedOffer.business" class="flex gap-8 text-gray-600">
             <span class="flex items-center gap-2">
               <i class="pi pi-briefcase"></i>
               {{ selectedOffer.business }}
             </span>
           </div>
-          <!-- 회사 주소 추가 -->
+          <!-- 회사 주소 -->
           <div class="flex gap-8 text-gray-600">
             <span class="flex items-center gap-2">
               <i class="pi pi-map-marker"></i>
@@ -804,36 +840,173 @@ const mockJobOffers = [
           </div>
         </div>
 
-        <!-- 채용 중인 포지션 -->
-        <div class="mb-3">
-          <h4 class="font-medium text-gray-900 mb-2">
-            <span class="flex items-center gap-2">
-              <i class="pi pi-users text-[#8B8BF5]"></i>
-              채용 중인 포지션
-            </span>
-          </h4>
-          <div class="grid grid-cols-2 gap-3">
-            <div v-for="position in selectedOffer.positions" :key="position.title" class="bg-gray-50 p-3 rounded-lg">
-              <div class="font-medium text-gray-900">{{ position.title }}</div>
-              <div class="flex justify-between items-center mt-1">
-                <span class="text-sm text-gray-600">{{ position.career }}</span>
-                <span class="text-sm text-[#8B8BF5] font-medium">{{ position.count }}명</span>
-              </div>
+        <!-- 제안 내용 섹션 수정 -->
+        <div class="space-y-4">
+          <!-- 직무·제안 포지션 -->
+          <div>
+            <h4 class="font-medium text-gray-900 mb-2">
+              <span class="flex items-center gap-2">
+                <i class="pi pi-briefcase text-[#8B8BF5]"></i>
+                직무·제안 포지션
+              </span>
+            </h4>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <p class="text-base text-gray-700">{{ selectedOffer.jobOffer.title }}</p>
+            </div>
+          </div>
+
+          <!-- 상세 업무 -->
+          <div>
+            <h4 class="font-medium text-gray-900 mb-2">
+              <span class="flex items-center gap-2">
+                <i class="pi pi-list text-[#8B8BF5]"></i>
+                상세 업무
+              </span>
+            </h4>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <p class="text-base text-gray-700">{{ selectedOffer.jobOffer.detailedWork }}</p>
+            </div>
+          </div>
+
+          <!-- 면접제안 메시지 -->
+          <div>
+            <h4 class="font-medium text-gray-900 mb-2">
+              <span class="flex items-center gap-2">
+                <i class="pi pi-comments text-[#8B8BF5]"></i>
+                면접제안 메시지
+              </span>
+            </h4>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <p class="text-base text-gray-700 whitespace-pre-line">{{ selectedOffer.jobOffer.message }}</p>
             </div>
           </div>
         </div>
 
-        <!-- 면접제안 메시지 -->
-        <div class="bg-gray-50 p-4 rounded-lg">
-          <h4 class="font-medium mb-2">면접제안 메시지</h4>
-          <p class="text-gray-700 whitespace-pre-line">{{ selectedOffer.message }}</p>
-        </div>
+        <!-- 상태별 다른 내용 표시 -->
+        <div class="mt-4 border-t pt-4">
+          <!-- 대기중인 경우 -->
+          <div v-if="selectedOffer.status === 'pending'" class="space-y-4">
+            <p class="text-gray-600">
+              <i class="pi pi-clock mr-2"></i>
+              제안받은 날짜: {{ formatDate(selectedOffer.createdAt) }}
+            </p>
+            <div class="bg-blue-50 p-4 rounded-lg">
+              <p class="text-blue-700">
+                <i class="pi pi-info-circle mr-2"></i>
+                회신기한: {{ getDaysUntilDeadline(selectedOffer.deadline) === '마감' ? '마감' : 'D-' + getDaysUntilDeadline(selectedOffer.deadline) }}
+              </p>
+            </div>
+            <div class="flex gap-2 justify-end">
+              <Button label="거절하기" class="p-button-danger" @click="rejectOffer(selectedOffer)" />
+              <Button label="수락하기" class="p-button-success" @click="acceptOffer(selectedOffer)" />
+            </div>
+          </div>
 
-        <!-- 회신기한 -->
-        <div class="bg-blue-50 p-4 rounded-lg">
-          <div class="flex items-center gap-2 text-blue-700">
-            <i class="pi pi-info-circle"></i>
-            <span>회신기한: {{ selectedOffer.deadline }} (D-{{ getDaysUntilDeadline(selectedOffer.deadline) }})</span>
+          <!-- 수락된 경우 -->
+          <div v-else-if="selectedOffer.status === 'accepted'" class="space-y-4">
+            <div class="space-y-2">
+              <p class="text-gray-600">
+                <i class="pi pi-clock mr-2"></i>
+                제안받은 날짜: {{ formatDate(selectedOffer.createdAt) }}
+              </p>
+              <p class="text-green-600">
+                <i class="pi pi-check-circle mr-2"></i>
+                수락 날짜: {{ formatDate(selectedOffer.acceptedAt) }}
+              </p>
+            </div>
+
+            <!-- 면접 일정 관련 정보 -->
+            <div v-if="selectedOffer.interviewConfirmed" class="bg-green-50 p-4 rounded-lg">
+              <h4 class="font-medium text-gray-900 mb-2">확정된 면접 일정</h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-calendar text-green-600"></i>
+                  <span class="text-gray-700">{{ selectedOffer.interviewDate }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-clock text-green-600"></i>
+                  <span class="text-gray-700">{{ selectedOffer.interviewTime }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-video text-green-600"></i>
+                  <span class="text-gray-700">
+                    {{ selectedOffer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}
+                  </span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-map-marker text-green-600"></i>
+                  <span class="text-gray-700">{{ selectedOffer.interviewLocation }}</span>
+                </div>
+              </div>
+              <p class="mt-4 text-green-600 flex items-center gap-2">
+                <i class="pi pi-check-circle"></i>
+                <span>{{ formatDate(selectedOffer.interviewConfirmedAt) }}에 면접 일정이 확정되었습니다</span>
+              </p>
+            </div>
+            <div v-else-if="selectedOffer.interviewProposed" class="bg-blue-50 p-4 rounded-lg">
+              <h4 class="font-medium text-gray-900 mb-2">제안된 면접 일정</h4>
+              <div class="space-y-4 mb-4">
+                <div
+                  v-for="(dateSlot, index) in selectedOffer.proposedDates"
+                  :key="index"
+                  class="flex items-center gap-4 p-3 bg-white rounded-lg"
+                >
+                  <input
+                    type="radio"
+                    :name="'interview-date-' + selectedOffer.id"
+                    :value="index"
+                    v-model="selectedDateIndices[selectedOffer.id]"
+                    @click.stop
+                  />
+                  <div>
+                    <div class="font-medium">{{ dateSlot.date }}</div>
+                    <div class="text-sm text-gray-600">{{ dateSlot.time }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <div class="font-medium mb-2">면접 방식</div>
+                <p class="text-gray-700">
+                  {{ selectedOffer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}
+                </p>
+                <p class="text-gray-700">{{ selectedOffer.interviewLocation }}</p>
+              </div>
+
+              <div class="flex gap-2">
+                <Button
+                  severity="success"
+                  class="p-button-sm"
+                  @click.stop="acceptInterviewSchedule(selectedOffer)"
+                  :disabled="selectedDateIndices[selectedOffer.id] === undefined"
+                >
+                  일정 수락
+                </Button>
+                <Button severity="danger" class="p-button-sm" @click.stop="rejectInterviewSchedule(selectedOffer)">
+                  면접 거절
+                </Button>
+              </div>
+            </div>
+            <div v-else class="bg-yellow-50 p-4 rounded-lg">
+              <p class="text-yellow-700">
+                <i class="pi pi-clock mr-2"></i>
+                면접 일정 조율 중입니다. 기업 담당자가 일정을 전달할 예정입니다.
+              </p>
+            </div>
+          </div>
+
+          <!-- 거절된 경우 -->
+          <div v-else-if="selectedOffer.status === 'rejected'" class="space-y-4">
+            <div class="space-y-2">
+              <p class="text-gray-600">
+                <i class="pi pi-clock mr-2"></i>
+                제안받은 날짜: {{ formatDate(selectedOffer.createdAt) }}
+              </p>
+              <p class="text-red-600">
+                <i class="pi pi-times-circle mr-2"></i>
+                {{ formatDate(selectedOffer.rejectedAt) }}에 거절되었습니다
+              </p>
+            </div>
           </div>
         </div>
 
