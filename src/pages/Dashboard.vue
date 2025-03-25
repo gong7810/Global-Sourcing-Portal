@@ -294,24 +294,6 @@ const companies = ref([
                   {{ company.business }}
                 </span>
               </div>
-              <!-- 채용 중인 포지션 추가 -->
-              <div class="mb-3">
-                <h4 class="font-medium text-gray-900 mb-2">
-                  <span class="flex items-center gap-2">
-                    <i class="pi pi-users text-[#8B8BF5]"></i>
-                    채용 중인 포지션
-                  </span>
-                </h4>
-                <div class="grid grid-cols-2 gap-3">
-                  <div v-for="position in company.positions" :key="position.title" class="bg-gray-50 p-3 rounded-lg">
-                    <div class="font-medium text-gray-900">{{ position.title }}</div>
-                    <div class="flex justify-between items-center mt-1">
-                      <span class="text-sm text-gray-600">{{ position.career }}</span>
-                      <span class="text-sm text-[#8B8BF5] font-medium">{{ position.count }}명</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
               <div class="flex gap-8 text-gray-600">
                 <span class="flex items-center gap-2 text-sm">
                   <i class="pi pi-map-marker"></i>

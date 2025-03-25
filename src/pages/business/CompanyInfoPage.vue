@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import Select from 'primevue/select';
+import Textarea from 'primevue/textarea';
 
 const router = useRouter();
 const goBack = () => {
@@ -17,7 +18,12 @@ const companyInfo = ref({
   companyType: 'corporation',
   managerName: '김관리',
   phoneNumber: '010-1234-5678',
-  email: 'manager@btportal.com'
+  email: 'manager@btportal.com',
+  mainBusiness: '',
+  address: ''    // 회사주소
+  // zipCode: '',        // 우편번호
+  // address: '',        // 기본주소
+  // addressDetail: ''   // 상세주소
 });
 
 // 기업 구분 옵션
@@ -56,10 +62,12 @@ const cancelEdit = () => {
 <template>
   <div class="max-w-[1200px] mx-auto px-4 py-12">
     <!-- 헤더 -->
-    <div class="flex items-center gap-4 mb-8">
-      <i class="pi pi-angle-left text-4xl text-gray-600 cursor-pointer transition-colors hover:text-[#8FA1FF]" 
-        @click="goBack"></i>
-      <h1 class="text-3xl font-bold">기업 정보</h1>
+    <div class="flex items-center justify-between mb-8">
+      <div class="flex items-center gap-4">
+        <i class="pi pi-angle-left text-4xl text-gray-600 cursor-pointer transition-colors hover:text-[#8FA1FF]" 
+          @click="goBack"></i>
+        <h1 class="text-3xl font-bold">기업 정보</h1>
+      </div>
     </div>
 
     <!-- 메인 컨텐츠 영역 -->
@@ -127,6 +135,25 @@ const cancelEdit = () => {
               class="w-full" />
           </div>
 
+          <!-- 회사주소 -->
+          <div class="flex items-center gap-4">
+            <i class="pi pi-map-marker"></i>
+            <InputText v-model="editedInfo.address" 
+              :disabled="!isEditing"
+              placeholder="회사주소를 입력해주세요"
+              class="w-full" />
+          </div>
+
+          <!-- 주요사업 -->
+          <div class="flex items-start gap-4">
+            <i class="pi pi-list mt-2"></i>
+            <Textarea v-model="editedInfo.mainBusiness" 
+              :disabled="!isEditing"
+              placeholder="주요사업 내용을 입력해주세요"
+              rows="4"
+              class="w-full" />
+          </div>
+
           <!-- 버튼 영역 -->
           <div class="px-8 py-6 bg-gray-50 border-t flex justify-center gap-4">
             <template v-if="isEditing">
@@ -177,5 +204,24 @@ const cancelEdit = () => {
   background-color: #f3f4f6;
   border-color: #e5e7eb;
   color: #374151;
+}
+
+:deep(.p-inputtextarea) {
+  width: 100%;
+  border-radius: 8px;
+}
+
+:deep(.p-inputtextarea:disabled) {
+  background-color: #f3f4f6;
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+/* 주소 검색 버튼 스타일 */
+:deep(.p-button-secondary:disabled) {
+  background-color: #f3f4f6;
+  border-color: #e5e7eb;
+  opacity: 1;
+  cursor: not-allowed;
 }
 </style>
