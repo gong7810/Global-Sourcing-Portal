@@ -66,6 +66,17 @@ export const checkDuplicate = async (loginId) => {
   }
 };
 
+// 국적 CODE API
+export const getNationality = async () => {
+  try {
+    const response = await api.get('code/active/NATIONALITY_TY');
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 // 회원가입 API
 export const signUpUser = async (body) => {
   try {

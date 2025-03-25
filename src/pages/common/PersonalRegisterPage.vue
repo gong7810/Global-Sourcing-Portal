@@ -1,8 +1,8 @@
 <script setup>
-import { ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { isEmpty } from 'es-toolkit/compat';
 import { useRouter } from 'vue-router';
-import { checkDuplicate } from '@/apis/auth/authApis';
+import { checkDuplicate, getNationality } from '@/apis/auth/authApis';
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
 
@@ -33,28 +33,34 @@ const pwCheckFlag = ref(false);
 // const verificationCode = ref('');
 
 const nationality = ref(null);
-const passportNo = ref('M981L0621');
+const passportNo = ref('');
 const passportLastName = ref('');
 const passportFirstName = ref('');
 const issueDate = ref(null);
 const expirationDate = ref(null);
 const issuingCountry = ref(null);
 
-const nationalityOptions = [
-  { label: '대한민국', value: 'KOR' },
-  { label: '일본', value: 'JPN' },
-  { label: '중국', value: 'CHN' }
-  // ... 더 많은 국가들
-];
-
-const countryOptions = [
-  { label: '대한민국', value: 'KOR' },
-  { label: '일본', value: 'JPN' },
-  { label: '중국', value: 'CHN' }
-  // ... 더 많은 국가들
-];
+// 국적리스트
+const nationalityOptions = ref([]);
 
 const formError = ref('');
+
+onMounted(() => {
+  // 국적 리스트 조회
+  getNationList();
+});
+
+const getNationList = async () => {
+  const response = await getNationality();
+
+  response.map((item) => {
+    const nation = {
+      label: item.name,
+      value: item.code
+    };
+    nationalityOptions.value.push(nation);
+  });
+};
 
 // 아이디 중복체크
 const checkIdDuplication = async () => {
@@ -396,7 +402,7 @@ const test = () => {
             <div class="flex space-x-2">
               <Select
                 v-model="issuingCountry"
-                :options="countryOptions"
+                :options="nationalityOptions"
                 optionLabel="label"
                 placeholder="발급국가"
                 class="w-full"
