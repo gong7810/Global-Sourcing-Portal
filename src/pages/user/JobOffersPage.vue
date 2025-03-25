@@ -17,10 +17,271 @@ const userStore = useUserStore();
 const toast = useToast();
 const messagePop = useMessagePop();
 
-// 면접제안 목록 상태
-const jobOffers = computed(() => {
-  return mockJobOffers;
-});
+// mockJobOffers 데이터를 먼저 정의
+const mockJobOffers = [
+  {
+    id: 1,
+    companyName: '밥스(주)',
+    business: '산업용 CFRP 물러, 디스플레이용 로봇핸드, 자동차 부품',
+    address: '대전 유성구 국제과학로46(신동)',
+    jobOffer: {
+      title: 'IT개발·데이터 | Frontend Developer',
+      detailedWork: '웹 서비스 프론트엔드 개발 및 유지보수',
+      message: '안녕하세요. 귀하의 프로필을 보고 연락드립니다.'
+    },
+    status: 'accepted',  // 수락된 상태
+    isRead: false,
+    createdAt: '2024-03-11T10:00:00',
+    acceptedAt: '2024-03-12T14:30:00',
+    interviewProposed: true,  // 면접 일정이 제안된 상태
+    interviewConfirmed: false,  // 아직 확정되지 않음
+    proposedDates: [
+      { date: '2024-03-25', time: '14:00' },
+      { date: '2024-03-26', time: '10:00' },
+      { date: '2024-03-27', time: '15:30' }
+    ],
+    interviewType: 'offline',
+    interviewLocation: '서울시 강남구 테헤란로 123',
+    resumeSnapshot: {
+      basicInfo: {
+        name: '최예지',
+        birthDate: '1996.09.01',
+        gender: '여성',
+        email: 'yeji@naver.com',
+        phone: '010-1234-7496',
+        address: '윙스타워 505호',
+        totalCareer: '5년',
+        lastEducation: '대학교(4년) 졸업'
+      },
+      nationalityInfo: '대한민국',
+      passportInfo: {
+        passportNumber: 'M1234****',
+        surname: 'CHOI',
+        givenNames: 'YEJI',
+        nationality: '대한민국',
+        birthDate: '1996-09-01',
+        issueDate: '2020-01-01',
+        expiryDate: '2030-01-01',
+        issuingCountry: '대한민국',
+        birthPlace: 'SEOUL'
+      },
+      careers: [
+        {
+          companyName: '(주)비티포탈',
+          period: '2023.03 - 2024.03',
+          jobCategory: { label: 'IT개발·데이터', value: 'it' },
+          jobTitle: '프론트엔드 개발자',
+          department: '개발팀',
+          responsibilities: '웹 서비스 프론트엔드 개발'
+        }
+      ],
+      educations: [
+        {
+          educationType: { name: '대학교(4년)', code: 'UNIVERSITY' },
+          schoolName: '한국대학교',
+          period: '2015.03 - 2019.02',
+          major: '컴퓨터공학과',
+          isGraduated: true,
+          details: '웹 개발 동아리 활동'
+        }
+      ],
+      certifications: []
+    }
+  },
+  {
+    id: 2,
+    companyName: '한국항공우주산업(주)',
+    business: '항공기 제조 및 개발',
+    address: '경상남도 사천시 사남면 공단1로 78',
+    jobOffer: {
+      title: 'IT개발·데이터 | 항공전자 개발',
+      detailedWork: '항공전자 시스템 개발',
+      message: '귀하의 경력이 저희 회사의 항공전자 개발 직무와 잘 맞을 것 같습니다.'
+    },
+    deadline: '2025-03-25',
+    status: 'pending',
+    isRead: true,
+    createdAt: '2024-03-10',
+    resumeSnapshot: {
+      basicInfo: {
+        name: '최예지',
+        birthDate: '1996.09.01',
+        gender: '여성',
+        email: 'yeji@naver.com',
+        phone: '010-1234-7496',
+        address: '윙스타워 505호',
+        totalCareer: '5년',
+        lastEducation: '대학교(4년) 졸업'
+      },
+      nationalityInfo: '대한민국',
+      passportInfo: {
+        passportNumber: 'M1234****',
+        surname: 'CHOI',
+        givenNames: 'YEJI',
+        nationality: '대한민국',
+        birthDate: '1996-09-01',
+        issueDate: '2020-01-01',
+        expiryDate: '2030-01-01',
+        issuingCountry: '대한민국',
+        birthPlace: 'SEOUL'
+      },
+      careers: [
+        {
+          companyName: '(주)비티포탈',
+          period: '2023.03 - 2024.03',
+          jobCategory: { label: 'IT개발·데이터', value: 'it' },
+          jobTitle: '프론트엔드 개발자',
+          department: '개발팀',
+          responsibilities: '웹 서비스 프론트엔드 개발'
+        }
+      ],
+      educations: [
+        {
+          educationType: { name: '대학교(4년)', code: 'UNIVERSITY' },
+          schoolName: '한국대학교',
+          period: '2015.03 - 2019.02',
+          major: '컴퓨터공학과',
+          isGraduated: true,
+          details: '웹 개발 동아리 활동'
+        }
+      ],
+      certifications: []
+    }
+  },
+  {
+    id: 3,
+    companyName: 'LIG넥스원',
+    business: '방위산업 체계 개발',
+    address: '서울특별시 강남구 언주로 45',
+    jobOffer: {
+      title: 'IT개발·데이터 | 시스템 엔지니어',
+      detailedWork: '방산 체계 시스템 설계 및 개발',
+      message: '안녕하세요. 귀하의 프로필을 보고 연락드립니다. 저희 회사의 시스템 엔지니어 포지션에 적합한 경력을 보유하고 계신 것 같아 면접을 제안드립니다.'
+    },
+    deadline: '2025-04-05',
+    status: 'rejected',
+    isRead: true,
+    createdAt: '2024-03-09',
+    rejectedAt: '2024-03-18T14:30:00',
+    resumeSnapshot: {
+      basicInfo: {
+        name: '최예지',
+        birthDate: '1996.09.01',
+        gender: '여성',
+        email: 'yeji@naver.com',
+        phone: '010-1234-7496',
+        address: '윙스타워 505호',
+        totalCareer: '5년',
+        lastEducation: '대학교(4년) 졸업'
+      },
+      nationalityInfo: '대한민국',
+      passportInfo: {
+        passportNumber: 'M1234****',
+        surname: 'CHOI',
+        givenNames: 'YEJI',
+        nationality: '대한민국',
+        birthDate: '1996-09-01',
+        issueDate: '2020-01-01',
+        expiryDate: '2030-01-01',
+        issuingCountry: '대한민국',
+        birthPlace: 'SEOUL'
+      },
+      careers: [
+        {
+          companyName: '(주)비티포탈',
+          period: '2023.03 - 2024.03',
+          jobCategory: { label: 'IT개발·데이터', value: 'it' },
+          jobTitle: '프론트엔드 개발자',
+          department: '개발팀',
+          responsibilities: '웹 서비스 프론트엔드 개발'
+        }
+      ],
+      educations: [
+        {
+          educationType: { name: '대학교(4년)', code: 'UNIVERSITY' },
+          schoolName: '한국대학교',
+          period: '2015.03 - 2019.02',
+          major: '컴퓨터공학과',
+          isGraduated: true,
+          details: '웹 개발 동아리 활동'
+        }
+      ],
+      certifications: [
+        // {
+        //   name: '정보처리기사',
+        //   date: '2020-12',
+        //   organization: '한국산업인력공단',
+        //   certificate: 'cert_1.pdf'
+        // }
+      ]
+    }
+  },
+  {
+    id: 4,
+    companyName: '현대로템(주)',
+    business: '철도차량 제작 및 방산장비 개발',
+    address: '경상남도 창원시 성산구 창원대로 1003',
+    jobOffer: {
+      title: 'IT개발·데이터 | 기계설계 엔지니어',
+      detailedWork: '철도차량 기계설계 및 시스템 개발',
+      message: '안녕하세요. 귀하의 프로필을 검토한 결과, 저희 회사의 기계설계 엔지니어 포지션과 잘 맞을 것 같아 면접을 제안드립니다.'
+    },
+    status: 'accepted',
+    isRead: true,
+    createdAt: '2024-03-12',
+    acceptedAt: '2024-03-17',
+    interviewProposed: false,  // 아직 면접 일정이 제안되지 않음
+    interviewConfirmed: false,  // 면접 일정이 확정되지 않음
+    resumeSnapshot: {
+      basicInfo: {
+        name: '최예지',
+        birthDate: '1996.09.01',
+        gender: '여성',
+        email: 'yeji@naver.com',
+        phone: '010-1234-7496',
+        address: '윙스타워 505호',
+        totalCareer: '5년',
+        lastEducation: '대학교(4년) 졸업'
+      },
+      nationalityInfo: '대한민국',
+      passportInfo: {
+        passportNumber: 'M1234****',
+        surname: 'CHOI',
+        givenNames: 'YEJI',
+        nationality: '대한민국',
+        birthDate: '1996-09-01',
+        issueDate: '2020-01-01',
+        expiryDate: '2030-01-01',
+        issuingCountry: '대한민국',
+        birthPlace: 'SEOUL'
+      },
+      careers: [
+        {
+          companyName: '(주)비티포탈',
+          period: '2023.03 - 2024.03',
+          jobCategory: { label: 'IT개발·데이터', value: 'it' },
+          jobTitle: '프론트엔드 개발자',
+          department: '개발팀',
+          responsibilities: '웹 서비스 프론트엔드 개발'
+        }
+      ],
+      educations: [
+        {
+          educationType: { name: '대학교(4년)', code: 'UNIVERSITY' },
+          schoolName: '한국대학교',
+          period: '2015.03 - 2019.02',
+          major: '컴퓨터공학과',
+          isGraduated: true,
+          details: '웹 개발 동아리 활동'
+        }
+      ],
+      certifications: []
+    }
+  }
+];
+
+// 그 다음에 jobOffers ref 생성
+const jobOffers = ref(mockJobOffers);
 
 // 상세 보기 모달 상태
 const showDetailModal = ref(false);
@@ -71,8 +332,15 @@ const acceptOffer = async (offer) => {
     rejectLabel: '취소',
     onCloseYes: async () => {
       try {
-        offer.status = 'accepted';
-        offer.acceptedAt = new Date().toISOString();
+        // 새로운 객체를 생성하여 할당
+        const index = jobOffers.value.findIndex(o => o.id === offer.id);
+        jobOffers.value[index] = {
+          ...offer,
+          status: 'accepted',
+          acceptedAt: new Date().toISOString(),
+          interviewProposed: false,
+          interviewConfirmed: false
+        };
 
         toast.add({
           severity: 'success',
@@ -252,293 +520,6 @@ const formatDate = (dateString) => {
     minute: '2-digit'
   });
 };
-
-// jobOffers 데이터 예시
-const mockJobOffers = [
-  {
-    id: 1,
-    companyName: '밥스(주)',
-    business: '산업용 CFRP 물러, 디스플레이용 로봇핸드, 자동차 부품',
-    address: '대전 유성구 국제과학로46(신동)',
-    jobOffer: {
-      title: 'IT개발·데이터 | Frontend Developer',
-      detailedWork: '웹 서비스 프론트엔드 개발 및 유지보수',
-      message: '안녕하세요. 귀하의 프로필을 보고 연락드립니다.'
-    },
-    deadline: '2025-03-15',
-    status: 'pending',
-    isRead: false,
-    createdAt: '2024-03-11T10:00:00',
-    acceptedAt: '2024-03-12T14:30:00',
-    interviewProposed: true,
-    interviewProposedAt: '2024-03-13T09:00:00',
-    interviewConfirmed: false,
-    proposedDates: [
-      { date: '2024-03-25', time: '14:00' },
-      { date: '2024-03-26', time: '10:00' },
-      { date: '2024-03-27', time: '15:30' }
-    ],
-    interviewType: 'offline',
-    interviewLocation: '서울시 강남구 테헤란로 123',
-    resumeSnapshot: {
-      basicInfo: {
-        name: '최예지',
-        birthDate: '1996.09.01',
-        gender: '여성',
-        email: 'yeji@naver.com',
-        phone: '010-1234-7496',
-        address: '윙스타워 505호',
-        totalCareer: '5년',
-        lastEducation: '대학교(4년) 졸업'
-      },
-      nationalityInfo: '대한민국',
-      passportInfo: {
-        passportNumber: 'M1234****',
-        surname: 'CHOI',
-        givenNames: 'YEJI',
-        nationality: '대한민국',
-        birthDate: '1996-09-01',
-        issueDate: '2020-01-01',
-        expiryDate: '2030-01-01',
-        issuingCountry: '대한민국',
-        birthPlace: 'SEOUL'
-      },
-      careers: [
-        {
-          companyName: '(주)비티포탈',
-          period: '2023.03 - 2024.03',
-          jobCategory: { label: 'IT개발·데이터', value: 'it' },
-          jobTitle: '프론트엔드 개발자',
-          department: '개발팀',
-          responsibilities: '웹 서비스 프론트엔드 개발'
-        }
-      ],
-      educations: [
-        {
-          educationType: { name: '대학교(4년)', code: 'UNIVERSITY' },
-          schoolName: '한국대학교',
-          period: '2015.03 - 2019.02',
-          major: '컴퓨터공학과',
-          isGraduated: true,
-          details: '웹 개발 동아리 활동'
-        }
-      ],
-      certifications: []
-    }
-  },
-  {
-    id: 2,
-    companyName: '한국항공우주산업(주)',
-    business: '항공기 제조 및 개발',
-    address: '경상남도 사천시 사남면 공단1로 78',
-    jobOffer: {
-      title: 'IT개발·데이터 | 항공전자 개발',
-      detailedWork: '항공전자 시스템 개발',
-      message: '귀하의 경력이 저희 회사의 항공전자 개발 직무와 잘 맞을 것 같습니다.'
-    },
-    deadline: '2025-03-25',
-    status: 'pending',
-    isRead: true,
-    createdAt: '2024-03-10',
-    acceptedAt: null,
-    interviewProposed: false,
-    interviewConfirmed: false,
-    interviewDate: null,
-    interviewTime: null,
-    interviewType: 'offline',
-    interviewLocation: '경상남도 사천시 사남면 공단1로 78',
-    resumeSnapshot: {
-      basicInfo: {
-        name: '최예지',
-        birthDate: '1996.09.01',
-        gender: '여성',
-        email: 'yeji@naver.com',
-        phone: '010-1234-7496',
-        address: '윙스타워 505호',
-        totalCareer: '5년',
-        lastEducation: '대학교(4년) 졸업'
-      },
-      nationalityInfo: '대한민국',
-      passportInfo: {
-        passportNumber: 'M1234****',
-        surname: 'CHOI',
-        givenNames: 'YEJI',
-        nationality: '대한민국',
-        birthDate: '1996-09-01',
-        issueDate: '2020-01-01',
-        expiryDate: '2030-01-01',
-        issuingCountry: '대한민국',
-        birthPlace: 'SEOUL'
-      },
-      careers: [
-        {
-          companyName: '(주)비티포탈',
-          period: '2023.03 - 2024.03',
-          jobCategory: { label: 'IT개발·데이터', value: 'it' },
-          jobTitle: '프론트엔드 개발자',
-          department: '개발팀',
-          responsibilities: '웹 서비스 프론트엔드 개발'
-        }
-      ],
-      educations: [
-        {
-          educationType: { name: '대학교(4년)', code: 'UNIVERSITY' },
-          schoolName: '한국대학교',
-          period: '2015.03 - 2019.02',
-          major: '컴퓨터공학과',
-          isGraduated: true,
-          details: '웹 개발 동아리 활동'
-        }
-      ],
-      certifications: [
-        // {
-        //   name: '정보처리기사',
-        //   date: '2020-12',
-        //   organization: '한국산업인력공단',
-        //   certificate: 'cert_1.pdf'
-        // }
-      ]
-    }
-  },
-  {
-    id: 3,
-    companyName: 'LIG넥스원',
-    business: '방위산업 체계 개발',
-    address: '서울특별시 강남구 언주로 45',
-    jobOffer: {
-      title: 'IT개발·데이터 | 시스템 엔지니어',
-      detailedWork: '방산 체계 시스템 설계 및 개발',
-      message: '안녕하세요. 귀하의 프로필을 보고 연락드립니다. 저희 회사의 시스템 엔지니어 포지션에 적합한 경력을 보유하고 계신 것 같아 면접을 제안드립니다.'
-    },
-    deadline: '2025-04-05',
-    status: 'pending',
-    isRead: true,
-    createdAt: '2024-03-09',
-    rejectedAt: '2024-03-18T14:30:00',
-    resumeSnapshot: {
-      basicInfo: {
-        name: '최예지',
-        birthDate: '1996.09.01',
-        gender: '여성',
-        email: 'yeji@naver.com',
-        phone: '010-1234-7496',
-        address: '윙스타워 505호',
-        totalCareer: '5년',
-        lastEducation: '대학교(4년) 졸업'
-      },
-      nationalityInfo: '대한민국',
-      passportInfo: {
-        passportNumber: 'M1234****',
-        surname: 'CHOI',
-        givenNames: 'YEJI',
-        nationality: '대한민국',
-        birthDate: '1996-09-01',
-        issueDate: '2020-01-01',
-        expiryDate: '2030-01-01',
-        issuingCountry: '대한민국',
-        birthPlace: 'SEOUL'
-      },
-      careers: [
-        {
-          companyName: '(주)비티포탈',
-          period: '2023.03 - 2024.03',
-          jobCategory: { label: 'IT개발·데이터', value: 'it' },
-          jobTitle: '프론트엔드 개발자',
-          department: '개발팀',
-          responsibilities: '웹 서비스 프론트엔드 개발'
-        }
-      ],
-      educations: [
-        {
-          educationType: { name: '대학교(4년)', code: 'UNIVERSITY' },
-          schoolName: '한국대학교',
-          period: '2015.03 - 2019.02',
-          major: '컴퓨터공학과',
-          isGraduated: true,
-          details: '웹 개발 동아리 활동'
-        }
-      ],
-      certifications: [
-        // {
-        //   name: '정보처리기사',
-        //   date: '2020-12',
-        //   organization: '한국산업인력공단',
-        //   certificate: 'cert_1.pdf'
-        // }
-      ]
-    }
-  },
-  {
-    id: 4,
-    companyName: '현대로템(주)',
-    business: '철도차량 제작 및 방산장비 개발',
-    address: '경상남도 창원시 성산구 창원대로 1003',
-    jobOffer: {
-      title: 'IT개발·데이터 | 기계설계 엔지니어',
-      detailedWork: '철도차량 기계설계 및 시스템 개발',
-      message: '안녕하세요. 귀하의 프로필을 검토한 결과, 저희 회사의 기계설계 엔지니어 포지션과 잘 맞을 것 같아 면접을 제안드립니다. 철도차량 분야에서 귀하의 IT 개발 경험을 활용하실 수 있는 좋은 기회가 될 것 같습니다.'
-    },
-    deadline: '2025-03-20',
-    status: 'pending',
-    isRead: true,
-    createdAt: '2024-03-12',
-    acceptedAt: '2024-03-17',
-    interviewProposed: false,
-    interviewConfirmed: false,
-    resumeSnapshot: {
-      basicInfo: {
-        name: '최예지',
-        birthDate: '1996.09.01',
-        gender: '여성',
-        email: 'yeji@naver.com',
-        phone: '010-1234-7496',
-        address: '윙스타워 505호',
-        totalCareer: '5년',
-        lastEducation: '대학교(4년) 졸업'
-      },
-      nationalityInfo: '대한민국',
-      passportInfo: {
-        passportNumber: 'M1234****',
-        surname: 'CHOI',
-        givenNames: 'YEJI',
-        nationality: '대한민국',
-        birthDate: '1996-09-01',
-        issueDate: '2020-01-01',
-        expiryDate: '2030-01-01',
-        issuingCountry: '대한민국',
-        birthPlace: 'SEOUL'
-      },
-      careers: [
-        {
-          companyName: '(주)비티포탈',
-          period: '2023.03 - 2024.03',
-          jobCategory: { label: 'IT개발·데이터', value: 'it' },
-          jobTitle: '프론트엔드 개발자',
-          department: '개발팀',
-          responsibilities: '웹 서비스 프론트엔드 개발'
-        }
-      ],
-      educations: [
-        {
-          educationType: { name: '대학교(4년)', code: 'UNIVERSITY' },
-          schoolName: '한국대학교',
-          period: '2015.03 - 2019.02',
-          major: '컴퓨터공학과',
-          isGraduated: true,
-          details: '웹 개발 동아리 활동'
-        }
-      ],
-      certifications: [
-        // {
-        //   name: '정보처리기사',
-        //   date: '2020-12',
-        //   organization: '한국산업인력공단',
-        //   certificate: 'cert_1.pdf'
-        // }
-      ]
-    }
-  }
-];
 </script>
 
 <template>
@@ -583,10 +564,9 @@ const mockJobOffers = [
         v-for="offer in filteredJobOffers"
         :key="offer.id"
         :class="[
-          'bg-white rounded-lg shadow-sm border hover:shadow-lg transition-shadow duration-200 cursor-pointer w-full',
+          'bg-white rounded-lg shadow-sm border hover:shadow-lg transition-shadow duration-200 w-full',
           offer.interviewProposed ? 'border-[#8B8BF5] ring-2 ring-[#8B8BF5] ring-opacity-50' : 'border-gray-200'
         ]"
-        @click="viewOfferDetail(offer)"
       >
         <div class="p-6">
           <!-- 최상위 컨테이너를 flex-col로 변경 -->
@@ -684,6 +664,7 @@ const mockJobOffers = [
                   </p>
                 </div>
                 <div class="flex gap-2 justify-end">
+                  <Button label="상세정보보기" class="p-button-outlined" @click.stop="viewOfferDetail(offer)" />
                   <Button label="거절하기" class="p-button-danger" @click.stop="rejectOffer(offer)" />
                   <Button label="수락하기" class="p-button-success" @click.stop="acceptOffer(offer)" />
                 </div>
@@ -730,55 +711,62 @@ const mockJobOffers = [
                     <span>{{ formatDate(offer.interviewConfirmedAt) }}에 면접 일정이 확정되었습니다</span>
                   </p>
                 </div>
-                <div v-else-if="offer.interviewProposed" class="bg-blue-50 p-4 rounded-lg">
-                  <h4 class="font-medium text-gray-900 mb-2">제안된 면접 일정</h4>
-                  <div class="space-y-4 mb-4">
-                    <div
-                      v-for="(dateSlot, index) in offer.proposedDates"
-                      :key="index"
-                      class="flex items-center gap-4 p-3 bg-white rounded-lg"
-                    >
-                      <input
-                        type="radio"
-                        :name="'interview-date-' + offer.id"
-                        :value="index"
-                        v-model="selectedDateIndices[offer.id]"
-                        @click.stop
-                      />
-                      <div>
-                        <div class="font-medium">{{ dateSlot.date }}</div>
-                        <div class="text-sm text-gray-600">{{ dateSlot.time }}</div>
+                <div v-else-if="offer.interviewProposed" class="space-y-4">
+                  <!-- 면접 일정 정보를 담은 파란색 박스 -->
+                  <div class="bg-blue-50 p-4 rounded-lg">
+                    <h4 class="font-medium text-gray-900 mb-2">제안된 면접 일정</h4>
+                    <!-- 회신기한 추가 -->
+                    <p class="text-blue-700 mb-4">
+                      <i class="pi pi-info-circle mr-2"></i>
+                      회신기한: D-3
+                    </p>
+                    <div class="space-y-4 mb-4">
+                      <div
+                        v-for="(dateSlot, index) in offer.proposedDates"
+                        :key="index"
+                        class="flex items-center gap-4 p-3 bg-white rounded-lg"
+                      >
+                        <input
+                          type="radio"
+                          :name="'interview-date-' + offer.id"
+                          :value="index"
+                          v-model="selectedDateIndices[offer.id]"
+                          @click.stop
+                        />
+                        <div>
+                          <div class="font-medium">{{ dateSlot.date }}</div>
+                          <div class="text-sm text-gray-600">{{ dateSlot.time }}</div>
+                        </div>
                       </div>
                     </div>
                   </div>
 
-                  <div class="mb-4">
-                    <div class="font-medium mb-2">면접 방식</div>
-                    <p class="text-gray-700">
-                      {{ offer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}
-                    </p>
-                    <p class="text-gray-700">{{ offer.interviewLocation }}</p>
-                  </div>
-
-                  <div class="flex gap-2">
+                  <div class="flex gap-2 justify-end">
+                    <Button label="상세정보보기" class="p-button-outlined" @click.stop="viewOfferDetail(offer)" />
                     <Button
+                      label="일정 수락"
                       severity="success"
-                      class="p-button-sm"
                       @click.stop="acceptInterviewSchedule(offer)"
                       :disabled="selectedDateIndices[offer.id] === undefined"
-                    >
-                      일정 수락
-                    </Button>
-                    <Button severity="danger" class="p-button-sm" @click.stop="rejectInterviewSchedule(offer)">
-                      면접 거절
-                    </Button>
+                    />
+                    <Button
+                      label="면접 거절"
+                      severity="danger"
+                      @click.stop="rejectInterviewSchedule(offer)"
+                    />
                   </div>
                 </div>
-                <div v-else class="bg-yellow-50 p-4 rounded-lg">
-                  <p class="text-yellow-700">
-                    <i class="pi pi-clock mr-2"></i>
-                    면접 일정 조율 중입니다. 기업 담당자가 일정을 전달할 예정입니다.
-                  </p>
+                <div v-else class="space-y-4">
+                  <div class="bg-yellow-50 p-4 rounded-lg">
+                    <p class="text-yellow-700">
+                      <i class="pi pi-clock mr-2"></i>
+                      면접 일정 조율 중입니다. 기업 담당자가 일정을 전달할 예정입니다.
+                    </p>
+                  </div>
+                  <!-- 상세정보보기 버튼 추가 -->
+                  <div class="flex gap-2 justify-end">
+                    <Button label="상세정보보기" class="p-button-outlined" @click.stop="viewOfferDetail(offer)" />
+                  </div>
                 </div>
               </div>
 
@@ -793,6 +781,9 @@ const mockJobOffers = [
                     <i class="pi pi-times-circle mr-2"></i>
                     {{ formatDate(offer.rejectedAt) }}에 거절되었습니다
                   </p>
+                </div>
+                <div class="flex gap-2 justify-end">
+                  <Button label="상세정보보기" class="p-button-outlined" @click.stop="viewOfferDetail(offer)" />
                 </div>
               </div>
             </div>
@@ -896,10 +887,6 @@ const mockJobOffers = [
                 회신기한: {{ getDaysUntilDeadline(selectedOffer.deadline) === '마감' ? '마감' : 'D-' + getDaysUntilDeadline(selectedOffer.deadline) }}
               </p>
             </div>
-            <div class="flex gap-2 justify-end">
-              <Button label="거절하기" class="p-button-danger" @click="rejectOffer(selectedOffer)" />
-              <Button label="수락하기" class="p-button-success" @click="acceptOffer(selectedOffer)" />
-            </div>
           </div>
 
           <!-- 수락된 경우 -->
@@ -943,55 +930,50 @@ const mockJobOffers = [
                 <span>{{ formatDate(selectedOffer.interviewConfirmedAt) }}에 면접 일정이 확정되었습니다</span>
               </p>
             </div>
-            <div v-else-if="selectedOffer.interviewProposed" class="bg-blue-50 p-4 rounded-lg">
-              <h4 class="font-medium text-gray-900 mb-2">제안된 면접 일정</h4>
-              <div class="space-y-4 mb-4">
-                <div
-                  v-for="(dateSlot, index) in selectedOffer.proposedDates"
-                  :key="index"
-                  class="flex items-center gap-4 p-3 bg-white rounded-lg"
-                >
-                  <input
-                    type="radio"
-                    :name="'interview-date-' + selectedOffer.id"
-                    :value="index"
-                    v-model="selectedDateIndices[selectedOffer.id]"
-                    @click.stop
-                  />
-                  <div>
-                    <div class="font-medium">{{ dateSlot.date }}</div>
-                    <div class="text-sm text-gray-600">{{ dateSlot.time }}</div>
+            <div v-else-if="selectedOffer.interviewProposed" class="space-y-4">
+              <!-- 면접 일정 정보를 담은 파란색 박스 -->
+              <div class="bg-blue-50 p-4 rounded-lg">
+                <h4 class="font-medium text-gray-900 mb-2">제안된 면접 일정</h4>
+                <!-- 회신기한 추가 -->
+                <p class="text-blue-700 mb-4">
+                  <i class="pi pi-info-circle mr-2"></i>
+                  회신기한: D-3
+                </p>
+                <div class="space-y-4 mb-4">
+                  <div
+                    v-for="(dateSlot, index) in selectedOffer.proposedDates"
+                    :key="index"
+                    class="flex items-center gap-4 p-3 bg-white rounded-lg"
+                  >
+                    <input
+                      type="radio"
+                      :name="'interview-date-' + selectedOffer.id"
+                      :value="index"
+                      v-model="selectedDateIndices[selectedOffer.id]"
+                      @click.stop
+                    />
+                    <div>
+                      <div class="font-medium">{{ dateSlot.date }}</div>
+                      <div class="text-sm text-gray-600">{{ dateSlot.time }}</div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div class="mb-4">
-                <div class="font-medium mb-2">면접 방식</div>
-                <p class="text-gray-700">
-                  {{ selectedOffer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}
-                </p>
-                <p class="text-gray-700">{{ selectedOffer.interviewLocation }}</p>
-              </div>
-
-              <div class="flex gap-2">
+              <div class="flex gap-2 justify-end">
+                <Button label="상세정보보기" class="p-button-outlined" @click.stop="viewOfferDetail(selectedOffer)" />
                 <Button
+                  label="일정 수락"
                   severity="success"
-                  class="p-button-sm"
                   @click.stop="acceptInterviewSchedule(selectedOffer)"
                   :disabled="selectedDateIndices[selectedOffer.id] === undefined"
-                >
-                  일정 수락
-                </Button>
-                <Button severity="danger" class="p-button-sm" @click.stop="rejectInterviewSchedule(selectedOffer)">
-                  면접 거절
-                </Button>
+                />
+                <Button
+                  label="면접 거절"
+                  severity="danger"
+                  @click.stop="rejectInterviewSchedule(selectedOffer)"
+                />
               </div>
-            </div>
-            <div v-else class="bg-yellow-50 p-4 rounded-lg">
-              <p class="text-yellow-700">
-                <i class="pi pi-clock mr-2"></i>
-                면접 일정 조율 중입니다. 기업 담당자가 일정을 전달할 예정입니다.
-              </p>
             </div>
           </div>
 
@@ -1120,12 +1102,6 @@ const mockJobOffers = [
             </div>
           </div>
         </div>
-
-        <!-- 버튼 -->
-        <div v-if="selectedOffer.status === 'pending'" class="flex justify-end gap-4">
-          <Button label="거절하기" class="p-button-danger" @click="rejectOffer(selectedOffer)" />
-          <Button label="수락하기" class="p-button-success" @click="acceptOffer(selectedOffer)" />
-        </div>
       </div>
     </Dialog>
 
@@ -1162,5 +1138,17 @@ const mockJobOffers = [
 :deep(.p-button.p-button-danger:hover) {
   background: #dc2626;
   border-color: #dc2626;
+}
+
+:deep(.p-button.p-button-outlined) {
+  background: transparent;
+  border-color: #8B8BF5;
+  color: #8B8BF5;
+}
+
+:deep(.p-button.p-button-outlined:hover) {
+  background: rgba(139, 139, 245, 0.04);
+  border-color: #7070F3;
+  color: #7070F3;
 }
 </style>
