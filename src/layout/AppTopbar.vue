@@ -6,9 +6,11 @@ import { useAuthStore } from '@/store/auth/authStore';
 import { useMessagePop } from '@/plugins/commonutils';
 import OverlayPanel from 'primevue/overlaypanel';
 import { storeToRefs } from 'pinia';
+import { useApi } from '@/apis';
 
 const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
 
+const api = useApi();
 const router = useRouter();
 const authStore = useAuthStore();
 const messagePop = useMessagePop();
@@ -182,7 +184,10 @@ const getLogout = () => {
   messagePop.confirm({
     icon: 'info',
     message: '로그아웃 하시겠습니까?',
-    onCloseYes: () => {
+    onCloseYes: async () => {
+      // 구조적인 이슈로 logout api는 Topbar에서 직접 호출
+      await api.get('/auth/logout');
+
       authStore.reset();
 
       window.location.reload();
