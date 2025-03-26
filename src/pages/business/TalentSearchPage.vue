@@ -242,6 +242,9 @@ const filteredCandidates = computed(() => {
     return categoryMatch && nationalityMatch && careerMatch && keywordMatch;
   });
 });
+
+// 향후 일괄 선택을 위한 상태만 준비
+const selectedTalentIds = ref([]);
 </script>
 
 <template>
@@ -323,7 +326,7 @@ const filteredCandidates = computed(() => {
       <div v-for="talent in filteredCandidates" :key="talent.id" 
         class="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200">
         <div class="flex justify-between items-start">
-          <div>
+          <div class="flex-1">
             <div class="flex items-center gap-3 mb-3">
               <h3 class="text-lg font-bold">{{ talent.name }}</h3>
               <span class="text-sm text-gray-600">{{ talent.nationality }}</span>
