@@ -339,7 +339,7 @@ $bt_txt_sub-color: #8b8e9b;
   }
   .p-toast-detail {
     margin: 0 !important;
-    color: rgba($color: #fff, $alpha: 0.9);
+    color: rgba($color: #fff, $alpha: 0.9) !important;
     font-size: 1rem;
     font-weight: 300;
     letter-spacing: 0.5px;
@@ -350,7 +350,8 @@ $bt_txt_sub-color: #8b8e9b;
   .p-toast-message-info,
   .p-toast-message-warn,
   .p-toast-message-error {
-    // background: rgba(16, 16, 18, 0.88) !important;
+    background: rgba(16, 16, 18, 0.88) !important;
+    
     border: none !important;
     border-width: 0px;
   }
