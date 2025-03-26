@@ -135,19 +135,19 @@ const getStatusText = (status, interview) => {
 <template>
   <div class="max-w-[1200px] mx-auto px-4 py-12">
     <!-- 비로그인 상태일 때 -->
-    <template v-if="!userInfo">
+    <template v-if="!authStore.isLogin()">
       <!-- 메인 히어로 섹션 -->
       <div class="text-center mb-16">
         <h1 class="text-4xl font-bold mb-4">Global Sourcing Portal</h1>
         <p class="text-xl text-gray-600 mb-8">기업의 직접 면접 제안을 받아보세요</p>
         <div class="flex justify-center gap-4">
-          <button 
+          <button
             class="px-8 py-3 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7878F2] transition-colors"
             @click="router.push('/login')"
           >
             로그인하기
           </button>
-          <button 
+          <button
             class="px-8 py-3 border-2 border-[#8B8BF5] text-[#8B8BF5] rounded-lg hover:bg-[#8B8BF5] hover:text-white transition-colors"
             @click="router.push('/register-select')"
           >
@@ -165,7 +165,7 @@ const getStatusText = (status, interview) => {
             </svg>
           </div>
           <h3 class="text-xl font-bold mb-2">직접 면접 제안</h3>
-          <p class="text-gray-600">기업에서 직접 검토 후<br/>면접을 제안합니다</p>
+          <p class="text-gray-600">기업에서 직접 검토 후<br />면접을 제안합니다</p>
         </div>
 
         <div class="text-center p-8 bg-white rounded-xl shadow-sm">
@@ -178,7 +178,7 @@ const getStatusText = (status, interview) => {
             </svg>
           </div>
           <h3 class="text-xl font-bold mb-2">간편한 일정 조율</h3>
-          <p class="text-gray-600">면접 일정을<br/>선택할 수 있습니다</p>
+          <p class="text-gray-600">면접 일정을<br />선택할 수 있습니다</p>
         </div>
 
         <div class="text-center p-8 bg-white rounded-xl shadow-sm">
@@ -200,7 +200,7 @@ const getStatusText = (status, interview) => {
       <div class="bg-[#8B8BF5] bg-opacity-5 rounded-2xl p-12 text-center">
         <h2 class="text-2xl font-bold mb-4">지금 바로 시작해보세요!</h2>
         <p class="text-gray-600 mb-8">
-          이력서를 등록하고 기업의 면접 제안을 받아보세요.<br/>
+          이력서를 등록하고 기업의 면접 제안을 받아보세요.<br />
           다양한 기업들이 여러분을 기다리고 있습니다.
         </p>
         <!-- <button 

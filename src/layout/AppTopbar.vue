@@ -191,7 +191,6 @@ const getLogout = () => {
       authStore.reset();
 
       window.location.reload();
-      // router.push('/');
     }
   });
   // messagePop.alert('test', 'info');

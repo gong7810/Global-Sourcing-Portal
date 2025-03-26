@@ -11,7 +11,7 @@ export const AUTH_EXCLUSIONS_ROUTER_NAME = [
   'businessRegisterComplete',
   /* 이상 로그인 없이 접근 가능 */
   'userIndex',
-  'businessIndex',
+  // 'businessIndex',
   'findId',
   'findPassword',
   'findIdResult',
