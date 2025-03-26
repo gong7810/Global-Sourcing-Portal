@@ -16,6 +16,11 @@ export const authRouter = [
     component: () => import('@/pages/common/LoginLineBridgePage.vue')
   },
   {
+    path: '/register-select',
+    name: 'RegisterSelect',
+    component: () => import('@/pages/common/RegisterSelect.vue')
+  },
+  {
     path: '/personal/register',
     name: 'personalRegister',
     component: () => import('@/pages/common/PersonalRegisterPage.vue')

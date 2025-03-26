@@ -4,6 +4,7 @@ export const AUTH_EXCLUSIONS_ROUTER_NAME = [
   'login',
   'loginGoogleResult',
   'loginLineResult',
+  'RegisterSelect',
   'personalRegister',
   'businessRegister',
   'userRegisterComplete',

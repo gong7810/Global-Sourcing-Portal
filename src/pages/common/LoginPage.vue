@@ -140,19 +140,7 @@ const loginLine = () => {
         <div class="w-px h-4 bg-gray-300"></div>
         <router-link to="/find-password" class="hover:text-[#8FA1FF] transition-colors">비밀번호찾기</router-link>
         <div class="w-px h-4 bg-gray-300"></div>
-        <!-- <button class="hover:text-[#8FA1FF] transition-colors">회원가입</button> -->
-        <router-link
-          to="/personal/register"
-          v-if="activeTab === 'personal'"
-          class="hover:text-[#8FA1FF] transition-colors"
-          >회원가입</router-link
-        >
-        <router-link
-          to="/business/register"
-          v-if="activeTab === 'business'"
-          class="hover:text-[#8FA1FF] transition-colors"
-          >회원가입</router-link
-        >
+        <router-link to="/register-select" class="hover:text-[#8FA1FF] transition-colors">회원가입</router-link>
       </div>
 
       <!-- 소셜 로그인 -->
