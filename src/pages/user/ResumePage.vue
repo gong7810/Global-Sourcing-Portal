@@ -57,7 +57,7 @@ const passportInfo = ref({
 const careerList = ref([
   {
     companyName: '(주)비티포탈',
-    period: '2023.03 - 2024.03',
+    period: '2023.01 - 2024.03',
     jobCategory: { label: 'IT개발·데이터', value: 'it' },
     jobTitle: '프론트엔드 개발자',
     department: '개발팀',
@@ -248,16 +248,29 @@ watch(
 
 // 경력 추가 로직
 const saveCareerInfo = () => {
-  // TODO: 저장 로직 구현
+  // 필수 필드 검증
+  const requiredFields = {
+    companyName: careerInfo.value.companyName,
+    startDate: careerInfo.value.startDate,
+    jobCategory: careerInfo.value.jobCategory,
+    jobTitle: careerInfo.value.jobTitle,
+    department: careerInfo.value.department,
+    responsibilities: careerInfo.value.responsibilities
+  };
 
-  const allValuesExist = careerInfo.value.isCurrentJob
-    ? Object.entries(careerInfo.value).every(([key, value]) => key === 'endDate' || (value !== null && value !== ''))
-    : Object.values(careerInfo.value).every((value) => value !== null && value !== '');
+  // 재직중이 아닐 경우 endDate도 필수
+  if (!careerInfo.value.isCurrentJob) {
+    requiredFields.endDate = careerInfo.value.endDate;
+  }
 
-  if (!allValuesExist) {
-    // 값이 존재하지 않을 경우 처리 (예: 경고 메시지 출력)
-    messagePop.toast('모든 필드를 입력해야 합니다.', 'warn');
-    return; // 함수 종료
+  // 빈 값 체크
+  const hasEmptyField = Object.values(requiredFields).some(value => 
+    value === null || value === '' || value === undefined
+  );
+
+  if (hasEmptyField) {
+    messagePop.toast('모든 필수 항목을 입력해주세요.', 'warn');
+    return;
   }
 
   const insertCareer = {
@@ -505,6 +518,32 @@ const jobCategories = [
   { label: '금융·보험', value: 'finance' },
   { label: '공공·복지', value: 'public' }
 ];
+
+// 개별 경력 기간 계산 함수
+const calculateCareerDuration = (period) => {
+  const [start, end] = period.split(' - ');
+  const startDate = new Date(start);
+  const endDate = end === '재직중' ? new Date() : new Date(end);
+  
+  const months = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                (endDate.getMonth() - startDate.getMonth());
+  
+  const years = Math.floor(months / 12);
+  const remainingMonths = months % 12;
+  
+  if (years === 0) {
+    return `${remainingMonths}개월`;
+  } else if (remainingMonths === 0) {
+    return `${years}년`;
+  } else {
+    return `${years}년 ${remainingMonths}개월`;
+  }
+};
+
+// careerList 변경 감지를 위한 watch 추가
+watch(careerList, (newCareerList) => {
+  basicInfo.value.totalCareer = calculateTotalCareer(newCareerList);
+}, { deep: true });
 </script>
 
 <template>
@@ -571,8 +610,6 @@ const jobCategories = [
                 <span class="notranslate">{{ basicInfo.email }}</span>
                 <span class="text-gray-500">주소</span>
                 <span>{{ basicInfo.address }}</span>
-                <span class="text-gray-500">경력</span>
-                <span>{{ basicInfo.totalCareer }}</span>
                 <span class="text-gray-500">학력</span>
                 <span>{{ basicInfo.lastEducation }}</span>
               </div>
@@ -659,6 +696,7 @@ const jobCategories = [
               <div class="flex items-center gap-3">
                 <i class="pi pi-briefcase text-gray-600"></i>
                 <h3 class="font-bold">경력</h3>
+                <span class="text-sm text-gray-500">(총 {{ basicInfo.totalCareer }})</span>
               </div>
               <Button
                 label="추가"
@@ -678,7 +716,12 @@ const jobCategories = [
                 <div class="flex justify-between items-start">
                   <div>
                     <h4 class="font-medium text-lg">{{ career.companyName }}</h4>
-                    <p class="text-gray-600 mt-1">{{ career.period }}</p>
+                    <p class="text-gray-600 mt-1">
+                      {{ career.period }}
+                      <span class="text-sm text-gray-500">
+                        ({{ calculateCareerDuration(career.period) }})
+                      </span>
+                    </p>
                     <p class="text-gray-600">
                       {{ career.jobCategory?.label || '' }} | {{ career.jobTitle }} | {{ career.department }}
                     </p>
@@ -924,6 +967,12 @@ const jobCategories = [
             placeholder="직무를 선택해주세요"
             class="w-full"
           />
+        </div>
+
+        <!-- 직책 추가 -->
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700"> 직책<span class="text-red-500">*</span> </label>
+          <InputText v-model="careerInfo.jobTitle" placeholder="직책을 입력해주세요" class="w-full" />
         </div>
 
         <!-- 부서 -->
