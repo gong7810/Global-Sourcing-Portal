@@ -1,6 +1,9 @@
 <script setup>
 import { ref } from 'vue';
-import Button from 'primevue/button';
+import { findPassword } from '@/apis/auth/authApis';
+import { useMessagePop } from '@/plugins/commonutils';
+
+const messagePop = useMessagePop();
 
 const activeTab = ref('personal');
 const userId = ref('');
@@ -14,13 +17,27 @@ const setActiveTab = (tab) => {
   activeTab.value = tab;
 };
 
-const findPassword = () => {
+const getPassword = async () => {
   const currentId = activeTab.value === 'personal' ? userId.value : businessId.value;
-  const currentEmail = activeTab.value === 'personal' ? email.value : businessEmail.value;
+  const currentName = activeTab.value === 'personal' ? name.value : managerName.value;
+  const currentEmail = activeTab.value === 'personal' ? email.value : '';
+  
+  if (currentId && currentName && currentEmail || currentId && currentName && businessRegistrationNo.value) {
+    const body = {
+      isCompany: activeTab.value !== 'personalactiveTab.value  ',
+      loginId: currentId, 
+      name: currentName,
+      email: currentEmail,
+      businessNumber: businessRegistrationNo.value
+    }
 
-  if (currentId && currentEmail) {
-    alert('입력하신 이메일로 비밀번호 재설정 링크를 발송했습니다.');
-    // 실제 구현시에는 서버에 요청하여 비밀번호 재설정 이메일을 발송해야 합니다.
+    const response = await findPassword(body)
+    
+    if (response && response.success === undefined) {
+      messagePop.alert(`입력하신 이메일로 비밀번호 재설정 링크를 발송했습니다.`, 'info');
+    } else {
+      messagePop.alert('입력하신 정보로 계정을 찾을 수 없습니다.', 'warn');
+    }
   } else {
     alert('모든 필드를 입력해주세요.');
   }
@@ -32,7 +49,7 @@ const findPassword = () => {
     <div class="bg-white p-8 rounded-2xl shadow-lg w-[480px]">
       <!-- 로고 -->
       <div class="text-center mb-8">
-        <router-link to="/" class="text-3xl font-bold">Global Sourcing Portal</router-link>
+        <router-link to="/" class="text-3xl font-bold notranslate">Global Sourcing Portal</router-link>
       </div>
 
       <h2 class="text-2xl font-bold text-center mb-6">비밀번호 찾기</h2>
@@ -101,7 +118,7 @@ const findPassword = () => {
         </template>
       </div>
 
-      <Button class="w-full py-3 bt_btn primary" @click="findPassword">
+      <Button class="w-full py-3 bt_btn primary" @click="getPassword">
         비밀번호 찾기
       </Button>
 

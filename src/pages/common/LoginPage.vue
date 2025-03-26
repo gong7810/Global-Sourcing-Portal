@@ -4,7 +4,9 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
 import { getAccount, login } from '@/apis/auth/authApis';
+import { useMessagePop } from '@/plugins/commonutils'
 
+const messagePop = useMessagePop();
 const authStore = useAuthStore();
 const { tokenInfo } = storeToRefs(authStore);
 const activeTab = ref('personal');
@@ -32,10 +34,12 @@ const getLogin = async () => {
 
   const response = await login(body);
 
-  if (response) {
+  if (response && response.success === undefined) {
     authStore.setToken(response?.accessToken);
 
     getUserInfo();
+  } else {
+    messagePop.toast('ID, 또는 PW가 틀렸습니다.', 'error');
   }
 };
 

@@ -1,6 +1,9 @@
 <script setup>
 import { ref } from 'vue';
-import Button from 'primevue/button';
+import { useMessagePop } from '@/plugins/commonutils';
+import { findId } from '@/apis/auth/authApis';
+
+const messagePop = useMessagePop();
 
 const activeTab = ref('personal');
 const name = ref('');
@@ -12,13 +15,24 @@ const setActiveTab = (tab) => {
   activeTab.value = tab;
 };
 
-const findId = () => {
+const getId = async () => {
   const currentName = activeTab.value === 'personal' ? name.value : businessName.value;
   const currentEmail = activeTab.value === 'personal' ? email.value : businessEmail.value;
 
   if (currentName && currentEmail) {
-    alert('입력하신 정보로 아이디를 찾을 수 없습니다.');
-    // 실제 구현시에는 서버에 요청하여 아이디를 찾아야 합니다.
+    const body = {
+      name: currentName,
+      email: currentEmail
+    }
+
+    const response = await findId(body)
+    
+    if (response?.userId) {
+      messagePop.alert(`가입하신 ID는 '${response.userId}' 입니다.`, 'info');
+    } else {
+      messagePop.alert('입력하신 정보로 ID를 찾을 수 없습니다.', 'warn');
+    }
+
   } else {
     alert('모든 필드를 입력해주세요.');
   }
@@ -30,7 +44,7 @@ const findId = () => {
     <div class="bg-white p-8 rounded-2xl shadow-lg w-[480px]">
       <!-- 로고 -->
       <div class="text-center mb-8">
-        <router-link to="/" class="text-3xl font-bold">Global Sourcing Portal</router-link>
+        <router-link to="/" class="text-3xl font-bold notranslate">Global Sourcing Portal</router-link>
       </div>
 
       <h2 class="text-2xl font-bold text-center mb-6">아이디 찾기</h2>
@@ -87,7 +101,7 @@ const findId = () => {
         </template>
       </div>
 
-      <Button class="w-full py-3 bt_btn primary" @click="findId">
+      <Button class="w-full py-3 bt_btn primary" @click="getId">
         아이디 찾기
       </Button>
 
