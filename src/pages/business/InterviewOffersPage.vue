@@ -462,9 +462,7 @@ const completeInterview = (offer) => {
   // 면접 완료 처리
   offer.interviewCompleted = true;
   offer.interviewCompletedDate = new Date().toISOString().split('T')[0];
-};
-
-const goToInterviewResults = (offer) => {
+  // 바로 면접 결과 관리 페이지로 이동
   router.push('/business/InterviewResults');
 };
 
@@ -670,9 +668,6 @@ const downloadFile = (fileType, fileInfo) => {
                   <i class="pi pi-check-circle mr-2"></i>
                   면접 완료
                 </p>
-                <Button @click="goToInterviewResults(offer)" class="mt-2 p-button-text text-[#8B8BF5]">
-                  면접 결과 관리로 이동
-                </Button>
               </div>
             </div>
 
