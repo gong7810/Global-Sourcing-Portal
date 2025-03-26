@@ -69,11 +69,30 @@ const careerList = ref([
 const educationList = ref([
   {
     educationType: { name: '대학교(4년)', code: 'UNIVERSITY' },
-    schoolName: '한국대학교',
-    period: '2015.03 - 2019.02',
+    schoolName: '서울대학교',
+    period: '2019.03 - 2023.02',
     major: '컴퓨터공학과',
     isGraduated: true,
-    details: '웹 개발 동아리 활동'
+    details: '졸업논문: AI 기반 추천 시스템 개발',
+    isLastEducation: true
+  },
+  {
+    educationType: { name: '대학교(4년)', code: 'UNIVERSITY' },
+    schoolName: '한국대학교',
+    period: '2015.03 - 2019.02',
+    major: '경영학과',
+    isGraduated: true,
+    details: '복수전공: 경영정보학',
+    isLastEducation: false
+  },
+  {
+    educationType: { name: '고등학교', code: 'HIGH_SCHOOL' },
+    schoolName: '한국고등학교',
+    period: '2012.03 - 2015.02',
+    major: '문과계열',
+    isGraduated: true,
+    details: '학생회장 활동',
+    isLastEducation: false
   }
 ]);
 
@@ -206,7 +225,7 @@ const getLastEducation = (educationList) => {
   if (sortedEducation.length === 0) return '학력 정보 없음';
 
   const lastEdu = sortedEducation[0];
-  return `${lastEdu.educationType.name} ${lastEdu.isGraduated ? '졸업' : '재학중'}`;
+  return `${lastEdu.schoolName} ${lastEdu.educationType.name} ${lastEdu.isGraduated ? '졸업' : '재학중'}`;
 };
 
 const getResume = async () => {
@@ -378,7 +397,9 @@ const saveEducationInfo = () => {
     period: !educationInfo.value.isGraduated
       ? `${educationInfo.value.startDate.getFullYear()}.${(educationInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')} - 재학중`
       : `${educationInfo.value.startDate.getFullYear()}.${(educationInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')} - ${educationInfo.value.endDate.getFullYear()}.${(educationInfo.value.endDate.getMonth() + 1).toString().padStart(2, '0')}`,
-    details: educationInfo.value.details
+    details: educationInfo.value.details,
+    isGraduated: educationInfo.value.isGraduated,
+    isLastEducation: false
   };
 
   console.log(insertEdu);
@@ -544,6 +565,17 @@ const calculateCareerDuration = (period) => {
 watch(careerList, (newCareerList) => {
   basicInfo.value.totalCareer = calculateTotalCareer(newCareerList);
 }, { deep: true });
+
+// 최종학력 설정 함수 추가
+const setLastEducation = (selectedIndex) => {
+  educationList.value.forEach((edu, index) => {
+    edu.isLastEducation = index === selectedIndex;
+  });
+  
+  // 선택된 학력을 최종학력으로 설정
+  const selectedEducation = educationList.value[selectedIndex];
+  basicInfo.value.lastEducation = `${selectedEducation.schoolName} ${selectedEducation.educationType.name} ${selectedEducation.isGraduated ? '졸업' : '재학중'}`;
+};
 </script>
 
 <template>
@@ -610,8 +642,6 @@ watch(careerList, (newCareerList) => {
                 <span class="notranslate">{{ basicInfo.email }}</span>
                 <span class="text-gray-500">주소</span>
                 <span>{{ basicInfo.address }}</span>
-                <span class="text-gray-500">학력</span>
-                <span>{{ basicInfo.lastEducation }}</span>
               </div>
             </div>
 
@@ -782,6 +812,14 @@ watch(careerList, (newCareerList) => {
               />
             </div>
 
+            <!-- 최종학력 표시 -->
+            <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+              <div class="flex items-center gap-2">
+                <span class="text-gray-600">최종학력:</span>
+                <span class="font-medium">{{ basicInfo.lastEducation }}</span>
+              </div>
+            </div>
+
             <!-- 학력 리스트 -->
             <div class="space-y-4">
               <div
@@ -790,7 +828,16 @@ watch(careerList, (newCareerList) => {
                 class="border border-gray-200 rounded-lg p-4 hover:border-[#8FA1FF] transition-colors"
               >
                 <div class="flex justify-between items-start">
-                  <div>
+                  <div class="flex-grow">
+                    <!-- 최종학력 체크박스 추가 -->
+                    <div class="flex items-center gap-3 mb-2">
+                      <Checkbox
+                        :modelValue="education.isLastEducation"
+                        @update:modelValue="setLastEducation(index)"
+                        :binary="true"
+                      />
+                      <label class="text-sm text-gray-600">최종학력으로 설정</label>
+                    </div>
                     <h4 class="font-medium text-lg">{{ education.schoolName }}</h4>
                     <p class="text-gray-600">{{ education.educationType.name }}</p>
                     <p class="text-gray-600 mt-1">{{ education.period }}</p>
