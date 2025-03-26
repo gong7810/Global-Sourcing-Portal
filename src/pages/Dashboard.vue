@@ -45,49 +45,27 @@ const companies = ref([
   {
     name: '밥스(주)',
     business: '산업용 CFRP 물러, 디스플레이용 로봇핸드, 자동차 부품',
-    address: '대전 유성구 국제과학로46(신동)',
-    positions: [
-      { title: '항공기계설계', career: '경력 3년 이상', count: 2 },
-      { title: '제품개발', career: '신입/경력', count: 1 }
-    ]
+    address: '대전 유성구 국제과학로46(신동)'
   },
   {
     name: '한국항공우주산업(주)',
     business: '기체구조물, 성능개량, 원재기 제작',
-    address:
-      '서울사무소: 서울특별시 강남구 테헤란로 309 6층 (역삼동, 삼성제일빌딩)\n부사: 경남 사천시 사남면 유천리 802',
-    positions: [
-      { title: '항공기계설계', career: '경력 5년 이상', count: 3 },
-      { title: '품질관리', career: '경력 무관', count: 2 }
-    ]
+    address: '서울사무소: 서울특별시 강남구 테헤란로 309 6층 (역삼동, 삼성제일빌딩)\n부사: 경남 사천시 사남면 유천리 802'
   },
   {
     name: 'LIG넥스원',
     business: '항공전자, 유도 및 수중 무기, 사격통제, 전자광학',
-    address: '경기도 용인시 기흥구 마북로 207',
-    positions: [
-      { title: '항공전자 개발', career: '경력 3년 이상', count: 2 },
-      { title: '시스템 엔지니어', career: '신입/경력', count: 3 }
-    ]
+    address: '경기도 용인시 기흥구 마북로 207'
   },
   {
     name: '대한항공',
     business: '항공기 및 위성 부품 제작, 정비 및 개조',
-    address: '서울시 중구 서소문동 41-3 대한항공 서소문빌딩 10층',
-    positions: [
-      { title: '항공정비사', career: '경력 5년 이상', count: 5 },
-      { title: '항공기계설계', career: '경력 3년 이상', count: 2 },
-      { title: '품질관리', career: '신입/경력', count: 3 }
-    ]
+    address: '서울시 중구 서소문동 41-3 대한항공 서소문빌딩 10층'
   },
   {
     name: '한국로스트왁스',
     business: '항공기 엔진 부품',
-    address: '경기도 안산시 단원구 성곡동 702-5(시화공단 4마 409)',
-    positions: [
-      { title: '생산기술', career: '신입/경력', count: 2 },
-      { title: '품질관리', career: '경력 2년 이상', count: 1 }
-    ]
+    address: '경기도 안산시 단원구 성곡동 702-5(시화공단 4마 409)'
   }
 ]);
 </script>
@@ -202,6 +180,27 @@ const companies = ref([
             면접 현황
           </span>
         </div>
+        <!-- <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/companyList')">
+          <div
+            class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
+          >
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#8B8BF5"
+              stroke-width="2.5"
+              class="transition-all duration-200 group-hover:stroke-white"
+            >
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+          </div>
+          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">
+            기업 목록
+          </span>
+        </div> -->
         <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/userPage')">
           <div
             class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
