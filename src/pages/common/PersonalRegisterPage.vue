@@ -2,15 +2,16 @@
 import { onMounted, ref, watch } from 'vue';
 import { isEmpty } from 'es-toolkit/compat';
 import { useRouter } from 'vue-router';
-import { checkDuplicate, getNationality } from '@/apis/auth/authApis';
+import { checkDuplicate, getNationality, signUpUser } from '@/apis/auth/authApis';
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
+import { fileUpload } from '@/apis/common/commonApis';
 
 const authStore = useAuthStore();
 const { tokenInfo } = storeToRefs(authStore);
 const router = useRouter();
 
-const fileupload = ref();
+const files = ref();
 
 const id = ref('');
 const pw = ref('');
@@ -69,8 +70,6 @@ const checkIdDuplication = async () => {
     idCheckSuccess.value = false;
     return;
   }
-
-  console.log(tokenInfo.value);
 
   try {
     const response = await checkDuplicate(id.value);
@@ -179,7 +178,11 @@ const toggleDetail = (key) => {
   details.value[key] = !details.value[key];
 };
 
-const submitForm = () => {
+const submitForm = async () => {
+  const formData = savePassportImage();
+
+  const response = await fileUpload(formData);
+
   if (
     // 기존 필수 항목들
     !id.value.trim() ||
@@ -198,7 +201,7 @@ const submitForm = () => {
     !issueDate.value ||
     !expirationDate.value ||
     !issuingCountry.value ||
-    !fileupload.value.hasFiles
+    !files.value.hasFiles
   ) {
     formError.value = '모든 필수 항목을 입력하고 체크해주세요.';
     return;
@@ -217,20 +220,56 @@ const submitForm = () => {
   //   return;
   // }
 
+  const body = {
+     "user": {
+        "loginId": id.value,
+        "name": name.value,
+        "password": pw.value,
+        // 상단이 필수값
+        "profileImage": null,
+        "birth": birthdate.value,
+        "mobile": null,
+        "email": email.value,
+        "address": null,
+        "genderCd": `GENDER_${gender.value}`
+    },
+    "resume": {
+        "nationalityCd": nationality.value.value,
+        "passport": passportNo.value,
+        "passportName": `${passportFirstName.value} ${passportLastName.value}`,
+        "passportFirstName": passportFirstName.value,
+        "passportLastName": passportLastName.value,
+        "passportIssueDt": new Date(issueDate.value).toISOString(),
+        "passportExpiryDt": new Date(expirationDate.value).toISOString(),
+        "passportCountryCd": issuingCountry.value.value,
+        "snsUrl": null,
+        "portfolioUrl": null,
+        "portfolioFile": null
+    }
+  };
+
+  // const response = await signUpUser(body);
+
+  // 여권사진 저장
+  // const fornmData = savePassportImage();
+
+  // const response = await fileUpload(fornmData);
+
+  // console.log(response);
+
   // 가입 처리 로직
   formError.value = '';
   console.log('가입 성공');
   // 회원가입 완료 페이지로 이동
-  router.push('/user/register/complete');
+  // router.push('/user/register/complete');
 };
 
-const test = () => {
-  // console.log(fileupload.value.files[0]);
-  console.log('1', fileupload.value);
+// 이미지 바이너리 변환
+const savePassportImage = () => {
   const formData = new FormData();
-  formData.append('file', fileupload.value.files[0]);
+  formData.append('file', files.value.files[0]);
 
-  console.log('2', formData);
+  return formData;
 };
 </script>
 
@@ -300,11 +339,11 @@ const test = () => {
             />
             <div class="flex items-center space-x-2">
               <label>
-                <input type="radio" v-model="gender" value="male" />
+                <input type="radio" v-model="gender" value="MALE" />
                 남자
               </label>
               <label>
-                <input type="radio" v-model="gender" value="female" />
+                <input type="radio" v-model="gender" value="FEMALE" />
                 여자
               </label>
             </div>
@@ -336,7 +375,7 @@ const test = () => {
               />
               <FileUpload
                 style="background-color: #f2f4f7; color: #353336; border-color: #9d9aa0"
-                ref="fileupload"
+                ref="files"
                 mode="basic"
                 name="demo[]"
                 url="/api/upload"

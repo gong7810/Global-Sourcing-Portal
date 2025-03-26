@@ -1,10 +1,14 @@
-import api from '@/apis/index'
+import { useApi } from '@/apis/index'
 
-export const test = async () => {
+const api = useApi();
+
+// 파일 업로드
+export const fileUpload = async (body) => {
   try {
-    const response = await api.get('/v1/st/user/apis')
-    console.log(response)
+    const response = await api.post('/file/upload', body)
+    
+    return response.data
   } catch (error) {
-    console.error(error)
+    console.error(error);
   }
 }
