@@ -415,8 +415,9 @@ const downloadFile = (fileType, fileInfo) => {
           <Button 
             @click="openResultModal(interview)"
             class="bg-[#8B8BF5] text-white"
+            :disabled="interview.result !== null"
           >
-            {{ interview.result === null ? '면접 결과 입력' : '결과 수정' }}
+            {{ interview.result === null ? '면접 결과 입력' : '결과 확정됨' }}
           </Button>
         </div>
       </div>
@@ -426,7 +427,7 @@ const downloadFile = (fileType, fileInfo) => {
     <Dialog 
       v-model:visible="showResultModal"
       modal
-      :header="selectedInterview?.result === null ? '면접 결과 입력' : '면접 결과 수정'"
+      :header="'면접 결과 입력'"
       :style="{ width: '500px' }"
     >
       <div class="p-4 space-y-4">
@@ -439,6 +440,7 @@ const downloadFile = (fileType, fileInfo) => {
             optionValue="value"
             placeholder="결과 선택"
             class="w-full"
+            :disabled="selectedInterview?.result !== null"
           />
         </div>
 
@@ -449,6 +451,7 @@ const downloadFile = (fileType, fileInfo) => {
             rows="4"
             class="w-full"
             placeholder="면접 피드백을 입력해주세요"
+            :disabled="selectedInterview?.result !== null"
           />
         </div>
       </div>
@@ -459,13 +462,14 @@ const downloadFile = (fileType, fileInfo) => {
             @click="showResultModal = false"
             class="p-button-text"
           >
-            취소
+            닫기
           </Button>
           <Button 
             @click="saveResult"
             class="bg-[#8B8BF5]"
+            :disabled="selectedInterview?.result !== null"
           >
-            {{ selectedInterview?.result === null ? '입력' : '수정' }}
+            입력
           </Button>
         </div>
       </template>
