@@ -35,7 +35,8 @@ export const useAuthStore = defineStore(
     /* 로그인 */
 
     const login = () => {
-      router.push('/login');
+      // router.push('/login');
+      location.href='/login';
     };
 
     /* 라인 state 관리 */
