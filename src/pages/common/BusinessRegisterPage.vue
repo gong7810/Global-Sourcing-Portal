@@ -1,10 +1,10 @@
 <script setup>
-import { ref, watch } from 'vue';
-import { isEmpty } from 'es-toolkit/compat';
+import { ref, toRaw, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { checkDuplicate, requestMobile } from '@/apis/auth/authApis';
+import { isEmpty } from 'es-toolkit/compat';
 import { useMessagePop } from '@/plugins/commonutils';
-import { checkMobile } from '@/apis/auth/authApis';
+import { checkDuplicate, requestMobile, checkMobile } from '@/apis/auth/authApis';
+import { fileUpload } from '@/apis/common/commonApis';
 
 const messagePop = useMessagePop();
 const router = useRouter();
@@ -290,7 +290,10 @@ const removeFile = () => {
   fileError.value = '';
 };
 
-const submitForm = () => {
+const submitForm = async () => {
+  const formData = savePassportImage();
+
+  const response = await fileUpload(formData);
   if (
     !businessType.value ||
     !businessType.value.value.trim() ||
@@ -312,9 +315,23 @@ const submitForm = () => {
     return;
   }
 
+  // const response = await signUpCompany(body);
+
+  // 사업자등록증명원 저장
+  // const fornmData = savePassportImage();
+
+  // const response = await fileUpload(fornmData);
   // 가입 신청 처리 로직
   formError.value = '';
   showCompleteDialog.value = true;
+};
+
+// 이미지 바이너리 변환
+const savePassportImage = () => {
+  const formData = new FormData();
+  formData.append('file', toRaw(businessRegistrationFile.value));
+
+  return formData;
 };
 </script>
 
