@@ -19,12 +19,29 @@ const basicInfo = ref({
   address: '윙스타워 505호',
   profileImage: '',
   userId: 'yeji123',
-  isSocialLogin: true // 소셜로그인이 아니면 false
+  isSocialLogin: true,
+  visitedKorea: false,
+  maritalStatus: null,
+  koreanLevel: null,
+  koreanStudyPeriod: '',
+  criminalRecordFile: null
 });
 
 const genders = [
   { label: '남성', value: 'male' },
   { label: '여성', value: 'female' }
+];
+
+const maritalStatuses = [
+  { label: '미혼', value: 'single' },
+  { label: '기혼', value: 'married' }
+];
+
+const koreanLevels = [
+  { label: '초급', value: 'beginner' },
+  { label: '중급', value: 'intermediate' },
+  { label: '고급', value: 'advanced' },
+  { label: '원어민 수준', value: 'native' }
 ];
 
 // 비밀번호 수정 모달 관련
@@ -122,6 +139,18 @@ const saveAll = () => {
     messagePop.toast('이메일을 입력해주세요.', 'warn');
     return;
   }
+  if (!basicInfo.value.phone) {
+    messagePop.toast('전화번호를 입력해주세요.', 'warn');
+    return;
+  }
+  if (!basicInfo.value.address) {
+    messagePop.toast('주소를 입력해주세요.', 'warn');
+    return;
+  }
+  if (!basicInfo.value.criminalRecordFile) {
+    messagePop.toast('범죄경력 확인서를 업로드해주세요.', 'warn');
+    return;
+  }
 
   messagePop.confirm({
     message: '변경사항을 저장하시겠습니까?',
@@ -180,6 +209,30 @@ const handleImageUpload = (event) => {
 const removeImage = () => {
   basicInfo.value.profileImage = '';
   userStore.updateProfileImage(''); // store 업데이트
+};
+
+const handleCriminalRecordUpload = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    // 파일 크기 체크 (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      messagePop.toast('파일 크기는 10MB 이하여야 합니다.', 'warn');
+      return;
+    }
+
+    // 파일 형식 체크
+    if (!['application/pdf', 'image/jpeg', 'image/png'].includes(file.type)) {
+      messagePop.toast('PDF, JPG 또는 PNG 형식의 파일만 업로드 가능합니다.', 'warn');
+      return;
+    }
+
+    basicInfo.value.criminalRecordFile = file;
+    // TODO: 파일 업로드 API 호출
+  }
+};
+
+const removeCriminalRecord = () => {
+  basicInfo.value.criminalRecordFile = null;
 };
 </script>
 
@@ -330,7 +383,9 @@ const removeImage = () => {
             <div class="flex items-center gap-4">
               <i class="pi pi-phone"></i>
               <div class="flex-grow">
-                <label class="mb-1 text-sm">전화번호</label>
+                <label class="flex items-center gap-1 mb-1 text-sm">
+                  전화번호 <span class="text-red-500">*</span>
+                </label>
                 <InputText 
                   v-model="basicInfo.phone" 
                   placeholder="전화번호를 입력해주세요" 
@@ -341,12 +396,92 @@ const removeImage = () => {
             <div class="flex items-center gap-4">
               <i class="pi pi-map-marker"></i>
               <div class="flex-grow">
-                <label class="mb-1 text-sm">주소</label>
+                <label class="flex items-center gap-1 mb-1 text-sm">
+                  주소 <span class="text-red-500">*</span>
+                </label>
                 <InputText 
                   v-model="basicInfo.address" 
                   placeholder="주소를 입력해주세요" 
                   class="w-full" 
                 />
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <i class="pi pi-file"></i>
+              <div class="flex-grow">
+                <label class="flex items-center gap-1 mb-1 text-sm">
+                  범죄경력 확인서 <span class="text-red-500">*</span>
+                </label>
+                <div class="border rounded-lg p-4">
+                  <div v-if="!basicInfo.criminalRecordFile" class="flex flex-col items-center gap-2">
+                    <label class="cursor-pointer text-center">
+                      <input
+                        type="file"
+                        accept=".pdf,image/*"
+                        class="hidden"
+                        @change="handleCriminalRecordUpload"
+                      />
+                      <i class="pi pi-upload text-2xl text-gray-400"></i>
+                      <p class="text-sm text-gray-600">클릭하여 파일 업로드</p>
+                      <p class="text-xs text-gray-400">(신원조회서, 범죄경력회보서, 범죄경력 사실 없음 확인서 등)</p>
+                    </label>
+                  </div>
+                  <div v-else class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600">{{ basicInfo.criminalRecordFile.name }}</span>
+                    <button
+                      @click="removeCriminalRecord"
+                      class="text-red-500 hover:text-red-600"
+                    >
+                      <i class="pi pi-times"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <i class="pi pi-globe"></i>
+              <div class="flex-grow">
+                <label class="mb-1 text-sm">한국 방문 경험</label>
+                <div class="flex items-center gap-2">
+                  <Checkbox v-model="basicInfo.visitedKorea" :binary="true" />
+                  <span>한국에 방문한 적이 있습니다.</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <i class="pi pi-heart"></i>
+              <div class="flex-grow">
+                <label class="mb-1 text-sm">혼인사항</label>
+                <Select
+                  v-model="basicInfo.maritalStatus"
+                  :options="maritalStatuses"
+                  optionLabel="label"
+                  placeholder="혼인사항 선택"
+                  class="w-full"
+                />
+              </div>
+            </div>
+            <div class="flex items-center gap-4">
+              <i class="pi pi-comment"></i>
+              <div class="flex gap-4 flex-grow">
+                <div class="flex-1">
+                  <label class="mb-1 text-sm">한국어 실력</label>
+                  <Select
+                    v-model="basicInfo.koreanLevel"
+                    :options="koreanLevels"
+                    optionLabel="label"
+                    placeholder="한국어 실력 선택"
+                    class="w-full"
+                  />
+                </div>
+                <div class="flex-1">
+                  <label class="mb-1 text-sm">한국어 학습 기간</label>
+                  <InputText 
+                    v-model="basicInfo.koreanStudyPeriod" 
+                    placeholder="예: 2년 3개월" 
+                    class="w-full" 
+                  />
+                </div>
               </div>
             </div>
             <!-- 버튼 영역 -->
