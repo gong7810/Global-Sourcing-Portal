@@ -163,6 +163,7 @@ const mockJobOffers = [
     isRead: true,
     createdAt: '2024-03-09',
     rejectedAt: '2024-03-18T14:30:00',
+    rejectReason: '현재 다른 회사와 채용 과정이 진행 중입니다. 좋은 기회를 주셔서 감사합니다.',
     resumeSnapshot: {
       basicInfo: {
         name: '최예지',
@@ -363,12 +364,34 @@ const acceptOffer = async (offer) => {
   });
 };
 
+// 거절 사유 모달 상태 추가
+const showRejectReasonModal = ref(false);
+const rejectReason = ref('');
+const offerToReject = ref(null);
+
 // 제안 거절
 const rejectOffer = (offer) => {
+  offerToReject.value = offer;
+  rejectReason.value = ''; // 거절 사유 초기화
+  showRejectReasonModal.value = true;
+};
+
+// 거절 확인 함수 수정 (공통으로 사용)
+const confirmReject = () => {
+  if (!rejectReason.value.trim()) {
+    toast.add({
+      severity: 'warn',
+      summary: '입력 필요',
+      detail: '거절 사유를 입력해주세요.',
+      life: 3000
+    });
+    return;
+  }
+
   messagePop.confirm({
     icon: 'info',
     message: `<div class="text-center">
-      <p class="text-xl mb-2">${offer.companyName}의 면접 제안을 거절하시겠습니까?</p>
+      <p class="text-xl mb-2">면접을 거절하시겠습니까?</p>
       <p class="text-sm text-gray-600">거절 시 기업 담당자에게 알림과 메일이 발송됩니다.</p>
       <p class="text-sm text-red-500">이 결정은 되돌릴 수 없습니다.</p>
     </div>`,
@@ -376,16 +399,24 @@ const rejectOffer = (offer) => {
     rejectLabel: '취소',
     acceptClass: 'p-button-danger',
     onCloseYes: () => {
+      const offer = offerToReject.value;
+      offer.interviewProposed = false;
       offer.status = 'rejected';
       offer.rejectedAt = new Date().toISOString();
+      offer.rejectReason = rejectReason.value;
       
+      if (selectedDateIndices.value[offer.id] !== undefined) {
+        selectedDateIndices.value[offer.id] = undefined;
+      }
+
       toast.add({
         severity: 'info',
         summary: '제안 거절',
-        detail: `${offer.companyName}의 면접제안을 거절했습니다.`,
+        detail: `${offer.companyName}의 제안이 거절되었습니다.`,
         life: 3000
       });
-      
+
+      showRejectReasonModal.value = false;
       showDetailModal.value = false;
     }
   });
@@ -482,30 +513,9 @@ const acceptInterviewSchedule = (offer) => {
 
 // 면접 일정 거절
 const rejectInterviewSchedule = (offer) => {
-  messagePop.confirm({
-    icon: 'info',
-    message: `<div class="text-center">
-      <p class="text-xl mb-2">면접을 거절하시겠습니까?</p>
-      <p class="text-sm text-gray-600">거절 시 기업 담당자에게 알림과 메일이 발송됩니다.</p>
-      <p class="text-sm text-red-500">이 결정은 되돌릴 수 없습니다.</p>
-    </div>`,
-    acceptLabel: '거절',
-    rejectLabel: '취소',
-    acceptClass: 'p-button-danger',
-    onCloseYes: () => {
-      offer.interviewProposed = false;
-      offer.status = 'rejected';
-      offer.rejectedAt = new Date().toISOString();
-      selectedDateIndices.value[offer.id] = undefined;
-
-      toast.add({
-        severity: 'info',
-        summary: '면접 거절',
-        detail: '면접이 거절되었습니다.',
-        life: 3000
-      });
-    }
-  });
+  offerToReject.value = offer;
+  rejectReason.value = ''; // 거절 사유 초기화
+  showRejectReasonModal.value = true;
 };
 
 // 날짜 포맷팅 함수 추가
@@ -665,8 +675,8 @@ const formatDate = (dateString) => {
                 </div>
                 <div class="flex gap-2 justify-end">
                   <Button label="상세정보보기" class="p-button-outlined" @click.stop="viewOfferDetail(offer)" />
-                  <Button label="거절하기" class="p-button-danger" @click.stop="rejectOffer(offer)" />
                   <Button label="수락하기" class="p-button-success" @click.stop="acceptOffer(offer)" />
+                  <Button label="거절하기" class="p-button-danger" @click.stop="rejectOffer(offer)" />
                 </div>
               </div>
 
@@ -781,6 +791,13 @@ const formatDate = (dateString) => {
                     <i class="pi pi-times-circle mr-2"></i>
                     {{ formatDate(offer.rejectedAt) }}에 거절되었습니다
                   </p>
+                  <!-- 거절 사유 표시 추가 -->
+                  <div v-if="offer.rejectReason" class="bg-red-50 p-4 rounded-lg mt-2">
+                    <p class="text-red-700">
+                      <span class="font-medium">거절 사유:</span><br>
+                      {{ offer.rejectReason }}
+                    </p>
+                  </div>
                 </div>
                 <div class="flex gap-2 justify-end">
                   <Button label="상세정보보기" class="p-button-outlined" @click.stop="viewOfferDetail(offer)" />
@@ -988,6 +1005,13 @@ const formatDate = (dateString) => {
                 <i class="pi pi-times-circle mr-2"></i>
                 {{ formatDate(selectedOffer.rejectedAt) }}에 거절되었습니다
               </p>
+              <!-- 거절 사유 표시 추가 -->
+              <div v-if="selectedOffer.rejectReason" class="bg-red-50 p-4 rounded-lg mt-2">
+                <p class="text-red-700">
+                  <span class="font-medium">거절 사유:</span><br>
+                  {{ selectedOffer.rejectReason }}
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -1103,6 +1127,47 @@ const formatDate = (dateString) => {
           </div>
         </div>
       </div>
+    </Dialog>
+
+    <!-- 거절 사유 입력 모달 추가 -->
+    <Dialog 
+      v-model:visible="showRejectReasonModal" 
+      :modal="true" 
+      header="면접 거절 사유" 
+      :style="{ width: '500px' }"
+    >
+      <div class="p-6">
+        <div class="space-y-4">
+          <p class="text-xl mb-2">면접을 거절하시겠습니까?</p>
+          <div class="space-y-2">
+            <p class="text-gray-600">거절 사유를 입력해주세요.</p>
+            <textarea
+              v-model="rejectReason"
+              rows="4"
+              placeholder="예: 다른 회사의 채용 과정이 진행 중입니다."
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF] resize-none"
+            ></textarea>
+          </div>
+          <div class="space-y-1 mt-4">
+            <p class="text-sm text-gray-600">거절 시 기업 담당자에게 알림과 메일이 발송됩니다.</p>
+            <p class="text-sm text-red-500">이 결정은 되돌릴 수 없습니다.</p>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <div class="flex justify-end gap-2">
+          <Button 
+            label="취소" 
+            class="p-button-text" 
+            @click="showRejectReasonModal = false" 
+          />
+          <Button 
+            label="거절" 
+            severity="danger" 
+            @click="confirmReject" 
+          />
+        </div>
+      </template>
     </Dialog>
 
     <!-- 토스트 메시지 -->
