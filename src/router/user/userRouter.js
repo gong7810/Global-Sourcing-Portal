@@ -28,6 +28,11 @@ export const userRouter = [
     path: '/user/jobSeekerInterviews',
     name: 'JobSeekerInterviews',
     component: () => import('@/pages/user/JobSeekerInterviewsPage.vue'),
+  },
+  {
+    path: '/user/companyList',
+    name: 'CompanyList',
+    component: () => import('@/pages/user/CompanyList.vue')
   }
   // {
   //     path: '/manageMember',

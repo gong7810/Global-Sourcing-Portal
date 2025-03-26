@@ -40,77 +40,150 @@ const getJobOfferList = async () => {
 //   return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 // };
 
-// 회사 정보 데이터 수정
-const companies = ref([
+// JobOffersPage.vue의 데이터를 기반으로 한 면접 제안 데이터
+const pendingInterviews = ref([
   {
-    name: '밥스(주)',
-    business: '산업용 CFRP 물러, 디스플레이용 로봇핸드, 자동차 부품',
-    address: '대전 유성구 국제과학로46(신동)',
-    positions: [
-      { title: '항공기계설계', career: '경력 3년 이상', count: 2 },
-      { title: '제품개발', career: '신입/경력', count: 1 }
-    ]
+    companyName: '밥스(주)',
+    position: '항공기계설계',
+    status: 'waiting_accept',
+    date: '2024-03-20'
   },
   {
-    name: '한국항공우주산업(주)',
-    business: '기체구조물, 성능개량, 원재기 제작',
-    address:
-      '서울사무소: 서울특별시 강남구 테헤란로 309 6층 (역삼동, 삼성제일빌딩)\n부사: 경남 사천시 사남면 유천리 802',
-    positions: [
-      { title: '항공기계설계', career: '경력 5년 이상', count: 3 },
-      { title: '품질관리', career: '경력 무관', count: 2 }
-    ]
+    companyName: 'LIG넥스원',
+    position: '시스템 엔지니어',
+    status: 'scheduling',
+    date: '2024-03-22'
   },
   {
-    name: 'LIG넥스원',
-    business: '항공전자, 유도 및 수중 무기, 사격통제, 전자광학',
-    address: '경기도 용인시 기흥구 마북로 207',
-    positions: [
-      { title: '항공전자 개발', career: '경력 3년 이상', count: 2 },
-      { title: '시스템 엔지니어', career: '신입/경력', count: 3 }
-    ]
+    companyName: '대한항공',
+    position: '항공정비사',
+    status: 'pending_schedule',
+    date: '2024-03-25'
   },
   {
-    name: '대한항공',
-    business: '항공기 및 위성 부품 제작, 정비 및 개조',
-    address: '서울시 중구 서소문동 41-3 대한항공 서소문빌딩 10층',
-    positions: [
-      { title: '항공정비사', career: '경력 5년 이상', count: 5 },
-      { title: '항공기계설계', career: '경력 3년 이상', count: 2 },
-      { title: '품질관리', career: '신입/경력', count: 3 }
-    ]
-  },
-  {
-    name: '한국로스트왁스',
-    business: '항공기 엔진 부품',
-    address: '경기도 안산시 단원구 성곡동 702-5(시화공단 4마 409)',
-    positions: [
-      { title: '생산기술', career: '신입/경력', count: 2 },
-      { title: '품질관리', career: '경력 2년 이상', count: 1 }
-    ]
+    companyName: '한국항공우주산업(주)',
+    position: '품질관리',
+    status: 'accepted',
+    date: '2024-03-15',
+    interviewConfirmed: true,
+    interviewDate: '2024-03-28',
+    interviewTime: '14:00',
+    interviewType: 'offline',
+    interviewLocation: '경남 사천시 사남면 공단1로 78'
   }
 ]);
+
+const completedInterviews = ref([
+  {
+    companyName: '한국로스트왁스',
+    position: '생산기술',
+    status: 'rejected',
+    date: '2024-03-10'
+  },
+  {
+    companyName: '한화에어로스페이스',
+    position: '항공기계설계',
+    status: 'interview_completed',
+    date: '2024-03-05',
+    interviewDate: '2024-03-19',
+    interviewTime: '10:00',
+    completedAt: '2024-03-19T11:30:00'
+  }
+]);
+
+// 상태에 따른 텍스트 색상 반환
+const getStatusColor = (status) => {
+  switch (status) {
+    case 'waiting_accept':
+      return 'text-yellow-600';
+    case 'scheduling':
+      return 'text-blue-600';
+    case 'pending_schedule':
+      return 'text-purple-600';
+    case 'accepted':
+      return 'text-green-600';
+    case 'rejected':
+      return 'text-red-600';
+    case 'interview_completed':
+      return 'text-gray-600';
+    default:
+      return 'text-gray-600';
+  }
+};
+
+// 상태 텍스트 반환 함수 수정
+const getStatusText = (status, interview) => {
+  switch (status) {
+    case 'waiting_accept':
+      return '면접 수락 대기중';
+    case 'scheduling':
+      return '면접 일정조율중';
+    case 'pending_schedule':
+      return '면접일정선택중';
+    case 'accepted':
+      return interview?.interviewConfirmed ? '면접 일정 확정' : '면접 수락됨';
+    case 'rejected':
+      return '면접 거절됨';
+    case 'interview_completed':
+      return '면접 완료';
+    default:
+      return '';
+  }
+};
 </script>
 
 <template>
-  <!-- 전체 컨테이너에 최대 폭 제한과 중앙 정렬 적용 -->
   <div class="max-w-[1200px] mx-auto px-4 py-12">
-    <div class="grid gap-4">
-      <!-- 상단 메뉴 아이콘들 -->
-      <div class="flex justify-center gap-32 mb-12">
-        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/resume')">
-          <div
-            class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
+    <!-- 비로그인 상태일 때 -->
+    <template v-if="!userInfo">
+      <!-- 메인 히어로 섹션 -->
+      <div class="text-center mb-16">
+        <h1 class="text-4xl font-bold mb-4">Global Sourcing Portal</h1>
+        <p class="text-xl text-gray-600 mb-8">기업의 직접 면접 제안을 받아보세요</p>
+        <div class="flex justify-center gap-4">
+          <button 
+            class="px-8 py-3 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7878F2] transition-colors"
+            @click="router.push('/login')"
           >
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#8B8BF5"
-              stroke-width="2.5"
-              class="transition-all duration-200 group-hover:stroke-white"
-            >
+            로그인하기
+          </button>
+          <button 
+            class="px-8 py-3 border-2 border-[#8B8BF5] text-[#8B8BF5] rounded-lg hover:bg-[#8B8BF5] hover:text-white transition-colors"
+            @click="router.push('/register-select')"
+          >
+            회원가입
+          </button>
+        </div>
+      </div>
+
+      <!-- 서비스 특징 섹션 -->
+      <div class="grid grid-cols-3 gap-8 mb-16">
+        <div class="text-center p-8 bg-white rounded-xl shadow-sm">
+          <div class="w-16 h-16 bg-[#8B8BF5] bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-[#8B8BF5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold mb-2">직접 면접 제안</h3>
+          <p class="text-gray-600">기업에서 직접 검토 후<br/>면접을 제안합니다</p>
+        </div>
+
+        <div class="text-center p-8 bg-white rounded-xl shadow-sm">
+          <div class="w-16 h-16 bg-[#8B8BF5] bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-[#8B8BF5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold mb-2">간편한 일정 조율</h3>
+          <p class="text-gray-600">면접 일정을<br/>선택할 수 있습니다</p>
+        </div>
+
+        <div class="text-center p-8 bg-white rounded-xl shadow-sm">
+          <div class="w-16 h-16 bg-[#8B8BF5] bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-[#8B8BF5]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
               <path d="M14 2v6h6"></path>
               <line x1="16" y1="13" x2="8" y2="13"></line>
@@ -118,193 +191,286 @@ const companies = ref([
               <line x1="10" y1="9" x2="8" y2="9"></line>
             </svg>
           </div>
-          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
-            >이력서</span
-          >
+          <h3 class="text-xl font-bold mb-2">이력서 관리</h3>
+          <p class="text-gray-600">이력서를 작성해보세요</p>
         </div>
-        <!-- 지원내역 메뉴 아이콘 주석처리 -->
-        <!-- <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/supportDetail')">
-          <div
-            class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
-          >
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#8B8BF5"
-              stroke-width="2.5"
-              class="transition-all duration-200 group-hover:stroke-white"
-            >
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="12 6 12 12 16 14"></polyline>
-            </svg>
-          </div>
-          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
-            >지원내역</span
-          >
-        </div> -->
-        <div
-          v-if="proposalFlag"
-          class="flex flex-col items-center cursor-pointer group"
-          @click="router.push('/user/jobOffers')"
+      </div>
+
+      <!-- 회원가입 유도 섹션 -->
+      <div class="bg-[#8B8BF5] bg-opacity-5 rounded-2xl p-12 text-center">
+        <h2 class="text-2xl font-bold mb-4">지금 바로 시작해보세요!</h2>
+        <p class="text-gray-600 mb-8">
+          이력서를 등록하고 기업의 면접 제안을 받아보세요.<br/>
+          다양한 기업들이 여러분을 기다리고 있습니다.
+        </p>
+        <!-- <button 
+          class="px-8 py-3 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7878F2] transition-colors"
+          @click="router.push('/signup')"
         >
-          <div
-            class="relative w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
-          >
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#8B8BF5"
-              stroke-width="2.5"
-              class="transition-all duration-200 group-hover:stroke-white"
-            >
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-            </svg>
-            <!-- 읽지 않은 제안이 있을 경우 표시되는 배지 -->
+          무료로 시작하기
+        </button> -->
+      </div>
+    </template>
+
+    <!-- 로그인 상태일 때 -->
+    <template v-else>
+      <!-- 상단 메뉴 아이콘들 -->
+      <div class="grid gap-4">
+        <div class="flex justify-center gap-32 mb-12">
+          <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/resume')">
             <div
-              v-if="unreadOffers > 0"
-              class="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center bg-red-500 text-white text-xs rounded-full"
+              class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
             >
-              {{ unreadOffers }}
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#8B8BF5"
+                stroke-width="2.5"
+                class="transition-all duration-200 group-hover:stroke-white"
+              >
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <path d="M14 2v6h6"></path>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <line x1="10" y1="9" x2="8" y2="9"></line>
+              </svg>
             </div>
-          </div>
-          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">
-            면접제안
-          </span>
-        </div>
-        <div
-          v-if="interviewFlag"
-          class="flex flex-col items-center cursor-pointer group"
-          @click="router.push('/user/jobSeekerInterviews')"
-        >
-          <div
-            class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
-          >
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#8B8BF5"
-              stroke-width="2.5"
-              class="transition-all duration-200 group-hover:stroke-white"
+            <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
+              >이력서</span
             >
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
           </div>
-          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">
-            면접 현황
-          </span>
-        </div>
-        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/userPage')">
-          <div
-            class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
-          >
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#8B8BF5"
-              stroke-width="2.5"
-              class="transition-all duration-200 group-hover:stroke-white"
-            >
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-          </div>
-          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
-            >내 정보</span
-          >
-        </div>
-      </div>
-
-      <!-- 필터 영역 주석 처리 -->
-      <!--
-      <div class="flex gap-4 mb-6">
-        <button
-          v-for="filter in filters"
-          :key="filter.type"
-          @click="openFilterModal(filter.type)"
-          class="flex-1 px-4 py-3 border border-[#8B8BF5] rounded-lg text-left hover:bg-gray-50 transition-colors flex items-center justify-between"
-        >
-          <span class="text-gray-600">{{ getFilterLabel(filter.type) }}</span>
-          <i class="pi pi-chevron-down text-[#8B8BF5]"></i>
-        </button>
-      </div>
-      -->
-
-      <!-- 필터 모달 주석 처리 -->
-      <!--
-      <Dialog
-        v-model:visible="showFilterModal"
-        :header="currentFilter?.title"
-        :modal="true"
-        :style="{ width: '50vw' }"
-        :breakpoints="{ '960px': '75vw', '641px': '90vw' }"
-      >
-        <div class="p-4">
-          <div class="grid grid-cols-3 gap-4">
+          <!-- 지원내역 메뉴 아이콘 주석처리 -->
+          <!-- <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/supportDetail')">
             <div
-              v-for="option in currentFilter?.options"
-              :key="option.value"
-              @click="toggleOption(option)"
-              :class="[
-                'p-4 border rounded-lg cursor-pointer transition-all',
-                isOptionSelected(option)
-                  ? 'border-[#8B8BF5] bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5]'
-                  : 'border-gray-200 hover:border-[#8B8BF5]'
-              ]"
+              class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
             >
-              {{ option.label }}
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#8B8BF5"
+                stroke-width="2.5"
+                class="transition-all duration-200 group-hover:stroke-white"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
             </div>
+            <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
+              >지원내역</span
+            >
+          </div> -->
+          <div
+            v-if="proposalFlag"
+            class="flex flex-col items-center cursor-pointer group"
+            @click="router.push('/user/jobOffers')"
+          >
+            <div
+              class="relative w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
+            >
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#8B8BF5"
+                stroke-width="2.5"
+                class="transition-all duration-200 group-hover:stroke-white"
+              >
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <!-- 읽지 않은 제안이 있을 경우 표시되는 배지 -->
+              <div
+                v-if="unreadOffers > 0"
+                class="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center bg-red-500 text-white text-xs rounded-full"
+              >
+                {{ unreadOffers }}
+              </div>
+            </div>
+            <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">
+              면접제안
+            </span>
+          </div>
+          <div
+            v-if="interviewFlag"
+            class="flex flex-col items-center cursor-pointer group"
+            @click="router.push('/user/jobSeekerInterviews')"
+          >
+            <div
+              class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
+            >
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#8B8BF5"
+                stroke-width="2.5"
+                class="transition-all duration-200 group-hover:stroke-white"
+              >
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+            </div>
+            <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">
+              면접 현황
+            </span>
+          </div>
+          <!-- <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/companyList')">
+            <div
+              class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
+            >
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#8B8BF5"
+                stroke-width="2.5"
+                class="transition-all duration-200 group-hover:stroke-white"
+              >
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+            </div>
+            <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">
+              기업 목록
+            </span>
+          </div> -->
+          <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/userPage')">
+            <div
+              class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
+            >
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="#8B8BF5"
+                stroke-width="2.5"
+                class="transition-all duration-200 group-hover:stroke-white"
+              >
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
+              >내 정보</span
+            >
           </div>
         </div>
-        <template #footer>
-          <div class="flex justify-end gap-4">
-            <Button label="취소" @click="cancelFilter" class="p-button-text" />
-            <Button label="적용하기" @click="applyFilter" class="p-button-primary bg-[#8B8BF5]" />
-          </div>
-        </template>
-      </Dialog>
-      -->
 
-      <!-- 메뉴 아이콘들 아래에 추가 -->
-      <div class="space-y-4 mt-8">
-        <!-- 회사 정보 카드 -->
-        <div
-          v-for="company in companies"
-          :key="company.name"
-          class="bg-white rounded-lg p-6 border border-gray-200 transition-all duration-200 hover:shadow-lg hover:border-[#8B8BF5]"
+        <!-- 필터 영역 주석 처리 -->
+        <!--
+        <div class="flex gap-4 mb-6">
+          <button
+            v-for="filter in filters"
+            :key="filter.type"
+            @click="openFilterModal(filter.type)"
+            class="flex-1 px-4 py-3 border border-[#8B8BF5] rounded-lg text-left hover:bg-gray-50 transition-colors flex items-center justify-between"
+          >
+            <span class="text-gray-600">{{ getFilterLabel(filter.type) }}</span>
+            <i class="pi pi-chevron-down text-[#8B8BF5]"></i>
+          </button>
+        </div>
+        -->
+
+        <!-- 필터 모달 주석 처리 -->
+        <!--
+        <Dialog
+          v-model:visible="showFilterModal"
+          :header="currentFilter?.title"
+          :modal="true"
+          :style="{ width: '50vw' }"
+          :breakpoints="{ '960px': '75vw', '641px': '90vw' }"
         >
-          <div class="flex justify-between items-start">
-            <div class="flex-grow">
-              <div class="flex items-center gap-2 mb-3">
-                <h3 class="text-xl font-bold">{{ company.name }}</h3>
+          <div class="p-4">
+            <div class="grid grid-cols-3 gap-4">
+              <div
+                v-for="option in currentFilter?.options"
+                :key="option.value"
+                @click="toggleOption(option)"
+                :class="[
+                  'p-4 border rounded-lg cursor-pointer transition-all',
+                  isOptionSelected(option)
+                    ? 'border-[#8B8BF5] bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5]'
+                    : 'border-gray-200 hover:border-[#8B8BF5]'
+                ]"
+              >
+                {{ option.label }}
               </div>
-              <div class="flex gap-8 text-gray-600 mb-3">
-                <span class="flex items-center gap-2">
-                  <i class="pi pi-briefcase"></i>
-                  {{ company.business }}
-                </span>
+            </div>
+          </div>
+          <template #footer>
+            <div class="flex justify-end gap-4">
+              <Button label="취소" @click="cancelFilter" class="p-button-text" />
+              <Button label="적용하기" @click="applyFilter" class="p-button-primary bg-[#8B8BF5]" />
+            </div>
+          </template>
+        </Dialog>
+        -->
+
+        <!-- 메뉴 아이콘들 아래에 추가 -->
+        <div class="space-y-4 mt-8">
+          <!-- 면접 제안 목록 -->
+          <div class="space-y-8">
+            <!-- 진행중인 면접 제안 -->
+            <div class="bg-white rounded-lg p-6 border border-gray-200">
+              <h2 class="text-xl font-bold mb-4">진행중인 면접 제안</h2>
+              <div class="space-y-4">
+                <div
+                  v-for="interview in pendingInterviews"
+                  :key="interview.companyName"
+                  class="p-4 border border-gray-100 rounded-lg hover:shadow-md transition-all"
+                >
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <h3 class="font-bold text-lg">{{ interview.companyName }}</h3>
+                      <p class="text-gray-600">{{ interview.position }}</p>
+                      <p class="text-sm text-gray-500">{{ interview.date }}</p>
+                    </div>
+                    <span :class="[getStatusColor(interview.status), 'font-medium']">
+                      {{ getStatusText(interview.status, interview) }}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div class="flex gap-8 text-gray-600">
-                <span class="flex items-center gap-2 text-sm">
-                  <i class="pi pi-map-marker"></i>
-                  {{ company.address }}
-                </span>
+            </div>
+
+            <!-- 구분선 -->
+            <div class="border-t border-gray-200 my-8"></div>
+
+            <!-- 완료된 면접 제안 -->
+            <div class="bg-white rounded-lg p-6 border border-gray-200">
+              <h2 class="text-xl font-bold mb-4">완료된 면접 제안</h2>
+              <div class="space-y-4">
+                <div
+                  v-for="interview in completedInterviews"
+                  :key="interview.companyName"
+                  class="p-4 border border-gray-100 rounded-lg hover:shadow-md transition-all"
+                >
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <h3 class="font-bold text-lg">{{ interview.companyName }}</h3>
+                      <p class="text-gray-600">{{ interview.position }}</p>
+                      <p class="text-sm text-gray-500">{{ interview.date }}</p>
+                    </div>
+                    <span :class="[getStatusColor(interview.status), 'font-medium']">
+                      {{ getStatusText(interview.status, interview) }}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </template>
   </div>
 </template>
 
