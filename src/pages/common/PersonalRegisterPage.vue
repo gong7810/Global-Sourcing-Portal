@@ -221,30 +221,30 @@ const submitForm = async () => {
   // }
 
   const body = {
-     "user": {
-        "loginId": id.value,
-        "name": name.value,
-        "password": pw.value,
-        // 상단이 필수값
-        "profileImage": null,
-        "birth": birthdate.value,
-        "mobile": null,
-        "email": email.value,
-        "address": null,
-        "genderCd": `GENDER_${gender.value}`
+    user: {
+      loginId: id.value,
+      name: name.value,
+      password: pw.value,
+      // 상단이 필수값
+      profileImage: null,
+      birth: birthdate.value,
+      mobile: null,
+      email: email.value,
+      address: null,
+      genderCd: `GENDER_${gender.value}`
     },
-    "resume": {
-        "nationalityCd": nationality.value.value,
-        "passport": passportNo.value,
-        "passportName": `${passportFirstName.value} ${passportLastName.value}`,
-        "passportFirstName": passportFirstName.value,
-        "passportLastName": passportLastName.value,
-        "passportIssueDt": new Date(issueDate.value).toISOString(),
-        "passportExpiryDt": new Date(expirationDate.value).toISOString(),
-        "passportCountryCd": issuingCountry.value.value,
-        "snsUrl": null,
-        "portfolioUrl": null,
-        "portfolioFile": null
+    resume: {
+      nationalityCd: nationality.value.value,
+      passport: passportNo.value,
+      passportName: `${passportFirstName.value} ${passportLastName.value}`,
+      passportFirstName: passportFirstName.value,
+      passportLastName: passportLastName.value,
+      passportIssueDt: new Date(issueDate.value).toISOString(),
+      passportExpiryDt: new Date(expirationDate.value).toISOString(),
+      passportCountryCd: issuingCountry.value.value,
+      snsUrl: null,
+      portfolioUrl: null,
+      portfolioFile: null
     }
   };
 

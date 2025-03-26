@@ -113,7 +113,8 @@ $bt_txt_sub-color: #8b8e9b;
     background-color: transparent;
 
     &:hover:not(.disabled) {
-      background-color: #f1f4fd;
+      background-color: #b2b2f5;
+      border-color: #f1f4f9;
     }
   }
   &.secondary_outline {
@@ -123,6 +124,7 @@ $bt_txt_sub-color: #8b8e9b;
 
     &:hover:not(.disabled) {
       background-color: #f3f4f8;
+      border-color: #f1f4f9;
     }
   }
 
@@ -351,7 +353,7 @@ $bt_txt_sub-color: #8b8e9b;
   .p-toast-message-warn,
   .p-toast-message-error {
     background: rgba(16, 16, 18, 0.88) !important;
-    
+
     border: none !important;
     border-width: 0px;
   }

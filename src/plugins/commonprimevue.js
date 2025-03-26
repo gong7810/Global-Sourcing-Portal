@@ -104,6 +104,11 @@ import TreeTable from 'primevue/treetable';
 // import VirtualScroller from 'primevue/virtualscroller';
 // import AnimateOnScroll from 'primevue/animateonscroll';
 
+import BusinessServiceTerms from '@/components/terms/BusinessServiceTerms.vue';
+import BusinessPrivacyTerms from '@/components/terms/BusinessPrivacyTerms.vue';
+import SmsServiceTerms from '@/components/terms/SmsServiceTerms.vue';
+import BusinessOptionalPrivacyTerms from '@/components/terms/BusinessOptionalPrivacyTerms.vue';
+
 export default {
   install: (app, options) => {
     app.use(PrimeVue, { ripple: true });
@@ -116,6 +121,11 @@ export default {
     app.directive('ripple', Ripple);
     app.directive('styleclass', StyleClass);
     // app.directive('animateonscroll', AnimateOnScroll);
+
+    app.component('BusinessServiceTerms', BusinessServiceTerms);
+    app.component('BusinessPrivacyTerms', BusinessPrivacyTerms);
+    app.component('SmsServiceTerms', SmsServiceTerms);
+    app.component('BusinessOptionalPrivacyTerms', BusinessOptionalPrivacyTerms);
 
     app.component('Accordion', Accordion);
     app.component('AccordionTab', AccordionTab);

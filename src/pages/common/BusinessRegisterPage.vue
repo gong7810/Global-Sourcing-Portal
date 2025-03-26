@@ -2,16 +2,13 @@
 import { ref, watch } from 'vue';
 import { isEmpty } from 'es-toolkit/compat';
 import { useRouter } from 'vue-router';
-import InputText from 'primevue/inputtext';
-import Button from 'primevue/button';
-import Dropdown from 'primevue/dropdown';
-import Dialog from 'primevue/dialog';
-import BusinessServiceTerms from '@/components/terms/BusinessServiceTerms.vue';
-import BusinessPrivacyTerms from '@/components/terms/BusinessPrivacyTerms.vue';
-import SmsServiceTerms from '@/components/terms/SmsServiceTerms.vue';
-import BusinessOptionalPrivacyTerms from '@/components/terms/BusinessOptionalPrivacyTerms.vue';
+import { checkDuplicate, requestMobile } from '@/apis/auth/authApis';
+import { useMessagePop } from '@/plugins/commonutils';
+import { checkMobile } from '@/apis/auth/authApis';
 
+const messagePop = useMessagePop();
 const router = useRouter();
+
 const businessType = ref(null);
 const businessRegistrationNo = ref('');
 const businessNoError = ref('');
@@ -32,8 +29,12 @@ const pwCheckFlag = ref(false);
 const showPw = ref(false);
 const showPwCheck = ref(false);
 const managerName = ref('');
+
 const businessPhoneNo = ref('');
-const verificationCode = ref('');
+const verifyNo = ref('');
+const verifyButtonFlag = ref(false);
+const verifyFlag = ref(false);
+
 const businessEmail = ref('');
 const formError = ref('');
 const showCompleteDialog = ref(false);
@@ -178,13 +179,9 @@ const checkIdDuplication = async () => {
   }
 
   try {
-    // 여기에 실제 API 호출을 추가하세요.
-    // 예시: const response = await axios.post('/api/check-id', { id: businessId.value });
+    const response = await checkDuplicate(businessId.value);
 
-    // 임시로 중복 확인 로직을 추가합니다.
-    const isDuplicate = businessId.value === 'existingId'; // 'existingId'는 이미 존재하는 아이디 예시입니다.
-
-    if (isDuplicate) {
+    if (response) {
       idCheckMessage.value = '이미 사용 중인 아이디입니다.';
       idCheckSuccess.value = false;
     } else {
@@ -220,19 +217,31 @@ const togglePasswordCheckVisibility = () => {
   showPwCheck.value = !showPwCheck.value;
 };
 
-const sendVerificationCode = () => {
-  // 인증번호 전송 로직
-  console.log('Verification code sent');
+// 인증번호 전송 API
+const sendVerificationCode = async () => {
+  await requestMobile(businessPhoneNo.value);
+
+  messagePop.toast('전송되었습니다.', 'success');
 };
 
-const verifyCode = () => {
-  // 인증번호 확인 로직
-  console.log('Verification code verified');
-};
+// 인증번호 확인 로직
+const verifyCode = async () => {
+  const body = {
+    mobile: businessPhoneNo.value,
+    authNumber: verifyNo.value
+  };
 
-const resendVerificationCode = () => {
-  // 인증번호 재전송 로직
-  console.log('Verification code resent');
+  const response = await checkMobile(body);
+
+  if (response) {
+    messagePop.toast('인증되었습니다.', 'success');
+    verifyFlag.value = true;
+    verifyButtonFlag.value = true;
+  } else {
+    messagePop.toast('잘못된 인증번호입니다.', 'error');
+    verifyFlag.value = false;
+    verifyButtonFlag.value = false;
+  }
 };
 
 const toggleAll = () => {
@@ -297,7 +306,7 @@ const submitForm = () => {
     !businessEmail.value.trim() ||
     !terms.value.service ||
     !terms.value.privacy ||
-    !terms.value.sms
+    (!terms.value.sms && verifyFlag.value)
   ) {
     formError.value = '모든 필수 항목을 입력하고 체크해주세요.';
     return;
@@ -414,28 +423,40 @@ const submitForm = () => {
           </div>
           <InputText v-model="managerName" type="text" placeholder="가입자명" class="w-full px-4 py-3" />
           <div class="flex space-x-2">
-            <InputText v-model="businessPhoneNo" placeholder="전화번호" class="flex-grow px-4 py-3" maxlength="13" />
+            <InputText
+              v-model="businessPhoneNo"
+              placeholder="전화번호"
+              :disabled="verifyFlag"
+              class="flex-grow px-4 py-3"
+              maxlength="13"
+            />
             <button
-              type="button"
               @click="sendVerificationCode"
               class="px-4 py-2 bg-[#F2F4F7] text-gray-500 border border-gray-300 rounded-lg"
+              :disabled="verifyButtonFlag"
             >
               인증번호 전송
             </button>
           </div>
           <div class="flex space-x-2">
-            <InputText v-model="verificationCode" type="text" placeholder="인증번호 입력" class="flex-grow px-4 py-3" />
+            <InputText
+              v-model="verifyNo"
+              type="text"
+              placeholder="인증번호 입력"
+              :disabled="verifyFlag"
+              class="flex-grow px-4 py-3"
+            />
             <button
-              type="button"
               @click="verifyCode"
               class="px-4 py-2 bg-[#F2F4F7] text-gray-500 border border-gray-300 rounded-lg"
+              :disabled="verifyButtonFlag"
             >
               확인
             </button>
             <button
-              type="button"
-              @click="resendVerificationCode"
+              @click="sendVerificationCode"
               class="px-4 py-2 bg-[#F2F4F7] text-gray-500 border border-gray-300 rounded-lg"
+              :disabled="verifyButtonFlag"
             >
               재전송
             </button>
@@ -446,9 +467,7 @@ const submitForm = () => {
         <!-- 이용약관 -->
         <div class="mt-6">
           <div class="flex items-center mb-2">
-            <span
-              >필수동의 항목 및 개인정보 수집 및 이용 동의(선택)에 <br>모두 동의합니다.</span
-            >
+            <span>필수동의 항목 및 개인정보 수집 및 이용 동의(선택)에 <br />모두 동의합니다.</span>
             <input type="checkbox" v-model="allAgreed" @change="toggleAll" class="ml-auto mr-2" />
           </div>
           <hr class="my-4 border-gray-300" />
@@ -463,7 +482,7 @@ const submitForm = () => {
             <div v-if="details.service" class="p-2 border rounded bg-gray-100" style="height: 200px; overflow-y: auto">
               <BusinessServiceTerms />
             </div>
-            
+
             <div class="flex items-center">
               <span>[필수] 개인정보 수집 및 이용 동의</span>
               <button type="button" @click="toggleDetail('privacy')" class="ml-2 text-blue-500">
@@ -474,7 +493,7 @@ const submitForm = () => {
             <div v-if="details.privacy" class="p-2 border rounded bg-gray-100" style="height: 200px; overflow-y: auto">
               <BusinessPrivacyTerms />
             </div>
-            
+
             <div class="flex items-center">
               <span>[필수] 문자서비스 이용약관 동의</span>
               <button type="button" @click="toggleDetail('sms')" class="ml-2 text-blue-500">
@@ -485,7 +504,7 @@ const submitForm = () => {
             <div v-if="details.sms" class="p-2 border rounded bg-gray-100" style="height: 200px; overflow-y: auto">
               <SmsServiceTerms />
             </div>
-            
+
             <hr class="my-2 border-gray-200" />
             <div class="flex items-center">
               <span>[선택] 개인정보 수집 및 이용 동의</span>
@@ -494,7 +513,11 @@ const submitForm = () => {
               </button>
               <input type="checkbox" v-model="terms.optionalPrivacy" class="ml-auto mr-2" />
             </div>
-            <div v-if="details.optionalPrivacy" class="p-2 border rounded bg-gray-100" style="height: 200px; overflow-y: auto">
+            <div
+              v-if="details.optionalPrivacy"
+              class="p-2 border rounded bg-gray-100"
+              style="height: 200px; overflow-y: auto"
+            >
               <BusinessOptionalPrivacyTerms />
             </div>
           </div>
@@ -502,9 +525,7 @@ const submitForm = () => {
 
         <!-- 회원가입 버튼을 신청하기 버튼으로 변경 -->
         <div class="mt-6">
-          <Button type="submit" class="w-full py-3 bt_btn primary">
-            신청하기
-          </Button>
+          <Button type="submit" class="w-full py-3 bt_btn primary"> 신청하기 </Button>
           <p v-if="formError" class="text-red-500">{{ formError }}</p>
         </div>
       </form>

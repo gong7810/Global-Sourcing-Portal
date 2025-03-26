@@ -102,9 +102,7 @@ export const signUpCompany = async (body) => {
 // 모바일 인증번호 요청 API
 export const requestMobile = async (mobile) => {
   try {
-    const response = await api.get(`/auth/checkMobile/${mobile}`);
-
-    return response.data;
+    await api.get(`/auth/checkMobile/${mobile}`);
   } catch (error) {
     console.error(error);
   }
