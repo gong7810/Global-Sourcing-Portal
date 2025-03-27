@@ -1067,7 +1067,7 @@ const handleEducationFileUpload = (event) => {
 
   <!-- 경력 정보 모달 -->
   <div v-if="showCareerModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg w-[600px] max-h-[90vh] overflow-y-auto">
+    <div class="bg-white rounded-lg w-[600px] max-h-[90vh]">
       <!-- 헤더 -->
       <div class="flex justify-between items-center p-6 border-b">
         <h2 class="text-xl font-bold">경력 정보</h2>
@@ -1079,7 +1079,7 @@ const handleEducationFileUpload = (event) => {
       </div>
 
       <!-- 내용 -->
-      <div class="p-6 space-y-6">
+      <div class="p-6 space-y-6 h-[500px] overflow-y-auto">
         <!-- 회사명 -->
         <div class="space-y-2">
           <label class="block text-sm font-medium text-gray-700"> 회사명<span class="text-red-500">*</span> </label>
@@ -1193,7 +1193,7 @@ const handleEducationFileUpload = (event) => {
 
   <!-- 학력 정보 모달 -->
   <div v-if="showEducationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-lg w-[600px] max-h-[90vh] overflow-y-auto">
+    <div class="bg-white rounded-lg w-[600px] max-h-[90vh]">
       <!-- 헤더 -->
       <div class="flex justify-between items-center p-6 border-b">
         <h2 class="text-xl font-bold">학력 정보</h2>
@@ -1205,7 +1205,7 @@ const handleEducationFileUpload = (event) => {
       </div>
 
       <!-- 내용 -->
-      <div class="p-6 space-y-6">
+      <div class="p-6 space-y-6 h-[500px] overflow-y-auto">
         <!-- 학력 선택 -->
         <div class="space-y-2">
           <label class="block text-sm font-medium text-gray-700"> 학력<span class="text-red-500">*</span> </label>

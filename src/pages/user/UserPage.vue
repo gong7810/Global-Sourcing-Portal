@@ -1,36 +1,42 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, toRaw } from 'vue';
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
+
 import { useMessagePop } from '@/plugins/commonutils';
 import { useUserStore } from '@/store/user/userStore';
+import { fileUpload, getGenderList } from '@/apis/common/commonApis';
+import { getAccount, resetPassword, updateAccount } from '@/apis/auth/authApis';
 
 const router = useRouter();
-const messagePop = useMessagePop();
+const authStore = useAuthStore();
 const userStore = useUserStore();
+const messagePop = useMessagePop();
 
-const basicInfo = ref({
-  name: '최예지',
-  birthDate: '1996.09.01',
-  gender: { label: '여성', value: 'female' },
-  email: 'yeji@naver.com',
-  phone: '010-1234-7496',
-  address: '윙스타워 505호',
-  profileImage: '',
-  userId: 'yeji123',
-  isSocialLogin: true,
-  visitedKorea: false,
-  maritalStatus: null,
-  koreanLevel: null,
-  koreanStudyPeriod: '',
-  criminalRecordFile: null
-});
+const { userInfo } = storeToRefs(authStore);
 
-const genders = [
-  { label: '남성', value: 'male' },
-  { label: '여성', value: 'female' }
-];
+const basicInfo = ref({});
+// {
+//   name: '최예지',
+//   birth: '1996.09.01',
+//   gender: { label: '여성', value: 'GENDER_FEMALE' },
+//   email: 'yeji@naver.com',
+//   mobile: '010-1234-7496',
+//   address: '윙스타워 505호',
+//   userId: 'yeji123',
+//   isSocialLogin: true,
+//   visitedKorea: false,
+//   maritalStatus: null,
+//   koreanLevel: null,
+//   koreanStudyPeriod: ''
+// }
+
+const genders = ref([]);
+
+const profileImage = ref(null);
+const profileRawData = ref();
+const criminalRecordFile = ref(null);
 
 const maritalStatuses = [
   { label: '미혼', value: 'single' },
@@ -43,6 +49,38 @@ const koreanLevels = [
   { label: '고급', value: 'advanced' },
   { label: '원어민 수준', value: 'native' }
 ];
+
+onMounted(() => {
+  setGenderList();
+
+  setAccountInfo();
+});
+
+// 성별 세팅
+const setGenderList = async () => {
+  const response = await getGenderList();
+
+  response.map((item) => {
+    genders.value.push({ label: `${item.name}성`, value: item.code });
+  });
+};
+
+// 내 정보 세팅
+const setAccountInfo = async () => {
+  const response = await getAccount();
+
+  basicInfo.value = response;
+
+  basicInfo.value.gender = {
+    label: `${basicInfo.value.gender.name}성`,
+    value: basicInfo.value.gender.code
+  };
+
+  // 프로필 이미지 세팅
+  if (basicInfo.value.imageFile) {
+    profileImage.value = `${import.meta.env.VITE_UPLOAD_PATH}/${basicInfo.value.imageFile.fileName}`;
+  }
+};
 
 // 비밀번호 수정 모달 관련
 const showPasswordModal = ref(false);
@@ -86,26 +124,22 @@ const updatePassword = () => {
   // TODO: 비밀번호 변경 API 호출
   messagePop.confirm({
     message: '비밀번호를 변경하시겠습니까?',
-    onCloseYes: () => {
-      // API 호출 후 성공 시
-      messagePop.alert('비밀번호가 변경되었습니다.', 'good');
+    onCloseYes: async () => {
+      const body = {
+        password: passwordInfo.value.newPassword
+      };
+
+      const response = await resetPassword(body);
+
+      if (response) {
+        messagePop.alert('비밀번호가 변경되었습니다.', 'good');
+      } else {
+        messagePop.alert('시스템 오류입니다.', 'bad');
+      }
       closePasswordModal();
     }
   });
 };
-
-onMounted(() => {
-  // TODO: 내 정보 조회 api
-  // const body = {
-  //   id: user.id
-  // }
-  // basicInfo.value = response
-
-  // store에 저장된 이미지가 있다면 사용
-  if (userStore.profileImage) {
-    basicInfo.value.profileImage = userStore.profileImage;
-  }
-});
 
 const cancelEdit = () => {
   console.log(basicInfo.value.gender);
@@ -117,9 +151,10 @@ const cancelEdit = () => {
   });
 };
 
+// 내 정보 수정
 const saveAll = () => {
   // 필수 필드 검사
-  if (!basicInfo.value.profileImage) {
+  if (!profileImage.value) {
     messagePop.toast('프로필 사진을 등록해주세요.', 'warn');
     return;
   }
@@ -127,7 +162,7 @@ const saveAll = () => {
     messagePop.toast('이름을 입력해주세요.', 'warn');
     return;
   }
-  if (!basicInfo.value.birthDate) {
+  if (!basicInfo.value.birth) {
     messagePop.toast('생년월일을 선택해주세요.', 'warn');
     return;
   }
@@ -139,27 +174,53 @@ const saveAll = () => {
     messagePop.toast('이메일을 입력해주세요.', 'warn');
     return;
   }
-  if (!basicInfo.value.phone) {
+  if (!basicInfo.value.mobile) {
     messagePop.toast('전화번호를 입력해주세요.', 'warn');
     return;
   }
-  if (!basicInfo.value.address) {
-    messagePop.toast('주소를 입력해주세요.', 'warn');
-    return;
-  }
-  if (!basicInfo.value.criminalRecordFile) {
-    messagePop.toast('범죄경력 확인서를 업로드해주세요.', 'warn');
-    return;
-  }
+  // if (!basicInfo.value.address) {
+  //   messagePop.toast('주소를 입력해주세요.', 'warn');
+  //   return;
+  // }
+  // if (!basicInfo.value.criminalRecordFile) {
+  //   messagePop.toast('범죄경력 확인서를 업로드해주세요.', 'warn');
+  //   return;
+  // }
 
   messagePop.confirm({
     message: '변경사항을 저장하시겠습니까?',
-    onCloseYes: () => {
-      // TODO: 내 정보 수정 api
-      messagePop.alert('저장되었습니다.', 'good');
+    onCloseYes: async () => {
+      let body = { ...basicInfo.value };
+
+      console.log(profileRawData.value);
+      // 프로필 사진 수정 or 저장
+      if (profileRawData.value) {
+        const formData = saveImage();
+
+        const res = await fileUpload(formData);
+
+        body = { ...basicInfo.value, profileImage: res?.id };
+      }
+
+      const response = await updateAccount(body);
+
+      if (response && response.success === undefined) {
+        userInfo.value = response;
+        messagePop.alert('저장되었습니다.', 'good');
+      } else {
+        messagePop.alert('시스템 오류입니다.', 'bad');
+      }
       router.back();
     }
   });
+};
+
+// 이미지 바이너리 변환
+const saveImage = () => {
+  const formData = new FormData();
+  formData.append('file', profileRawData.value);
+
+  return formData;
 };
 
 const formatCurrency = (value) => {
@@ -167,16 +228,17 @@ const formatCurrency = (value) => {
 };
 
 const handleImageUpload = (event) => {
-  const file = event.target.files[0];
-  if (file) {
+  profileRawData.value = event.target.files[0];
+
+  if (profileRawData.value) {
     // 파일 크기 체크 (3MB)
-    if (file.size > 3 * 1024 * 1024) {
+    if (profileRawData.value.size > 3 * 1024 * 1024) {
       messagePop.toast('파일 크기는 3MB 이하여야 합니다.', 'warn');
       return;
     }
 
     // 파일 형식 체크
-    if (!['image/jpeg', 'image/png'].includes(file.type)) {
+    if (!['image/jpeg', 'image/png'].includes(profileRawData.value.type)) {
       messagePop.toast('JPG 또는 PNG 형식의 이미지만 업로드 가능합니다.', 'warn');
       return;
     }
@@ -185,29 +247,32 @@ const handleImageUpload = (event) => {
     const img = new Image();
     img.onload = () => {
       URL.revokeObjectURL(img.src);
-      if (Math.abs(img.width / img.height - 3/4) > 0.1) {
+      if (Math.abs(img.width / img.height - 3 / 4) > 0.1) {
         messagePop.confirm({
           message: '이미지의 비율이 3:4와 다릅니다. 계속하시겠습니까?',
           onCloseYes: () => {
-            const imageUrl = URL.createObjectURL(file);
-            basicInfo.value.profileImage = imageUrl;
+            const imageUrl = URL.createObjectURL(profileRawData.value);
+            profileImage.value = imageUrl;
             userStore.updateProfileImage(imageUrl); // store 업데이트
             // TODO: 이미지 업로드 API 호출
           }
         });
       } else {
-        const imageUrl = URL.createObjectURL(file);
-        basicInfo.value.profileImage = imageUrl;
+        const imageUrl = URL.createObjectURL(profileRawData.value);
+        console.log(imageUrl);
+        profileImage.value = imageUrl;
         userStore.updateProfileImage(imageUrl); // store 업데이트
         // TODO: 이미지 업로드 API 호출
       }
     };
-    img.src = URL.createObjectURL(file);
+
+    img.src = URL.createObjectURL(profileRawData.value);
   }
 };
 
 const removeImage = () => {
-  basicInfo.value.profileImage = '';
+  profileImage.value = '';
+  profileRawData.value = '';
   userStore.updateProfileImage(''); // store 업데이트
 };
 
@@ -263,11 +328,7 @@ const removeCriminalRecord = () => {
             <div class="flex items-center gap-4">
               <i class="pi pi-lock"></i>
               <span class="w-20 text-gray-500">비밀번호</span>
-              <Button 
-                label="수정" 
-                class="p-button-text p-button-sm text-[#8FA1FF]" 
-                @click="openPasswordModal"
-              />
+              <Button label="수정" class="p-button-text p-button-sm text-[#8FA1FF]" @click="openPasswordModal" />
             </div>
           </div>
         </div>
@@ -289,36 +350,29 @@ const removeCriminalRecord = () => {
           <div class="mb-6 flex flex-col items-center">
             <div class="relative w-[120px] h-[160px] mb-4">
               <img
-                :src="basicInfo.profileImage || '/default-profile.png'"
+                :src="profileImage || '/default-profile.png'"
                 alt="프로필 이미지"
                 class="w-full h-full object-cover border border-gray-200 rounded-sm"
               />
               <div class="absolute bottom-0 right-0">
                 <label class="cursor-pointer bg-white rounded-full p-2 shadow-md hover:bg-gray-50">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    class="hidden"
-                    @change="handleImageUpload"
-                  />
+                  <input type="file" accept="image/*" class="hidden" @change="handleImageUpload" />
                   <i class="pi pi-camera text-gray-600"></i>
                 </label>
               </div>
               <button
-                v-if="basicInfo.profileImage"
+                v-if="profileImage"
                 @click="removeImage"
-                class="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 transform translate-x-1/2 -translate-y-1/2 hover:bg-red-600"
+                class="absolute top-0 right-0 bg-red-500 text-white h-[23px] rounded-full p-1 transform translate-x-1/2 -translate-y-1/2 hover:bg-red-600"
               >
                 <i class="pi pi-times"></i>
               </button>
             </div>
             <div class="text-center space-y-1">
-              <p class="text-sm text-gray-700 font-medium">
-                증명사진 규격 (3x4) <span class="text-red-500">*</span>
-              </p>
+              <p class="text-sm text-gray-700 font-medium">증명사진 규격 (3x4) <span class="text-red-500">*</span></p>
               <p class="text-xs text-gray-500">
-                - 이미지 크기: 120px x 160px (권장)<br/>
-                - 파일 형식: JPG, PNG<br/>
+                - 이미지 크기: 120px x 160px (권장)<br />
+                - 파일 형식: JPG, PNG<br />
                 - 파일 크기: 3MB 이하
               </p>
             </div>
@@ -327,14 +381,8 @@ const removeCriminalRecord = () => {
             <div class="flex items-center gap-4">
               <i class="pi pi-user"></i>
               <div class="flex-grow">
-                <label class="flex items-center gap-1 mb-1 text-sm">
-                  이름 <span class="text-red-500">*</span>
-                </label>
-                <InputText 
-                  v-model="basicInfo.name" 
-                  placeholder="이름을 입력해주세요" 
-                  class="w-full" 
-                />
+                <label class="flex items-center gap-1 mb-1 text-sm"> 이름 <span class="text-red-500">*</span> </label>
+                <InputText v-model="basicInfo.name" placeholder="이름을 입력해주세요" class="w-full" />
               </div>
             </div>
             <div class="flex items-center gap-4">
@@ -345,16 +393,14 @@ const removeCriminalRecord = () => {
                     생년월일 <span class="text-red-500">*</span>
                   </label>
                   <DatePicker
-                    v-model="basicInfo.birthDate"
-                    format="yyyy-MM-dd"
+                    v-model="basicInfo.birth"
+                    dateFormat="yymmdd"
                     placeholder="생년월일을 선택해주세요"
                     class="w-32"
                   />
                 </div>
                 <div>
-                  <label class="flex items-center gap-1 mb-1 text-sm">
-                    성별 <span class="text-red-500">*</span>
-                  </label>
+                  <label class="flex items-center gap-1 mb-1 text-sm"> 성별 <span class="text-red-500">*</span> </label>
                   <Select
                     class="w-32"
                     v-model="basicInfo.gender"
@@ -370,14 +416,8 @@ const removeCriminalRecord = () => {
             <div class="flex items-center gap-4">
               <i class="pi pi-envelope"></i>
               <div class="flex-grow">
-                <label class="flex items-center gap-1 mb-1 text-sm">
-                  이메일 <span class="text-red-500">*</span>
-                </label>
-                <InputText 
-                  v-model="basicInfo.email" 
-                  placeholder="이메일을 입력해주세요" 
-                  class="w-full notranslate" 
-                />
+                <label class="flex items-center gap-1 mb-1 text-sm"> 이메일 <span class="text-red-500">*</span> </label>
+                <InputText v-model="basicInfo.email" placeholder="이메일을 입력해주세요" class="w-full notranslate" />
               </div>
             </div>
             <div class="flex items-center gap-4">
@@ -386,24 +426,14 @@ const removeCriminalRecord = () => {
                 <label class="flex items-center gap-1 mb-1 text-sm">
                   전화번호 <span class="text-red-500">*</span>
                 </label>
-                <InputText 
-                  v-model="basicInfo.phone" 
-                  placeholder="전화번호를 입력해주세요" 
-                  class="w-full" 
-                />
+                <InputText v-model="basicInfo.mobile" placeholder="전화번호를 입력해주세요" class="w-full" />
               </div>
             </div>
             <div class="flex items-center gap-4">
               <i class="pi pi-map-marker"></i>
               <div class="flex-grow">
-                <label class="flex items-center gap-1 mb-1 text-sm">
-                  주소 <span class="text-red-500">*</span>
-                </label>
-                <InputText 
-                  v-model="basicInfo.address" 
-                  placeholder="주소를 입력해주세요" 
-                  class="w-full" 
-                />
+                <label class="flex items-center gap-1 mb-1 text-sm"> 주소 <span class="text-red-500">*</span> </label>
+                <InputText v-model="basicInfo.address" placeholder="주소를 입력해주세요" class="w-full" />
               </div>
             </div>
             <div class="flex items-center gap-4">
@@ -415,12 +445,7 @@ const removeCriminalRecord = () => {
                 <div class="border rounded-lg p-4">
                   <div v-if="!basicInfo.criminalRecordFile" class="flex flex-col items-center gap-2">
                     <label class="cursor-pointer text-center">
-                      <input
-                        type="file"
-                        accept=".pdf,image/*"
-                        class="hidden"
-                        @change="handleCriminalRecordUpload"
-                      />
+                      <input type="file" accept=".pdf,image/*" class="hidden" @change="handleCriminalRecordUpload" />
                       <i class="pi pi-upload text-2xl text-gray-400"></i>
                       <p class="text-sm text-gray-600">클릭하여 파일 업로드</p>
                       <p class="text-xs text-gray-400">(신원조회서, 범죄경력회보서, 범죄경력 사실 없음 확인서 등)</p>
@@ -428,10 +453,7 @@ const removeCriminalRecord = () => {
                   </div>
                   <div v-else class="flex items-center justify-between">
                     <span class="text-sm text-gray-600">{{ basicInfo.criminalRecordFile.name }}</span>
-                    <button
-                      @click="removeCriminalRecord"
-                      class="text-red-500 hover:text-red-600"
-                    >
+                    <button @click="removeCriminalRecord" class="text-red-500 hover:text-red-600">
                       <i class="pi pi-times"></i>
                     </button>
                   </div>
@@ -476,11 +498,7 @@ const removeCriminalRecord = () => {
                 </div>
                 <div class="flex-1">
                   <label class="mb-1 text-sm">한국어 학습 기간</label>
-                  <InputText 
-                    v-model="basicInfo.koreanStudyPeriod" 
-                    placeholder="예: 2년 3개월" 
-                    class="w-full" 
-                  />
+                  <InputText v-model="basicInfo.koreanStudyPeriod" placeholder="예: 2년 3개월" class="w-full" />
                 </div>
               </div>
             </div>
@@ -512,28 +530,23 @@ const removeCriminalRecord = () => {
       <div class="p-6 space-y-4">
         <div class="space-y-2">
           <label class="block text-sm font-medium text-gray-700">현재 비밀번호</label>
-          <InputText 
-            v-model="passwordInfo.currentPassword" 
-            type="password" 
-            class="w-full" 
+          <InputText
+            v-model="passwordInfo.currentPassword"
+            type="password"
+            class="w-full"
             placeholder="현재 비밀번호 입력"
           />
         </div>
         <div class="space-y-2">
           <label class="block text-sm font-medium text-gray-700">새 비밀번호</label>
-          <InputText 
-            v-model="passwordInfo.newPassword" 
-            type="password" 
-            class="w-full" 
-            placeholder="새 비밀번호 입력"
-          />
+          <InputText v-model="passwordInfo.newPassword" type="password" class="w-full" placeholder="새 비밀번호 입력" />
         </div>
         <div class="space-y-2">
           <label class="block text-sm font-medium text-gray-700">새 비밀번호 확인</label>
-          <InputText 
-            v-model="passwordInfo.confirmPassword" 
-            type="password" 
-            class="w-full" 
+          <InputText
+            v-model="passwordInfo.confirmPassword"
+            type="password"
+            class="w-full"
             placeholder="새 비밀번호 확인"
           />
         </div>
