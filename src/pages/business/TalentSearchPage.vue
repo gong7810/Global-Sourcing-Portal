@@ -245,6 +245,61 @@ const filteredCandidates = computed(() => {
 
 // 향후 일괄 선택을 위한 상태만 준비
 const selectedTalentIds = ref([]);
+
+// 개별 경력 기간 계산 함수
+const calculateCareerPeriod = (period) => {
+  const [start, end] = period.split(' - ');
+  const startDate = new Date(start.split('.').join('-'));
+  const endDate = end === '현재' ? new Date() : new Date(end.split('.').join('-'));
+  
+  const years = endDate.getFullYear() - startDate.getFullYear();
+  const months = endDate.getMonth() - startDate.getMonth();
+  
+  let totalMonths = years * 12 + months;
+  if (totalMonths < 12) {
+    return `${totalMonths}개월`;
+  }
+  
+  const remainingYears = Math.floor(totalMonths / 12);
+  const remainingMonths = totalMonths % 12;
+  
+  if (remainingMonths === 0) {
+    return `${remainingYears}년`;
+  }
+  return `${remainingYears}년 ${remainingMonths}개월`;
+};
+
+// 최종학력 표시 함수
+const getLatestEducation = (education) => {
+  if (!education || education.length === 0) return '정보 없음';
+  const latestEdu = education[0]; // 배열의 첫 번째 항목이 가장 최근 학력이라고 가정
+  return `${latestEdu.school} ${latestEdu.type} (${latestEdu.major})`;
+};
+
+// 총 경력 계산 함수
+const calculateTotalCareer = (careers) => {
+  if (!careers?.length) return '0년';
+  
+  let totalMonths = 0;
+  
+  careers.forEach(career => {
+    const [start, end] = career.period.split(' - ');
+    const startDate = new Date(start.split('.').join('-'));
+    const endDate = end === '현재' ? new Date() : new Date(end.split('.').join('-'));
+    
+    const monthDiff = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                     (endDate.getMonth() - startDate.getMonth());
+    totalMonths += monthDiff;
+  });
+  
+  if (totalMonths >= 12) {
+    const years = Math.floor(totalMonths / 12);
+    const months = totalMonths % 12;
+    return months > 0 ? `${years}년 ${months}개월` : `${years}년`;
+  }
+  
+  return `${totalMonths}개월`;
+};
 </script>
 
 <template>
@@ -448,13 +503,19 @@ const selectedTalentIds = ref([]);
 
         <!-- 경력 사항 -->
         <div class="mb-8 bg-gray-50 p-6 rounded-lg">
-          <h3 class="text-lg font-medium mb-4">경력 사항</h3>
+          <div class="flex items-center gap-2 mb-4">
+            <h3 class="text-lg font-medium">경력 사항</h3>
+            <span class="text-sm text-[#8B8BF5] bg-[#8B8BF5] bg-opacity-10 px-2 py-1 rounded">
+              총 {{ calculateTotalCareer(selectedCandidate?.careers) }}
+            </span>
+          </div>
           <div v-for="(career, index) in selectedCandidate?.careers" :key="index" class="mb-4">
-            <div class="font-medium">{{ career.company }}</div>
-            <div class="text-gray-600">{{ career.period }}</div>
-            <div class="text-gray-600">
-              {{ career.jobCategory.label }} | {{ career.position }}
+            <div class="flex items-center gap-2">
+              <div class="font-medium">{{ career.company }}</div>
+              <span class="text-sm text-gray-500">({{ calculateCareerPeriod(career.period) }})</span>
             </div>
+            <div class="text-gray-600">{{ career.period }}</div>
+            <div class="text-gray-600">{{ career.jobCategory.label }} | {{ career.position }}</div>
             <div class="mt-2 whitespace-pre-line">{{ career.description }}</div>
           </div>
         </div>
@@ -462,12 +523,15 @@ const selectedTalentIds = ref([]);
         <!-- 학력 사항 -->
         <div class="mb-8 bg-gray-50 p-6 rounded-lg">
           <h3 class="text-lg font-medium mb-4">학력 사항</h3>
+          <div class="text-[#8B8BF5] mb-4">
+            최종학력: {{ getLatestEducation(selectedCandidate?.education) }}
+          </div>
           <div v-for="(edu, index) in selectedCandidate?.education" :key="index" class="mb-4">
             <div class="font-medium">{{ edu.school }}</div>
             <div class="text-gray-600">{{ edu.type }}</div>
             <div class="text-gray-600">{{ edu.major }}</div>
             <div class="text-gray-600">{{ edu.period }}</div>
-            <div>{{ edu.description }}</div>
+            <div class="whitespace-pre-line">{{ edu.description }}</div>
           </div>
         </div>
       </div>

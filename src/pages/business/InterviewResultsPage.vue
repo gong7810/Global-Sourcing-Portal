@@ -294,6 +294,53 @@ const downloadFile = (fileType, fileInfo) => {
   }
   alert(`${fileType} 파일 다운로드 시도\n파일명: ${fileInfo.name}\n(실제 다운로드는 백엔드 연동 후 구현 예정)`);
 };
+
+// 경력 기간 계산 함수
+const calculateCareerPeriod = (period) => {
+  if (!period) return '';
+  
+  const [start, end] = period.split(' - ');
+  if (!start || !end) return '';
+
+  const startDate = new Date(start.replace('.', '-'));
+  const endDate = end === '현재' ? new Date() : new Date(end.replace('.', '-'));
+  
+  const monthDiff = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                   (endDate.getMonth() - startDate.getMonth());
+  
+  if (monthDiff >= 12) {
+    const years = Math.floor(monthDiff / 12);
+    const months = monthDiff % 12;
+    return months > 0 ? `${years}년 ${months}개월` : `${years}년`;
+  }
+  
+  return `${monthDiff}개월`;
+};
+
+// 총 경력 계산 함수
+const calculateTotalCareer = (careerHistory) => {
+  if (!careerHistory?.length) return '0년';
+  
+  let totalMonths = 0;
+  
+  careerHistory.forEach(career => {
+    const [start, end] = career.period.split(' - ');
+    const startDate = new Date(start.replace('.', '-'));
+    const endDate = end === '현재' ? new Date() : new Date(end.replace('.', '-'));
+    
+    const monthDiff = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
+                     (endDate.getMonth() - startDate.getMonth());
+    totalMonths += monthDiff;
+  });
+  
+  if (totalMonths >= 12) {
+    const years = Math.floor(totalMonths / 12);
+    const months = totalMonths % 12;
+    return months > 0 ? `${years}년 ${months}개월` : `${years}년`;
+  }
+  
+  return `${totalMonths}개월`;
+};
 </script>
 
 <template>
@@ -512,14 +559,6 @@ const downloadFile = (fileType, fileInfo) => {
               <span class="text-gray-600 w-20">주소</span>
               <span>{{ selectedDetailInterview.candidate.address || '-' }}</span>
             </div>
-            <div class="flex gap-8">
-              <span class="text-gray-600 w-20">경력</span>
-              <span>{{ selectedDetailInterview.candidate.career }}</span>
-            </div>
-            <div class="flex gap-8">
-              <span class="text-gray-600 w-20">학력</span>
-              <span>{{ selectedDetailInterview.candidate.education?.degree || '-' }}</span>
-            </div>
           </div>
         </div>
 
@@ -573,7 +612,12 @@ const downloadFile = (fileType, fileInfo) => {
 
         <div class="bg-gray-50 p-6 rounded-lg mb-6">
           <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold">경력 사항</h3>
+            <div class="flex items-center gap-2">
+              <h3 class="text-lg font-bold">경력 사항</h3>
+              <span class="text-sm text-[#8B8BF5] bg-[#8B8BF5] bg-opacity-10 px-2 py-1 rounded">
+                총 {{ calculateTotalCareer(selectedDetailInterview.candidate.careerHistory) }}
+              </span>
+            </div>
             <div>
               <button
                 v-if="sampleFiles.career.exists"
@@ -594,7 +638,10 @@ const downloadFile = (fileType, fileInfo) => {
               :key="index" 
               class="mb-4"
             >
-              <div class="font-medium">{{ career.company }}</div>
+              <div class="flex items-center gap-2">
+                <div class="font-medium">{{ career.company }}</div>
+                <span class="text-sm text-gray-500">({{ calculateCareerPeriod(career.period) }})</span>
+              </div>
               <div class="text-gray-600">{{ career.period }}</div>
               <div class="text-gray-600">{{ career.position.replace('/', ' | ') }}</div>
               <div class="mt-2">{{ career.description }}</div>
@@ -622,6 +669,9 @@ const downloadFile = (fileType, fileInfo) => {
                 업로드된 파일 없음
               </span>
             </div>
+          </div>
+          <div class="text-[#8B8BF5] mb-4">
+            최종학력: {{ selectedDetailInterview.candidate.education.school }} ({{ selectedDetailInterview.candidate.education.degree }})
           </div>
           <div v-if="selectedDetailInterview.candidate.education">
             <div class="mb-2">{{ selectedDetailInterview.candidate.education.school }}</div>
