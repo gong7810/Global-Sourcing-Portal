@@ -48,12 +48,15 @@ const filteredCompanies = computed(() => {
 <template>
   <div class="max-w-[1200px] mx-auto px-4 py-12">
     <!-- 헤더 영역 -->
-    <div class="flex items-center gap-4 mb-8">
-      <i
-        class="pi pi-angle-left text-4xl text-gray-600 cursor-pointer transition-colors hover:text-[#8FA1FF]"
-        @click="router.back()"
-      ></i>
-      <h1 class="text-3xl font-bold">기업 목록</h1>
+    <div class="flex flex-col mb-8">
+      <div class="flex items-center gap-4">
+        <i
+          class="pi pi-angle-left text-4xl text-gray-600 cursor-pointer transition-colors hover:text-[#8FA1FF]"
+          @click="router.back()"
+        ></i>
+        <h1 class="text-3xl font-bold">기업 목록</h1>
+      </div>
+      <p class="text-gray-500 mt-2 ml-8">면접 제안받은 기업 목록입니다.</p>
     </div>
     
     <!-- 검색 및 필터 영역 -->
