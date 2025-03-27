@@ -43,8 +43,10 @@ const talents = ref([
     phone: '010-1234-5678',
     email: 'hong@example.com',
     address: '서울시 강남구 테헤란로 123',
-    education: '하노이공과대학교',
-    major: '컴퓨터공학',
+    profileImage: {
+      url: '/images/profile1.jpg',
+      exists: true
+    },
     passportName: 'HONG GILDONG',
     passportNumber: 'M1234****',
     passportExpiry: '2028-09-01',
@@ -56,14 +58,24 @@ const talents = ref([
         period: '2021.03 - 2024.03',
         jobCategory: { label: 'IT개발·데이터', value: 'it' },
         position: '프론트엔드 개발자 | 개발팀',
-        description: '웹 서비스 프론트엔드 개발 및 유지보수\n- React, TypeScript 기반 웹 애플리케이션 개발\n- 성능 최적화 및 사용자 경험 개선'
+        description: '웹 서비스 프론트엔드 개발 및 유지보수\n- React, TypeScript 기반 웹 애플리케이션 개발\n- 성능 최적화 및 사용자 경험 개선',
+        file: {
+          name: '테크솔루션_경력증명서.pdf',
+          size: '1.2MB',
+          exists: true
+        }
       },
       {
         company: '(주)스타트업',
         period: '2019.03 - 2021.02',
         jobCategory: { label: 'IT개발·데이터', value: 'it' },
         position: '웹 개발자 | 서비스개발팀',
-        description: '자사 웹 서비스 개발\n- Vue.js 기반 프론트엔드 개발\n- REST API 연동 및 기능 구현'
+        description: '자사 웹 서비스 개발\n- Vue.js 기반 프론트엔드 개발\n- REST API 연동 및 기능 구현',
+        file: {
+          name: '스타트업_경력증명서.pdf',
+          size: '1.1MB',
+          exists: true
+        }
       }
     ],
     education: [
@@ -72,9 +84,37 @@ const talents = ref([
         type: '대학교(4년)',
         major: '컴퓨터공학',
         period: '2015.03 - 2019.02',
-        description: '학점 4.0/4.5\n웹 개발 동아리 회장\n알고리즘 경진대회 수상'
+        description: '학점 4.0/4.5\n웹 개발 동아리 회장\n알고리즘 경진대회 수상',
+        file: {
+          name: '하노이공과대학교_졸업증명서.pdf',
+          size: '1.5MB',
+          exists: true
+        }
       }
-    ]
+    ],
+    certificates: [
+      {
+        name: 'TOPIK 6급',
+        issuedDate: '2023-05-15'
+      },
+      {
+        name: 'AWS Solutions Architect Associate',
+        issuedDate: '2023-08-20'
+      },
+      {
+        name: 'JLPT N1',
+        issuedDate: '2023-07-10'
+      }
+    ],
+    criminalRecordFile: {
+      name: '범죄경력확인서.pdf',
+      size: '1.2MB',
+      exists: true
+    },
+    koreanProficiency: '고급',
+    koreanStudyDuration: '2년',
+    koreanVisitExperience: '없음',
+    maritalStatus: '미혼'
   },
   {
     id: 2,
@@ -109,6 +149,24 @@ const talents = ref([
         major: '소프트웨어공학',
         period: '2016.09 - 2020.08',
         description: '학점 3.8/4.0\n클라우드 컴퓨팅 연구실 인턴\n교내 프로그래밍 대회 2위'
+      }
+    ],
+    certificates: [
+      {
+        name: 'TOPIK 5급',
+        issuedDate: '2023-03-10'
+      },
+      {
+        name: 'SQLD',
+        issuedDate: '2022-12-15'
+      },
+      {
+        name: 'Linux Master 2급',
+        issuedDate: '2022-06-30'
+      },
+      {
+        name: '정보처리기사',
+        issuedDate: '2022-08-15'
       }
     ]
   },
@@ -152,6 +210,28 @@ const talents = ref([
         major: '전자공학',
         period: '2013.04 - 2017.03',
         description: '학점 4.2/4.5\n정보처리기사 자격증 취득\n교내 IT 창업 동아리 부회장'
+      }
+    ],
+    certificates: [
+      {
+        name: 'TOPIK 6급',
+        issuedDate: '2023-06-20'
+      },
+      {
+        name: 'JLPT N1',
+        issuedDate: '2023-01-15'
+      },
+      {
+        name: 'Microsoft Azure Administrator',
+        issuedDate: '2023-09-05'
+      },
+      {
+        name: '정보보안기사',
+        issuedDate: '2022-11-30'
+      },
+      {
+        name: 'OPIC IH',
+        issuedDate: '2023-04-25'
       }
     ]
   }
@@ -437,35 +517,55 @@ const calculateTotalCareer = (careers) => {
         <!-- 기본 정보 -->
         <div class="mb-8 bg-gray-50 p-6 rounded-lg">
           <h3 class="text-lg font-medium mb-4">기본 정보</h3>
-          <div class="grid grid-cols-2 gap-y-4">
-            <div class="flex gap-8">
-              <span class="text-gray-600 w-20">이름</span>
+          <div class="grid grid-cols-[1fr_1fr_auto] gap-x-8">
+            <!-- 왼쪽 컬럼 -->
+            <div class="grid grid-cols-[80px_auto] gap-y-2 text-sm text-gray-600">
+              <span class="text-gray-600">이름</span>
               <span>{{ selectedCandidate?.name }}</span>
-            </div>
-            <div class="flex gap-8">
-              <span class="text-gray-600 w-20">생년월일</span>
+              <span class="text-gray-600">생년월일</span>
               <span>{{ selectedCandidate?.birthdate }}</span>
-            </div>
-            <div class="flex gap-8">
-              <span class="text-gray-600 w-20">성별</span>
+              <span class="text-gray-600">성별</span>
               <span>{{ selectedCandidate?.gender }}</span>
+              <span class="text-gray-600">휴대폰</span>
+              <span>{{ isAccepted ? selectedCandidate?.phone : '면접 제안 수락 후 확인 가능' }}</span>
+              <span class="text-gray-600">이메일</span>
+              <span>{{ isAccepted ? selectedCandidate?.email : '면접 제안 수락 후 확인 가능' }}</span>
+              <span class="text-gray-600">주소</span>
+              <span>{{ isAccepted ? selectedCandidate?.address : '면접 제안 수락 후 확인 가능' }}</span>
             </div>
-            <!-- 연락처 정보는 면접 제안 수락 후에만 표시 -->
-            <div v-if="isAccepted" class="flex gap-8">
-              <span class="text-gray-600 w-20">연락처</span>
-              <span>{{ selectedCandidate?.phone }}</span>
+
+            <!-- 가운데 컬럼 -->
+            <div class="grid grid-cols-[100px_auto] gap-y-2 text-sm text-gray-600">
+              <span class="text-gray-600">범죄경력</span>
+              <span v-if="isAccepted" class="flex items-center gap-2">
+                <i class="pi pi-file-pdf text-red-500"></i>
+                {{ selectedCandidate?.criminalRecordFile?.name || '미제출' }}
+              </span>
+              <span v-else>면접 제안 수락 후 확인 가능</span>
+              
+              <span class="text-gray-600">한국어능력</span>
+              <span>{{ selectedCandidate?.koreanProficiency || '미입력' }}</span>
+              <span class="text-gray-600">학습기간</span>
+              <span>{{ selectedCandidate?.koreanStudyDuration || '미입력' }}</span>
+              <span class="text-gray-600">한국방문경험</span>
+              <span>{{ selectedCandidate?.koreanVisitExperience || '미입력' }}</span>
+              <span class="text-gray-600">혼인여부</span>
+              <span>{{ selectedCandidate?.maritalStatus || '미입력' }}</span>
             </div>
-            <div v-if="isAccepted" class="flex gap-8">
-              <span class="text-gray-600 w-20">이메일</span>
-              <span>{{ selectedCandidate?.email }}</span>
-            </div>
-            <div v-if="isAccepted" class="flex gap-8">
-              <span class="text-gray-600 w-20">주소</span>
-              <span>{{ selectedCandidate?.address }}</span>
-            </div>
-            <!-- 연락처 정보가 없을 때 표시할 메시지 -->
-            <div v-else class="col-span-2 text-gray-500 italic">
-              * 연락처 정보는 면접 제안이 수락된 후 확인하실 수 있습니다
+
+            <!-- 프로필 사진 (오른쪽) -->
+            <div class="flex flex-col items-center">
+              <div class="w-[140px] h-[180px] bg-gray-100 rounded-lg overflow-hidden">
+                <img
+                  v-if="selectedCandidate?.profileImage?.exists"
+                  :src="selectedCandidate.profileImage.url"
+                  alt="프로필 사진"
+                  class="w-full h-full object-cover"
+                />
+                <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
+                  <i class="pi pi-user text-4xl"></i>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -509,7 +609,8 @@ const calculateTotalCareer = (careers) => {
               총 {{ calculateTotalCareer(selectedCandidate?.careers) }}
             </span>
           </div>
-          <div v-for="(career, index) in selectedCandidate?.careers" :key="index" class="mb-4">
+          <div v-for="(career, index) in selectedCandidate?.careers" :key="index" 
+            class="mb-4 pb-4 border-b last:border-b-0">
             <div class="flex items-center gap-2">
               <div class="font-medium">{{ career.company }}</div>
               <span class="text-sm text-gray-500">({{ calculateCareerPeriod(career.period) }})</span>
@@ -522,16 +623,46 @@ const calculateTotalCareer = (careers) => {
 
         <!-- 학력 사항 -->
         <div class="mb-8 bg-gray-50 p-6 rounded-lg">
-          <h3 class="text-lg font-medium mb-4">학력 사항</h3>
-          <div class="text-[#8B8BF5] mb-4">
-            최종학력: {{ getLatestEducation(selectedCandidate?.education) }}
+          <div class="mb-4">
+            <h3 class="text-lg font-medium">학력 사항</h3>
           </div>
-          <div v-for="(edu, index) in selectedCandidate?.education" :key="index" class="mb-4">
-            <div class="font-medium">{{ edu.school }}</div>
-            <div class="text-gray-600">{{ edu.type }}</div>
-            <div class="text-gray-600">{{ edu.major }}</div>
-            <div class="text-gray-600">{{ edu.period }}</div>
-            <div class="whitespace-pre-line">{{ edu.description }}</div>
+          <div v-if="selectedCandidate?.education?.length">
+            <div class="text-[#8B8BF5] mb-4">
+              최종학력: {{ selectedCandidate.education[0].school }} 
+              ({{ selectedCandidate.education[0].type }})
+            </div>
+            <div v-for="(edu, index) in selectedCandidate.education" 
+              :key="index"
+              class="mb-6 pb-6 border-b last:border-b-0"
+            >
+              <div class="text-[#8B8BF5] mb-2">
+                {{ edu.school }} ({{ edu.type }})
+              </div>
+              <div class="text-gray-600">{{ edu.major }}</div>
+              <div class="text-gray-600">{{ edu.period }}</div>
+              <div class="whitespace-pre-line">{{ edu.description }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 자격증 사항 -->
+        <div class="mb-8 bg-gray-50 p-6 rounded-lg">
+          <div class="mb-4">
+            <h3 class="text-lg font-medium">자격증 사항</h3>
+          </div>
+          <div v-if="selectedCandidate?.certificates?.length" class="space-y-4">
+            <div v-for="(cert, index) in selectedCandidate.certificates" 
+              :key="index" 
+              class="mb-4 pb-4 border-b last:border-b-0"
+            >
+              <div class="font-medium mb-1">{{ cert.name }}</div>
+              <div class="text-gray-600">
+                취득일: {{ cert.issuedDate }}
+              </div>
+            </div>
+          </div>
+          <div v-else class="text-center text-gray-500">
+            등록된 자격증이 없습니다
           </div>
         </div>
       </div>

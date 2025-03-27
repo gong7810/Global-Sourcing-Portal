@@ -41,16 +41,53 @@ const interviewResults = ref([
           company: '(주)비티로봇',
           period: '2023.03 - 2024.03',
           position: '프론트엔드 개발자/개발팀',
-          description: '웹 서비스 프론트엔드 개발'
+          description: '웹 서비스 프론트엔드 개발',
+          file: {
+            name: '비티로봇_경력증명서.pdf',
+            size: '1.2MB',
+            exists: true
+          }
+        },
+        {
+          company: '(주)테크솔루션',
+          period: '2021.01 - 2023.02',
+          position: '웹 개발자/프론트엔드팀',
+          description: 'React 기반 웹 서비스 개발',
+          file: {
+            name: '테크솔루션_경력증명서.pdf',
+            size: '1.1MB',
+            exists: false
+          }
         }
       ],
-      education: {
-        school: '한국대학교',
-        degree: '대학교(4년)',
-        major: '컴퓨터공학과',
-        period: '2015.03 - 2019.02',
-        description: '컴퓨터공학과 활동'
-      },
+      education: [
+        {
+          school: '한국대학교',
+          degree: '대학교(4년)',
+          major: '컴퓨터공학과',
+          period: '2015.03 - 2019.02',
+          description: '컴퓨터공학과 활동',
+          isGraduated: true,
+          file: {
+            name: '한국대학교_졸업증명서.pdf',
+            size: '1.5MB',
+            exists: true
+          }
+        },
+        {
+          school: '서울고등학교',
+          degree: '고등학교',
+          major: '이과',
+          period: '2012.03 - 2015.02',
+          description: '',
+          isGraduated: true,
+          file: {
+            name: '서울고_졸업증명서.pdf',
+            size: '1.3MB',
+            exists: true
+          }
+        }
+      ],
       criminalRecordFile: {
         name: '범죄경력확인서.pdf',
         size: 1024 * 1024,
@@ -59,7 +96,27 @@ const interviewResults = ref([
       koreanProficiency: '고급',
       koreanStudyDuration: '2년',
       koreanVisitExperience: '없음',
-      maritalStatus: '미혼'
+      maritalStatus: '미혼',
+      certificates: [
+        {
+          name: 'TOPIK 6급',
+          issuedDate: '2023-05-15',
+          file: {
+            name: 'TOPIK_6급_자격증.pdf',
+            size: '1.1MB',
+            exists: true
+          }
+        },
+        {
+          name: 'AWS Solutions Architect Associate',
+          issuedDate: '2023-08-20',
+          file: {
+            name: 'AWS_SAA_Certificate.pdf',
+            size: '800KB',
+            exists: false  // 첨부파일 없는 경우
+          }
+        }
+      ]
     },
     jobCategory: { label: 'IT개발·데이터', value: 'it' },
     position: 'Frontend Developer',
@@ -96,13 +153,21 @@ const interviewResults = ref([
           description: '백엔드 서버 개발 및 운영\n- Spring Boot 기반 REST API 개발\n- MSA 아키텍처 설계 및 구현\n- 대용량 데이터 처리 시스템 구축'
         }
       ],
-      education: {
-        school: '베이징대학교',
-        degree: '대학교(4년)',
-        major: '소프트웨어공학',
-        period: '2016.09 - 2020.08',
-        description: '학점 3.8/4.0\n클라우드 컴퓨팅 연구실 인턴\n교내 프로그래밍 대회 2위'
-      },
+      education: [
+        {
+          school: '베이징대학교',
+          degree: '대학교(4년)',
+          major: '소프트웨어공학',
+          period: '2016.09 - 2020.08',
+          description: '학점 3.8/4.0\n클라우드 컴퓨팅 연구실 인턴\n교내 프로그래밍 대회 2위',
+          isGraduated: true,
+          file: {
+            name: '베이징대_졸업증명서.pdf',
+            size: '1.4MB',
+            exists: true
+          }
+        }
+      ],
       criminalRecordFile: {
         name: '범죄경력확인서.pdf',
         size: 1024 * 1024,
@@ -111,7 +176,21 @@ const interviewResults = ref([
       koreanProficiency: '중급',
       koreanStudyDuration: '1년',
       koreanVisitExperience: '없음',
-      maritalStatus: '미혼'
+      maritalStatus: '미혼',
+      certificates: [
+        {
+          name: 'TOPIK 5급',
+          issuedDate: '2023-03-10'
+        },
+        {
+          name: 'SQLD',
+          issuedDate: '2022-12-15'
+        },
+        {
+          name: 'Linux Master 2급',
+          issuedDate: '2022-06-30'
+        }
+      ]
     },
     jobCategory: { label: 'IT개발·데이터', value: 'it' },
     position: 'Backend Developer',
@@ -280,7 +359,7 @@ const openDetailModal = (interview) => {
   showDetailModal.value = true;
 };
 
-// 샘플 파일 정보 추가
+// 샘플 파일 정보 수정
 const sampleFiles = {
   passport: {
     name: '여권사본.pdf',
@@ -300,17 +379,21 @@ const sampleFiles = {
   certificate: {
     name: '자격증.pdf',
     size: '1.2MB',
-    exists: false // 파일 없음
+    exists: true  // 파일 있음으로 변경
   }
 };
 
-// 파일 다운로드 함수
-const downloadFile = (fileType, fileInfo) => {
-  if (!fileInfo.exists) {
+// 파일 다운로드 함수 수정
+const downloadFile = (fileType, fileInfo, certName = '') => {
+  if (!fileInfo?.exists) {
     alert('업로드된 파일이 없습니다.');
     return;
   }
-  alert(`${fileType} 파일 다운로드 시도\n파일명: ${fileInfo.name}\n(실제 다운로드는 백엔드 연동 후 구현 예정)`);
+  const message = certName 
+    ? `${certName} ${fileType} 파일 다운로드 시도\n파일명: ${fileInfo.name}`
+    : `${fileType} 파일 다운로드 시도\n파일명: ${fileInfo.name}`;
+  
+  alert(`${message}\n(실제 다운로드는 백엔드 연동 후 구현 예정)`);
 };
 
 // 경력 기간 계산 함수
@@ -438,8 +521,8 @@ const calculateTotalCareer = (careerHistory) => {
         </div>
 
         <div class="mb-4">
-          <p class="text-gray-600">
-            {{ interview.candidate.education.school }} · {{ interview.candidate.education.major }}
+          <p class="text-gray-600" v-if="interview.candidate.education?.length">
+            {{ interview.candidate.education[0].school }} · {{ interview.candidate.education[0].major }}
           </p>
         </div>
 
@@ -552,7 +635,7 @@ const calculateTotalCareer = (careerHistory) => {
       <div v-if="selectedDetailInterview" class="p-4">
         <div class="bg-gray-50 p-6 rounded-lg mb-6">
           <h3 class="text-lg font-medium mb-4">기본 정보</h3>
-          <div class="grid grid-cols-2 gap-x-8">
+          <div class="grid grid-cols-[1fr_1fr_auto] gap-x-8">
             <!-- 왼쪽 컬럼 -->
             <div class="grid grid-cols-[80px_auto] gap-y-2 text-sm text-gray-600">
               <span class="text-gray-600">이름</span>
@@ -569,7 +652,7 @@ const calculateTotalCareer = (careerHistory) => {
               <span>{{ selectedDetailInterview.candidate.address }}</span>
             </div>
 
-            <!-- 오른쪽 컬럼 -->
+            <!-- 가운데 컬럼 -->
             <div class="grid grid-cols-[100px_auto] gap-y-2 text-sm text-gray-600">
               <span class="text-gray-600">범죄경력</span>
               <span class="flex items-center gap-2">
@@ -584,6 +667,29 @@ const calculateTotalCareer = (careerHistory) => {
               <span>{{ selectedDetailInterview.candidate.koreanVisitExperience || '미입력' }}</span>
               <span class="text-gray-600">혼인여부</span>
               <span>{{ selectedDetailInterview.candidate.maritalStatus || '미입력' }}</span>
+            </div>
+
+            <!-- 프로필 사진 (오른쪽) -->
+            <div class="flex flex-col items-center gap-2">
+              <div class="w-[140px] h-[180px] bg-gray-100 rounded-lg overflow-hidden">
+                <img
+                  v-if="selectedDetailInterview.candidate.profileImage?.exists"
+                  :src="selectedDetailInterview.candidate.profileImage.url"
+                  alt="프로필 사진"
+                  class="w-full h-full object-cover"
+                />
+                <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
+                  <i class="pi pi-user text-4xl"></i>
+                </div>
+              </div>
+              <button
+                v-if="selectedDetailInterview.candidate.profileImage?.exists"
+                @click="downloadFile('프로필사진', selectedDetailInterview.candidate.profileImage)"
+                class="text-sm text-[#8B8BF5] hover:text-[#7A7AE6] flex items-center gap-1"
+              >
+                <i class="pi pi-download"></i>
+                <span>다운로드</span>
+              </button>
             </div>
           </div>
         </div>
@@ -636,41 +742,42 @@ const calculateTotalCareer = (careerHistory) => {
           </div>
         </div>
 
+        <!-- 경력 사항 섹션 -->
         <div class="bg-gray-50 p-6 rounded-lg mb-6">
-          <div class="flex justify-between items-center mb-4">
-            <div class="flex items-center gap-2">
-              <h3 class="text-lg font-bold">경력 사항</h3>
-              <span class="text-sm text-[#8B8BF5] bg-[#8B8BF5] bg-opacity-10 px-2 py-1 rounded">
-                총 {{ calculateTotalCareer(selectedDetailInterview.candidate.careerHistory) }}
-              </span>
-            </div>
-            <div>
-              <button
-                v-if="sampleFiles.career.exists"
-                @click="downloadFile('경력증명서', sampleFiles.career)"
-                class="flex items-center gap-2 text-[#8B8BF5] hover:text-[#7A7AE6]"
-              >
-                <i class="pi pi-download"></i>
-                <span>파일 다운로드</span>
-                <span class="text-sm text-gray-500">({{ sampleFiles.career.size }})</span>
-              </button>
-              <span v-else class="text-sm text-gray-500">
-                업로드된 파일 없음
-              </span>
-            </div>
+          <div class="flex items-center gap-2 mb-4">
+            <h3 class="text-lg font-bold">경력 사항</h3>
+            <span class="text-sm text-[#8B8BF5] bg-[#8B8BF5] bg-opacity-10 px-2 py-1 rounded">
+              총 {{ calculateTotalCareer(selectedDetailInterview.candidate.careerHistory) }}
+            </span>
           </div>
           <div v-if="selectedDetailInterview.candidate.careerHistory?.length">
             <div v-for="(career, index) in selectedDetailInterview.candidate.careerHistory" 
               :key="index" 
-              class="mb-4"
+              class="mb-4 pb-4 border-b last:border-b-0"
             >
-              <div class="flex items-center gap-2">
-                <div class="font-medium">{{ career.company }}</div>
-                <span class="text-sm text-gray-500">({{ calculateCareerPeriod(career.period) }})</span>
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <div class="font-medium">{{ career.company }}</div>
+                    <span class="text-sm text-gray-500">({{ calculateCareerPeriod(career.period) }})</span>
+                  </div>
+                  <div class="text-gray-600">{{ career.period }}</div>
+                  <div class="text-gray-600">{{ career.position.replace('/', ' | ') }}</div>
+                  <div class="mt-2">{{ career.description }}</div>
+                </div>
+                <button
+                  v-if="career.file?.exists"
+                  @click="downloadFile('경력증명서', career.file, career.company)"
+                  class="flex items-center gap-2 text-[#8B8BF5] hover:text-[#7A7AE6] ml-4"
+                >
+                  <i class="pi pi-download"></i>
+                  <span class="text-sm">증명서</span>
+                  <span class="text-sm text-gray-500">({{ career.file.size }})</span>
+                </button>
+                <span v-else class="text-sm text-gray-500 ml-4">
+                  증명서 없음
+                </span>
               </div>
-              <div class="text-gray-600">{{ career.period }}</div>
-              <div class="text-gray-600">{{ career.position.replace('/', ' | ') }}</div>
-              <div class="mt-2">{{ career.description }}</div>
             </div>
           </div>
           <div v-else class="text-center text-gray-500">
@@ -679,32 +786,41 @@ const calculateTotalCareer = (careerHistory) => {
         </div>
 
         <div class="bg-gray-50 p-6 rounded-lg mb-6">
-          <div class="flex justify-between items-center mb-4">
+          <div class="mb-4">
             <h3 class="text-lg font-bold">학력 사항</h3>
-            <div>
-              <button
-                v-if="sampleFiles.education.exists"
-                @click="downloadFile('졸업증명서', sampleFiles.education)"
-                class="flex items-center gap-2 text-[#8B8BF5] hover:text-[#7A7AE6]"
-              >
-                <i class="pi pi-download"></i>
-                <span>파일 다운로드</span>
-                <span class="text-sm text-gray-500">({{ sampleFiles.education.size }})</span>
-              </button>
-              <span v-else class="text-sm text-gray-500">
-                업로드된 파일 없음
-              </span>
+          </div>
+          <div v-if="selectedDetailInterview.candidate.education?.length">
+            <div class="text-[#8B8BF5] mb-4">
+              최종학력: {{ selectedDetailInterview.candidate.education[0].school }} 
+              ({{ selectedDetailInterview.candidate.education[0].degree }})
             </div>
-          </div>
-          <div class="text-[#8B8BF5] mb-4">
-            최종학력: {{ selectedDetailInterview.candidate.education.school }} ({{ selectedDetailInterview.candidate.education.degree }})
-          </div>
-          <div v-if="selectedDetailInterview.candidate.education">
-            <div class="mb-2">{{ selectedDetailInterview.candidate.education.school }}</div>
-            <div class="text-gray-600">{{ selectedDetailInterview.candidate.education.degree || '-' }}</div>
-            <div class="text-gray-600">{{ selectedDetailInterview.candidate.education.major }}</div>
-            <div class="text-gray-600">{{ selectedDetailInterview.candidate.education.period || '-' }}</div>
-            <div>{{ selectedDetailInterview.candidate.education.description || '-' }}</div>
+            <div v-for="(edu, index) in selectedDetailInterview.candidate.education" 
+              :key="index"
+              class="mb-6 pb-6 border-b last:border-b-0"
+            >
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="text-[#8B8BF5] mb-2">
+                    {{ edu.school }} ({{ edu.degree }})
+                  </div>
+                  <div class="text-gray-600">{{ edu.major }}</div>
+                  <div class="text-gray-600">{{ edu.period }}</div>
+                  <div v-if="edu.description">{{ edu.description }}</div>
+                </div>
+                <button
+                  v-if="edu.file?.exists"
+                  @click="downloadFile('졸업증명서', edu.file, edu.school)"
+                  class="flex items-center gap-2 text-[#8B8BF5] hover:text-[#7A7AE6] ml-4"
+                >
+                  <i class="pi pi-download"></i>
+                  <span class="text-sm">졸업증명서</span>
+                  <span class="text-sm text-gray-500">({{ edu.file.size }})</span>
+                </button>
+                <span v-else class="text-sm text-gray-500 ml-4">
+                  증명서 없음
+                </span>
+              </div>
+            </div>
           </div>
           <div v-else class="text-center text-gray-500">
             등록된 학력 사항이 없습니다
@@ -712,24 +828,40 @@ const calculateTotalCareer = (careerHistory) => {
         </div>
 
         <div class="bg-gray-50 p-6 rounded-lg">
-          <div class="flex justify-between items-center mb-4">
+          <div class="mb-4">
             <h3 class="text-lg font-bold">자격증 사항</h3>
-            <div>
-              <button
-                v-if="sampleFiles.certificate.exists"
-                @click="downloadFile('자격증', sampleFiles.certificate)"
-                class="flex items-center gap-2 text-[#8B8BF5] hover:text-[#7A7AE6]"
-              >
-                <i class="pi pi-download"></i>
-                <span>파일 다운로드</span>
-                <span class="text-sm text-gray-500">({{ sampleFiles.certificate.size }})</span>
-              </button>
-              <span v-else class="text-sm text-gray-500">
-                업로드된 파일 없음
-              </span>
+          </div>
+          <div v-if="selectedDetailInterview.candidate.certificates?.length" class="space-y-4">
+            <div v-for="(cert, index) in selectedDetailInterview.candidate.certificates" 
+              :key="index" 
+              class="border-b last:border-b-0"
+            >
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <div class="font-medium">{{ cert.name }}</div>
+                  </div>
+                  <div class="text-sm text-gray-600">
+                    <div>취득일: {{ cert.issuedDate }}</div>
+                  </div>
+                </div>
+                <!-- 각 자격증별 다운로드 버튼 -->
+                <button
+                  v-if="sampleFiles.certificate.exists"
+                  @click="downloadFile('자격증', sampleFiles.certificate)"
+                  class="flex items-center gap-2 text-[#8B8BF5] hover:text-[#7A7AE6] ml-4"
+                >
+                  <i class="pi pi-download"></i>
+                  <span class="text-sm">첨부파일</span>
+                  <span class="text-sm text-gray-500">({{ sampleFiles.certificate.size }})</span>
+                </button>
+                <span v-else class="text-sm text-gray-500 ml-4">
+                  첨부파일 없음
+                </span>
+              </div>
             </div>
           </div>
-          <div class="text-center text-gray-500">
+          <div v-else class="text-center text-gray-500">
             등록된 자격증이 없습니다
           </div>
         </div>
