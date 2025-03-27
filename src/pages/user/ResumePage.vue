@@ -271,10 +271,7 @@ const saveCareerInfo = () => {
   const requiredFields = {
     companyName: careerInfo.value.companyName,
     startDate: careerInfo.value.startDate,
-    jobCategory: careerInfo.value.jobCategory,
-    jobTitle: careerInfo.value.jobTitle,
-    department: careerInfo.value.department,
-    responsibilities: careerInfo.value.responsibilities
+    jobCategory: careerInfo.value.jobCategory
   };
 
   // 재직중이 아닐 경우 endDate도 필수
@@ -288,7 +285,7 @@ const saveCareerInfo = () => {
   );
 
   if (hasEmptyField) {
-    messagePop.toast('모든 필수 항목을 입력해주세요.', 'warn');
+    messagePop.toast('필수 항목을 입력해주세요.', 'warn');
     return;
   }
 
@@ -753,7 +750,11 @@ const setLastEducation = (selectedIndex) => {
                       </span>
                     </p>
                     <p class="text-gray-600">
-                      {{ career.jobCategory?.label || '' }} | {{ career.jobTitle }} | {{ career.department }}
+                      {{ [
+                        career.jobCategory?.label,
+                        career.jobTitle,
+                        career.department
+                      ].filter(Boolean).join(' | ') }}
                     </p>
                     <p class="text-gray-600 mt-2">{{ career.responsibilities }}</p>
                   </div>
@@ -1018,19 +1019,19 @@ const setLastEducation = (selectedIndex) => {
 
         <!-- 직책 추가 -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700"> 직책<span class="text-red-500">*</span> </label>
+          <label class="block text-sm font-medium text-gray-700">직책</label>
           <InputText v-model="careerInfo.jobTitle" placeholder="직책을 입력해주세요" class="w-full" />
         </div>
 
         <!-- 부서 -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700"> 부서<span class="text-red-500">*</span> </label>
+          <label class="block text-sm font-medium text-gray-700">부서</label>
           <InputText v-model="careerInfo.department" placeholder="부서명 입력" class="w-full" />
         </div>
 
         <!-- 담당업무 -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700"> 담당업무<span class="text-red-500">*</span> </label>
+          <label class="block text-sm font-medium text-gray-700">담당업무</label>
           <textarea
             v-model="careerInfo.responsibilities"
             rows="4"
