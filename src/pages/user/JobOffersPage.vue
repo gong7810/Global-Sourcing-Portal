@@ -50,8 +50,15 @@ const mockJobOffers = [
         email: 'yeji@naver.com',
         phone: '010-1234-7496',
         address: '윙스타워 505호',
-        totalCareer: '5년',
-        lastEducation: '대학교(4년) 졸업'
+        criminalRecordFile: {
+          name: '범죄경력확인서.pdf',
+          size: 1024 * 1024,
+          type: 'application/pdf'
+        },
+        koreanProficiency: '고급',
+        koreanStudyDuration: '2년',
+        koreanVisitExperience: '없음',
+        maritalStatus: '미혼'
       },
       nationalityInfo: '대한민국',
       passportInfo: {
@@ -110,8 +117,15 @@ const mockJobOffers = [
         email: 'yeji@naver.com',
         phone: '010-1234-7496',
         address: '윙스타워 505호',
-        totalCareer: '5년',
-        lastEducation: '대학교(4년) 졸업'
+        criminalRecordFile: {
+          name: '범죄경력확인서.pdf',
+          size: 1024 * 1024,
+          type: 'application/pdf'
+        },
+        koreanProficiency: '고급',
+        koreanStudyDuration: '2년',
+        koreanVisitExperience: '없음',
+        maritalStatus: '미혼'
       },
       nationalityInfo: '대한민국',
       passportInfo: {
@@ -172,8 +186,15 @@ const mockJobOffers = [
         email: 'yeji@naver.com',
         phone: '010-1234-7496',
         address: '윙스타워 505호',
-        totalCareer: '5년',
-        lastEducation: '대학교(4년) 졸업'
+        criminalRecordFile: {
+          name: '범죄경력확인서.pdf',
+          size: 1024 * 1024,
+          type: 'application/pdf'
+        },
+        koreanProficiency: '고급',
+        koreanStudyDuration: '2년',
+        koreanVisitExperience: '없음',
+        maritalStatus: '미혼'
       },
       nationalityInfo: '대한민국',
       passportInfo: {
@@ -241,8 +262,15 @@ const mockJobOffers = [
         email: 'yeji@naver.com',
         phone: '010-1234-7496',
         address: '윙스타워 505호',
-        totalCareer: '5년',
-        lastEducation: '대학교(4년) 졸업'
+        criminalRecordFile: {
+          name: '범죄경력확인서.pdf',
+          size: 1024 * 1024,
+          type: 'application/pdf'
+        },
+        koreanProficiency: '고급',
+        koreanStudyDuration: '2년',
+        koreanVisitExperience: '없음',
+        maritalStatus: '미혼'
       },
       nationalityInfo: '대한민국',
       passportInfo: {
@@ -1062,19 +1090,39 @@ const calculatePeriod = (period) => {
             <!-- 기본 정보 -->
             <div class="bg-gray-50 p-4 rounded-lg">
               <h5 class="font-medium mb-2">기본 정보</h5>
-              <div class="grid grid-cols-[80px_auto] gap-y-2 text-sm text-gray-600">
-                <span class="text-gray-500">이름</span>
-                <span>{{ selectedOffer.resumeSnapshot.basicInfo.name }}</span>
-                <span class="text-gray-500">생년월일</span>
-                <span>{{ selectedOffer.resumeSnapshot.basicInfo.birthDate }} (만 {{ calculateAge(selectedOffer.resumeSnapshot.basicInfo.birthDate) }}세)</span>
-                <span class="text-gray-500">성별</span>
-                <span>{{ selectedOffer.resumeSnapshot.basicInfo.gender }}</span>
-                <span class="text-gray-500">휴대폰</span>
-                <span>{{ selectedOffer.resumeSnapshot.basicInfo.phone }}</span>
-                <span class="text-gray-500">이메일</span>
-                <span>{{ selectedOffer.resumeSnapshot.basicInfo.email }}</span>
-                <span class="text-gray-500">주소</span>
-                <span>{{ selectedOffer.resumeSnapshot.basicInfo.address }}</span>
+              <div class="grid grid-cols-2 gap-x-8">
+                <!-- 왼쪽 컬럼 -->
+                <div class="grid grid-cols-[80px_auto] gap-y-2 text-sm text-gray-600">
+                  <span class="text-gray-500">이름</span>
+                  <span>{{ selectedOffer.resumeSnapshot.basicInfo.name }}</span>
+                  <span class="text-gray-500">생년월일</span>
+                  <span>{{ selectedOffer.resumeSnapshot.basicInfo.birthDate }} (만 {{ calculateAge(selectedOffer.resumeSnapshot.basicInfo.birthDate) }}세)</span>
+                  <span class="text-gray-500">성별</span>
+                  <span>{{ selectedOffer.resumeSnapshot.basicInfo.gender }}</span>
+                  <span class="text-gray-500">휴대폰</span>
+                  <span>{{ selectedOffer.resumeSnapshot.basicInfo.phone }}</span>
+                  <span class="text-gray-500">이메일</span>
+                  <span>{{ selectedOffer.resumeSnapshot.basicInfo.email }}</span>
+                  <span class="text-gray-500">주소</span>
+                  <span>{{ selectedOffer.resumeSnapshot.basicInfo.address }}</span>
+                </div>
+
+                <!-- 오른쪽 컬럼 -->
+                <div class="grid grid-cols-[100px_auto] gap-y-2 text-sm text-gray-600">
+                  <span class="text-gray-500">범죄경력</span>
+                  <span class="flex items-center gap-2">
+                    <i class="pi pi-file-pdf text-red-500"></i>
+                    {{ selectedOffer.resumeSnapshot.basicInfo.criminalRecordFile?.name || '미제출' }}
+                  </span>
+                  <span class="text-gray-500">한국어능력</span>
+                  <span>{{ selectedOffer.resumeSnapshot.basicInfo.koreanProficiency || '미입력' }}</span>
+                  <span class="text-gray-500">학습기간</span>
+                  <span>{{ selectedOffer.resumeSnapshot.basicInfo.koreanStudyDuration || '미입력' }}</span>
+                  <span class="text-gray-500">방문경험</span>
+                  <span>{{ selectedOffer.resumeSnapshot.basicInfo.koreanVisitExperience || '미입력' }}</span>
+                  <span class="text-gray-500">혼인여부</span>
+                  <span>{{ selectedOffer.resumeSnapshot.basicInfo.maritalStatus || '미입력' }}</span>
+                </div>
               </div>
             </div>
 
