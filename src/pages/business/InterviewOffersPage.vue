@@ -818,20 +818,22 @@ const calculateTotalCareer = (careerHistory) => {
               <span class="text-gray-600">성별</span>
               <span>{{ selectedOffer.candidate.gender }}</span>
               <span class="text-gray-600">휴대폰</span>
-              <span>{{ selectedOffer.candidate.phone }}</span>
+              <span>{{ selectedOffer.status === 'accepted' ? selectedOffer.candidate.phone : '면접 제안 수락 후 확인 가능' }}</span>
               <span class="text-gray-600">이메일</span>
-              <span>{{ selectedOffer.candidate.email }}</span>
+              <span>{{ selectedOffer.status === 'accepted' ? selectedOffer.candidate.email : '면접 제안 수락 후 확인 가능' }}</span>
               <span class="text-gray-600">주소</span>
-              <span>{{ selectedOffer.candidate.address }}</span>
+              <span>{{ selectedOffer.status === 'accepted' ? selectedOffer.candidate.address : '면접 제안 수락 후 확인 가능' }}</span>
             </div>
 
             <!-- 오른쪽 컬럼 -->
             <div class="grid grid-cols-[100px_auto] gap-y-2 text-sm text-gray-600">
               <span class="text-gray-600">범죄경력</span>
-              <span class="flex items-center gap-2">
+              <span v-if="selectedOffer.status === 'accepted'" class="flex items-center gap-2">
                 <i class="pi pi-file-pdf text-red-500"></i>
                 {{ selectedOffer.candidate.criminalRecordFile?.name || '미제출' }}
               </span>
+              <span v-else>면접 제안 수락 후 확인 가능</span>
+              
               <span class="text-gray-600">한국어능력</span>
               <span>{{ selectedOffer.candidate.koreanProficiency || '미입력' }}</span>
               <span class="text-gray-600">학습기간</span>
