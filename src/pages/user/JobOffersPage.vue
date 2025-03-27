@@ -68,7 +68,7 @@ const mockJobOffers = [
       careers: [
         {
           companyName: '(주)비티포탈',
-          period: '2023.03 - 2024.03',
+          period: '2023.01 - 2024.03',
           jobCategory: { label: 'IT개발·데이터', value: 'it' },
           jobTitle: '프론트엔드 개발자',
           department: '개발팀',
@@ -128,7 +128,7 @@ const mockJobOffers = [
       careers: [
         {
           companyName: '(주)비티포탈',
-          period: '2023.03 - 2024.03',
+          period: '2023.01 - 2024.03',
           jobCategory: { label: 'IT개발·데이터', value: 'it' },
           jobTitle: '프론트엔드 개발자',
           department: '개발팀',
@@ -530,6 +530,26 @@ const formatDate = (dateString) => {
     minute: '2-digit'
   });
 };
+
+// 경력 기간 계산 함수 추가
+const calculatePeriod = (period) => {
+  const [start, end] = period.split(' - ').map(date => {
+    const [year, month] = date.split('.');
+    return new Date(year, month - 1);
+  });
+  
+  const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+  const years = Math.floor(months / 12);
+  const remainingMonths = months % 12;
+  
+  if (years === 0) {
+    return `${remainingMonths}개월`;
+  } else if (remainingMonths === 0) {
+    return `${years}년`;
+  } else {
+    return `${years}년 ${remainingMonths}개월`;
+  }
+};
 </script>
 
 <template>
@@ -674,9 +694,9 @@ const formatDate = (dateString) => {
                   </p>
                 </div>
                 <div class="flex gap-2 justify-end">
-                  <Button label="상세정보보기" class="p-button-outlined" @click.stop="viewOfferDetail(offer)" />
-                  <Button label="수락하기" class="p-button-success" @click.stop="acceptOffer(offer)" />
-                  <Button label="거절하기" class="p-button-danger" @click.stop="rejectOffer(offer)" />
+                  <Button label="상세정보보기" class="p-button-outlined" @click="viewOfferDetail(offer)" />
+                  <Button label="수락하기" class="p-button-success" @click="acceptOffer(offer)" />
+                  <Button label="거절하기" class="p-button-danger" @click="rejectOffer(offer)" />
                 </div>
               </div>
 
@@ -752,21 +772,21 @@ const formatDate = (dateString) => {
                   </div>
 
                   <div class="flex gap-2 justify-end">
-                    <Button label="상세정보보기" class="p-button-outlined" @click.stop="viewOfferDetail(offer)" />
+                    <Button label="상세정보보기" class="p-button-outlined" @click="viewOfferDetail(offer)" />
                     <Button
                       label="일정 수락"
                       severity="success"
-                      @click.stop="acceptInterviewSchedule(offer)"
+                      @click="acceptInterviewSchedule(offer)"
                       :disabled="selectedDateIndices[offer.id] === undefined"
                     />
                     <Button
                       label="면접 거절"
                       severity="danger"
-                      @click.stop="rejectInterviewSchedule(offer)"
+                      @click="rejectInterviewSchedule(offer)"
                     />
                   </div>
                 </div>
-                <div v-else class="space-y-4">
+                <div v-else-if="!offer.interviewConfirmed" class="space-y-4">
                   <div class="bg-yellow-50 p-4 rounded-lg">
                     <p class="text-yellow-700">
                       <i class="pi pi-clock mr-2"></i>
@@ -775,7 +795,7 @@ const formatDate = (dateString) => {
                   </div>
                   <!-- 상세정보보기 버튼 추가 -->
                   <div class="flex gap-2 justify-end">
-                    <Button label="상세정보보기" class="p-button-outlined" @click.stop="viewOfferDetail(offer)" />
+                    <Button label="상세정보보기" class="p-button-outlined" @click="viewOfferDetail(offer)" />
                   </div>
                 </div>
               </div>
@@ -800,7 +820,7 @@ const formatDate = (dateString) => {
                   </div>
                 </div>
                 <div class="flex gap-2 justify-end">
-                  <Button label="상세정보보기" class="p-button-outlined" @click.stop="viewOfferDetail(offer)" />
+                  <Button label="상세정보보기" class="p-button-outlined" @click="viewOfferDetail(offer)" />
                 </div>
               </div>
             </div>
@@ -904,6 +924,11 @@ const formatDate = (dateString) => {
                 회신기한: {{ getDaysUntilDeadline(selectedOffer.deadline) === '마감' ? '마감' : 'D-' + getDaysUntilDeadline(selectedOffer.deadline) }}
               </p>
             </div>
+            <!-- 버튼 추가 -->
+            <div class="flex gap-2 justify-end">
+              <Button label="수락하기" class="p-button-success" @click="acceptOffer(selectedOffer)" />
+              <Button label="거절하기" class="p-button-danger" @click="rejectOffer(selectedOffer)" />
+            </div>
           </div>
 
           <!-- 수락된 경우 -->
@@ -978,18 +1003,25 @@ const formatDate = (dateString) => {
               </div>
 
               <div class="flex gap-2 justify-end">
-                <Button label="상세정보보기" class="p-button-outlined" @click.stop="viewOfferDetail(selectedOffer)" />
                 <Button
                   label="일정 수락"
                   severity="success"
-                  @click.stop="acceptInterviewSchedule(selectedOffer)"
+                  @click="acceptInterviewSchedule(selectedOffer)"
                   :disabled="selectedDateIndices[selectedOffer.id] === undefined"
                 />
                 <Button
                   label="면접 거절"
                   severity="danger"
-                  @click.stop="rejectInterviewSchedule(selectedOffer)"
+                  @click="rejectInterviewSchedule(selectedOffer)"
                 />
+              </div>
+            </div>
+            <div v-else-if="!selectedOffer.interviewConfirmed" class="space-y-4">
+              <div class="bg-yellow-50 p-4 rounded-lg">
+                <p class="text-yellow-700">
+                  <i class="pi pi-clock mr-2"></i>
+                  면접 일정 조율 중입니다. 기업 담당자가 일정을 전달할 예정입니다.
+                </p>
               </div>
             </div>
           </div>
@@ -1043,10 +1075,6 @@ const formatDate = (dateString) => {
                 <span>{{ selectedOffer.resumeSnapshot.basicInfo.email }}</span>
                 <span class="text-gray-500">주소</span>
                 <span>{{ selectedOffer.resumeSnapshot.basicInfo.address }}</span>
-                <span class="text-gray-500">경력</span>
-                <span>{{ selectedOffer.resumeSnapshot.basicInfo.totalCareer }}</span>
-                <span class="text-gray-500">학력</span>
-                <span>{{ selectedOffer.resumeSnapshot.basicInfo.lastEducation }}</span>
               </div>
             </div>
 
@@ -1071,14 +1099,21 @@ const formatDate = (dateString) => {
 
             <!-- 경력 정보 -->
             <div class="bg-gray-50 p-4 rounded-lg">
-              <h5 class="font-medium mb-2">경력 사항</h5>
+              <div class="flex items-center justify-between mb-2">
+                <h5 class="font-medium">경력 사항</h5>
+                <span class="text-sm text-gray-600">총 경력: {{ selectedOffer.resumeSnapshot.basicInfo.totalCareer }}</span>
+              </div>
               <div v-if="selectedOffer.resumeSnapshot.careers?.length > 0">
                 <div v-for="career in selectedOffer.resumeSnapshot.careers" 
                      :key="career.companyName" 
                      class="mb-4 border-b border-gray-200 pb-4 last:border-0 last:pb-0">
                   <div class="space-y-1">
-                    <h6 class="font-medium text-gray-900">{{ career.companyName }}</h6>
-                    <p class="text-sm text-gray-600">{{ career.period }}</p>
+                    <div class="flex items-center gap-2">
+                      <h6 class="font-medium text-gray-900">{{ career.companyName }}</h6>
+                      <span class="text-sm text-gray-600">
+                        ({{ career.period }} · {{ calculatePeriod(career.period) }})
+                      </span>
+                    </div>
                     <p class="text-sm text-gray-600">
                       {{ career.jobCategory?.label || 'IT개발·데이터' }} | {{ career.jobTitle }} | {{ career.department }}
                     </p>
@@ -1092,6 +1127,9 @@ const formatDate = (dateString) => {
             <!-- 학력 정보 -->
             <div class="bg-gray-50 p-4 rounded-lg">
               <h5 class="font-medium mb-2">학력 사항</h5>
+              <p class="text-sm text-gray-600 mb-4" v-if="selectedOffer.resumeSnapshot.educations?.[0]">
+                최종 학력: {{ selectedOffer.resumeSnapshot.educations[0].schoolName }} {{ selectedOffer.resumeSnapshot.educations[0].educationType.name }} {{ selectedOffer.resumeSnapshot.educations[0].isGraduated ? '졸업' : '재학' }}
+              </p>
               <div v-if="selectedOffer.resumeSnapshot.educations?.length > 0">
                 <div v-for="education in selectedOffer.resumeSnapshot.educations" 
                      :key="education.schoolName" 
