@@ -1,62 +1,91 @@
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
-import Select from 'primevue/select';
-import Textarea from 'primevue/textarea';
+import { useAuthStore } from '@/store/auth/authStore';
+import { storeToRefs } from 'pinia';
+import { getCompanyInfo } from '@/apis/owner/ownerApis';
+import { getCodeList } from '@/apis/common/commonApis';
+
+const authStore = useAuthStore();
+const { userInfo } = storeToRefs(authStore);
 
 const router = useRouter();
-const goBack = () => {
-  router.back();
-};
-
-// 기업 정보 데이터
-const companyInfo = ref({
-  companyName: '(주)비티포탈',
-  businessNumber: '123-45-67890',
-  companyType: 'corporation',
-  managerName: '김관리',
-  phoneNumber: '010-1234-5678',
-  email: 'manager@btportal.com',
-  mainBusiness: '',
-  address: ''    // 회사주소
-  // zipCode: '',        // 우편번호
-  // address: '',        // 기본주소
-  // addressDetail: ''   // 상세주소
-});
-
-// 기업 구분 옵션
-const companyTypes = [
-  { label: '법인', value: 'corporation' },
-  { label: '개인', value: 'individual' },
-  { label: '공공기관', value: 'public' }
-];
 
 // 수정 모드 상태
 const isEditing = ref(false);
 
-// 수정된 정보를 임시 저장
-const editedInfo = ref({ ...companyInfo.value });
+// 기업 정보 데이터
+const companyInfo = ref({});
 
-// 수정 모드 토글
-const toggleEdit = () => {
-  if (isEditing.value) {
-    // 수정 완료 시 정보 업데이트
-    companyInfo.value = { ...editedInfo.value };
-    isEditing.value = false;
-  } else {
-    // 수정 모드 시작 시 현재 정보 복사
-    editedInfo.value = { ...companyInfo.value };
-    isEditing.value = true;
-  }
+// 기업 구분 옵션
+const companyTypes = ref([]);
+
+// {
+//   name: '(주)비티포탈',
+//   businessNumber: '123-45-67890',
+//   companyType: 'corporation',
+//   ceoName: '김관리',
+//   phone: '010-1234-5678',
+//   email: 'manager@btportal.com',
+//   mainBusiness: '',
+//   address: '' // 회사주소
+//   // zipCode: '',        // 우편번호
+//   // address: '',        // 기본주소
+//   // addressDetail: ''   // 상세주소
+// }
+
+const goBack = () => {
+  router.back();
 };
 
-// 수정 취소
-const cancelEdit = () => {
-  editedInfo.value = { ...companyInfo.value };
-  isEditing.value = false;
+onMounted(() => {
+  setCompanyType();
+
+  setCompanyInfo();
+});
+
+// 기업 형태 코드 조회
+const setCompanyType = async () => {
+  const response = await getCodeList(`COMPANY_TY`);
+
+  response.map((item) => {
+    companyTypes.value.push({
+      label: item.name,
+      value: item.code
+    });
+  });
 };
+
+// 회사 정보 조회
+const setCompanyInfo = async () => {
+  const response = await getCompanyInfo(userInfo.value.id);
+
+  console.log(response);
+
+  companyInfo.value = { ...response, email: response.user.email };
+};
+
+// // 수정된 정보를 임시 저장
+// const editedInfo = ref({ ...companyInfo.value });
+
+// // 수정 모드 토글
+// const toggleEdit = () => {
+//   if (isEditing.value) {
+//     // 수정 완료 시 정보 업데이트
+//     companyInfo.value = { ...editedInfo.value };
+//     isEditing.value = false;
+//   } else {
+//     // 수정 모드 시작 시 현재 정보 복사
+//     editedInfo.value = { ...companyInfo.value };
+//     isEditing.value = true;
+//   }
+// };
+
+// // 수정 취소
+// const cancelEdit = () => {
+//   editedInfo.value = { ...companyInfo.value };
+//   isEditing.value = false;
+// };
 </script>
 
 <template>
@@ -64,8 +93,10 @@ const cancelEdit = () => {
     <!-- 헤더 -->
     <div class="flex items-center justify-between mb-8">
       <div class="flex items-center gap-4">
-        <i class="pi pi-angle-left text-4xl text-gray-600 cursor-pointer transition-colors hover:text-[#8FA1FF]" 
-          @click="goBack"></i>
+        <i
+          class="pi pi-angle-left text-4xl text-gray-600 cursor-pointer transition-colors hover:text-[#8FA1FF]"
+          @click="goBack"
+        ></i>
         <h1 class="text-3xl font-bold">기업 정보</h1>
       </div>
     </div>
@@ -80,96 +111,118 @@ const cancelEdit = () => {
           <!-- 기업명 -->
           <div class="flex items-center gap-4">
             <i class="pi pi-building"></i>
-            <InputText v-model="editedInfo.companyName" 
+            <InputText
+              v-model="companyInfo.name"
               :disabled="!isEditing"
               placeholder="기업명을 입력해주세요"
-              class="w-full" />
+              class="w-full"
+            />
           </div>
 
           <!-- 사업자등록번호 -->
           <div class="flex items-center gap-4">
             <i class="pi pi-id-card"></i>
-            <InputText v-model="editedInfo.businessNumber" 
+            <InputText
+              v-model="companyInfo.businessNumber"
               :disabled="!isEditing"
               placeholder="사업자등록번호를 입력해주세요"
-              class="w-full" />
+              class="w-full"
+            />
           </div>
 
           <!-- 기업구분 -->
           <div class="flex items-center gap-4">
             <i class="pi pi-briefcase"></i>
-            <Select v-model="editedInfo.companyType" 
-              :options="companyTypes" 
+            <Select
+              v-model="companyInfo.companyType"
+              :options="companyTypes"
               optionLabel="label"
               :disabled="!isEditing"
               placeholder="기업구분을 선택해주세요"
               class="w-full"
               checkmark
-              highlightOnSelect />
+              highlightOnSelect
+            />
           </div>
 
           <!-- 가입자명 -->
           <div class="flex items-center gap-4">
             <i class="pi pi-user"></i>
-            <InputText v-model="editedInfo.managerName" 
+            <InputText
+              v-model="companyInfo.ceoName"
               :disabled="!isEditing"
               placeholder="가입자명을 입력해주세요"
-              class="w-full" />
+              class="w-full"
+            />
           </div>
 
           <!-- 연락처 -->
           <div class="flex items-center gap-4">
             <i class="pi pi-phone"></i>
-            <InputText v-model="editedInfo.phoneNumber" 
+            <InputText
+              v-model="companyInfo.phone"
               :disabled="!isEditing"
               placeholder="연락처를 입력해주세요"
-              class="w-full" />
+              class="w-full"
+            />
           </div>
 
           <!-- 이메일 -->
           <div class="flex items-center gap-4">
             <i class="pi pi-envelope"></i>
-            <InputText v-model="editedInfo.email" 
+            <InputText
+              v-model="companyInfo.email"
               :disabled="!isEditing"
               placeholder="이메일을 입력해주세요"
-              class="w-full" />
+              class="w-full"
+            />
           </div>
 
           <!-- 회사주소 -->
           <div class="flex items-center gap-4">
             <i class="pi pi-map-marker"></i>
-            <InputText v-model="editedInfo.address" 
+            <InputText
+              v-model="companyInfo.address"
               :disabled="!isEditing"
               placeholder="회사주소를 입력해주세요"
-              class="w-full" />
+              class="w-full"
+            />
           </div>
 
           <!-- 주요사업 -->
           <div class="flex items-start gap-4">
             <i class="pi pi-list mt-2"></i>
-            <Textarea v-model="editedInfo.mainBusiness" 
+            <Textarea
+              v-model="companyInfo.content"
               :disabled="!isEditing"
               placeholder="주요사업 내용을 입력해주세요"
               rows="4"
-              class="w-full" />
+              class="w-full"
+            />
           </div>
 
           <!-- 버튼 영역 -->
           <div class="px-8 py-6 bg-gray-50 border-t flex justify-center gap-4">
             <template v-if="isEditing">
-              <Button type="button" 
-                label="취소" 
-                class="p-button-secondary px-6 hover:bg-gray-100" 
-                @click="cancelEdit" />
-              <Button type="submit" 
-                label="저장" 
-                class="p-button-primary px-6 bg-gradient-to-r from-[#8FA1FF] to-[#8B8BF5] border-none hover:bg-gradient-to-r hover:from-[#7B8FFF] hover:to-[#7878F2]" />
+              <Button
+                type="button"
+                label="취소"
+                class="p-button-secondary px-6 hover:bg-gray-100"
+                @click="isEditing = !isEditing"
+              />
+              <Button
+                type="submit"
+                label="저장"
+                class="p-button-primary px-6 bg-gradient-to-r from-[#8FA1FF] to-[#8B8BF5] border-none hover:bg-gradient-to-r hover:from-[#7B8FFF] hover:to-[#7878F2]"
+              />
             </template>
-            <Button v-else 
-              type="button" 
-              label="수정" 
+            <Button
+              v-else
+              type="button"
+              label="수정"
               class="p-button-primary px-6 bg-gradient-to-r from-[#8FA1FF] to-[#8B8BF5] border-none hover:bg-gradient-to-r hover:from-[#7B8FFF] hover:to-[#7878F2]"
-              @click="toggleEdit" />
+              @click="isEditing = !isEditing"
+            />
           </div>
         </form>
       </div>

@@ -5,13 +5,11 @@ import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
 
 import { useMessagePop } from '@/plugins/commonutils';
-import { useUserStore } from '@/store/user/userStore';
-import { fileUpload, getGenderList } from '@/apis/common/commonApis';
+import { fileUpload, getCodeList } from '@/apis/common/commonApis';
 import { getAccount, resetPassword, updateAccount } from '@/apis/auth/authApis';
 
 const router = useRouter();
 const authStore = useAuthStore();
-const userStore = useUserStore();
 const messagePop = useMessagePop();
 
 const { userInfo } = storeToRefs(authStore);
@@ -58,10 +56,10 @@ onMounted(() => {
 
 // 성별 세팅
 const setGenderList = async () => {
-  const response = await getGenderList();
+  const response = await getCodeList(`GENDER_TY`);
 
   response.map((item) => {
-    genders.value.push({ label: `${item.name}성`, value: item.code });
+    genders.value.push({ label: item.name, value: item.code });
   });
 };
 
@@ -72,7 +70,7 @@ const setAccountInfo = async () => {
   basicInfo.value = response;
 
   basicInfo.value.gender = {
-    label: `${basicInfo.value.gender.name}성`,
+    label: basicInfo.value.gender.name,
     value: basicInfo.value.gender.code
   };
 
@@ -142,7 +140,6 @@ const updatePassword = () => {
 };
 
 const cancelEdit = () => {
-  console.log(basicInfo.value.gender);
   messagePop.confirm({
     message: '변경사항이 저장되지 않습니다. 취소하시겠습니까?',
     onCloseYes: () => {
@@ -190,16 +187,15 @@ const saveAll = () => {
   messagePop.confirm({
     message: '변경사항을 저장하시겠습니까?',
     onCloseYes: async () => {
-      let body = { ...basicInfo.value };
+      let body = { ...basicInfo.value, genderCd: basicInfo.value.gender.value };
 
-      console.log(profileRawData.value);
       // 프로필 사진 수정 or 저장
       if (profileRawData.value) {
         const formData = saveImage();
 
         const res = await fileUpload(formData);
 
-        body = { ...basicInfo.value, profileImage: res?.id };
+        body = { ...basicInfo.value, genderCd: basicInfo.value.gender.value, profileImage: res?.id };
       }
 
       const response = await updateAccount(body);
@@ -227,6 +223,7 @@ const formatCurrency = (value) => {
   return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 };
 
+// 프로필 사진 처리
 const handleImageUpload = (event) => {
   profileRawData.value = event.target.files[0];
 
@@ -253,16 +250,11 @@ const handleImageUpload = (event) => {
           onCloseYes: () => {
             const imageUrl = URL.createObjectURL(profileRawData.value);
             profileImage.value = imageUrl;
-            userStore.updateProfileImage(imageUrl); // store 업데이트
-            // TODO: 이미지 업로드 API 호출
           }
         });
       } else {
         const imageUrl = URL.createObjectURL(profileRawData.value);
-        console.log(imageUrl);
         profileImage.value = imageUrl;
-        userStore.updateProfileImage(imageUrl); // store 업데이트
-        // TODO: 이미지 업로드 API 호출
       }
     };
 
@@ -273,7 +265,6 @@ const handleImageUpload = (event) => {
 const removeImage = () => {
   profileImage.value = '';
   profileRawData.value = '';
-  userStore.updateProfileImage(''); // store 업데이트
 };
 
 const handleCriminalRecordUpload = (event) => {
@@ -323,7 +314,7 @@ const removeCriminalRecord = () => {
             <div class="flex items-center gap-4">
               <i class="pi pi-id-card"></i>
               <span class="w-20 text-gray-500">아이디</span>
-              <span>{{ basicInfo.userId }}</span>
+              <span>{{ basicInfo.loginId }}</span>
             </div>
             <div class="flex items-center gap-4">
               <i class="pi pi-lock"></i>

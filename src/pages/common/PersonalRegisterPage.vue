@@ -4,10 +4,12 @@ import { isEmpty } from 'es-toolkit/compat';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 
+import { useMessagePop } from '@/plugins/commonutils';
 import { checkDuplicate, signUpUser } from '@/apis/auth/authApis';
-import { fileUpload, getNationality } from '@/apis/common/commonApis';
+import { fileUpload, getCodeList } from '@/apis/common/commonApis';
 import { useAuthStore } from '@/store/auth/authStore';
 
+const messagePop = useMessagePop();
 const authStore = useAuthStore();
 const { tokenInfo } = storeToRefs(authStore);
 const router = useRouter();
@@ -53,7 +55,7 @@ onMounted(() => {
 });
 
 const getNationList = async () => {
-  const response = await getNationality();
+  const response = await getCodeList(`NATIONALITY_TY`);
 
   response.map((item) => {
     const nation = {
@@ -128,6 +130,7 @@ watch(
   }
 );
 
+// TODO: 테스트용 주석
 watch(pw, (newVal) => {
   if (containsInvalidCharacters(newVal)) {
     pwMessage.value = '사용할 수 없는 특수문자가 포함되어 있습니다.';
@@ -180,10 +183,6 @@ const toggleDetail = (key) => {
 };
 
 const submitForm = async () => {
-  const formData = savePassportImage();
-
-  const response = await fileUpload(formData);
-
   if (
     // 기존 필수 항목들
     !id.value.trim() ||
@@ -208,61 +207,53 @@ const submitForm = async () => {
     return;
   }
 
-  // 여권 유효기간 검사
-  // const today = new Date();
-  // if (new Date(expirationDate.value) <= today) {
-  //   formError.value = '만료된 여권입니다. 유효한 여권을 입력해주세요.';
-  //   return;
-  // }
-
-  // // 발급일이 만료일보다 늦은 경우 체크
-  // if (new Date(issueDate.value) >= new Date(expirationDate.value)) {
-  //   formError.value = '여권 발급일이 만료일보다 늦을 수 없습니다.';
-  //   return;
-  // }
-
-  const body = {
-    user: {
-      loginId: id.value,
-      name: name.value,
-      password: pw.value,
-      // 상단이 필수값
-      profileImage: null,
-      birth: birthdate.value,
-      mobile: null,
-      email: email.value,
-      address: null,
-      genderCd: `GENDER_${gender.value}`
-    },
-    resume: {
-      nationalityCd: nationality.value.value,
-      passport: passportNo.value,
-      passportName: `${passportFirstName.value} ${passportLastName.value}`,
-      passportFirstName: passportFirstName.value,
-      passportLastName: passportLastName.value,
-      passportIssueDt: new Date(issueDate.value).toISOString(),
-      passportExpiryDt: new Date(expirationDate.value).toISOString(),
-      passportCountryCd: issuingCountry.value.value,
-      snsUrl: null,
-      portfolioUrl: null,
-      portfolioFile: null
-    }
-  };
-
-  // const response = await signUpUser(body);
-
   // 여권사진 저장
-  // const fornmData = savePassportImage();
+  const fornmData = savePassportImage();
 
-  // const response = await fileUpload(fornmData);
+  const res = await fileUpload(fornmData);
 
-  // console.log(response);
+  if (res && res.success === undefined) {
+    const body = {
+      user: {
+        loginId: id.value,
+        name: name.value,
+        password: pw.value,
+        // 상단이 필수값
+        profileImage: null,
+        birth: birthdate.value,
+        mobile: null,
+        email: email.value,
+        address: null,
+        genderCd: `GENDER_${gender.value}`
+      },
+      resume: {
+        nationalityCd: nationality.value.value,
+        passport: passportNo.value,
+        passportName: `${passportFirstName.value} ${passportLastName.value}`,
+        passportFirstName: passportFirstName.value,
+        passportLastName: passportLastName.value,
+        passportIssueDt: new Date(issueDate.value).toISOString(),
+        passportExpiryDt: new Date(expirationDate.value).toISOString(),
+        passportCountryCd: issuingCountry.value.value,
+        passportFileId: res.id,
+        snsUrl: null,
+        portfolioUrl: null,
+        portfolioFile: null
+      }
+    };
 
-  // 가입 처리 로직
-  formError.value = '';
-  console.log('가입 성공');
-  // 회원가입 완료 페이지로 이동
-  // router.push('/user/register/complete');
+    const response = await signUpUser(body);
+
+    // 회원가입 완료 페이지로 이동
+    if (response && response.success === undefined) {
+      formError.value = '';
+      router.push('/user/register/complete');
+    } else {
+      messagePop.toast('시스템 오류입니다.', 'error');
+    }
+  } else {
+    messagePop.toast('시스템 오류입니다.', 'error');
+  }
 };
 
 // 이미지 바이너리 변환
@@ -332,10 +323,10 @@ const savePassportImage = () => {
           </div>
           <InputText v-model="name" type="text" placeholder="이름(실명)" class="w-full px-4 py-3" />
           <div class="flex space-x-4">
-            <InputText
+            <InputMask
               v-model="birthdate"
-              type="text"
-              placeholder="생년월일(예시: 20000131)"
+              mask="9999.99.99"
+              placeholder="생년월일(예시: 2000.01.31)"
               class="flex-grow px-4 py-3"
             />
             <div class="flex items-center space-x-2">

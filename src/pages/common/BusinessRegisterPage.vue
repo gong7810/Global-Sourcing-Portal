@@ -1,10 +1,10 @@
 <script setup>
-import { ref, toRaw, watch } from 'vue';
+import { onMounted, ref, toRaw, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { isEmpty } from 'es-toolkit/compat';
 import { useMessagePop } from '@/plugins/commonutils';
-import { checkDuplicate, requestMobile, checkMobile } from '@/apis/auth/authApis';
-import { fileUpload } from '@/apis/common/commonApis';
+import { checkDuplicate, requestMobile, checkMobile, signUpCompany } from '@/apis/auth/authApis';
+import { fileUpload, getCodeList } from '@/apis/common/commonApis';
 
 const messagePop = useMessagePop();
 const router = useRouter();
@@ -17,6 +17,7 @@ const ownerName = ref('');
 const businessAddress = ref('');
 const certificateIssueNo = ref('');
 const certificateNoError = ref('');
+
 const businessId = ref('');
 const idCheckMessage = ref('');
 const idCheckSuccess = ref(false);
@@ -42,18 +43,23 @@ const businessRegistrationFile = ref(null);
 const businessRegistrationFileName = ref('');
 const fileError = ref('');
 
-const businessOptions = [
-  { label: '대기업', value: '대기업' },
-  { label: '대기업 계열사·자회사', value: '대기업 계열사·자회사' },
-  { label: '중소기업(300명이하)', value: '중소기업(300명이하)' },
-  { label: '중견기업(300명이상)', value: '중견기업(300명이상)' },
-  { label: '벤처기업', value: '벤처기업' },
-  { label: '외국계(외국 투자기업)', value: '외국계(외국 투자기업)' },
-  { label: '외국계(외국 법인기업)', value: '외국계(외국 법인기업)' },
-  { label: '국내 공공기관·공기업', value: '국내 공공기관·공기업' },
-  { label: '비영리단체·협회·교육재단', value: '비영리단체·협회·교육재단' },
-  { label: '외국 기관·비영리기구·단체', value: '외국 기관·비영리기구·단체' }
-];
+const businessOptions = ref([]);
+
+onMounted(() => {
+  setCompanyType();
+});
+
+// 기업 형태 코드 조회
+const setCompanyType = async () => {
+  const response = await getCodeList(`COMPANY_TY`);
+
+  response.map((item) => {
+    businessOptions.value.push({
+      label: item.name,
+      value: item.code
+    });
+  });
+};
 
 const isValidBusinessNumber = (number) => {
   const regex = /^\d{3}-\d{2}-\d{5}$/;
@@ -125,21 +131,21 @@ watch(certificateIssueNo, (newVal, oldVal) => {
   }
 });
 
-watch(businessPw, (newVal) => {
-  if (containsInvalidCharacters(newVal)) {
-    pwMessage.value = '사용할 수 없는 특수문자가 포함되어 있습니다.';
-    pwError.value = true;
-  } else if (newVal && !isValidPassword(newVal)) {
-    pwMessage.value = '8~16자의 영문, 숫자, 특수문자 조합으로 입력해 주세요.';
-    pwError.value = true;
-  } else if (newVal) {
-    pwMessage.value = '사용할 수 있는 비밀번호입니다.';
-    pwError.value = false;
-  } else {
-    pwMessage.value = '';
-    pwError.value = false;
-  }
-});
+// watch(businessPw, (newVal) => {
+//   if (containsInvalidCharacters(newVal)) {
+//     pwMessage.value = '사용할 수 없는 특수문자가 포함되어 있습니다.';
+//     pwError.value = true;
+//   } else if (newVal && !isValidPassword(newVal)) {
+//     pwMessage.value = '8~16자의 영문, 숫자, 특수문자 조합으로 입력해 주세요.';
+//     pwError.value = true;
+//   } else if (newVal) {
+//     pwMessage.value = '사용할 수 있는 비밀번호입니다.';
+//     pwError.value = false;
+//   } else {
+//     pwMessage.value = '';
+//     pwError.value = false;
+//   }
+// });
 
 watch(businessPwCheck, (newVal) => {
   if (newVal && newVal !== businessPw.value) {
@@ -314,16 +320,47 @@ const submitForm = async () => {
     formError.value = '모든 필수 항목을 입력하고 체크해주세요.';
     return;
   }
-
-  // const response = await signUpCompany(body);
-
   // 사업자등록증명원 저장
-  // const fornmData = savePassportImage();
+  const fornmData = savePassportImage();
 
-  // const response = await fileUpload(fornmData);
-  // 가입 신청 처리 로직
-  formError.value = '';
-  showCompleteDialog.value = true;
+  const res = await fileUpload(fornmData);
+
+  if (res && res.success === undefined) {
+    const body = {
+      user: {
+        loginId: businessId.value,
+        name: managerName.value,
+        password: businessPw.value,
+        profileImage: null,
+        birth: null,
+        mobile: businessPhoneNo.value,
+        email: businessEmail.value,
+        address: businessAddress.value,
+        genderCd: null
+      },
+      company: {
+        name: businessName.value,
+        businessNumber: businessRegistrationNo.value,
+        companyTypeCd: businessType.value.value,
+        ceoName: managerName.value,
+        address: businessAddress.value,
+        registrationFile: res.id,
+        phone: businessPhoneNo.value
+      }
+    };
+
+    const response = await signUpCompany(body);
+
+    // 회원가입 신청 완료 모달
+    if (response && response.success === undefined) {
+      formError.value = '';
+      showCompleteDialog.value = true;
+    } else {
+      messagePop.toast('시스템 오류입니다.', 'error');
+    }
+  } else {
+    messagePop.toast('시스템 오류입니다.', 'error');
+  }
 };
 
 // 이미지 바이너리 변환
