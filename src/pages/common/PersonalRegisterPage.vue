@@ -2,10 +2,11 @@
 import { onMounted, ref, watch } from 'vue';
 import { isEmpty } from 'es-toolkit/compat';
 import { useRouter } from 'vue-router';
-import { checkDuplicate, getNationality, signUpUser } from '@/apis/auth/authApis';
-import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
-import { fileUpload } from '@/apis/common/commonApis';
+
+import { checkDuplicate, signUpUser } from '@/apis/auth/authApis';
+import { fileUpload, getNationality } from '@/apis/common/commonApis';
+import { useAuthStore } from '@/store/auth/authStore';
 
 const authStore = useAuthStore();
 const { tokenInfo } = storeToRefs(authStore);

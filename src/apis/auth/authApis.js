@@ -49,7 +49,7 @@ export const updateAccount = async (body) => {
   try {
     const response = await api.post('/auth/account', body);
 
-    console.log(response);
+    return response.data;
   } catch (error) {
     console.error(error);
   }
@@ -59,17 +59,6 @@ export const updateAccount = async (body) => {
 export const checkDuplicate = async (loginId) => {
   try {
     const response = await api.get(`/auth/checkDuplicate/${loginId}`);
-
-    return response.data;
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-// 국적 CODE API
-export const getNationality = async () => {
-  try {
-    const response = await api.get('code/active/NATIONALITY_TY');
 
     return response.data;
   } catch (error) {
@@ -134,6 +123,17 @@ export const findId = async (body) => {
 export const findPassword = async (body) => {
   try {
     const response = await api.post('/auth/findPassword', body);
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// 비밀번호 변경 API
+export const resetPassword = async (body) => {
+  try {
+    const response = await api.post('/auth/resetPassword', body);
 
     return response.data;
   } catch (error) {

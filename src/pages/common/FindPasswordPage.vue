@@ -21,18 +21,18 @@ const getPassword = async () => {
   const currentId = activeTab.value === 'personal' ? userId.value : businessId.value;
   const currentName = activeTab.value === 'personal' ? name.value : managerName.value;
   const currentEmail = activeTab.value === 'personal' ? email.value : '';
-  
-  if (currentId && currentName && currentEmail || currentId && currentName && businessRegistrationNo.value) {
+
+  if ((currentId && currentName && currentEmail) || (currentId && currentName && businessRegistrationNo.value)) {
     const body = {
-      isCompany: activeTab.value !== 'personalactiveTab.value  ',
-      loginId: currentId, 
+      isCompany: activeTab.value !== 'personal',
+      loginId: currentId,
       name: currentName,
       email: currentEmail,
       businessNumber: businessRegistrationNo.value
-    }
+    };
 
-    const response = await findPassword(body)
-    
+    const response = await findPassword(body);
+
     if (response && response.success === undefined) {
       messagePop.alert(`입력하신 이메일로 비밀번호 재설정 링크를 발송했습니다.`, 'info');
     } else {
@@ -71,7 +71,7 @@ const getPassword = async () => {
           기업회원
         </button>
       </div>
-      
+
       <div class="space-y-4 mb-6">
         <!-- 개인회원 입력 폼 -->
         <template v-if="activeTab === 'personal'">
@@ -118,13 +118,13 @@ const getPassword = async () => {
         </template>
       </div>
 
-      <Button class="w-full py-3 bt_btn primary" @click="getPassword">
-        비밀번호 찾기
-      </Button>
+      <Button class="w-full py-3 bt_btn primary" @click="getPassword"> 비밀번호 찾기 </Button>
 
       <div class="flex justify-center mt-4">
-        <router-link to="/login" class="text-sm text-gray-500 hover:text-[#8FA1FF]">로그인 페이지로 돌아가기</router-link>
+        <router-link to="/login" class="text-sm text-gray-500 hover:text-[#8FA1FF]"
+          >로그인 페이지로 돌아가기</router-link
+        >
       </div>
     </div>
   </div>
-</template> 
+</template>
