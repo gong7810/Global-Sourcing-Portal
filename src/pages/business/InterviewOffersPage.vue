@@ -39,7 +39,16 @@ const interviewOffers = ref([
         major: '컴퓨터공학과',
         period: '2015.03 - 2019.02',
         description: '컴퓨터공학과 활동'
-      }
+      },
+      criminalRecordFile: {
+        name: '범죄경력확인서.pdf',
+        size: 1024 * 1024,
+        type: 'application/pdf'
+      },
+      koreanProficiency: '고급',
+      koreanStudyDuration: '2년',
+      koreanVisitExperience: '없음',
+      maritalStatus: '미혼'
     },
     position: 'Frontend Developer',
     jobDescription: '웹 서비스 프론트엔드 개발 및 유지보수',
@@ -79,7 +88,16 @@ const interviewOffers = ref([
         major: '소프트웨어공학',
         period: '2016.09 - 2020.06',
         description: '소프트웨어공학 전공'
-      }
+      },
+      criminalRecordFile: {
+        name: '범죄경력확인서.pdf',
+        size: 1024 * 1024,
+        type: 'application/pdf'
+      },
+      koreanProficiency: '고급',
+      koreanStudyDuration: '2년',
+      koreanVisitExperience: '없음',
+      maritalStatus: '미혼'
     },
     position: 'Backend Developer',
     jobDescription: 'REST API 개발 및 서버 관리',
@@ -120,7 +138,16 @@ const interviewOffers = ref([
         major: '정보공학',
         period: '2014.04 - 2018.03',
         description: '정보공학 전공'
-      }
+      },
+      criminalRecordFile: {
+        name: '범죄경력확인서.pdf',
+        size: 1024 * 1024,
+        type: 'application/pdf'
+      },
+      koreanProficiency: '고급',
+      koreanStudyDuration: '2년',
+      koreanVisitExperience: '없음',
+      maritalStatus: '미혼'
     },
     position: 'Frontend Developer',
     jobDescription: '웹 애플리케이션 프론트엔드 개발',
@@ -178,7 +205,16 @@ const interviewOffers = ref([
         major: '정보공학',
         period: '2014.04 - 2018.03',
         description: '정보공학 전공'
-      }
+      },
+      criminalRecordFile: {
+        name: '범죄경력확인서.pdf',
+        size: 1024 * 1024,
+        type: 'application/pdf'
+      },
+      koreanProficiency: '고급',
+      koreanStudyDuration: '2년',
+      koreanVisitExperience: '없음',
+      maritalStatus: '미혼'
     },
     position: 'Full Stack Developer',
     jobDescription: '웹 서비스 풀스택 개발',
@@ -240,7 +276,16 @@ const interviewOffers = ref([
         major: '소프트웨어공학',
         period: '2016.09 - 2020.06',
         description: '소프트웨어공학 전공'
-      }
+      },
+      criminalRecordFile: {
+        name: '범죄경력확인서.pdf',
+        size: 1024 * 1024,
+        type: 'application/pdf'
+      },
+      koreanProficiency: '고급',
+      koreanStudyDuration: '2년',
+      koreanVisitExperience: '없음',
+      maritalStatus: '미혼'
     },
     position: 'Backend Developer',
     jobDescription: '백엔드 서버 개발',
@@ -763,30 +808,38 @@ const calculateTotalCareer = (careerHistory) => {
         <!-- 기본 정보 -->
         <div class="bg-gray-50 p-6 rounded-lg mb-6">
           <h3 class="text-lg font-medium mb-4">기본 정보</h3>
-          <div class="grid grid-cols-2 gap-y-4">
-            <div class="flex gap-8">
-              <span class="text-gray-600 w-20">이름</span>
+          <div class="grid grid-cols-2 gap-x-8">
+            <!-- 왼쪽 컬럼 -->
+            <div class="grid grid-cols-[80px_auto] gap-y-2 text-sm text-gray-600">
+              <span class="text-gray-600">이름</span>
               <span>{{ selectedOffer.candidate.name }}</span>
-            </div>
-            <div class="flex gap-8">
-              <span class="text-gray-600 w-20">생년월일</span>
+              <span class="text-gray-600">생년월일</span>
               <span>{{ selectedOffer.candidate.birth }}</span>
-            </div>
-            <div class="flex gap-8">
-              <span class="text-gray-600 w-20">성별</span>
+              <span class="text-gray-600">성별</span>
               <span>{{ selectedOffer.candidate.gender }}</span>
-            </div>
-            <div class="flex gap-8">
-              <span class="text-gray-600 w-20">휴대폰</span>
+              <span class="text-gray-600">휴대폰</span>
               <span>{{ selectedOffer.candidate.phone }}</span>
-            </div>
-            <div class="flex gap-8">
-              <span class="text-gray-600 w-20">이메일</span>
+              <span class="text-gray-600">이메일</span>
               <span>{{ selectedOffer.candidate.email }}</span>
-            </div>
-            <div class="flex gap-8">
-              <span class="text-gray-600 w-20">주소</span>
+              <span class="text-gray-600">주소</span>
               <span>{{ selectedOffer.candidate.address }}</span>
+            </div>
+
+            <!-- 오른쪽 컬럼 -->
+            <div class="grid grid-cols-[100px_auto] gap-y-2 text-sm text-gray-600">
+              <span class="text-gray-600">범죄경력</span>
+              <span class="flex items-center gap-2">
+                <i class="pi pi-file-pdf text-red-500"></i>
+                {{ selectedOffer.candidate.criminalRecordFile?.name || '미제출' }}
+              </span>
+              <span class="text-gray-600">한국어능력</span>
+              <span>{{ selectedOffer.candidate.koreanProficiency || '미입력' }}</span>
+              <span class="text-gray-600">학습기간</span>
+              <span>{{ selectedOffer.candidate.koreanStudyDuration || '미입력' }}</span>
+              <span class="text-gray-600">한국방문경험</span>
+              <span>{{ selectedOffer.candidate.koreanVisitExperience || '미입력' }}</span>
+              <span class="text-gray-600">혼인여부</span>
+              <span>{{ selectedOffer.candidate.maritalStatus || '미입력' }}</span>
             </div>
           </div>
         </div>

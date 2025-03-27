@@ -50,7 +50,16 @@ const interviewResults = ref([
         major: '컴퓨터공학과',
         period: '2015.03 - 2019.02',
         description: '컴퓨터공학과 활동'
-      }
+      },
+      criminalRecordFile: {
+        name: '범죄경력확인서.pdf',
+        size: 1024 * 1024,
+        type: 'application/pdf'
+      },
+      koreanProficiency: '고급',
+      koreanStudyDuration: '2년',
+      koreanVisitExperience: '없음',
+      maritalStatus: '미혼'
     },
     jobCategory: { label: 'IT개발·데이터', value: 'it' },
     position: 'Frontend Developer',
@@ -93,7 +102,16 @@ const interviewResults = ref([
         major: '소프트웨어공학',
         period: '2016.09 - 2020.08',
         description: '학점 3.8/4.0\n클라우드 컴퓨팅 연구실 인턴\n교내 프로그래밍 대회 2위'
-      }
+      },
+      criminalRecordFile: {
+        name: '범죄경력확인서.pdf',
+        size: 1024 * 1024,
+        type: 'application/pdf'
+      },
+      koreanProficiency: '중급',
+      koreanStudyDuration: '1년',
+      koreanVisitExperience: '없음',
+      maritalStatus: '미혼'
     },
     jobCategory: { label: 'IT개발·데이터', value: 'it' },
     position: 'Backend Developer',
@@ -533,31 +551,39 @@ const calculateTotalCareer = (careerHistory) => {
     >
       <div v-if="selectedDetailInterview" class="p-4">
         <div class="bg-gray-50 p-6 rounded-lg mb-6">
-          <h3 class="text-lg font-bold mb-4">기본 정보</h3>
-          <div class="grid grid-cols-2 gap-y-4">
-            <div class="flex gap-8">
-              <span class="text-gray-600 w-20">이름</span>
+          <h3 class="text-lg font-medium mb-4">기본 정보</h3>
+          <div class="grid grid-cols-2 gap-x-8">
+            <!-- 왼쪽 컬럼 -->
+            <div class="grid grid-cols-[80px_auto] gap-y-2 text-sm text-gray-600">
+              <span class="text-gray-600">이름</span>
               <span>{{ selectedDetailInterview.candidate.name }}</span>
+              <span class="text-gray-600">생년월일</span>
+              <span>{{ selectedDetailInterview.candidate.birth }}</span>
+              <span class="text-gray-600">성별</span>
+              <span>{{ selectedDetailInterview.candidate.gender }}</span>
+              <span class="text-gray-600">휴대폰</span>
+              <span>{{ selectedDetailInterview.candidate.phone }}</span>
+              <span class="text-gray-600">이메일</span>
+              <span>{{ selectedDetailInterview.candidate.email }}</span>
+              <span class="text-gray-600">주소</span>
+              <span>{{ selectedDetailInterview.candidate.address }}</span>
             </div>
-            <div class="flex gap-8">
-              <span class="text-gray-600 w-20">생년월일</span>
-              <span>{{ selectedDetailInterview.candidate.birth || '-' }}</span>
-            </div>
-            <div class="flex gap-8">
-              <span class="text-gray-600 w-20">성별</span>
-              <span>{{ selectedDetailInterview.candidate.gender || '-' }}</span>
-            </div>
-            <div class="flex gap-8">
-              <span class="text-gray-600 w-20">휴대폰</span>
-              <span>{{ selectedDetailInterview.candidate.phone || '-' }}</span>
-            </div>
-            <div class="flex gap-8">
-              <span class="text-gray-600 w-20">이메일</span>
-              <span>{{ selectedDetailInterview.candidate.email || '-' }}</span>
-            </div>
-            <div class="flex gap-8">
-              <span class="text-gray-600 w-20">주소</span>
-              <span>{{ selectedDetailInterview.candidate.address || '-' }}</span>
+
+            <!-- 오른쪽 컬럼 -->
+            <div class="grid grid-cols-[100px_auto] gap-y-2 text-sm text-gray-600">
+              <span class="text-gray-600">범죄경력</span>
+              <span class="flex items-center gap-2">
+                <i class="pi pi-file-pdf text-red-500"></i>
+                {{ selectedDetailInterview.candidate.criminalRecordFile?.name || '미제출' }}
+              </span>
+              <span class="text-gray-600">한국어능력</span>
+              <span>{{ selectedDetailInterview.candidate.koreanProficiency || '미입력' }}</span>
+              <span class="text-gray-600">학습기간</span>
+              <span>{{ selectedDetailInterview.candidate.koreanStudyDuration || '미입력' }}</span>
+              <span class="text-gray-600">한국방문경험</span>
+              <span>{{ selectedDetailInterview.candidate.koreanVisitExperience || '미입력' }}</span>
+              <span class="text-gray-600">혼인여부</span>
+              <span>{{ selectedDetailInterview.candidate.maritalStatus || '미입력' }}</span>
             </div>
           </div>
         </div>
