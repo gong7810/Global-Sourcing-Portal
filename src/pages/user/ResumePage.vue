@@ -32,9 +32,18 @@ const basicInfo = ref({
   gender: '여성',
   email: 'yeji@naver.com',
   phone: '010-1234-7496',
-  address: '윙스타워 505호',
+  address: '505호',
   totalCareer: '5년',
-  lastEducation: '대학교(4년) 졸업'
+  lastEducation: '대학교(4년) 졸업',
+  criminalRecordFile: {  // 파일 정보로 변경
+    name: '범죄경력증명서.pdf',
+    size: 1024 * 1024,
+    type: 'application/pdf'
+  },
+  koreanVisitExperience: '없음',
+  maritalStatus: '미혼',
+  koreanProficiency: '고급',
+  koreanStudyDuration: '2년',
 });
 
 // 국가/비자 정보 관련 상태
@@ -114,17 +123,67 @@ const educationList = ref([
 // basicInfo는 그대로 두고, 프로필 이미지만 computed로 관리
 const profileImage = computed(() => userStore.profileImage || '/default-profile.png');
 
-onMounted(() => {
-  // TODO: 이력서 정보 조회 api
-  // const body = {
-  //   id: user.id,
-  // }
-  // visibilityType.value = response.visibility;
-  // basicInfo.value = response.basicInfo;
-  // nationalityInfo.value = response.country;
-  // passportInfo.value = response.passportInfo;
-  // careerList.value = response.careerInfoList;
-  // educationList.value = response.educationInfoList;
+// 필수 기본정보 체크 함수 추가
+const checkRequiredInfo = () => {
+  const requiredFields = {
+    name: { value: basicInfo.value.name, label: '이름' },
+    birthDate: { value: basicInfo.value.birthDate, label: '생년월일' },
+    gender: { value: basicInfo.value.gender, label: '성별' },
+    email: { value: basicInfo.value.email, label: '이메일' },
+    phone: { value: basicInfo.value.phone, label: '전화번호' },
+    address: { value: basicInfo.value.address, label: '주소' },
+    criminalRecordFile: { value: basicInfo.value.criminalRecordFile, label: '범죄경력확인서' }
+  };
+
+  const missingFields = Object.entries(requiredFields)
+    .filter(([_, field]) => !field.value)
+    .map(([_, field]) => field.label);
+
+  if (missingFields.length > 0) {
+    messagePop.confirm({
+      message: `필수 정보(${missingFields.join(', ')})가 누락되었습니다.\n기본정보를 입력하시겠습니까?`,
+      onCloseYes: () => {
+        router.push('/user/userPage');
+      }
+    });
+    return false;
+  }
+  return true;
+};
+
+// onMounted 훅 수정
+onMounted(async () => {
+  try {
+    // 이력서 정보 조회
+    await getResume();
+    
+    // 페이지 진입 시 필수 정보 체크
+    const requiredFields = {
+      name: { value: basicInfo.value.name, label: '이름' },
+      birthDate: { value: basicInfo.value.birthDate, label: '생년월일' },
+      gender: { value: basicInfo.value.gender, label: '성별' },
+      email: { value: basicInfo.value.email, label: '이메일' },
+      phone: { value: basicInfo.value.phone, label: '전화번호' },
+      address: { value: basicInfo.value.address, label: '주소' },
+      criminalRecordFile: { value: basicInfo.value.criminalRecordFile, label: '범죄경력확인서' }
+    };
+
+    const missingFields = Object.entries(requiredFields)
+      .filter(([_, field]) => !field.value)
+      .map(([_, field]) => field.label);
+
+    if (missingFields.length > 0) {
+      messagePop.confirm({
+        message: `필수 정보(${missingFields.join(', ')})가 누락되었습니다.\n저장하기 전에 기본정보를 입력해주세요.`,
+        onCloseYes: () => {
+          router.push('/user/userPage');
+        }
+      });
+    }
+  } catch (error) {
+    console.error('이력서 정보 조회 중 오류:', error);
+    messagePop.alert('이력서 정보 조회 중 오류가 발생했습니다.');
+  }
 });
 
 // 경력 정보 관련 상태
@@ -208,10 +267,6 @@ const navigateToSection = (section) => {
     router.push(section.route);
   }
 };
-
-onMounted(() => {
-  getResume();
-});
 
 const calculateTotalCareer = (careerList) => {
   // 모든 경력 기간을 합산하는 로직
@@ -496,25 +551,8 @@ const visibilityOptions = [
 
 // 저장 버튼 클릭 시 실행되는 함수
 const saveResume = () => {
-  // 1. 기본 정보 필수값 검증만 남기고
-  if (!basicInfo.value.name) {
-    messagePop.toast('이름을 입력해주세요.', 'warn');
-    return;
-  }
-  if (!basicInfo.value.birthDate) {
-    messagePop.toast('생년월일을 입력해주세요.', 'warn');
-    return;
-  }
-  if (!basicInfo.value.phone) {
-    messagePop.toast('연락처를 입력해주세요.', 'warn');
-    return;
-  }
-  if (!basicInfo.value.email) {
-    messagePop.toast('이메일을 입력해주세요.', 'warn');
-    return;
-  }
-  if (!basicInfo.value.address) {
-    messagePop.toast('주소를 입력해주세요.', 'warn');
+  // 저장 전 필수 정보 체크
+  if (!checkRequiredInfo()) {
     return;
   }
 
@@ -523,6 +561,7 @@ const saveResume = () => {
     message: '이력서를 저장하시겠습니까?',
     onCloseYes: async () => {
       try {
+        // TODO: 이력서 저장 API 호출
         messagePop.toast('이력서가 저장되었습니다.', 'success');
       } catch (error) {
         console.error('이력서 저장 중 오류:', error);
@@ -693,13 +732,53 @@ const handleEducationFileUpload = (event) => {
               </div>
 
               <!-- 연락처 정보 그룹 -->
-              <div class="grid grid-cols-[80px_auto] gap-y-2">
-                <span class="text-gray-500">휴대폰</span>
-                <span>{{ basicInfo.phone }}</span>
-                <span class="text-gray-500">이메일</span>
-                <span class="notranslate">{{ basicInfo.email }}</span>
-                <span class="text-gray-500">주소</span>
-                <span>{{ basicInfo.address }}</span>
+              <div class="grid grid-cols-2 gap-x-8 gap-y-2">
+                <!-- 1행: 휴대폰, 한국어실력 -->
+                <div class="grid grid-cols-[120px_auto]">
+                  <span class="text-gray-500">휴대폰</span>
+                  <span>{{ basicInfo.phone }}</span>
+                </div>
+                <div class="grid grid-cols-[120px_auto]">
+                  <span class="text-gray-500">한국어 실력</span>
+                  <span>{{ basicInfo.koreanProficiency }}</span>
+                </div>
+                
+                <!-- 2행: 이메일, 한국어학습기간 -->
+                <div class="grid grid-cols-[120px_auto]">
+                  <span class="text-gray-500">이메일</span>
+                  <span class="notranslate">{{ basicInfo.email }}</span>
+                </div>
+                <div class="grid grid-cols-[120px_auto]">
+                  <span class="text-gray-500">한국어 학습기간</span>
+                  <span>{{ basicInfo.koreanStudyDuration }}</span>
+                </div>
+                
+                <!-- 3행: 주소, 한국방문경험 -->
+                <div class="grid grid-cols-[120px_auto]">
+                  <span class="text-gray-500">주소</span>
+                  <span>{{ basicInfo.address }}</span>
+                </div>
+                <template v-if="basicInfo.koreanVisitExperience">
+                  <div class="grid grid-cols-[120px_auto]">
+                    <span class="text-gray-500">한국방문경험</span>
+                    <span>{{ basicInfo.koreanVisitExperience }}</span>
+                  </div>
+                </template>
+                
+                <!-- 4행: 범죄경력, 혼인사항 -->
+                <div class="grid grid-cols-[120px_auto]">
+                  <span class="text-gray-500">범죄경력</span>
+                  <span class="flex items-center gap-2">
+                    <i class="pi pi-file-pdf text-red-500"></i>
+                    <span>{{ basicInfo.criminalRecordFile.name }}</span>
+                  </span>
+                </div>
+                <template v-if="basicInfo.maritalStatus">
+                  <div class="grid grid-cols-[120px_auto]">
+                    <span class="text-gray-500">혼인사항</span>
+                    <span>{{ basicInfo.maritalStatus }}</span>
+                  </div>
+                </template>
               </div>
             </div>
 
