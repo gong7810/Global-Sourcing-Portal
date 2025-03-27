@@ -394,7 +394,7 @@ const removeCriminalRecord = () => {
                   </label>
                   <DatePicker
                     v-model="basicInfo.birth"
-                    dateFormat="yymmdd"
+                    dateFormat="yy.mm.dd"
                     placeholder="생년월일을 선택해주세요"
                     class="w-32"
                   />
