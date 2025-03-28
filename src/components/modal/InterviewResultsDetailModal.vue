@@ -1,6 +1,6 @@
 <script setup>
 import Dialog from 'primevue/dialog';
-import { defineProps, defineEmits } from 'vue';
+import { defineProps, defineEmits, ref } from 'vue';
 
 const props = defineProps({
   visible: {
@@ -68,7 +68,7 @@ const calculateCareerPeriod = (period) => {
   const endDate = end === '현재' ? new Date() : new Date(end.replace('.', '-'));
   
   const monthDiff = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
-                   (endDate.getMonth() - startDate.getMonth());
+                  (endDate.getMonth() - startDate.getMonth());
   
   if (monthDiff >= 12) {
     const years = Math.floor(monthDiff / 12);
@@ -103,6 +103,169 @@ const calculateTotalCareer = (careerHistory) => {
   
   return `${totalMonths}개월`;
 };
+
+// 이력서 출력 함수
+const printResume = () => {
+  const printWindow = window.open('', '_blank');
+  
+  // 스타일 정의
+  const styles = `
+    <style>
+      @media print {
+        @page {
+          size: A4;
+          margin: 0;
+        }
+        body {
+          margin: 24px;
+        }
+        .page-break {
+          page-break-before: always;
+        }
+      }
+      .resume-container {
+        font-family: Arial;
+        max-width: 800px;
+        margin: auto;
+        padding: 24px;
+        font-size: 11px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 0.5rem;
+      }
+      th, td {
+        border: 1px solid #333;
+        padding: 4px 6px;
+        text-align: left;
+        vertical-align: top;
+        font-size: 11px;
+      }
+      th {
+        background-color: #f0f0f0;
+        width: 20%;
+      }
+      .mb-4 { margin-bottom: 1rem; }
+      .mb-2 { margin-bottom: 0.5rem; }
+      .whitespace-pre-line { white-space: pre-line; }
+    </style>
+  `;
+
+  // 이력서 내용 생성
+  const resumeContent = `
+    <div class="resume-container">
+      <h1 style="text-align: center; font-size: 16px; font-weight: bold; margin-bottom: 1rem;">이력서</h1>
+
+      <!-- 프로필 사진 및 기본 정보 -->
+      <section class="mb-4">
+        <div style="display: flex; gap: 1rem; margin-bottom: 0.5rem;">
+          <div style="width: 112px; height: 144px; border: 1px solid #ccc; overflow: hidden;">
+            <img src="${props.interview?.candidate.profileImage?.url || '/default-profile.jpg'}" 
+                alt="프로필 사진" 
+                style="width: 100%; height: 100%; object-fit: cover;" />
+          </div>
+          <div style="flex: 1;">
+            <table>
+              <tr><th>성명</th><td>${props.interview?.candidate.name}</td><th>국적</th><td>${props.interview?.candidate.nationality}</td></tr>
+              <tr><th>생년월일</th><td>${props.interview?.candidate.birth}</td><th>성별</th><td>${props.interview?.candidate.gender}</td></tr>
+              <tr><th>연락처</th><td colspan="3">${props.interview?.candidate.phone}</td></tr>
+              <tr><th>이메일</th><td colspan="3">${props.interview?.candidate.email}</td></tr>
+              <tr><th>주소</th><td colspan="3">${props.interview?.candidate.address}</td></tr>
+              <tr><th>여권번호</th><td colspan="3">${props.interview?.candidate.visaInfo?.type || '-'}</td></tr>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 기타 사항 -->
+      <section class="mb-4">
+        <table>
+          <tr><th>범죄 여부</th><td colspan="3">${props.interview?.candidate.hasCriminalRecord ? '있음' : '없음'}</td></tr>
+          <tr><th>한국어 능력</th><td>${props.interview?.candidate.koreanProficiency || '-'}</td><th>공부 기간</th><td>${props.interview?.candidate.koreanStudyDuration || '-'}</td></tr>
+          <tr><th>한국 방문 경험</th><td>${props.interview?.candidate.koreanVisitExperience || '-'}</td><th>혼인 사항</th><td>${props.interview?.candidate.maritalStatus || '-'}</td></tr>
+        </table>
+      </section>
+
+      <!-- 학력 사항 -->
+      <section class="mb-4">
+        <table>
+          <tr><th colspan="4" style="text-align: center; background-color: #e5e5e5;">학력</th></tr>
+          <tr><th>최종학력</th><td colspan="3" style="font-weight: bold;">${props.interview?.candidate.education?.[0]?.school} (${props.interview?.candidate.education?.[0]?.degree})</td></tr>
+        </table>
+        ${props.interview?.candidate.education?.map((edu, index) => `
+          <div class="mb-2">
+            <table>
+              <tr><th>학교명</th><td>${edu.school || '-'}</td><th>학위</th><td>${edu.degree || '-'}</td></tr>
+              <tr><th>전공</th><td>${edu.major || '-'}</td><th>재학 기간</th><td>${edu.period || '-'}</td></tr>
+            </table>
+          </div>
+        `).join('')}
+      </section>
+
+      <!-- 경력 사항 -->
+      <section class="mb-4">
+        <table>
+          <tr><th colspan="4" style="text-align: center; background-color: #e5e5e5;">경력</th></tr>
+          <tr><th>총 경력</th><td colspan="3" style="font-weight: bold;">${calculateTotalCareer(props.interview?.candidate.careerHistory)}</td></tr>
+        </table>
+        ${props.interview?.candidate.careerHistory?.map(career => `
+          <div class="mb-2">
+            <table>
+              <tr><th>회사명</th><td>${career.company}</td><th>근무 기간</th><td>${career.period}</td></tr>
+              <tr><th>직무</th><td colspan="3">${career.position}</td></tr>
+              <tr><th>업무 설명</th><td colspan="3" class="whitespace-pre-line">${career.description || '-'}</td></tr>
+              <tr><th>근무 기간(계산)</th><td colspan="3">${calculateCareerPeriod(career.period)}</td></tr>
+            </table>
+          </div>
+        `).join('') || '<p style="text-align: center; color: #666;">등록된 경력 사항이 없습니다</p>'}
+      </section>
+
+      <!-- 자격증 사항 -->
+      <section class="mb-4">
+        <table>
+          <tr><th colspan="4" style="text-align: center; background-color: #e5e5e5;">자격증</th></tr>
+        </table>
+        ${props.interview?.candidate.certificates?.map(cert => `
+          <div class="mb-2">
+            <table>
+              <tr><th>자격증명</th><td colspan="3">${cert.name || '-'}</td></tr>
+              <tr><th>취득일</th><td colspan="3">${cert.issuedDate || '-'}</td></tr>
+            </table>
+          </div>
+        `).join('') || '<p style="text-align: center; color: #666;">등록된 자격증이 없습니다</p>'}
+      </section>
+
+      <p style="font-size: 10px; text-align: right; color: #999; margin-top: 1.5rem;">
+        <!-- 출력일: ${new Date().toLocaleDateString()} -->
+        생성일: ${new Date().toLocaleDateString()}
+      </p>
+    </div>
+  `;
+
+  const printContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>이력서 출력</title>
+        ${styles}
+      </head>
+      <body>
+        ${resumeContent}
+      </body>
+    </html>
+  `;
+
+  printWindow.document.write(printContent);
+  printWindow.document.close();
+  
+  printWindow.onload = function() {
+    printWindow.print();
+    printWindow.onafterprint = function() {
+      printWindow.close();
+    };
+  };
+};
 </script>
 
 <template>
@@ -110,11 +273,23 @@ const calculateTotalCareer = (careerHistory) => {
     :visible="visible"
     modal
     :style="{ width: '80vw', maxHeight: '90vh' }"
-    :header="'제안 당시 이력서 정보'"
     :closable="true"
     :closeOnEscape="true"
     @update:visible="emit('update:visible', $event)"
   >
+    <template #header>
+      <div class="flex items-center justify-between w-full pr-8">
+        <h2 class="text-xl font-bold">제안 당시 이력서 정보</h2>
+        <button
+          @click="printResume"
+          class="flex items-center gap-2 px-4 py-2 bg-[#8B8BF5] text-white rounded hover:bg-[#7A7AE6] transition-colors"
+        >
+          <i class="pi pi-print"></i>
+          <span>이력서 출력</span>
+        </button>
+      </div>
+    </template>
+
     <div v-if="interview" class="p-4">
       <div class="bg-gray-50 p-6 rounded-lg mb-6">
         <h3 class="text-lg font-medium mb-4">기본 정보</h3>
