@@ -207,7 +207,6 @@ const changeLanguage = async () => {
   const translateElement = document.getElementById('google_translate_element');
   const selectElement = translateElement?.querySelector('.goog-te-combo');
 
-  console.log(selectElement);
   if (selectElement) {
     if (selectedLanguage.value === 'ko') {
       // 한국어로 변경 시 번역을 취소하고 원본으로 복원
