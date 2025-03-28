@@ -14,7 +14,10 @@ const messagePop = useMessagePop();
 
 const { userInfo } = storeToRefs(authStore);
 
-const basicInfo = ref({});
+const basicInfo = ref({
+  hasCriminalRecord: null,
+  criminalRecordFile: null
+});
 // {
 //   name: '최예지',
 //   birth: '1996.09.01',
@@ -34,7 +37,6 @@ const genders = ref([]);
 
 const profileImage = ref(null);
 const profileRawData = ref();
-const criminalRecordFile = ref(null);
 
 const maritalStatuses = [
   { label: '미혼', value: 'single' },
@@ -46,6 +48,12 @@ const koreanLevels = [
   { label: '중급', value: 'intermediate' },
   { label: '고급', value: 'advanced' },
   { label: '원어민 수준', value: 'native' }
+];
+
+// 범죄경력 옵션 추가
+const criminalRecordOptions = [
+  { label: '없음', value: false },
+  { label: '있음', value: true }
 ];
 
 onMounted(() => {
@@ -369,128 +377,161 @@ const removeCriminalRecord = () => {
             </div>
           </div>
           <div class="space-y-4 text-gray-600">
-            <div class="flex items-center gap-4">
-              <i class="pi pi-user"></i>
-              <div class="flex-grow">
-                <label class="flex items-center gap-1 mb-1 text-sm"> 이름 <span class="text-red-500">*</span> </label>
-                <InputText v-model="basicInfo.name" placeholder="이름을 입력해주세요" class="w-full" />
+            <div class="flex-grow">
+              <div class="flex items-center gap-2 mb-1">
+                <i class="pi pi-user"></i>
+                <label class="text-sm"> 이름 <span class="text-red-500">*</span> </label>
               </div>
+              <InputText v-model="basicInfo.name" placeholder="이름을 입력해주세요" class="w-full" />
             </div>
-            <div class="flex items-center gap-4">
-              <i class="pi pi-calendar"></i>
-              <div class="flex gap-4">
-                <div>
-                  <label class="flex items-center gap-1 mb-1 text-sm">
-                    생년월일 <span class="text-red-500">*</span>
-                  </label>
-                  <DatePicker
-                    v-model="basicInfo.birth"
-                    dateFormat="yy.mm.dd"
-                    placeholder="생년월일을 선택해주세요"
-                    class="w-32"
-                  />
+
+            <div class="flex gap-4">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <i class="pi pi-calendar"></i>
+                  <label class="text-sm">생년월일 <span class="text-red-500">*</span></label>
                 </div>
-                <div>
-                  <label class="flex items-center gap-1 mb-1 text-sm"> 성별 <span class="text-red-500">*</span> </label>
-                  <Select
-                    class="w-32"
-                    v-model="basicInfo.gender"
-                    :options="genders"
-                    optionLabel="label"
-                    placeholder="성별"
-                    checkmark
-                    highlightOnSelect
-                  />
-                </div>
-              </div>
-            </div>
-            <div class="flex items-center gap-4">
-              <i class="pi pi-envelope"></i>
-              <div class="flex-grow">
-                <label class="flex items-center gap-1 mb-1 text-sm"> 이메일 <span class="text-red-500">*</span> </label>
-                <InputText v-model="basicInfo.email" placeholder="이메일을 입력해주세요" class="w-full notranslate" />
-              </div>
-            </div>
-            <div class="flex items-center gap-4">
-              <i class="pi pi-phone"></i>
-              <div class="flex-grow">
-                <label class="flex items-center gap-1 mb-1 text-sm">
-                  전화번호 <span class="text-red-500">*</span>
-                </label>
-                <InputText v-model="basicInfo.mobile" placeholder="전화번호를 입력해주세요" class="w-full" />
-              </div>
-            </div>
-            <div class="flex items-center gap-4">
-              <i class="pi pi-map-marker"></i>
-              <div class="flex-grow">
-                <label class="flex items-center gap-1 mb-1 text-sm"> 주소 <span class="text-red-500">*</span> </label>
-                <InputText v-model="basicInfo.address" placeholder="주소를 입력해주세요" class="w-full" />
-              </div>
-            </div>
-            <div class="flex items-center gap-4">
-              <i class="pi pi-file"></i>
-              <div class="flex-grow">
-                <label class="flex items-center gap-1 mb-1 text-sm">
-                  범죄경력 확인서 <span class="text-red-500">*</span>
-                </label>
-                <div class="border rounded-lg p-4">
-                  <div v-if="!basicInfo.criminalRecordFile" class="flex flex-col items-center gap-2">
-                    <label class="cursor-pointer text-center">
-                      <input type="file" accept=".pdf,image/*" class="hidden" @change="handleCriminalRecordUpload" />
-                      <i class="pi pi-upload text-2xl text-gray-400"></i>
-                      <p class="text-sm text-gray-600">클릭하여 파일 업로드</p>
-                      <p class="text-xs text-gray-400">(신원조회서, 범죄경력회보서, 범죄경력 사실 없음 확인서 등)</p>
-                    </label>
-                  </div>
-                  <div v-else class="flex items-center justify-between">
-                    <span class="text-sm text-gray-600">{{ basicInfo.criminalRecordFile.name }}</span>
-                    <button @click="removeCriminalRecord" class="text-red-500 hover:text-red-600">
-                      <i class="pi pi-times"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="flex items-center gap-4">
-              <i class="pi pi-globe"></i>
-              <div class="flex-grow">
-                <label class="mb-1 text-sm">한국 방문 경험</label>
-                <div class="flex items-center gap-2">
-                  <Checkbox v-model="basicInfo.visitedKorea" :binary="true" />
-                  <span>한국에 방문한 적이 있습니다.</span>
-                </div>
-              </div>
-            </div>
-            <div class="flex items-center gap-4">
-              <i class="pi pi-heart"></i>
-              <div class="flex-grow">
-                <label class="mb-1 text-sm">혼인사항</label>
-                <Select
-                  v-model="basicInfo.maritalStatus"
-                  :options="maritalStatuses"
-                  optionLabel="label"
-                  placeholder="혼인사항 선택"
+                <DatePicker
+                  v-model="basicInfo.birth"
+                  dateFormat="yy.mm.dd"
+                  placeholder="생년월일을 선택해주세요"
                   class="w-full"
                 />
               </div>
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <i class="pi pi-user"></i>
+                  <label class="text-sm">성별 <span class="text-red-500">*</span></label>
+                </div>
+                <Select
+                  class="w-full"
+                  v-model="basicInfo.gender"
+                  :options="genders"
+                  optionLabel="label"
+                  placeholder="성별"
+                  checkmark
+                  highlightOnSelect
+                />
+              </div>
             </div>
-            <div class="flex items-center gap-4">
-              <i class="pi pi-comment"></i>
-              <div class="flex gap-4 flex-grow">
-                <div class="flex-1">
-                  <label class="mb-1 text-sm">한국어 실력</label>
-                  <Select
-                    v-model="basicInfo.koreanLevel"
-                    :options="koreanLevels"
-                    optionLabel="label"
-                    placeholder="한국어 실력 선택"
-                    class="w-full"
+
+            <div class="flex-grow">
+              <div class="flex items-center gap-2 mb-1">
+                <i class="pi pi-envelope"></i>
+                <label class="text-sm">이메일 <span class="text-red-500">*</span></label>
+              </div>
+              <InputText v-model="basicInfo.email" placeholder="이메일을 입력해주세요" class="w-full notranslate" />
+            </div>
+
+            <div class="flex-grow">
+              <div class="flex items-center gap-2 mb-1">
+                <i class="pi pi-phone"></i>
+                <label class="text-sm">전화번호 <span class="text-red-500">*</span></label>
+              </div>
+              <InputText v-model="basicInfo.mobile" placeholder="전화번호를 입력해주세요" class="w-full" />
+            </div>
+
+            <div class="flex-grow">
+              <div class="flex items-center gap-2 mb-1">
+                <i class="pi pi-map-marker"></i>
+                <label class="text-sm">주소 <span class="text-red-500">*</span></label>
+              </div>
+              <InputText v-model="basicInfo.address" placeholder="주소를 입력해주세요" class="w-full" />
+            </div>
+
+            <div class="flex-grow">
+              <div class="flex items-center gap-2 mb-1">
+                <i class="pi pi-file"></i>
+                <label class="text-sm">범죄 여부<span class="text-red-500">*</span></label>
+              </div>
+              <!-- 범죄 여부 선택 -->
+              <div class="flex gap-4 mb-3">
+                <div v-for="option in criminalRecordOptions" :key="option.value" class="flex items-center gap-2">
+                  <RadioButton 
+                    v-model="basicInfo.hasCriminalRecord" 
+                    :value="option.value" 
+                    :inputId="'criminalRecord_' + option.value"
                   />
+                  <label :for="'criminalRecord_' + option.value">{{ option.label }}</label>
+              </div>
+            </div>
+
+              <!-- 필요 서류 안내 -->
+              <div class="bg-gray-50 p-3 rounded-lg text-sm text-gray-600 mb-3">
+                <p class="font-medium mb-2">제출 가능한 서류:</p>
+                <ul class="list-disc pl-5 space-y-1">
+                  <li>범죄경력회보서</li>
+                  <li>범죄경력증명서</li>
+                  <li>신원보증서</li>
+                  <li>신원진술서</li>
+                </ul>
+                <p class="mt-2 text-xs text-gray-500">* 발급일로부터 3개월 이내의 서류만 유효합니다.</p>
+            </div>
+
+              <!-- 파일 업로드 영역 -->
+              <div class="border rounded-lg p-4">
+                <div v-if="!basicInfo.criminalRecordFile" class="flex flex-col items-center gap-2">
+                  <label class="cursor-pointer text-center">
+                    <input type="file" accept=".pdf,image/*" class="hidden" @change="handleCriminalRecordUpload" />
+                    <i class="pi pi-upload text-2xl text-gray-400"></i>
+                    <p class="text-sm text-gray-600">클릭하여 파일 업로드</p>
+                    <p class="text-xs text-gray-400">PDF, JPG, PNG 형식 (10MB 이하)</p>
+                  </label>
+              </div>
+                <div v-else class="flex items-center justify-between">
+                  <span class="text-sm text-gray-600">{{ basicInfo.criminalRecordFile.name }}</span>
+                  <button @click="removeCriminalRecord" class="text-red-500 hover:text-red-600">
+                    <i class="pi pi-times"></i>
+                  </button>
                 </div>
-                <div class="flex-1">
-                  <label class="mb-1 text-sm">한국어 학습 기간</label>
-                  <InputText v-model="basicInfo.koreanStudyPeriod" placeholder="예: 2년 3개월" class="w-full" />
+              </div>
+            </div>
+
+            <div class="flex-grow">
+              <div class="flex items-center gap-2 mb-1">
+                <i class="pi pi-globe"></i>
+                <label class="text-sm">한국 방문 경험</label>
+              </div>
+              <div class="flex items-center gap-2">
+                <Checkbox v-model="basicInfo.visitedKorea" :binary="true" />
+                <span>한국에 방문한 적이 있습니다.</span>
+              </div>
+            </div>
+
+            <div class="flex-grow">
+              <div class="flex items-center gap-2 mb-1">
+                <i class="pi pi-heart"></i>
+                <label class="text-sm">혼인사항</label>
+              </div>
+              <Select
+                v-model="basicInfo.maritalStatus"
+                :options="maritalStatuses"
+                optionLabel="label"
+                placeholder="혼인사항 선택"
+                class="w-full"
+              />
+            </div>
+
+            <div class="flex gap-4">
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <i class="pi pi-comment"></i>
+                  <label class="text-sm">한국어 실력</label>
                 </div>
+                <Select
+                  v-model="basicInfo.koreanLevel"
+                  :options="koreanLevels"
+                  optionLabel="label"
+                  placeholder="한국어 실력 선택"
+                  class="w-full"
+                />
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                  <i class="pi pi-clock"></i>
+                  <label class="text-sm">한국어 학습 기간</label>
+                </div>
+                <InputText v-model="basicInfo.koreanStudyPeriod" placeholder="예: 2년 3개월" class="w-full" />
               </div>
             </div>
             <!-- 버튼 영역 -->
