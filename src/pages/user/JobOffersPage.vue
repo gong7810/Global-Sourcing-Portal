@@ -1192,6 +1192,39 @@ const getLatestEducation = (educations) => {
             </div>
           </div>
 
+          <!-- 국가 정보 -->
+          <div class="bg-gray-50 p-6 rounded-lg mb-6">
+            <div class="flex items-center gap-8">
+              <h3 class="text-lg font-bold w-20">국가</h3>
+              <span class="text-gray-600">{{ selectedOffer.resumeSnapshot.nationalityInfo }}</span>
+            </div>
+          </div>
+
+          <!-- 여권 정보 -->
+          <div class="bg-gray-50 p-6 rounded-lg mb-6">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-bold">여권</h3>
+            </div>
+            <div class="grid gap-y-4">
+              <div class="flex gap-8">
+                <span class="text-gray-600 w-20">이름</span>
+                <span>{{ selectedOffer.resumeSnapshot.passportInfo.surname }} {{ selectedOffer.resumeSnapshot.passportInfo.givenNames }}</span>
+              </div>
+              <div class="flex gap-8">
+                <span class="text-gray-600 w-20">여권번호</span>
+                <span>{{ selectedOffer.resumeSnapshot.passportInfo.passportNumber }}</span>
+              </div>
+              <div class="flex gap-8">
+                <span class="text-gray-600 w-20">국적</span>
+                <span>{{ selectedOffer.resumeSnapshot.passportInfo.nationality }}</span>
+              </div>
+              <div class="flex gap-8">
+                <span class="text-gray-600 w-20">만료일</span>
+                <span>{{ selectedOffer.resumeSnapshot.passportInfo.expiryDate }}</span>
+              </div>
+            </div>
+          </div>
+
           <!-- 경력 정보 -->
           <div class="bg-gray-50 p-6 rounded-lg mb-6">
             <div class="flex items-center gap-2 mb-4">
