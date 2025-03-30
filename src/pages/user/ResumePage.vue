@@ -1081,11 +1081,10 @@ const handleEducationFileUpload = (event) => {
                 </div>
 
                 <!-- 경력 리스트 내 파일 표시 부분 -->
-                <div v-if="career.certificateFile" class="mt-4 border-t pt-4">
+                <div v-if="career.fileId" class="mt-4 border-t pt-4">
                   <div class="flex items-center justify-between">
                     <span class="text-sm text-gray-600">
-                      {{ career.period.includes('재직중') ? '재직증명서' : '경력증명서' }}:
-                      {{ career.certificateFile.name }}
+                      {{ career.period.includes('재직중') ? '재직증명서' : '경력증명서' }}: 제출완료
                     </span>
                   </div>
                 </div>
