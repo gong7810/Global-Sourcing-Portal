@@ -152,6 +152,11 @@ const printResume = () => {
     </style>
   `;
 
+  // printResume 함수 내부의 education 처리 부분 수정
+  const educationData = Array.isArray(props.interview?.candidate.education) 
+    ? props.interview?.candidate.education 
+    : [props.interview?.candidate.education].filter(Boolean);
+
   // 이력서 내용 생성
   const resumeContent = `
     <div class="resume-container">
@@ -191,9 +196,13 @@ const printResume = () => {
       <section class="mb-4">
         <table>
           <tr><th colspan="4" style="text-align: center; background-color: #e5e5e5;">학력</th></tr>
-          <tr><th>최종학력</th><td colspan="3" style="font-weight: bold;">${props.interview?.candidate.education?.[0]?.school} (${props.interview?.candidate.education?.[0]?.degree})</td></tr>
+          <tr><th>최종학력</th><td colspan="3" style="font-weight: bold;">${Array.isArray(props.interview?.candidate.education) 
+            ? props.interview?.candidate.education[0].school 
+            : props.interview?.candidate.education.school }} (${Array.isArray(props.interview?.candidate.education)
+            ? props.interview?.candidate.education[0].degree
+            : props.interview?.candidate.education.degree })</td></tr>
         </table>
-        ${props.interview?.candidate.education?.map((edu, index) => `
+        ${educationData.map((edu, index) => `
           <div class="mb-2">
             <table>
               <tr><th>학교명</th><td>${edu.school || '-'}</td><th>학위</th><td>${edu.degree || '-'}</td></tr>
@@ -447,10 +456,14 @@ const printResume = () => {
         <div class="mb-4">
           <h3 class="text-lg font-bold">학력 사항</h3>
         </div>
-        <div v-if="interview.candidate.education?.length">
+        <div v-if="Array.isArray(interview?.candidate.education) ? interview?.candidate.education?.length : interview?.candidate.education">
           <div class="text-[#8B8BF5] mb-4">
-            최종학력: {{ interview.candidate.education[0].school }} 
-            ({{ interview.candidate.education[0].degree }})
+            최종학력: {{ Array.isArray(interview?.candidate.education) 
+              ? interview?.candidate.education[0].school 
+              : interview?.candidate.education.school }} 
+            ({{ Array.isArray(interview?.candidate.education)
+              ? interview?.candidate.education[0].degree
+              : interview?.candidate.education.degree }})
           </div>
           <div v-for="(edu, index) in interview.candidate.education" 
             :key="index"
