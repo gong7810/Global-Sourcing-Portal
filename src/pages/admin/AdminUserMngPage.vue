@@ -5,8 +5,20 @@ import InputText from 'primevue/inputtext';
 import Dropdown from 'primevue/dropdown';
 import { useRouter } from 'vue-router';
 import AdminSidebar from '@/components/admin/AdminSidebar.vue'; // 사이드바 컴포넌트 임포트
+import AdminHeader from '@/components/admin/AdminHeader.vue';
+import UserDetailModal from '@/components/admin/UserDetailModal.vue';
+import { useToast } from 'primevue/usetoast';
+import Toast from 'primevue/toast';
 
 const router = useRouter();
+const toast = useToast();
+
+// 사용자 상태 상수 추가
+const USER_STATUS = {
+    ACTIVE: 'ACTIVE',
+    SUSPENDED: 'SUSPENDED',
+    INACTIVE: 'INACTIVE'
+};
 
 // 샘플 사용자 데이터 수정
 const users = ref([
@@ -86,11 +98,21 @@ const filters = ref({
     email: ''
 });
 
-// 필터링된 사용자 목록
+// 권한 옵션 수정 - 전체 옵션 추가
+const roleOptions = [
+    { label: '전체', value: null },  // 전체 옵션 추가
+    { label: 'User', value: 'User' },
+    { label: 'Manager', value: 'Manager' },
+    { label: 'Admin', value: 'Admin' }
+];
+
+// 필터링된 사용자 목록 로직은 그대로 유지
 const filteredUsers = computed(() => {
     return users.value.filter(user => {
+        const roleMatch = !filters.value.role || user.role === filters.value.role;
+            
         return (
-            (!filters.value.role || user.role?.toLowerCase().includes(filters.value.role.toLowerCase())) &&
+            roleMatch &&
             (!filters.value.loginId || user.loginId?.toLowerCase().includes(filters.value.loginId.toLowerCase())) &&
             (!filters.value.name || user.name?.toLowerCase().includes(filters.value.name.toLowerCase())) &&
             (!filters.value.mobile || user.mobile?.includes(filters.value.mobile)) &&
@@ -105,18 +127,18 @@ const handleSearch = () => {
     // API 호출 또는 로컬 필터링
 };
 
-// 계정 상태 변경 모달
+// 상태 변경 모달 관련 코드 수정
 const showStatusModal = ref(false);
 const selectedUser = ref(null);
 const statusReason = ref('');
 const suspendEndDate = ref('');
-const selectedNewStatus = ref(null);  // 선택된 새로운 상태
+const selectedNewStatus = ref(null);
 
 const openStatusModal = (user) => {
     selectedUser.value = user;
     statusReason.value = '';
     suspendEndDate.value = '';
-    selectedNewStatus.value = null;  // 초기화
+    selectedNewStatus.value = user.active ? USER_STATUS.ACTIVE : USER_STATUS.SUSPENDED;
     showStatusModal.value = true;
 };
 
@@ -125,7 +147,7 @@ const closeStatusModal = () => {
     selectedUser.value = null;
     statusReason.value = '';
     suspendEndDate.value = '';
-    selectedNewStatus.value = null;  // 초기화
+    selectedNewStatus.value = null;
 };
 
 const selectStatus = (status) => {
@@ -147,7 +169,7 @@ const updateUserStatus = () => {
         });
 
         // 상태 업데이트
-        user.status = selectedNewStatus.value;
+        user.active = selectedNewStatus.value === USER_STATUS.ACTIVE;
         if (selectedNewStatus.value === USER_STATUS.SUSPENDED) {
             user.suspendEndDate = suspendEndDate.value;
         } else {
@@ -192,14 +214,86 @@ const updateSelectAll = () => {
     selectAll.value = filteredUsers.value.length > 0 && 
         selectedUsers.value.length === filteredUsers.value.length;
 };
+
+// 이미지 로드 실패 시 기본 이미지로 대체
+const handleImageError = (e) => {
+    e.target.src = '/default-avatar.png'; // 기본 프로필 이미지 경로
+};
+
+const showDetailModal = ref(false);
+
+const openDetailModal = (user) => {
+    selectedUser.value = user;
+    showDetailModal.value = true;
+};
+
+const handleUserUpdate = async (updatedUser) => {
+    try {
+        // API 호출 예시
+        // await axios.put(`/api/users/${updatedUser.id}`, updatedUser);
+        
+        // 임시로 로컬 데이터 업데이트
+        const index = users.value.findIndex(user => user.id === updatedUser.id);
+        if (index !== -1) {
+            users.value[index] = { ...updatedUser };
+        }
+        
+        toast.add({
+            severity: 'success',
+            summary: '성공',
+            detail: '사용자 정보가 업데이트되었습니다.',
+            life: 3000
+        });
+    } catch (error) {
+        console.error('사용자 업데이트 실패:', error);
+        toast.add({
+            severity: 'error',
+            summary: '오류',
+            detail: '사용자 정보 업데이트에 실패했습니다.',
+            life: 3000
+        });
+    }
+};
+
+// 사용자 삭제 처리
+const handleUserDelete = async (userId) => {
+    try {
+        // 모의 삭제 처리 (0.5초 지연)
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        toast.add({
+            severity: 'success',
+            summary: '삭제 완료',
+            detail: '사용자가 삭제되었습니다.',
+            life: 3000
+        });
+
+        // 모달 닫기
+        showDetailModal.value = false;
+        
+    } catch (error) {
+        toast.add({
+            severity: 'error',
+            summary: '삭제 실패',
+            detail: '사용자 삭제 중 오류가 발생했습니다.',
+            life: 3000
+        });
+    }
+};
+
+// 권한 표시를 위한 함수 추가
+const getRoleLabel = (role) => {
+    if (!role) return '-';
+    const option = roleOptions.find(opt => opt.value === role.toUpperCase());
+    return option ? option.label : role;
+};
 </script>
 
 <template>
     <div class="admin-layout">
-        <!-- 사이드바 컴포넌트 사용 -->
+        <AdminHeader />
         <AdminSidebar />
 
-        <!-- 메인 컨텐츠 -->
         <div class="admin-content">
             <div class="admin-user-mng-page">
                 <div class="page-header">
@@ -221,9 +315,11 @@ const updateSelectAll = () => {
                             <div class="search-field">
                                 <Dropdown
                                     v-model="filters.role"
-                                    :options="['User', 'Manager', 'Admin']"
-                                    placeholder="그룹"
+                                    :options="roleOptions"
+                                    placeholder="권한"
                                     class="w-full"
+                                    optionLabel="label"
+                                    optionValue="value"
                                 />
                             </div>
                             <div class="search-field">
@@ -282,7 +378,7 @@ const updateSelectAll = () => {
                                     <th>이름</th>
                                     <th>모바일</th>
                                     <th>이메일</th>
-                                    <th>그룹</th>
+                                    <th>권한</th>
                                     <th>성별</th>
                                     <th>고용주</th>
                                     <th>Active</th>
@@ -291,8 +387,12 @@ const updateSelectAll = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(user, index) in filteredUsers" :key="user.id">
-                                    <td>
+                                <tr v-for="(user, index) in filteredUsers" 
+                                    :key="user.id"
+                                    @click="openDetailModal(user)"
+                                    class="cursor-pointer hover:bg-gray-50"
+                                >
+                                    <td @click.stop>
                                         <input 
                                             type="checkbox" 
                                             v-model="selectedUsers" 
@@ -305,7 +405,7 @@ const updateSelectAll = () => {
                                     <td>{{ user.name }}</td>
                                     <td>{{ user.mobile }}</td>
                                     <td>{{ user.email }}</td>
-                                    <td>{{ user.role }}</td>
+                                    <td>{{ getRoleLabel(user.role) }}</td>
                                     <td>{{ user.gender }}</td>
                                     <td>{{ user.employer ? 'Y' : 'N' }}</td>
                                     <td>{{ user.active ? 'Y' : 'N' }}</td>
@@ -320,85 +420,98 @@ const updateSelectAll = () => {
                 <!-- 상태 변경 모달 -->
                 <div v-if="showStatusModal" class="modal-overlay">
                     <div class="modal-content">
-                        <h2>계정 상태 변경</h2>
-                        <div class="user-info">
-                            <p><strong>이름:</strong> {{ selectedUser?.name }}</p>
-                            <p><strong>이메일:</strong> {{ selectedUser?.email }}</p>
-                            <p><strong>현재 상태:</strong> {{ selectedUser?.status }}</p>
-                        </div>
-
-                        <!-- 상태 변경 이력 -->
-                        <div class="status-history" v-if="selectedUser?.statusHistory?.length">
-                            <h3>상태 변경 이력</h3>
-                            <div class="history-list">
-                                <div v-for="(history, index) in selectedUser.statusHistory.slice(0, 3)" 
-                                     :key="index" 
-                                     class="history-item">
-                                    <div class="history-status">
-                                        <span :class="['status-badge', getStatusStyle(history.status)]">
-                                            {{ history.status }}
-                                        </span>
-                                    </div>
-                                    <div class="history-details">
-                                        <p class="history-reason">{{ history.reason }}</p>
-                                        <p class="history-date">{{ history.date }} ({{ history.by }})</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>변경할 상태</label>
-                            <div class="status-buttons">
-                                <Button 
-                                    :label="USER_STATUS.ACTIVE" 
-                                    class="p-button-success" 
-                                    :outlined="selectedNewStatus !== USER_STATUS.ACTIVE"
-                                    @click="selectStatus(USER_STATUS.ACTIVE)"
-                                />
-                                <Button 
-                                    :label="USER_STATUS.SUSPENDED" 
-                                    class="p-button-danger" 
-                                    :outlined="selectedNewStatus !== USER_STATUS.SUSPENDED"
-                                    @click="selectStatus(USER_STATUS.SUSPENDED)"
-                                />
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>변경 사유</label>
-                            <textarea 
-                                v-model="statusReason" 
-                                class="form-input" 
-                                rows="3"
-                                :placeholder="'상태 변경 사유를 입력하세요'"
-                                required
-                            ></textarea>
-                        </div>
-
-                        <div v-if="selectedNewStatus === USER_STATUS.SUSPENDED" class="form-group">
-                            <label>정지 기간</label>
-                            <input 
-                                type="date" 
-                                v-model="suspendEndDate" 
-                                class="form-input"
-                                required
-                            />
-                        </div>
-
-                        <div class="modal-actions">
-                            <Button label="취소" class="p-button-text" @click="closeStatusModal" />
+                        <div class="modal-header">
+                            <h2>사용자 정보</h2>
                             <Button 
-                                label="변경" 
-                                class="p-button-primary" 
-                                :disabled="!statusReason || !selectedNewStatus || (selectedNewStatus === USER_STATUS.SUSPENDED && !suspendEndDate)"
-                                @click="updateUserStatus"
+                                icon="pi pi-times" 
+                                class="p-button-text p-button-rounded" 
+                                @click="closeStatusModal"
                             />
+                        </div>
+                        <div class="modal-body">
+                            <div class="user-info">
+                                <table class="info-table">
+                                    <tbody>
+                                        <tr>
+                                            <th colspan="2" class="section-header">프로필 이미지</th>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2" class="profile-cell">
+                                                <div class="profile-placeholder"></div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th>로그인 ID</th>
+                                            <td>{{ selectedUser?.loginId }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>이름</th>
+                                            <td>{{ selectedUser?.name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>생년월일</th>
+                                            <td>{{ selectedUser?.birthDate || '001212' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>모바일</th>
+                                            <td>{{ selectedUser?.mobile }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>이메일</th>
+                                            <td>{{ selectedUser?.email }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>권한</th>
+                                            <td>{{ selectedUser?.role === 'ADMIN' ? '관리자' : '일반' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>성별</th>
+                                            <td>{{ selectedUser?.gender }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>고용주 여부</th>
+                                            <td>{{ selectedUser?.employer ? 'true' : 'false' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>활성여부</th>
+                                            <td>{{ selectedUser?.active ? 'true' : 'false' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>최근 로그인</th>
+                                            <td>{{ selectedUser?.lastLoginAt || '-' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>생성일시</th>
+                                            <td>{{ selectedUser?.createdAt }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th>수정일시</th>
+                                            <td>{{ selectedUser?.updatedAt || '-' }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <Button label="닫기" class="p-button-text" @click="closeStatusModal" />
+                            <Button label="편집" class="p-button-primary" />
+                            <Button label="삭제" class="p-button-danger" />
                         </div>
                     </div>
                 </div>
+
+                <!-- 사용자 상세 모달 -->
+                <UserDetailModal
+                    :is-open="showDetailModal"
+                    :user="selectedUser"
+                    @close="showDetailModal = false"
+                    @update="handleUserUpdate"
+                    @delete="handleUserDelete"
+                />
             </div>
         </div>
+
+        <Toast />
     </div>
 </template>
 
@@ -406,11 +519,13 @@ const updateSelectAll = () => {
 .admin-layout {
     display: flex;
     min-height: 100vh;
+    padding-top: 60px; /* 헤더 높이만큼 여백 추가 */
 }
 
 .admin-content {
     flex: 1;
     background-color: #f9fafb;
+    margin-left: 250px; /* 사이드바 너비만큼 여백 */
 }
 
 .admin-user-mng-page {
@@ -522,6 +637,16 @@ const updateSelectAll = () => {
                     border-radius: 15px;
                     font-size: 0.875rem;
                 }
+
+                tbody {
+                    tr {
+                        transition: background-color 0.2s;
+                        
+                        &:hover {
+                            background-color: #f8f9fa;
+                        }
+                    }
+                }
             }
         }
     }
@@ -536,113 +661,116 @@ const updateSelectAll = () => {
         display: flex;
         justify-content: center;
         align-items: center;
+        padding: 1rem;
+        z-index: 1100; /* 헤더(1000)보다 높게 설정 */
+    }
 
-        .modal-content {
-            background-color: white;
-            padding: 2rem;
+    .modal-content {
+        background-color: white;
+        border-radius: 8px;
+        width: 100%;
+        max-width: 600px;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .modal-header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        
+        h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            color: #2c3e50;
+        }
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+        overflow-y: auto; /* 내용이 넘칠 경우 스크롤 */
+        flex: 1;
+        
+        .profile-section {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background-color: #f8f9fa;
             border-radius: 8px;
-            width: 100%;
-            max-width: 500px;
 
-            h2 {
-                margin: 0 0 1.5rem;
-                font-size: 1.25rem;
-                color: #2c3e50;
-            }
+            .profile-image {
+                width: 120px;
+                height: 120px;
+                border-radius: 50%;
+                overflow: hidden;
+                border: 3px solid white;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
-            .user-info {
-                background-color: #f8f9fa;
-                padding: 1rem;
-                border-radius: 4px;
-                margin-bottom: 1.5rem;
-
-                p {
-                    margin: 0.5rem 0;
-                    color: #495057;
-                }
-            }
-
-            .status-history {
-                margin-bottom: 1.5rem;
-                
-                h3 {
-                    font-size: 1rem;
-                    color: #374151;
-                    margin-bottom: 0.75rem;
-                }
-
-                .history-list {
-                    background-color: #f8f9fa;
-                    border-radius: 4px;
-                    padding: 0.5rem;
-                }
-
-                .history-item {
-                    display: flex;
-                    align-items: flex-start;
-                    padding: 0.5rem;
-                    border-bottom: 1px solid #e9ecef;
-
-                    &:last-child {
-                        border-bottom: none;
-                    }
-
-                    .history-status {
-                        margin-right: 1rem;
-                    }
-
-                    .history-details {
-                        flex: 1;
-
-                        .history-reason {
-                            font-size: 0.875rem;
-                            margin: 0;
-                        }
-
-                        .history-date {
-                            font-size: 0.75rem;
-                            color: #6b7280;
-                            margin: 0.25rem 0 0;
-                        }
-                    }
-                }
-            }
-
-            .form-group {
-                margin-bottom: 1.5rem;
-
-                label {
-                    display: block;
-                    margin-bottom: 0.5rem;
-                    color: #666;
-                }
-
-                .form-input {
+                img {
                     width: 100%;
-                    padding: 0.5rem;
-                    border: 1px solid #ddd;
-                    border-radius: 4px;
-                    font-size: 1rem;
-
-                    &:focus {
-                        outline: none;
-                        border-color: #8FA1FF;
-                    }
+                    height: 100%;
+                    object-fit: cover;
                 }
-
-                .status-buttons {
-                    display: flex;
-                    gap: 0.5rem;
-                }
-            }
-
-            .modal-actions {
-                display: flex;
-                justify-content: flex-end;
-                gap: 1rem;
-                margin-top: 1.5rem;
             }
         }
+
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+
+            th, td {
+                padding: 0.75rem;
+                border-bottom: 1px solid #e5e7eb;
+                text-align: left;
+            }
+
+            th {
+                width: 120px;
+                background-color: #f8f9fa;
+                font-weight: 500;
+                color: #374151;
+                position: sticky;
+                left: 0; /* 첫 번째 열 고정 */
+            }
+
+            td {
+                color: #4b5563;
+            }
+
+            .section-header {
+                background-color: #f3f4f6;
+                font-weight: 600;
+                color: #1f2937;
+            }
+
+            .profile-cell {
+                padding: 1rem;
+                text-align: center;
+                background-color: #f8f9fa;
+
+                .profile-placeholder {
+                    width: 120px;
+                    height: 160px;
+                    border: 1px solid #e5e7eb;
+                    margin: 0 auto;
+                    background-color: white;
+                }
+            }
+        }
+    }
+
+    .modal-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        background-color: white; /* 스크롤 시 내용이 비치지 않도록 */
     }
 
     .status-buttons {
@@ -694,5 +822,22 @@ const updateSelectAll = () => {
         cursor: pointer;
         accent-color: #8B8BF5;
     }
+}
+
+:deep(.admin-header) {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+:deep(.admin-sidebar) {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    bottom: 0;
+    width: 250px;
+    z-index: 900;
 }
 </style>

@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import Button from 'primevue/button';
 import { useRouter } from 'vue-router';
+import AdminHeader from '@/components/admin/AdminHeader.vue';
 import AdminSidebar from '@/components/admin/AdminSidebar.vue';
 
 const router = useRouter();
@@ -122,10 +123,9 @@ const goBack = () => {
 
 <template>
     <div class="admin-layout">
-        <!-- 사이드바 컴포넌트로 교체 -->
+        <AdminHeader />
         <AdminSidebar />
 
-        <!-- 메인 컨텐츠 -->
         <div class="admin-content">
             <div class="admin-faq-page">
                 <div class="page-header">
@@ -143,9 +143,9 @@ const goBack = () => {
                 <!-- 카테고리 필터 -->
                 <div class="category-filter">
                     <div v-for="category in categories" 
-                         :key="category"
-                         :class="['category-item', { active: selectedCategory === category }]"
-                         @click="selectedCategory = category">
+                        :key="category"
+                        :class="['category-item', { active: selectedCategory === category }]"
+                        @click="selectedCategory = category">
                         {{ category }}
                     </div>
                 </div>
@@ -205,11 +205,13 @@ const goBack = () => {
 .admin-layout {
     display: flex;
     min-height: 100vh;
+    padding-top: 60px; /* 헤더 높이만큼 여백 추가 */
 }
 
 .admin-content {
     flex: 1;
     background-color: #f9fafb;
+    margin-left: 250px; /* 사이드바 너비만큼 여백 */
 }
 
 .admin-faq-page {
@@ -369,5 +371,22 @@ const goBack = () => {
             }
         }
     }
+}
+
+:deep(.admin-header) {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+:deep(.admin-sidebar) {
+    position: fixed;
+    top: 60px; /* 헤더 높이만큼 아래로 */
+    left: 0;
+    bottom: 0;
+    width: 250px;
+    z-index: 900;
 }
 </style> 

@@ -43,37 +43,36 @@ const handleLogin = async () => {
     <div class="admin-login">
         <div class="login-container">
             <div class="login-header">
-                <i class="pi pi-shield text-[#8B8BF5] text-4xl"></i>
-                <h1>관리자 로그인</h1>
+                <h1 class="text-2xl font-bold text-gray-800">관리자 로그인</h1>
             </div>
             
             <form @submit.prevent="handleLogin" class="login-form">
                 <div class="form-group">
-                    <label for="username">아이디</label>
-                    <span class="p-input-icon-left w-full">
-                        <i class="pi pi-user"></i>
-                        <InputText
-                            id="username"
-                            v-model="loginForm.username"
-                            type="text"
-                            class="w-full"
-                            placeholder="아이디를 입력하세요"
-                        />
-                    </span>
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="pi pi-user text-gray-500"></i>
+                        <label for="username">아이디</label>
+                    </div>
+                    <InputText
+                        id="username"
+                        v-model="loginForm.username"
+                        type="text"
+                        class="w-full"
+                        placeholder="아이디를 입력하세요"
+                    />
                 </div>
 
                 <div class="form-group">
-                    <label for="password">비밀번호</label>
-                    <span class="p-input-icon-left w-full">
-                        <i class="pi pi-lock"></i>
-                        <InputText
-                            id="password"
-                            v-model="loginForm.password"
-                            type="password"
-                            class="w-full"
-                            placeholder="비밀번호를 입력하세요"
-                        />
-                    </span>
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="pi pi-lock text-gray-500"></i>
+                        <label for="password">비밀번호</label>
+                    </div>
+                    <InputText
+                        id="password"
+                        v-model="loginForm.password"
+                        type="password"
+                        class="w-full"
+                        placeholder="비밀번호를 입력하세요"
+                    />
                 </div>
 
                 <Button
@@ -107,10 +106,13 @@ const handleLogin = async () => {
 
     .login-header {
         text-align: center;
-        margin-bottom: 2rem;
+        margin-bottom: 2.5rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
 
         h1 {
-            margin-top: 1rem;
+            margin: 0;
             font-size: 1.5rem;
             font-weight: bold;
             color: #1f2937;
@@ -122,29 +124,18 @@ const handleLogin = async () => {
             margin-bottom: 1.5rem;
 
             label {
-                display: block;
-                margin-bottom: 0.5rem;
                 color: #4b5563;
                 font-weight: 500;
             }
         }
 
-        :deep(.p-input-icon-left) {
+        input {
             width: 100%;
+            border-radius: 8px;
 
-            i {
-                color: #9CA3AF;
-            }
-
-            input {
-                width: 100%;
-                padding-left: 2.5rem;
-                border-radius: 8px;
-
-                &:enabled:focus {
-                    border-color: #8B8BF5;
-                    box-shadow: 0 0 0 2px rgba(139, 139, 245, 0.1);
-                }
+            &:enabled:focus {
+                border-color: #8B8BF5;
+                box-shadow: 0 0 0 2px rgba(139, 139, 245, 0.1);
             }
         }
 

@@ -7,6 +7,7 @@ import Dropdown from 'primevue/dropdown';
 import InputText from 'primevue/inputtext';
 import { useToast } from 'primevue/usetoast';
 import Toast from 'primevue/toast';
+import AdminHeader from '@/components/admin/AdminHeader.vue';
 
 const router = useRouter();
 const toast = useToast();
@@ -174,6 +175,7 @@ const goBack = () => {
 
 <template>
     <div class="admin-layout">
+        <AdminHeader />
         <AdminSidebar />
         
         <div class="admin-content">
@@ -318,11 +320,30 @@ const goBack = () => {
 .admin-layout {
     display: flex;
     min-height: 100vh;
+    padding-top: 60px; /* 헤더 높이만큼 여백 추가 */
 }
 
 .admin-content {
     flex: 1;
     background-color: #f9fafb;
+    margin-left: 250px; /* 사이드바 너비만큼 여백 */
+}
+
+:deep(.admin-header) {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+:deep(.admin-sidebar) {
+    position: fixed;
+    top: 60px; /* 헤더 높이만큼 아래로 */
+    left: 0;
+    bottom: 0;
+    width: 250px;
+    z-index: 900;
 }
 
 .admin-inquiries-page {

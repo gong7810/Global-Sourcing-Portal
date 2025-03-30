@@ -23,7 +23,7 @@ const router = createRouter({
     },
     {
       path: '/',
-      component: AppLayout,
+      // component: AppLayout,
       children: adminRouter
     },
     {

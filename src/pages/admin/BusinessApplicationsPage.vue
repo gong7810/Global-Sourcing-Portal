@@ -4,6 +4,7 @@ import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
 import { useRouter } from 'vue-router';
 import AdminSidebar from '@/components/admin/AdminSidebar.vue';
+import AdminHeader from '@/components/admin/AdminHeader.vue';
 
 const router = useRouter();
 
@@ -153,10 +154,9 @@ const goBack = () => {
 
 <template>
     <div class="admin-layout">
-        <!-- 사이드바 컴포넌트로 교체 -->
+        <AdminHeader />
         <AdminSidebar />
 
-        <!-- 메인 컨텐츠 -->
         <div class="admin-content">
             <div class="admin-applications-page">
                 <div class="page-header">
@@ -296,11 +296,30 @@ const goBack = () => {
 .admin-layout {
     display: flex;
     min-height: 100vh;
+    padding-top: 60px; /* 헤더 높이만큼 여백 추가 */
 }
 
 .admin-content {
     flex: 1;
     background-color: #f9fafb;
+    margin-left: 250px; /* 사이드바 너비만큼 여백 */
+}
+
+:deep(.admin-header) {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+:deep(.admin-sidebar) {
+    position: fixed;
+    top: 60px; /* 헤더 높이만큼 아래로 */
+    left: 0;
+    bottom: 0;
+    width: 250px;
+    z-index: 900;
 }
 
 .admin-applications-page {
