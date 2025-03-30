@@ -1,20 +1,20 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAuthStore } from '@/store/auth/authStore';
-import { storeToRefs } from 'pinia';
-import { getCompanyInfo } from '@/apis/owner/ownerApis';
+import { cloneDeep } from 'es-toolkit/compat';
+import { useMessagePop } from '@/plugins/commonutils';
+
+import { getCompanyInfo, updateCompanyInfo } from '@/apis/owner/ownerApis';
 import { getCodeList } from '@/apis/common/commonApis';
 
-const authStore = useAuthStore();
-const { userInfo } = storeToRefs(authStore);
-
 const router = useRouter();
+const messagePop = useMessagePop();
 
 // 수정 모드 상태
 const isEditing = ref(false);
 
 // 기업 정보 데이터
+let initCompanyInfo = {};
 const companyInfo = ref({});
 
 // 기업 구분 옵션
@@ -50,42 +50,58 @@ const setCompanyType = async () => {
 
   response.map((item) => {
     companyTypes.value.push({
-      label: item.name,
-      value: item.code
+      name: item.name,
+      code: item.code
     });
   });
 };
 
 // 회사 정보 조회
 const setCompanyInfo = async () => {
-  const response = await getCompanyInfo(userInfo.value.id);
+  const response = await getCompanyInfo();
 
-  console.log(response);
+  companyInfo.value = {
+    ...response,
+    email: response.user.email,
+    companyType: { name: response.companyType.name, code: response.companyType.code }
+  };
 
-  companyInfo.value = { ...response, email: response.user.email };
+  initCompanyInfo = cloneDeep(companyInfo.value);
 };
 
-// // 수정된 정보를 임시 저장
-// const editedInfo = ref({ ...companyInfo.value });
+// 수정 모드 토글
+const toggleEdit = () => {
+  if (isEditing.value) {
+    // 수정 완료
+    console.log(companyInfo.value);
+    messagePop.confirm({
+      icon: 'info',
+      message: '수정 하시겠습니까?',
+      onCloseYes: async () => {
+        const body = { ...companyInfo.value, companyTypeCd: companyInfo.value.companyType.code };
 
-// // 수정 모드 토글
-// const toggleEdit = () => {
-//   if (isEditing.value) {
-//     // 수정 완료 시 정보 업데이트
-//     companyInfo.value = { ...editedInfo.value };
-//     isEditing.value = false;
-//   } else {
-//     // 수정 모드 시작 시 현재 정보 복사
-//     editedInfo.value = { ...companyInfo.value };
-//     isEditing.value = true;
-//   }
-// };
+        const response = await updateCompanyInfo(body);
 
-// // 수정 취소
-// const cancelEdit = () => {
-//   editedInfo.value = { ...companyInfo.value };
-//   isEditing.value = false;
-// };
+        if (response) {
+          router.back();
+        } else {
+          messagePop.toast('시스템 오류입니다.', 'error');
+        }
+
+        isEditing.value = false;
+      }
+    });
+  } else {
+    // 수정 시작
+    isEditing.value = true;
+  }
+};
+
+// 수정 취소
+const cancelEdit = () => {
+  companyInfo.value = cloneDeep(initCompanyInfo);
+  isEditing.value = false;
+};
 </script>
 
 <template>
@@ -136,7 +152,7 @@ const setCompanyInfo = async () => {
             <Select
               v-model="companyInfo.companyType"
               :options="companyTypes"
-              optionLabel="label"
+              optionLabel="name"
               :disabled="!isEditing"
               placeholder="기업구분을 선택해주세요"
               class="w-full"
@@ -208,7 +224,7 @@ const setCompanyInfo = async () => {
                 type="button"
                 label="취소"
                 class="p-button-secondary px-6 hover:bg-gray-100"
-                @click="isEditing = !isEditing"
+                @click="cancelEdit"
               />
               <Button
                 type="submit"
@@ -221,7 +237,7 @@ const setCompanyInfo = async () => {
               type="button"
               label="수정"
               class="p-button-primary px-6 bg-gradient-to-r from-[#8FA1FF] to-[#8B8BF5] border-none hover:bg-gradient-to-r hover:from-[#7B8FFF] hover:to-[#7878F2]"
-              @click="isEditing = !isEditing"
+              @click="toggleEdit"
             />
           </div>
         </form>
