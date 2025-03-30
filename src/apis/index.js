@@ -70,7 +70,7 @@ export function useApi() {
   // API 호출 유틸 함수 제공
   const get = (url, params, config) => request('GET', url, params, config);
   const post = (url, params, config) => request('POST', url, params, config);
-  const deletes = (url, params, config) => request('DELETE', url, params, config);
+  const del = (url, params, config) => request('DELETE', url, params, config);
 
-  return { get, post, deletes };
+  return { get, post, del };
 }

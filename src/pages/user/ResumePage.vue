@@ -1,12 +1,11 @@
 <script setup>
-import { onMounted, ref, computed, watch, toRaw } from 'vue';
+import { onMounted, ref, watch, toRaw } from 'vue';
 import { useRouter } from 'vue-router';
-import { storeToRefs } from 'pinia';
-
 import { useMessagePop } from '@/plugins/commonutils';
-import { getResume, updateExperience, updateResume } from '@/apis/user/userApis';
+
 import { getAccount } from '@/apis/auth/authApis';
-import { getCodeList } from '@/apis/common/commonApis';
+import { getCodeList, fileUpload } from '@/apis/common/commonApis';
+import { getResume, upsertExperience, updateResume, deleteExperience } from '@/apis/user/userApis';
 
 const router = useRouter();
 const messagePop = useMessagePop();
@@ -24,7 +23,6 @@ const profileImage = ref();
 const passportImage = ref();
 const experienceImage = ref();
 const educationImage = ref();
-const certification = ref();
 
 const educationTypes = ref([]); // 학력종류
 const jobCategories = ref([]); // 직무종류
@@ -46,8 +44,6 @@ const basicInfo = ref({
   email: 'yeji@naver.com',
   phone: '010-1234-7496',
   address: '505호',
-  totalCareer: '5년',
-  lastEducation: '대학교(4년) 졸업',
   criminalRecordFile: {
     // 파일 정보로 변경
     name: '범죄경력증명서.pdf',
@@ -70,7 +66,6 @@ const passportInfo = ref({});
 
 // 경력리스트
 const careerList = ref([]);
-
 // 학력리스트
 const educationList = ref([
   {
@@ -118,16 +113,17 @@ const educationList = ref([
 ]);
 
 // 경력 정보 관련 상태
+const totalCareer = ref('');
 const careerInfo = ref({
   companyName: '',
   startDate: null,
   endDate: null,
-  isCurrentJob: false,
-  jobCategory: null,
-  jobTitle: '',
+  isCurrent: false,
+  jobCategoryCd: null,
+  position: '',
   department: '',
   content: '',
-  certificateFile: null
+  fileId: null
 });
 
 // 학력 정보 관련 상태
@@ -139,7 +135,7 @@ const educationInfo = ref({
   endDate: null,
   isGraduated: false,
   details: '',
-  certificateFile: null
+  fileId: null
 });
 
 const sections = [
@@ -311,30 +307,30 @@ const getResumeInfo = async () => {
   setCareerInfo();
 
   // 총 경력과 최종학력 계산
-  // basicInfo.value.totalCareer = calculateTotalCareer(careerList.value);
   // basicInfo.value.lastEducation = getLastEducation(educationList.value);
 };
 
 // 경력 정보 세팅
 const setCareerInfo = () => {
+  careerList.value = [];
+
   resumeInfo.value.experiences.map((exp) => {
     jobCategories.value.map((cate) => {
       if (cate.code === exp.jobCategoryCd) {
         careerList.value.push({
+          careerId: exp.id,
           companyName: exp.companyName,
-          period: `${exp?.startDt?.slice(0, 7).replace('-', '.')} - ${exp?.endDt?.slice(0, 7).replace('-', '.')}`,
-          isCurrentJob: exp.isCurrent,
+          period: `${exp?.startDt?.slice(0, 7).replace('-', '.')} - ${exp?.endDt ? exp?.endDt?.slice(0, 7).replace('-', '.') : '재직중'}`,
+          isCurrent: exp.isCurrent,
           jobCategory: toRaw(cate), //직무
-          jobTitle: exp.position, //직책
+          position: exp.position, //직책
           department: exp.department, //부서
           content: exp.content, //담당업무
-          certificateFile: exp.fileId
+          fileId: exp.fileId
         });
       }
     });
   });
-
-  console.log(careerList.value);
 };
 
 // 이력서 공개전 체크사항 확인
@@ -360,19 +356,6 @@ const navigateToSection = (section) => {
   }
 };
 
-const calculateTotalCareer = (careerList) => {
-  // 모든 경력 기간을 합산하는 로직
-  let totalMonths = 0;
-  careerList.forEach((career) => {
-    const [start, end] = career.period.split(' - ');
-    const startDate = new Date(start);
-    const endDate = end === '재직중' ? new Date() : new Date(end);
-    const months = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
-    totalMonths += months;
-  });
-  return `${Math.floor(totalMonths / 12)}년 ${totalMonths % 12}개월`;
-};
-
 const getLastEducation = (educationList) => {
   // 최종학력 찾기
   const sortedEducation = [...educationList].sort((a, b) => {
@@ -396,6 +379,67 @@ const closeCareerModal = () => {
   showCareerModal.value = false;
 };
 
+// 개별 경력 기간 계산 함수
+const calculateCareerDuration = (period) => {
+  const [start, end] = period.split(' - ');
+  const startDate = new Date(start);
+  const endDate = end === '재직중' ? new Date() : new Date(end);
+
+  const months =
+    (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth() + 1);
+
+  const years = Math.floor(months / 12);
+  const remainingMonths = months % 12;
+
+  if (years === 0) {
+    return `${remainingMonths}개월`;
+  } else if (remainingMonths === 0) {
+    return `${years}년`;
+  } else {
+    return `${years}년 ${remainingMonths}개월`;
+  }
+};
+
+// 경력리스트 실시간 반영
+watch(
+  () => careerList.value,
+  () => {
+    totalCareer.value = calculateTotalCareer(careerList.value);
+  },
+  { deep: true }
+);
+
+// 모든 경력 기간을 합산하는 로직
+const calculateTotalCareer = (careerList) => {
+  let totalMonths = 0;
+  careerList.forEach((career) => {
+    const [start, end] = career.period.split(' - ');
+    const startDate = new Date(start);
+    const endDate = end === '재직중' ? new Date() : new Date(end);
+    const months =
+      (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth() + 1);
+    totalMonths += months;
+  });
+
+  return totalMonths % 12
+    ? `(총 ${Math.floor(totalMonths / 12)}년 ${totalMonths % 12}개월)`
+    : `(총 ${Math.floor(totalMonths / 12)}년)`;
+};
+
+// ISO문자열 처리를 위한 다음달 구하는 함수
+const getNextMonth = (yearMonth) => {
+  const [year, month] = yearMonth.split('.');
+  const date = new Date(year, month, 1); // 다음 달 1일
+  return date.toISOString();
+};
+
+// YYYY.MM 형식으로 추출 (점으로 구분)
+const formatYearMonthWithDot = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  return `${year}.${month}`;
+};
+
 // 경력 모달창 감지
 watch(
   () => showCareerModal.value,
@@ -411,9 +455,9 @@ watch(
         companyName: '',
         startDate: null,
         endDate: null,
-        isCurrentJob: false,
+        isCurrent: false,
         jobCategory: null,
-        jobTitle: '',
+        position: '',
         department: '',
         content: '',
         certificateFile: null
@@ -422,7 +466,7 @@ watch(
   }
 );
 
-// 경력 추가 로직
+// 경력 추가, 수정 로직
 const saveCareerInfo = async () => {
   // 필수 필드 검증
   const requiredFields = {
@@ -432,7 +476,7 @@ const saveCareerInfo = async () => {
   };
 
   // 재직중이 아닐 경우 endDate도 필수
-  if (!careerInfo.value.isCurrentJob) {
+  if (!careerInfo.value.isCurrent) {
     requiredFields.endDate = careerInfo.value.endDate;
   }
 
@@ -447,63 +491,78 @@ const saveCareerInfo = async () => {
   }
 
   // DONE: 저장 로직 시작
-  let fileId = '';
-  if (experienceImage.value) {
-    const formData = new FormData();
+  let body = {};
 
-    formData.append('file', experienceImage.value);
+  // 경력 증빙파일이 있는 경우
+  // if (experienceImage.value) {
+  if (careerInfo.value.fileId) {
+    let formData = saveImage(careerInfo.value.fileId);
 
-    const res = await fileUpload(formData);
+    const response = await fileUpload(formData);
 
-    fileId = res.id;
-  }
-
-  if (res && res.success === undefined) {
-    const body = {
+    body = {
+      id: careerInfo.value.careerId,
       resumeId: resumeInfo.value.id,
       companyName: careerInfo.value.companyName,
-      startDt: '2022-03-22T16:28:22.000Z',
-      endDt: '2023-03-22T16:28:27.000Z',
-      isCurrent: true,
-      jobCategoryCd: 'JOB_TY_1',
-      department: null,
-      content: null,
-      fileId: fileId
+      startDt: new Date(`${careerInfo.value.startDate}-01`).toISOString(),
+      endDt: careerInfo.value.isCurrent ? null : getNextMonth(formatYearMonthWithDot(careerInfo.value.endDate)),
+      isCurrent: careerInfo.value.isCurrent,
+      jobCategoryCd: careerInfo.value.jobCategory.code,
+      position: careerInfo.value.position,
+      department: careerInfo.value.department,
+      content: careerInfo.value.content,
+      fileId: response.id
     };
-
-    const response = await updateExperience(body);
-
-    resumeInfo.value = response;
-  }
-
-  const insertCareer = {
-    companyName: careerInfo.value.companyName,
-    period: careerInfo.value.isCurrentJob
-      ? `${careerInfo.value.startDate.getFullYear()}.${(careerInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')} - 재직중`
-      : `${careerInfo.value.startDate.getFullYear()}.${(careerInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')} - ${careerInfo.value.endDate.getFullYear()}.${(careerInfo.value.endDate.getMonth() + 1).toString().padStart(2, '0')}`,
-    jobCategory: careerInfo.value.jobCategory,
-    jobTitle: careerInfo.value.jobTitle,
-    department: careerInfo.value.department,
-    content: careerInfo.value.content,
-    certificateFile: careerInfo.value.certificateFile
-  };
-
-  if (careerModifyFlag.value) {
-    careerList.value[careerModifyIdx.value] = insertCareer;
   } else {
-    careerList.value.push(insertCareer);
+    // 경력 증빙파일이 없는 경우
+    body = {
+      id: careerInfo.value.careerId,
+      resumeId: resumeInfo.value.id,
+      companyName: careerInfo.value.companyName,
+      startDt: new Date(`${careerInfo.value.startDate}-01`).toISOString(),
+      endDt: careerInfo.value.isCurrent ? null : getNextMonth(formatYearMonthWithDot(careerInfo.value.endDate)),
+      isCurrent: careerInfo.value.isCurrent,
+      jobCategoryCd: careerInfo.value.jobCategory.code,
+      position: careerInfo.value.position,
+      department: careerInfo.value.department,
+      content: careerInfo.value.content
+    };
   }
+
+  await upsertExperience(body);
+
+  getResumeInfo();
+  // const insertCareer = {
+  //   companyName: careerInfo.value.companyName,
+  //   period: careerInfo.value.isCurrent
+  //     ? `${careerInfo.value.startDate.getFullYear()}.${(careerInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')} - 재직중`
+  //     : `${careerInfo.value.startDate.getFullYear()}.${(careerInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')} - ${careerInfo.value.endDate.getFullYear()}.${(careerInfo.value.endDate.getMonth() + 1).toString().padStart(2, '0')}`,
+  //   jobCategory: careerInfo.value.jobCategory,
+  //   position: careerInfo.value.position,
+  //   department: careerInfo.value.department,
+  //   content: careerInfo.value.content,
+  //   certificateFile: careerInfo.value.fileId
+  // };
+
+  // if (careerModifyFlag.value) {
+  //   careerList.value[careerModifyIdx.value] = insertCareer;
+  // } else {
+  //   careerList.value.push(insertCareer);
+  // }
 
   careerModifyFlag.value = false;
   showCareerModal.value = false;
 };
 
 // 경력 삭제 로직
-const deleteCareer = (index) => {
+const deleteCareer = (career) => {
   messagePop.confirm({
     message: '해당 경력을 삭제하시겠습니까?',
-    onCloseYes: () => {
-      careerList.value.splice(index, 1);
+    onCloseYes: async () => {
+      await deleteExperience(career.careerId);
+
+      getResumeInfo();
+      // careerList.value.splice(index, 1);
     }
   });
 };
@@ -516,19 +575,17 @@ const modifyCareer = (index) => {
   let startDate = careerList.value[index].period.split('-')[0];
   let endDate = careerList.value[index].period.split('-')[1];
 
-  console.log(startDate);
-  console.log(endDate);
-
   careerInfo.value = {
+    careerId: careerList.value[index].careerId,
     companyName: careerList.value[index].companyName,
     jobCategory: careerList.value[index].jobCategory,
     startDate: new Date(startDate),
     endDate: endDate.trim() !== '재직중' ? new Date(endDate.trim()) : null,
-    isCurrentJob: endDate.trim() !== '재직중' ? false : true,
-    jobTitle: careerList.value[index].jobTitle,
+    isCurrent: endDate.trim() !== '재직중' ? false : true,
+    position: careerList.value[index].position,
     department: careerList.value[index].department,
     content: careerList.value[index].content,
-    certificateFile: careerList.value[index].certificateFile
+    fileId: careerList.value[index].fileId
   };
 
   showCareerModal.value = true;
@@ -664,7 +721,7 @@ const formatCurrency = (value) => {
   return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 };
 
-// 저장 버튼 클릭 시 실행되는 함수
+// 이력서 공개여부 저장
 const saveResume = () => {
   // 저장 전 필수 정보 체크
   if (!checkRequiredInfo()) {
@@ -676,7 +733,7 @@ const saveResume = () => {
     message: '이력서를 저장하시겠습니까?',
     onCloseYes: async () => {
       try {
-        // TODO: 이력서 저장 API 호출
+        // TODO: 이력서 저장 API 호출 - 사실상 공개여부만 수정
         messagePop.toast('이력서가 저장되었습니다.', 'success');
       } catch (error) {
         console.error('이력서 저장 중 오류:', error);
@@ -703,35 +760,6 @@ const removeCertification = (index) => {
   certificationList.value.splice(index, 1);
 };
 
-// 개별 경력 기간 계산 함수
-const calculateCareerDuration = (period) => {
-  const [start, end] = period.split(' - ');
-  const startDate = new Date(start);
-  const endDate = end === '재직중' ? new Date() : new Date(end);
-
-  const months = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
-
-  const years = Math.floor(months / 12);
-  const remainingMonths = months % 12;
-
-  if (years === 0) {
-    return `${remainingMonths}개월`;
-  } else if (remainingMonths === 0) {
-    return `${years}년`;
-  } else {
-    return `${years}년 ${remainingMonths}개월`;
-  }
-};
-
-// careerList 변경 감지를 위한 watch 추가
-// watch(
-//   careerList,
-//   (newCareerList) => {
-//     basicInfo.value.totalCareer = calculateTotalCareer(newCareerList);
-//   },
-//   { deep: true }
-// );
-
 // 최종학력 설정 함수 추가
 const setLastEducation = (selectedIndex) => {
   educationList.value.forEach((edu, index) => {
@@ -744,14 +772,14 @@ const setLastEducation = (selectedIndex) => {
 };
 
 // 이미지 바이너리 변환
-const saveImage = () => {
+const saveImage = (file) => {
   const formData = new FormData();
-  formData.append('file', profileRawData.value);
+  formData.append('file', file);
 
   return formData;
 };
 
-// 파일 업로드 핸들러
+// 여권증빙파일 업로드 핸들러
 const handlePassportFileUpload = async (event) => {
   const file = event.target.files[0];
   if (file) {
@@ -779,32 +807,33 @@ const handlePassportFileUpload = async (event) => {
   }
 };
 
-// 파일 업로드 핸들러
+// 경력증빙파일 업로드 핸들러
 const handleCareerFileUpload = async (event) => {
   experienceImage.value = event.target.files[0];
   if (experienceImage.value) {
-    if (file.size > 10 * 1024 * 1024) {
+    if (experienceImage.value.size > 10 * 1024 * 1024) {
       // 10MB 제한
       messagePop.toast('파일 크기는 10MB를 초과할 수 없습니다.', 'warn');
 
       experienceImage.value = null;
       return;
     }
-    // careerInfo.value.certificateFile = file;
+    careerInfo.value.fileId = experienceImage.value;
   }
 };
 
+// 학력증빙파일 업로드 핸들러
 const handleEducationFileUpload = (event) => {
   educationImage.value = event.target.files[0];
   if (educationImage.value) {
-    if (file.size > 10 * 1024 * 1024) {
+    if (educationImage.value.size > 10 * 1024 * 1024) {
       // 10MB 제한
       messagePop.toast('파일 크기는 10MB를 초과할 수 없습니다.', 'warn');
 
       educationImage.value = null;
       return;
     }
-    // educationInfo.value.certificateFile = file;
+    educationInfo.value.fileId = educationImage.value;
   }
 };
 </script>
@@ -829,7 +858,7 @@ const handleEducationFileUpload = (event) => {
         <div class="flex items-center gap-6">
           <h2 class="font-bold">이력서 공개 설정</h2>
           <div class="flex gap-4">
-            <template v-for="option in visibilityOptions" :key="option.value">
+            <div v-for="option in visibilityOptions" :key="option.value">
               <div
                 @click="checkResumeClear(option.value)"
                 class="flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer transition-all"
@@ -842,7 +871,7 @@ const handleEducationFileUpload = (event) => {
                 <i :class="option.icon"></i>
                 <span>{{ option.label }}</span>
               </div>
-            </template>
+            </div>
           </div>
         </div>
       </div>
@@ -995,7 +1024,7 @@ const handleEducationFileUpload = (event) => {
                   </label>
                 </div>
                 <div v-else>
-                  <label class="cursor-pointer px-4 py-2 bg-gray-200 rounded-lg transition-colors cursor-default">
+                  <label class="cursor-default px-4 py-2 bg-gray-200 rounded-lg transition-colors cursor-default">
                     <span class="text-sm">첨부완료</span>
                   </label>
                 </div>
@@ -1009,7 +1038,10 @@ const handleEducationFileUpload = (event) => {
               <div class="flex items-center gap-3">
                 <i class="pi pi-briefcase text-gray-600"></i>
                 <h3 class="font-bold">경력</h3>
-                <span class="text-sm text-gray-500">(총 {{ basicInfo.totalCareer }})</span>
+                <span v-if="resumeInfo?.experiences?.length" class="text-sm text-gray-500">
+                  <!-- (총 {{ resumeInfo.experienceDurationMonth || 0 }} 개월) -->
+                  {{ totalCareer }}
+                </span>
               </div>
               <Button
                 label="추가"
@@ -1034,7 +1066,7 @@ const handleEducationFileUpload = (event) => {
                       <span class="text-sm text-gray-500"> ({{ calculateCareerDuration(career.period) }}) </span>
                     </p>
                     <p class="text-gray-600">
-                      {{ [career.jobCategory.name, career.jobTitle, career.department].filter(Boolean).join(' | ') }}
+                      {{ [career.jobCategory.name, career.position, career.department].filter(Boolean).join(' | ') }}
                     </p>
                     <p class="text-gray-600 mt-2">{{ career.content }}</p>
                   </div>
@@ -1042,7 +1074,7 @@ const handleEducationFileUpload = (event) => {
                     <button class="text-gray-400 hover:text-gray-600" @click="modifyCareer(index)">
                       <i class="pi pi-pencil"></i>
                     </button>
-                    <button class="text-gray-400 hover:text-gray-600" @click="deleteCareer(index)">
+                    <button class="text-gray-400 hover:text-gray-600" @click="deleteCareer(career)">
                       <i class="pi pi-trash"></i>
                     </button>
                   </div>
@@ -1252,12 +1284,12 @@ const handleEducationFileUpload = (event) => {
                 placeholder="퇴사일"
                 :showIcon="true"
                 class="w-full"
-                :disabled="careerInfo.isCurrentJob"
+                :disabled="careerInfo.isCurrent"
               />
             </div>
           </div>
           <div class="flex items-center gap-2 mt-2">
-            <Checkbox v-model="careerInfo.isCurrentJob" :binary="true" />
+            <Checkbox v-model="careerInfo.isCurrent" :binary="true" />
             <label class="text-sm text-gray-600">재직중</label>
           </div>
         </div>
@@ -1277,7 +1309,7 @@ const handleEducationFileUpload = (event) => {
         <!-- 직책 추가 -->
         <div class="space-y-2">
           <label class="block text-sm font-medium text-gray-700">직책</label>
-          <InputText v-model="careerInfo.jobTitle" placeholder="직책을 입력해주세요" class="w-full" />
+          <InputText v-model="careerInfo.position" placeholder="직책을 입력해주세요" class="w-full" />
         </div>
 
         <!-- 부서 -->
@@ -1301,7 +1333,7 @@ const handleEducationFileUpload = (event) => {
         <div class="space-y-2">
           <div class="flex items-center justify-between">
             <label class="block text-sm font-medium text-gray-700">
-              {{ careerInfo.isCurrentJob ? '재직증명서' : '경력증명서' }}
+              {{ careerInfo.isCurrent ? '재직증명서' : '경력증명서' }}
               <span class="text-gray-400 ml-1">(선택)</span>
             </label>
             <div>
@@ -1311,9 +1343,13 @@ const handleEducationFileUpload = (event) => {
               </label>
             </div>
           </div>
-          <div v-if="careerInfo.certificateFile" class="text-sm text-gray-600">
-            선택된 파일: {{ careerInfo.certificateFile.name }}
-            <button @click="careerInfo.certificateFile = null" class="ml-2 text-red-500 hover:text-red-700">
+          <div v-if="careerInfo.fileId" class="text-sm text-gray-600">
+            {{ careerInfo.fileId?.name ? `${careerInfo.fileId.name}` : '증빙서류 제출 완료' }}
+            <button
+              v-if="careerInfo.fileId?.name"
+              class="ml-2 text-red-500 hover:text-red-700"
+              @click="careerInfo.fileId = null"
+            >
               <i class="pi pi-times"></i>
             </button>
           </div>
