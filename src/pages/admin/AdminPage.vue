@@ -1,187 +1,162 @@
 <script setup>
-import { ref } from 'vue'
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import InputText from 'primevue/inputtext';
+import Button from 'primevue/button';
 
-const menuItems = ref([
-    { label: '사용자 관리', icon: 'pi pi-users', to: '/admin/users' },
-    { label: 'FAQ 관리', icon: 'pi pi-question-circle', to: '/admin/faq' },
-    { label: '기업회원 신청', icon: 'pi pi-briefcase', to: '/admin/businessApplications' }
-    // { label: '대시보드', icon: 'pi pi-home', to: '/admin' },
-    // { label: '설정', icon: 'pi pi-cog', to: '/admin/settings' }
-])
+const router = useRouter();
+const loginForm = ref({
+    username: 'admin',
+    password: 'admin'
+});
+
+const loading = ref(false);
+
+const handleLogin = async () => {
+    if (!loginForm.value.username || !loginForm.value.password) {
+        alert('아이디와 비밀번호를 입력해주세요.');
+        return;
+    }
+
+    loading.value = true;
+    try {
+        // TODO: 실제 로그인 API 연동
+        // const response = await login(loginForm.value);
+        
+        // 임시 로그인 처리 (실제로는 API 응답으로 처리)
+        if (loginForm.value.username === 'admin' && loginForm.value.password === 'admin') {
+            // 로그인 성공 시 사용자 관리 페이지로 이동
+            router.push('/admin/users');
+        } else {
+            alert('아이디 또는 비밀번호가 올바르지 않습니다.');
+        }
+    } catch (error) {
+        console.error('로그인 실패:', error);
+        alert('로그인 처리 중 오류가 발생했습니다.');
+    } finally {
+        loading.value = false;
+    }
+};
 </script>
 
 <template>
-    <div class="admin-layout">
-        <!-- 사이드바 -->
-        <div class="admin-sidebar">
-            <ul class="menu-list">
-                <li v-for="item in menuItems" :key="item.label" class="menu-item">
-                    <router-link :to="item.to" class="menu-link" v-slot="{ isActive }">
-                        <div :class="['menu-link-content', { 'active': isActive }]">
-                            <i :class="[item.icon, 'text-xl']"></i>
-                            <span>{{ item.label }}</span>
-                        </div>
-                    </router-link>
-                </li>
-            </ul>
-        </div>
-
-        <!-- 메인 컨텐츠 -->
-        <div class="admin-content">
-            <header class="admin-header">
-                <div class="header-content">
-                    <div class="flex items-center gap-2">
-                        <i class="pi pi-shield text-[#8B8BF5] text-2xl"></i>
-                        <h1 class="text-xl font-bold text-gray-800">관리자 페이지</h1>
-                    </div>
-                    <div class="user-info">
-                        <span class="text-gray-600">관리자</span>
-                        <i class="pi pi-user ml-2 text-gray-600"></i>
-                    </div>
-                </div>
-            </header>
+    <div class="admin-login">
+        <div class="login-container">
+            <div class="login-header">
+                <i class="pi pi-shield text-[#8B8BF5] text-4xl"></i>
+                <h1>관리자 로그인</h1>
+            </div>
             
-            <main class="admin-main">
-                <div class="dashboard-cards">
-                    <router-link to="/admin/users" class="card">
-                        <div class="card-content">
-                            <i class="pi pi-users text-[#8B8BF5] text-4xl"></i>
-                            <div class="card-text">
-                                <h3>사용자 관리</h3>
-                                <p class="text-gray-600">사용자 목록 및 관리</p>
-                            </div>
-                        </div>
-                    </router-link>
-                    <router-link to="/admin/faq" class="card">
-                        <div class="card-content">
-                            <i class="pi pi-question-circle text-[#8B8BF5] text-4xl"></i>
-                            <div class="card-text">
-                                <h3>FAQ 관리</h3>
-                                <p class="text-gray-600">자주 묻는 질문 관리</p>
-                            </div>
-                        </div>
-                    </router-link>
+            <form @submit.prevent="handleLogin" class="login-form">
+                <div class="form-group">
+                    <label for="username">아이디</label>
+                    <span class="p-input-icon-left w-full">
+                        <i class="pi pi-user"></i>
+                        <InputText
+                            id="username"
+                            v-model="loginForm.username"
+                            type="text"
+                            class="w-full"
+                            placeholder="아이디를 입력하세요"
+                        />
+                    </span>
                 </div>
-            </main>
+
+                <div class="form-group">
+                    <label for="password">비밀번호</label>
+                    <span class="p-input-icon-left w-full">
+                        <i class="pi pi-lock"></i>
+                        <InputText
+                            id="password"
+                            v-model="loginForm.password"
+                            type="password"
+                            class="w-full"
+                            placeholder="비밀번호를 입력하세요"
+                        />
+                    </span>
+                </div>
+
+                <Button
+                    type="submit"
+                    label="로그인"
+                    :loading="loading"
+                    class="w-full"
+                />
+            </form>
         </div>
     </div>
 </template>
 
 <style lang="scss" scoped>
-.admin-layout {
-    display: flex;
+.admin-login {
     min-height: 100vh;
-}
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f9fafb;
+    padding: 1rem;
 
-.admin-sidebar {
-    width: 250px;
-    background-color: white;
-    border-right: 1px solid #e5e7eb;
-    padding: 1.5rem 1rem;
-    padding-top: 2rem;
+    .login-container {
+        width: 100%;
+        max-width: 400px;
+        background-color: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+    }
 
-    .menu-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
+    .login-header {
+        text-align: center;
+        margin-bottom: 2rem;
 
-        .menu-item {
-            margin: 0.5rem 0;
+        h1 {
+            margin-top: 1rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #1f2937;
+        }
+    }
 
-            .menu-link {
-                text-decoration: none;
-                
-                .menu-link-content {
-                    display: flex;
-                    align-items: center;
-                    padding: 0.75rem 1rem;
-                    color: #4b5563;
-                    border-radius: 8px;
-                    transition: all 0.3s;
+    .login-form {
+        .form-group {
+            margin-bottom: 1.5rem;
 
-                    i {
-                        margin-right: 0.75rem;
-                    }
+            label {
+                display: block;
+                margin-bottom: 0.5rem;
+                color: #4b5563;
+                font-weight: 500;
+            }
+        }
 
-                    &:hover {
-                        background-color: #f3f4f6;
-                        color: #8B8BF5;
-                    }
+        :deep(.p-input-icon-left) {
+            width: 100%;
 
-                    &.active {
-                        background-color: #8B8BF5;
-                        color: white;
-                    }
+            i {
+                color: #9CA3AF;
+            }
+
+            input {
+                width: 100%;
+                padding-left: 2.5rem;
+                border-radius: 8px;
+
+                &:enabled:focus {
+                    border-color: #8B8BF5;
+                    box-shadow: 0 0 0 2px rgba(139, 139, 245, 0.1);
                 }
             }
         }
-    }
-}
 
-.admin-content {
-    flex: 1;
-    background-color: #f9fafb;
-}
-
-.admin-header {
-    background-color: white;
-    padding: 1rem 2rem;
-    border-bottom: 1px solid #e5e7eb;
-
-    .header-content {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-}
-
-.admin-main {
-    padding: 2rem;
-}
-
-.dashboard-cards {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 2rem;
-    margin-top: 1rem;
-
-    .card {
-        background-color: white;
-        border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s;
-        text-decoration: none;
-        height: 200px;
-        
-        &:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .card-content {
-            height: 100%;
-            padding: 2rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 1.5rem;
-
-            .card-text {
-                text-align: center;
-
-                h3 {
-                    margin: 0;
-                    color: #1f2937;
-                    font-size: 1.25rem;
-                    font-weight: bold;
-                    margin-bottom: 0.5rem;
-                }
-
-                p {
-                    margin: 0;
-                    font-size: 0.875rem;
-                }
+        .p-button {
+            height: 2.75rem;
+            border-radius: 8px;
+            background-color: #8B8BF5;
+            border-color: #8B8BF5;
+            
+            &:enabled:hover {
+                background-color: darken(#8B8BF5, 5%);
+                border-color: darken(#8B8BF5, 5%);
             }
         }
     }

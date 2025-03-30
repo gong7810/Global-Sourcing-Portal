@@ -4,82 +4,106 @@ import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import Dropdown from 'primevue/dropdown';
 import { useRouter } from 'vue-router';
+import AdminSidebar from '@/components/admin/AdminSidebar.vue'; // 사이드바 컴포넌트 임포트
 
 const router = useRouter();
 
-// 사용자 상태 정의
-const USER_STATUS = {
-    ACTIVE: '사용 중',
-    SUSPENDED: '정지'
-};
-
-// 상태 변경 사유 기본값
-const STATUS_REASON = {
-    [USER_STATUS.ACTIVE]: '계정 활성화',
-    [USER_STATUS.SUSPENDED]: '규정 위반'
-};
-
-// 샘플 사용자 데이터
+// 샘플 사용자 데이터 수정
 const users = ref([
     {
-        id: 1,
-        name: '홍길동',
-        email: 'hong@example.com',
-        role: '일반회원',
-        status: USER_STATUS.ACTIVE,
-        lastLogin: '2024-03-15',
-        joinDate: '2024-01-01',
-        statusHistory: [
-            {
-                status: USER_STATUS.ACTIVE,
-                reason: '최초 가입',
-                date: '2024-01-01',
-                by: '시스템'
-            }
-        ]
+        id: 9,
+        loginId: 'user9',
+        name: '고용주9',
+        mobile: '01011110000',
+        email: 'user10@gmail.com',
+        role: 'Admin',
+        gender: '남',
+        employer: 'Y',
+        active: 'N',
+        createdAt: '2025-03-29 13:09:21',
+        updatedAt: null
     },
     {
-        id: 2,
-        name: '김철수',
-        email: 'kim@example.com',
-        role: '기업회원',
-        status: USER_STATUS.ACTIVE,
-        lastLogin: '2024-02-01',
-        joinDate: '2023-12-15'
+        id: 8,
+        loginId: 'user10',
+        name: '구직자10',
+        mobile: '01011110000',
+        email: 'user3@gmail.com',
+        role: null,
+        gender: '남',
+        employer: 'N',
+        active: 'Y',
+        createdAt: '2025-03-29 13:07:50',
+        updatedAt: null
     },
     {
-        id: 3,
-        name: '이영희',
-        email: 'lee@example.com',
-        role: '일반회원',
-        status: USER_STATUS.SUSPENDED,
-        lastLogin: '2024-03-10',
-        joinDate: '2024-01-15',
-        suspendReason: '부적절한 게시물 작성',
-        suspendEndDate: '2024-04-10'
+        id: 7,
+        loginId: 'user6',
+        name: '고용주2',
+        mobile: null,
+        email: null,
+        role: null,
+        gender: null,
+        employer: 'Y',
+        active: 'Y',
+        createdAt: '2025-03-27 22:36:03',
+        updatedAt: '2025-03-27 22:36:13'
+    },
+    {
+        id: 6,
+        loginId: 'user5',
+        name: '고용주1',
+        mobile: null,
+        email: null,
+        role: null,
+        gender: null,
+        employer: 'Y',
+        active: 'Y',
+        createdAt: '2025-03-27 22:35:57',
+        updatedAt: '2025-03-27 22:36:12'
+    },
+    {
+        id: 5,
+        loginId: 'user4',
+        name: '구직자3',
+        mobile: '01022223333',
+        email: 'user4@gmail.com',
+        role: null,
+        gender: '여',
+        employer: 'N',
+        active: 'Y',
+        createdAt: '2025-03-26 14:02:20',
+        updatedAt: '2025-03-28 22:15:58'
     }
 ]);
 
-// 검색 및 필터링
-const searchQuery = ref('');
-const selectedStatus = ref(null);
-const statusOptions = [
-    { label: '전체', value: null },
-    { label: USER_STATUS.ACTIVE, value: USER_STATUS.ACTIVE },
-    { label: USER_STATUS.SUSPENDED, value: USER_STATUS.SUSPENDED }
-];
+// 각 컬럼별 검색어 상태
+const filters = ref({
+    role: null,
+    loginId: '',
+    name: '',
+    mobile: '',
+    email: ''
+});
 
 // 필터링된 사용자 목록
 const filteredUsers = computed(() => {
     return users.value.filter(user => {
-        const matchesSearch = searchQuery.value === '' || 
-            user.name.includes(searchQuery.value) || 
-            user.email.includes(searchQuery.value);
-        const matchesStatus = selectedStatus.value === null || 
-            user.status === selectedStatus.value;
-        return matchesSearch && matchesStatus;
+        return (
+            (!filters.value.role || user.role?.toLowerCase().includes(filters.value.role.toLowerCase())) &&
+            (!filters.value.loginId || user.loginId?.toLowerCase().includes(filters.value.loginId.toLowerCase())) &&
+            (!filters.value.name || user.name?.toLowerCase().includes(filters.value.name.toLowerCase())) &&
+            (!filters.value.mobile || user.mobile?.includes(filters.value.mobile)) &&
+            (!filters.value.email || user.email?.toLowerCase().includes(filters.value.email.toLowerCase()))
+        );
     });
 });
+
+// 검색 핸들러
+const handleSearch = () => {
+    // 검색 로직 구현
+    // API 호출 또는 로컬 필터링
+};
 
 // 계정 상태 변경 모달
 const showStatusModal = ref(false);
@@ -145,34 +169,35 @@ const getStatusStyle = (status) => {
     }
 };
 
-// 사이드바 메뉴 아이템
-const menuItems = ref([
-    { label: '사용자 관리', icon: 'pi pi-users', to: '/admin/users' },
-    { label: 'FAQ 관리', icon: 'pi pi-question-circle', to: '/admin/faq' },
-    { label: '기업회원 신청', icon: 'pi pi-briefcase', to: '/admin/businessApplications' }
-]);
-
 // 뒤로가기 함수
 const goBack = () => {
     router.push('/admin');
+};
+
+// 체크박스 관련 상태 추가
+const selectedUsers = ref([]);
+const selectAll = ref(false);
+
+// 전체 선택/해제 처리 함수
+const handleSelectAll = () => {
+    if (selectAll.value) {
+        selectedUsers.value = filteredUsers.value.map(user => user.id);
+    } else {
+        selectedUsers.value = [];
+    }
+};
+
+// 개별 체크박스 선택 시 전체 선택 상태 업데이트
+const updateSelectAll = () => {
+    selectAll.value = filteredUsers.value.length > 0 && 
+        selectedUsers.value.length === filteredUsers.value.length;
 };
 </script>
 
 <template>
     <div class="admin-layout">
-        <!-- 사이드바 -->
-        <div class="admin-sidebar">
-            <ul class="menu-list">
-                <li v-for="item in menuItems" :key="item.label" class="menu-item">
-                    <router-link :to="item.to" class="menu-link" v-slot="{ isActive }">
-                        <div :class="['menu-link-content', { 'active': isActive }]">
-                            <i :class="[item.icon, 'text-xl']"></i>
-                            <span>{{ item.label }}</span>
-                        </div>
-                    </router-link>
-                </li>
-            </ul>
-        </div>
+        <!-- 사이드바 컴포넌트 사용 -->
+        <AdminSidebar />
 
         <!-- 메인 컨텐츠 -->
         <div class="admin-content">
@@ -188,62 +213,104 @@ const goBack = () => {
                     </div>
                 </div>
 
-                <!-- 검색 및 필터 -->
-                <div class="search-filter-section">
-                    <div class="search-box">
-                        <input 
-                            v-model="searchQuery" 
-                            type="text" 
-                            class="search-input" 
-                            placeholder="이름 또는 이메일로 검색" 
-                        />
-                    </div>
-                    <div class="filter-box">
-                        <Dropdown
-                            v-model="selectedStatus"
-                            :options="statusOptions"
-                            optionLabel="label"
-                            optionValue="value"
-                            placeholder="상태별 필터"
-                            class="w-full md:w-14rem"
-                        />
-                    </div>
-                </div>
-
                 <!-- 사용자 목록 -->
                 <div class="user-list">
+                    <!-- 검색 영역 추가 -->
+                    <div class="search-area">
+                        <div class="search-fields">
+                            <div class="search-field">
+                                <Dropdown
+                                    v-model="filters.role"
+                                    :options="['User', 'Manager', 'Admin']"
+                                    placeholder="그룹"
+                                    class="w-full"
+                                />
+                            </div>
+                            <div class="search-field">
+                                <InputText
+                                    v-model="filters.loginId"
+                                    type="text"
+                                    placeholder="로그인 ID"
+                                    class="w-full"
+                                    @keyup.enter="handleSearch"
+                                />
+                            </div>
+                            <div class="search-field">
+                                <InputText
+                                    v-model="filters.name"
+                                    type="text"
+                                    placeholder="이름"
+                                    class="w-full"
+                                    @keyup.enter="handleSearch"
+                                />
+                            </div>
+                            <div class="search-field">
+                                <InputText
+                                    v-model="filters.mobile"
+                                    type="text"
+                                    placeholder="모바일"
+                                    class="w-full"
+                                    @keyup.enter="handleSearch"
+                                />
+                            </div>
+                            <div class="search-field">
+                                <InputText
+                                    v-model="filters.email"
+                                    type="text"
+                                    placeholder="이메일"
+                                    class="w-full"
+                                    @keyup.enter="handleSearch"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 기존 테이블 -->
                     <div class="table-container">
                         <table>
                             <thead>
                                 <tr>
+                                    <th>
+                                        <input 
+                                            type="checkbox" 
+                                            v-model="selectAll"
+                                            @change="handleSelectAll"
+                                        />
+                                    </th>
+                                    <th>순번</th>
+                                    <th>로그인 ID</th>
                                     <th>이름</th>
+                                    <th>모바일</th>
                                     <th>이메일</th>
-                                    <th>회원구분</th>
-                                    <th>상태</th>
-                                    <th>최근 로그인</th>
-                                    <th>가입일</th>
-                                    <th>관리</th>
+                                    <th>그룹</th>
+                                    <th>성별</th>
+                                    <th>고용주</th>
+                                    <th>Active</th>
+                                    <th>생성일시</th>
+                                    <th>수정일시</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="user in filteredUsers" :key="user.id">
-                                    <td>{{ user.name }}</td>
-                                    <td>{{ user.email }}</td>
-                                    <td>{{ user.role }}</td>
+                                <tr v-for="(user, index) in filteredUsers" :key="user.id">
                                     <td>
-                                        <span :class="['status-badge', getStatusStyle(user.status)]">
-                                            {{ user.status }}
-                                        </span>
-                                    </td>
-                                    <td>{{ user.lastLogin }}</td>
-                                    <td>{{ user.joinDate }}</td>
-                                    <td>
-                                        <Button 
-                                            icon="pi pi-cog" 
-                                            class="p-button-text" 
-                                            @click="openStatusModal(user)"
+                                        <input 
+                                            type="checkbox" 
+                                            v-model="selectedUsers" 
+                                            :value="user.id"
+                                            @change="updateSelectAll"
                                         />
                                     </td>
+                                    <td>{{ index + 1 }}</td>
+                                    <td>{{ user.loginId }}</td>
+                                    <td>{{ user.name }}</td>
+                                    <td>{{ user.mobile }}</td>
+                                    <td>{{ user.email }}</td>
+                                    <td>{{ user.role }}</td>
+                                    <td>{{ user.gender }}</td>
+                                    <td>{{ user.employer ? 'Y' : 'N' }}</td>
+                                    <td>{{ user.active ? 'Y' : 'N' }}</td>
+                                    <td>{{ user.createdAt }}</td>
+                                    <td>{{ user.updatedAt }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -341,51 +408,6 @@ const goBack = () => {
     min-height: 100vh;
 }
 
-.admin-sidebar {
-    width: 250px;
-    background-color: white;
-    border-right: 1px solid #e5e7eb;
-    padding: 1.5rem 1rem;
-    padding-top: 2rem;
-
-    .menu-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-
-        .menu-item {
-            margin: 0.5rem 0;
-
-            .menu-link {
-                text-decoration: none;
-                
-                .menu-link-content {
-                    display: flex;
-                    align-items: center;
-                    padding: 0.75rem 1rem;
-                    color: #4b5563;
-                    border-radius: 8px;
-                    transition: all 0.3s;
-
-                    i {
-                        margin-right: 0.75rem;
-                    }
-
-                    &:hover {
-                        background-color: #f3f4f6;
-                        color: #8B8BF5;
-                    }
-
-                    &.active {
-                        background-color: #8B8BF5;
-                        color: white;
-                    }
-                }
-            }
-        }
-    }
-}
-
 .admin-content {
     flex: 1;
     background-color: #f9fafb;
@@ -420,59 +442,59 @@ const goBack = () => {
     }
 
     .search-filter-section {
-        display: flex;
-        gap: 1rem;
-        margin-bottom: 2rem;
-
         .search-box {
             flex: 1;
-            max-width: 300px;
-
-            .search-input {
-                width: 100%;
+            max-width: 600px; // 검색 영역 넓이 조정
+            
+            :deep(.p-inputtext) {
                 height: 2.5rem;
-                padding: 0.5rem 1rem;
-                border: 1px solid #E5E7EB;
-                border-radius: 6px;
-                font-size: 0.875rem;
-                background-color: white;
-                
-                &:focus {
-                    outline: none;
-                    border-color: #E5E7EB;
-                    box-shadow: none;
-                }
-
-                &::placeholder {
-                    color: #9CA3AF;
-                }
+                padding-left: 2.5rem; // 검색 아이콘을 위한 여백
             }
-        }
-
-        .filter-box {
-            width: 150px;
 
             :deep(.p-dropdown) {
-                width: 100%;
-                border: 1px solid #E5E7EB;
-                border-radius: 6px;
-                background-color: white;
+                height: 2.5rem;
 
                 .p-dropdown-label {
-                    padding: 0.5rem;
-                    font-size: 0.875rem;
-                    color: #374151;
-                }
-
-                &:not(.p-disabled).p-focus {
-                    border-color: #E5E7EB;
-                    box-shadow: none;
+                    padding-top: 0.5rem;
+                    padding-bottom: 0.5rem;
                 }
             }
         }
     }
 
     .user-list {
+        .search-area {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+            .search-fields {
+                display: flex;
+                gap: 1rem;
+                align-items: center;
+
+                .search-field {
+                    flex: 1;
+                    min-width: 150px;
+
+                    :deep(.p-inputtext),
+                    :deep(.p-dropdown) {
+                        width: 100%;
+                        height: 2.5rem;
+                    }
+
+                    :deep(.p-dropdown) {
+                        .p-dropdown-label {
+                            padding-top: 0.5rem;
+                            padding-bottom: 0.5rem;
+                        }
+                    }
+                }
+            }
+        }
+
         .table-container {
             background-color: white;
             border-radius: 8px;
@@ -632,6 +654,45 @@ const goBack = () => {
                 opacity: 0.6;
             }
         }
+    }
+}
+
+.column-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+
+    span {
+        font-weight: 600;
+        color: #495057;
+    }
+
+    :deep(.p-inputtext) {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+        height: 2rem;
+        width: 100%;
+        
+        &:focus {
+            box-shadow: none;
+            border-color: #8B8BF5;
+        }
+    }
+}
+
+.table-container {
+    th {
+        padding: 0.75rem;
+        font-weight: 600;
+        color: #495057;
+        background-color: #f8f9fa;
+    }
+
+    input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        accent-color: #8B8BF5;
     }
 }
 </style>
