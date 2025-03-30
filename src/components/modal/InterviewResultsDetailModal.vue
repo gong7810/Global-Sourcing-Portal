@@ -337,7 +337,7 @@ const printResume = () => {
           </div>
 
           <!-- 프로필 사진 (오른쪽) -->
-          <div class="flex flex-col items-center gap-2">
+          <div class="flex flex-col items-center">
             <div class="w-[140px] h-[180px] bg-gray-100 rounded-lg overflow-hidden">
               <img
                 v-if="interview.candidate.profileImage?.exists"
@@ -349,14 +349,6 @@ const printResume = () => {
                 <i class="pi pi-user text-4xl"></i>
               </div>
             </div>
-            <button
-              v-if="interview.candidate.profileImage?.exists"
-              @click="downloadFile('프로필사진', interview.candidate.profileImage)"
-              class="text-sm text-[#8B8BF5] hover:text-[#7A7AE6] flex items-center gap-1"
-            >
-              <i class="pi pi-download"></i>
-              <span>다운로드</span>
-            </button>
           </div>
         </div>
       </div>
