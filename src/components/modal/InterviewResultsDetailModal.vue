@@ -152,6 +152,11 @@ const printResume = () => {
     </style>
   `;
 
+  // printResume 함수 내부의 education 처리 부분 수정
+  const educationData = Array.isArray(props.interview?.candidate.education) 
+    ? props.interview?.candidate.education 
+    : [props.interview?.candidate.education].filter(Boolean);
+
   // 이력서 내용 생성
   const resumeContent = `
     <div class="resume-container">
@@ -191,9 +196,13 @@ const printResume = () => {
       <section class="mb-4">
         <table>
           <tr><th colspan="4" style="text-align: center; background-color: #e5e5e5;">학력</th></tr>
-          <tr><th>최종학력</th><td colspan="3" style="font-weight: bold;">${props.interview?.candidate.education?.[0]?.school} (${props.interview?.candidate.education?.[0]?.degree})</td></tr>
+          <tr><th>최종학력</th><td colspan="3" style="font-weight: bold;">${Array.isArray(props.interview?.candidate.education) 
+            ? props.interview?.candidate.education[0].school 
+            : props.interview?.candidate.education.school }} (${Array.isArray(props.interview?.candidate.education)
+            ? props.interview?.candidate.education[0].degree
+            : props.interview?.candidate.education.degree })</td></tr>
         </table>
-        ${props.interview?.candidate.education?.map((edu, index) => `
+        ${educationData.map((edu, index) => `
           <div class="mb-2">
             <table>
               <tr><th>학교명</th><td>${edu.school || '-'}</td><th>학위</th><td>${edu.degree || '-'}</td></tr>
@@ -328,7 +337,7 @@ const printResume = () => {
           </div>
 
           <!-- 프로필 사진 (오른쪽) -->
-          <div class="flex flex-col items-center gap-2">
+          <div class="flex flex-col items-center">
             <div class="w-[140px] h-[180px] bg-gray-100 rounded-lg overflow-hidden">
               <img
                 v-if="interview.candidate.profileImage?.exists"
@@ -340,14 +349,6 @@ const printResume = () => {
                 <i class="pi pi-user text-4xl"></i>
               </div>
             </div>
-            <button
-              v-if="interview.candidate.profileImage?.exists"
-              @click="downloadFile('프로필사진', interview.candidate.profileImage)"
-              class="text-sm text-[#8B8BF5] hover:text-[#7A7AE6] flex items-center gap-1"
-            >
-              <i class="pi pi-download"></i>
-              <span>다운로드</span>
-            </button>
           </div>
         </div>
       </div>
@@ -447,10 +448,14 @@ const printResume = () => {
         <div class="mb-4">
           <h3 class="text-lg font-bold">학력 사항</h3>
         </div>
-        <div v-if="interview.candidate.education?.length">
+        <div v-if="Array.isArray(interview?.candidate.education) ? interview?.candidate.education?.length : interview?.candidate.education">
           <div class="text-[#8B8BF5] mb-4">
-            최종학력: {{ interview.candidate.education[0].school }} 
-            ({{ interview.candidate.education[0].degree }})
+            최종학력: {{ Array.isArray(interview?.candidate.education) 
+              ? interview?.candidate.education[0].school 
+              : interview?.candidate.education.school }} 
+            ({{ Array.isArray(interview?.candidate.education)
+              ? interview?.candidate.education[0].degree
+              : interview?.candidate.education.degree }})
           </div>
           <div v-for="(edu, index) in interview.candidate.education" 
             :key="index"

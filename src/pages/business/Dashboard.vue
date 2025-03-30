@@ -136,7 +136,8 @@ const bookmarkedTalents = ref([
     koreanProficiency: '고급',
     koreanStudyDuration: '2년',
     koreanVisitExperience: '없음',
-    maritalStatus: '미혼'
+    maritalStatus: '미혼',
+    isInterviewOffered: true
   },
   {
     id: 2,
@@ -174,7 +175,8 @@ const bookmarkedTalents = ref([
         period: '2016.09 - 2020.08',
         description: '학점 3.8/4.0\n클라우드 컴퓨팅 연구실 인턴\n교내 프로그래밍 대회 2위'
       }
-    ]
+    ],
+    isInterviewOffered: false
   }
 ]);
 
@@ -252,8 +254,9 @@ const openResumeModal = (talent) => {
   showResumeModal.value = true;
 };
 
-// 면접 제안 페이지로 이동하는 함수 추가
+// 면접 제안 페이지로 이동하는 함수 수정
 const openInterviewOffer = (talent) => {
+  if (talent.isInterviewOffered) return;
   router.push(`/business/interview-offer/create/${talent.id}`);
 };
 
@@ -538,9 +541,13 @@ const calculateTotalCareer = (careers) => {
                 </button>
                 <button
                   @click="openInterviewOffer(talent)"
-                  class="w-[140px] px-4 py-2 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7A7AE6] transition-colors"
+                  :disabled="talent.isInterviewOffered"
+                  class="w-[140px] px-4 py-2 text-white rounded-lg transition-colors"
+                  :class="talent.isInterviewOffered 
+                    ? 'bg-gray-400 cursor-not-allowed' 
+                    : 'bg-[#8B8BF5] hover:bg-[#7A7AE6]'"
                 >
-                  면접 제안하기
+                  {{ talent.isInterviewOffered ? '제안 완료' : '면접 제안하기' }}
                 </button>
               </div>
             </div>
@@ -715,8 +722,15 @@ const calculateTotalCareer = (careers) => {
             style="font-size: 1.5rem"
           ></i>
         </Button>
-        <Button @click="openInterviewOffer(selectedCandidate)" class="bg-[#8B8BF5] hover:bg-[#7A7AE6]">
-          면접 제안하기
+        <Button 
+          @click="openInterviewOffer(selectedCandidate)"
+          :disabled="selectedCandidate?.isInterviewOffered"
+          class="transition-colors"
+          :class="selectedCandidate?.isInterviewOffered 
+            ? 'bg-gray-400' 
+            : 'bg-[#8B8BF5] hover:bg-[#7A7AE6]'"
+        >
+          {{ selectedCandidate?.isInterviewOffered ? '제안 완료' : '면접 제안하기' }}
         </Button>
       </div>
     </template>
