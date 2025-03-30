@@ -7,6 +7,7 @@ import { userRouter } from '@/router/user/userRouter';
 import { useAuthStore } from '@/store/auth/authStore';
 import { AUTH_EXCLUSIONS_ROUTER_NAME } from '@/apis/auth/authConstants';
 import { createRouter, createWebHistory } from 'vue-router';
+import { storeToRefs } from 'pinia';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -60,10 +61,15 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore();
+  const { userInfo } = storeToRefs(authStore);
 
   if (AUTH_EXCLUSIONS_ROUTER_NAME.includes(to.name)) {
     // 인증없이 접근가능 페이지 스킵
-    return next();
+    if (userInfo.value?.isCompany) {
+      return next({ path: '/business/index' });
+    } else {
+      return next();
+    }
   }
 
   if (authStore.isLogin()) {

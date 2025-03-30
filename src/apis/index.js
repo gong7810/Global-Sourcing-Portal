@@ -26,7 +26,7 @@ export function useApi() {
         Authorization: tokenInfo.value?.accessToken ? `Bearer ${tokenInfo.value.accessToken}` : ''
       };
 
-      // 이미지를 보내는 FormData인 경우 Content-Type 수정 필요 
+      // 이미지를 보내는 FormData인 경우 Content-Type 수정 필요
       if (data instanceof FormData) {
         headers['Content-Type'] = 'multipart/form-data';
       }
@@ -47,10 +47,10 @@ export function useApi() {
       // 로그인 여부 체크
       if (err.response?.status === 401) {
         messagePop.toast('인증 정보가 유효하지 않습니다. \n 로그인 페이지로 이동합니다.', 'error');
-        
-        // setTimeout(() => {
-        //   authStore.login();
-        // }, 1000);
+
+        setTimeout(() => {
+          authStore.login();
+        }, 1000);
 
         return;
       } else if (err.response?.status === 500) {
