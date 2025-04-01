@@ -356,25 +356,6 @@ const navigateToSection = (section) => {
   }
 };
 
-const getLastEducation = (educationList) => {
-  // 최종학력 찾기
-  const sortedEducation = [...educationList].sort((a, b) => {
-    const eduOrder = {
-      PHD: 5,
-      MASTERS: 4,
-      UNIVERSITY: 3,
-      COLLEGE: 2,
-      HIGH_SCHOOL: 1
-    };
-    return eduOrder[b.educationType.code] - eduOrder[a.educationType.code];
-  });
-
-  if (sortedEducation.length === 0) return '학력 정보 없음';
-
-  const lastEdu = sortedEducation[0];
-  return `${lastEdu.schoolName} ${lastEdu.educationType.name} ${lastEdu.isGraduated ? '졸업' : '재학중'}`;
-};
-
 const closeCareerModal = () => {
   showCareerModal.value = false;
 };
@@ -567,7 +548,7 @@ const deleteCareer = (career) => {
   });
 };
 
-// 경력 수정 로직
+// 경력 수정 모달값값 세팅
 const modifyCareer = (index) => {
   careerModifyFlag.value = true;
   careerModifyIdx.value = index;
@@ -589,6 +570,36 @@ const modifyCareer = (index) => {
   };
 
   showCareerModal.value = true;
+};
+
+// 최종학력 찾기
+const getLastEducation = (educationList) => {
+  const sortedEducation = [...educationList].sort((a, b) => {
+    const eduOrder = {
+      PHD: 5,
+      MASTERS: 4,
+      UNIVERSITY: 3,
+      COLLEGE: 2,
+      HIGH_SCHOOL: 1
+    };
+    return eduOrder[b.educationType.code] - eduOrder[a.educationType.code];
+  });
+
+  if (sortedEducation.length === 0) return '학력 정보 없음';
+
+  const lastEdu = sortedEducation[0];
+  return `${lastEdu.schoolName} ${lastEdu.educationType.name} ${lastEdu.isGraduated ? '졸업' : '재학중'}`;
+};
+
+// 최종학력 설정 함수 추가
+const setLastEducation = (selectedIndex) => {
+  educationList.value.forEach((edu, index) => {
+    edu.isLastEducation = index === selectedIndex;
+  });
+
+  // 선택된 학력을 최종학력으로 설정
+  const selectedEducation = educationList.value[selectedIndex];
+  basicInfo.value.lastEducation = `${selectedEducation.schoolName} ${selectedEducation.educationType.name} ${selectedEducation.isGraduated ? '졸업' : '재학중'}`;
 };
 
 const closeEducationModal = () => {
@@ -758,17 +769,6 @@ const addCertification = () => {
 // 자격증 삭제 함수
 const removeCertification = (index) => {
   certificationList.value.splice(index, 1);
-};
-
-// 최종학력 설정 함수 추가
-const setLastEducation = (selectedIndex) => {
-  educationList.value.forEach((edu, index) => {
-    edu.isLastEducation = index === selectedIndex;
-  });
-
-  // 선택된 학력을 최종학력으로 설정
-  const selectedEducation = educationList.value[selectedIndex];
-  basicInfo.value.lastEducation = `${selectedEducation.schoolName} ${selectedEducation.educationType.name} ${selectedEducation.isGraduated ? '졸업' : '재학중'}`;
 };
 
 // 이미지 바이너리 변환
