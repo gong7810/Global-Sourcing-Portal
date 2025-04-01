@@ -46,10 +46,21 @@ export const deleteExperience = async (id) => {
   }
 };
 
-// 사용자 학력 수정 API
-export const updateEducation = async (body) => {
+// 사용자 학력 추가, 수정 API
+export const upsertEducation = async (body) => {
   try {
     const response = await api.post(`/education`, body);
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// 사용자 학력 삭제 API
+export const deleteEducation = async (id) => {
+  try {
+    const response = await api.del(`/education/${id}`);
 
     return response.data;
   } catch (error) {

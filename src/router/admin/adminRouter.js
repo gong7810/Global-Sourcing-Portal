@@ -1,9 +1,4 @@
 export const adminRouter = [
-  // {
-  //     path: '/admin/login',
-  //     name: 'adminLogin',
-  //     component: () => import('@/pages/admin/AdminLoginPage.vue')
-  // },
   {
     path: '/admin',
     name: 'Admin',

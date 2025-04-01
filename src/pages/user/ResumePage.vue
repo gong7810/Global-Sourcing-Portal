@@ -5,7 +5,7 @@ import { useMessagePop } from '@/plugins/commonutils';
 
 import { getAccount } from '@/apis/auth/authApis';
 import { getCodeList, fileUpload } from '@/apis/common/commonApis';
-import { getResume, upsertExperience, updateResume, deleteExperience } from '@/apis/user/userApis';
+import { getResume, upsertExperience, updateResume, deleteExperience, upsertEducation } from '@/apis/user/userApis';
 
 const router = useRouter();
 const messagePop = useMessagePop();
@@ -74,7 +74,7 @@ const educationList = ref([
     period: '2019.03 - 2023.02',
     major: '컴퓨터공학과',
     isGraduated: true,
-    details: '졸업논문: AI 기반 추천 시스템 개발',
+    content: '졸업논문: AI 기반 추천 시스템 개발',
     isLastEducation: true,
     certificateFile: {
       name: '서울대학교_졸업증명서.pdf',
@@ -88,7 +88,7 @@ const educationList = ref([
     period: '2015.03 - 2019.02',
     major: '경영학과',
     isGraduated: true,
-    details: '복수전공: 경영정보학',
+    content: '복수전공: 경영정보학',
     isLastEducation: false,
     certificateFile: {
       name: '한국대학교_졸업증명서.pdf',
@@ -102,7 +102,7 @@ const educationList = ref([
     period: '2012.03 - 2015.02',
     major: '문과계열',
     isGraduated: true,
-    details: '학생회장 활동',
+    content: '학생회장 활동',
     isLastEducation: false,
     certificateFile: {
       name: '한국고등학교_졸업증명서.pdf',
@@ -134,7 +134,7 @@ const educationInfo = ref({
   startDate: null,
   endDate: null,
   isGraduated: false,
-  details: '',
+  content: '',
   fileId: null
 });
 
@@ -285,7 +285,6 @@ const getGlobalAge = () => {
 const getResumeInfo = async () => {
   const response = await getResume();
 
-  console.log(response);
   resumeInfo.value = response;
 
   // 공개여부 설정
@@ -306,6 +305,7 @@ const getResumeInfo = async () => {
 
   setCareerInfo();
 
+  setEducationInfo();
   // 총 경력과 최종학력 계산
   // basicInfo.value.lastEducation = getLastEducation(educationList.value);
 };
@@ -327,6 +327,30 @@ const setCareerInfo = () => {
           department: exp.department, //부서
           content: exp.content, //담당업무
           fileId: exp.fileId
+        });
+      }
+    });
+  });
+};
+
+// 학력 정보 세팅
+const setEducationInfo = () => {
+  educationList.value = [];
+
+  resumeInfo.value.educations.map((edu) => {
+    educationTypes.value.map((type) => {
+      if (type.code === edu.educationLevelCd) {
+        educationList.value.push({
+          id: edu.id,
+          resumeId: edu.resumeId,
+          schoolName: edu.schoolName,
+          period: `${edu?.startDt?.slice(0, 7).replace('-', '.')} - ${edu?.endDt?.slice(0, 7).replace('-', '.')}`,
+          isGraduated: edu.isGraduated,
+          educationType: toRaw(type),
+          educationLevelCd: edu.educationLevelCd,
+          major: edu.major,
+          content: edu.content,
+          fileId: edu.fileId
         });
       }
     });
@@ -548,7 +572,7 @@ const deleteCareer = (career) => {
   });
 };
 
-// 경력 수정 모달값값 세팅
+// 경력 수정 모달값 세팅
 const modifyCareer = (index) => {
   careerModifyFlag.value = true;
   careerModifyIdx.value = index;
@@ -599,7 +623,7 @@ const setLastEducation = (selectedIndex) => {
 
   // 선택된 학력을 최종학력으로 설정
   const selectedEducation = educationList.value[selectedIndex];
-  basicInfo.value.lastEducation = `${selectedEducation.schoolName} ${selectedEducation.educationType.name} ${selectedEducation.isGraduated ? '졸업' : '재학중'}`;
+  basicInfo.value.lastEducation = `${selectedEducation.schoolName} ${selectedEducation.isGraduated ? '졸업' : '재학중'}`;
 };
 
 const closeEducationModal = () => {
@@ -618,21 +642,21 @@ watch(
     // 경력 추가인 경우
     if (!educationModifyFlag.value) {
       educationInfo.value = {
-        educationType: '',
+        educationType: {},
         schoolName: '',
-        major: '',
         startDate: null,
         endDate: null,
         isGraduated: false,
-        details: '',
-        certificateFile: null
+        major: '',
+        content: '',
+        fileId: null
       };
     }
   }
 );
 
-// 학력 추가 로직
-const saveEducationInfo = () => {
+// 학력 추가, 수정 로직
+const saveEducationInfo = async () => {
   // 필수 필드 검증
   const requiredFields = {
     educationType: educationInfo.value.educationType,
@@ -642,12 +666,8 @@ const saveEducationInfo = () => {
   };
 
   // 대학 이상인 경우에만 졸업증명서 필수
-  if (
-    ['EDUCATION_LEVEL_2', 'EDUCATION_LEVEL_3', 'EDUCATION_LEVEL_4', 'EDUCATION_LEVEL_5'].includes(
-      educationInfo.value.educationType.code
-    )
-  ) {
-    requiredFields.certificateFile = educationInfo.value.certificateFile;
+  if (educationTypes.value.slice(1).includes(educationInfo.value.educationType)) {
+    requiredFields.fileId = educationInfo.value.fileId;
   }
 
   // 졸업인 경우 endDate도 필수
@@ -664,53 +684,88 @@ const saveEducationInfo = () => {
     return;
   }
 
-  const insertEdu = {
-    educationType: educationInfo.value.educationType,
-    schoolName: educationInfo.value.schoolName,
-    major: educationInfo.value.major,
-    period: !educationInfo.value.isGraduated
-      ? `${educationInfo.value.startDate.getFullYear()}.${(educationInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')} - 재학중`
-      : `${educationInfo.value.startDate.getFullYear()}.${(educationInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')} - ${educationInfo.value.endDate.getFullYear()}.${(educationInfo.value.endDate.getMonth() + 1).toString().padStart(2, '0')}`,
-    details: educationInfo.value.details,
-    isGraduated: educationInfo.value.isGraduated,
-    isLastEducation: false,
-    certificateFile: educationInfo.value.certificateFile
-  };
+  return;
+  // DONE: 저장 로직 시작
+  let body = {};
 
-  console.log(insertEdu);
+  if (educationInfo.value.fileId) {
+    let formData = saveImage(educationInfo.value.fileId);
 
-  if (educationModifyFlag.value) {
-    educationList.value[educationModifyIdx.value] = insertEdu;
+    const response = await fileUpload(formData);
+
+    body = {
+      id: educationInfo.value.id,
+      resumeId: resumeInfo.value.id,
+      schoolName: educationInfo.value.schoolName,
+      startDt: new Date(`${educationInfo.value.startDate}-01`).toISOString(),
+      endDt: educationInfo.value.isGraduated ? getNextMonth(formatYearMonthWithDot(educationInfo.value.endDate)) : null,
+      isGraduated: educationInfo.value.isGraduated,
+      educationLevelCd: educationInfo.value.educationType.code,
+      major: educationInfo.value.major,
+      content: educationInfo.value.content,
+      fileId: response.id
+    };
   } else {
-    educationList.value.push(insertEdu);
+    // 학력 증빙파일이 없는 경우
+    body = {
+      id: educationInfo.value.id,
+      resumeId: resumeInfo.value.id,
+      schoolName: educationInfo.value.schoolName,
+      startDt: new Date(`${educationInfo.value.startDate}-01`).toISOString(),
+      endDt: educationInfo.value.isGraduated ? getNextMonth(formatYearMonthWithDot(educationInfo.value.endDate)) : null,
+      isGraduated: educationInfo.value.isGraduated,
+      educationLevelCd: educationInfo.value.educationType.code,
+      major: educationInfo.value.major,
+      content: educationInfo.value.content
+    };
   }
+
+  await upsertEducation(body);
+
+  getResumeInfo();
+
+  // const insertEdu = {
+  //   educationType: educationInfo.value.educationType,
+  //   schoolName: educationInfo.value.schoolName,
+  //   major: educationInfo.value.major,
+  //   period: !educationInfo.value.isGraduated
+  //     ? `${educationInfo.value.startDate.getFullYear()}.${(educationInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')} - 재학중`
+  //     : `${educationInfo.value.startDate.getFullYear()}.${(educationInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')} - ${educationInfo.value.endDate.getFullYear()}.${(educationInfo.value.endDate.getMonth() + 1).toString().padStart(2, '0')}`,
+  //   content: educationInfo.value.content,
+  //   isGraduated: educationInfo.value.isGraduated,
+  //   isLastEducation: false,
+  //   certificateFile: educationInfo.value.certificateFile
+  // };
+
+  // if (educationModifyFlag.value) {
+  //   educationList.value[educationModifyIdx.value] = insertEdu;
+  // } else {
+  //   educationList.value.push(insertEdu);
+  // }
 
   educationModifyFlag.value = false;
   showEducationModal.value = false;
 };
 
-//학력 수정 로직
+//학력 수정 모달값 세팅
 const modifyEducation = (index) => {
   educationModifyFlag.value = true;
   educationModifyIdx.value = index;
 
-  console.log(educationList.value[index]);
-
   let startDate = educationList.value[index].period.split('-')[0];
   let endDate = educationList.value[index].period.split('-')[1];
 
-  console.log(startDate);
-  console.log(endDate);
-
   educationInfo.value = {
-    educationType: educationList.value[index].educationType,
+    id: educationList.value[index].id,
     schoolName: educationList.value[index].schoolName,
-    major: educationList.value[index].major,
+    isGraduated: endDate.trim() !== '재학중' ? true : false,
     startDate: new Date(startDate),
     endDate: endDate.trim() !== '재학중' ? new Date(endDate.trim()) : null,
-    isGraduated: endDate.trim() !== '재학중' ? true : false,
-    details: educationList.value[index].details,
-    certificateFile: educationList.value[index].certificateFile
+    educationType: educationList.value[index].educationType,
+    educationTypeCd: educationList.value[index].educationTypeCd,
+    major: educationList.value[index].major,
+    content: educationList.value[index].content,
+    fileId: educationList.value[index].fileId
   };
 
   console.log(educationInfo.value);
@@ -1110,7 +1165,7 @@ const handleEducationFileUpload = (event) => {
             <!-- 최종학력 표시 -->
             <div class="mb-4 p-4 bg-gray-50 rounded-lg">
               <div class="flex items-center gap-2">
-                <span class="text-gray-600">최종학력:</span>
+                <span class="text-gray-600">최종학력 :</span>
                 <span class="font-medium">{{ basicInfo.lastEducation }}</span>
               </div>
             </div>
@@ -1137,7 +1192,7 @@ const handleEducationFileUpload = (event) => {
                     <p class="text-gray-600">{{ education.educationType.name }}</p>
                     <p class="text-gray-600 mt-1">{{ education.period }}</p>
                     <p class="text-gray-600">{{ education.major }}</p>
-                    <p v-if="education.details" class="text-gray-600 mt-2">{{ education.details }}</p>
+                    <p v-if="education.content" class="text-gray-600 mt-2">{{ education.content }}</p>
                   </div>
                   <div class="flex gap-2">
                     <button class="text-gray-400 hover:text-gray-600" @click="modifyEducation(index)">
@@ -1150,15 +1205,13 @@ const handleEducationFileUpload = (event) => {
                 </div>
 
                 <!-- 학력 리스트 내 파일 표시 부분 -->
-                <div v-if="education.certificateFile" class="mt-4 border-t pt-4">
+                <div v-if="education.fileId" class="mt-4 border-t pt-4">
                   <div class="flex items-center justify-between">
                     <span class="text-sm text-gray-600">
-                      졸업증명서: {{ education.certificateFile.name }}
-                      <span
-                        v-if="['UNIVERSITY', 'COLLEGE', 'MASTERS', 'PHD'].includes(education.educationType.code)"
-                        class="text-red-500"
-                        >*필수</span
-                      >
+                      졸업증명서: {{ education.fileId?.name }}
+                      <span v-if="educationTypes.slice(1).includes(education.educationType)" class="text-red-500">
+                        *필수
+                      </span>
                     </span>
                   </div>
                 </div>
@@ -1437,7 +1490,7 @@ const handleEducationFileUpload = (event) => {
         <div class="space-y-2">
           <label class="block text-sm font-medium text-gray-700"> 주요내용 </label>
           <textarea
-            v-model="educationInfo.details"
+            v-model="educationInfo.content"
             rows="4"
             placeholder="프로젝트, 교육내용, 졸업논문 등에 대해 적어주세요"
             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF] resize-none"
@@ -1449,11 +1502,9 @@ const handleEducationFileUpload = (event) => {
           <div class="flex items-center justify-between">
             <label class="block text-sm font-medium text-gray-700">
               졸업증명서
-              <span
-                v-if="['UNIVERSITY', 'COLLEGE', 'MASTERS', 'PHD'].includes(educationInfo.educationType?.code)"
-                class="text-red-500"
-                >*필수</span
-              >
+              <span v-if="educationTypes.slice(1).includes(educationInfo.educationType)" class="text-red-500">
+                *필수
+              </span>
             </label>
             <div>
               <label class="cursor-pointer px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
