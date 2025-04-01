@@ -27,11 +27,12 @@ export const AUTH_EXCLUSIONS_ROUTER_NAME = [
   'InquiryPage',
   'TalentSearchPage',
   'InterviewOffers',
-  'AdminFaq',
-  'AdminInquiries',
-  'admin',
-  'AdminUserMng',
   'InterviewResults',
   'JobSeekerInterviews',
-  'AdminBusinessApplications'
+  // 관리자 페이지
+  'Admin'
+  // 'AdminFaq',
+  // 'AdminUserMng',
+  // 'AdminInquiries',
+  // 'AdminBusinessApplications',
 ];

@@ -1,13 +1,14 @@
+import { createRouter, createWebHistory } from 'vue-router';
 import AppLayout from '@/layout/AppLayout.vue';
-import { authRouter } from './auth/authRouter';
+import { authRouter } from '@/router/auth/authRouter';
 import { adminRouter } from '@/router/admin/adminRouter';
 import { commonRouter } from '@/router/common/commonRouter';
-import { businessRouter } from '@/router/business/businessRouter';
 import { userRouter } from '@/router/user/userRouter';
+import { businessRouter } from '@/router/business/businessRouter';
 import { useAuthStore } from '@/store/auth/authStore';
-import { AUTH_EXCLUSIONS_ROUTER_NAME } from '@/apis/auth/authConstants';
-import { createRouter, createWebHistory } from 'vue-router';
 import { storeToRefs } from 'pinia';
+import { AUTH_EXCLUSIONS_ROUTER_NAME } from '@/apis/auth/authConstants';
+import { useMessagePop } from '@/plugins/commonutils';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -62,11 +63,14 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore();
   const { userInfo } = storeToRefs(authStore);
+  const messagePop = useMessagePop();
 
   if (AUTH_EXCLUSIONS_ROUTER_NAME.includes(to.name)) {
     // 인증없이 접근가능 페이지 스킵
-    if (userInfo.value?.isCompany) {
+    if (userInfo.value?.isCompany && !userInfo.value?.roleCd) {
       return next({ path: '/business/index' });
+    } else if (userInfo.value?.roleCd) {
+      return next({ path: '/admin/users' });
     } else {
       return next();
     }
@@ -82,8 +86,8 @@ router.beforeEach((to, from, next) => {
     }
 
     // 접근권한 체크
-    if (authStore.hasRoles(to.meta, true)) {
-      authStore.historyPage(to.name);
+    if (authStore.hasRoles(to.meta)) {
+      // authStore.historyPage(to.name);
       return next();
     } else {
       messagePop.alert('접근 권한이 없습니다.', 'bad');

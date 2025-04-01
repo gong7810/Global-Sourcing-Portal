@@ -38,6 +38,11 @@ export const useAuthStore = defineStore(
       // location.href='/login';
     };
 
+    /* 접근 권한 체크 */
+    const hasRoles = (meta) => {
+      return meta.authorization.includes(userInfo.value.roleCd);
+    };
+
     /* 라인 state 관리 */
     const setState = (state) => {
       lineState.value = state;
@@ -52,7 +57,8 @@ export const useAuthStore = defineStore(
       setUserInfo,
       reset,
       isLogin,
-      login
+      login,
+      hasRoles
     };
   },
   {
