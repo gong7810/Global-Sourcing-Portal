@@ -684,7 +684,6 @@ const saveEducationInfo = async () => {
     return;
   }
 
-  return;
   // DONE: 저장 로직 시작
   let body = {};
 
@@ -1208,7 +1207,7 @@ const handleEducationFileUpload = (event) => {
                 <div v-if="education.fileId" class="mt-4 border-t pt-4">
                   <div class="flex items-center justify-between">
                     <span class="text-sm text-gray-600">
-                      졸업증명서: {{ education.fileId?.name }}
+                      {{ education.period.includes('재학중') ? '재학증명서' : '졸업증명서' }}: 제출완료
                       <span v-if="educationTypes.slice(1).includes(education.educationType)" class="text-red-500">
                         *필수
                       </span>
@@ -1513,9 +1512,13 @@ const handleEducationFileUpload = (event) => {
               </label>
             </div>
           </div>
-          <div v-if="educationInfo.certificateFile" class="text-sm text-gray-600">
-            선택된 파일: {{ educationInfo.certificateFile.name }}
-            <button @click="educationInfo.certificateFile = null" class="ml-2 text-red-500 hover:text-red-700">
+          <div v-if="educationInfo.fileId" class="text-sm text-gray-600">
+            {{ educationInfo.fileId?.name ? `${educationInfo.fileId.name}` : '졸업증명서 제출 완료' }}
+            <button
+              v-if="educationInfo.fileId?.name"
+              class="ml-2 text-red-500 hover:text-red-700"
+              @click="educationInfo.fileId = null"
+            >
               <i class="pi pi-times"></i>
             </button>
           </div>
