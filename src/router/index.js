@@ -91,7 +91,7 @@ router.beforeEach((to, from, next) => {
       return next();
     } else {
       messagePop.alert('접근 권한이 없습니다.', 'bad');
-      return;
+      return next({ path: from.path });
     }
   }
   /* 로그인진행 */
