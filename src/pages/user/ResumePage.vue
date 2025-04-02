@@ -44,7 +44,7 @@ const basicInfo = ref({
   email: 'yeji@naver.com',
   phone: '010-1234-7496',
   address: '505호',
-  criminalRecordFile: {
+  hasCriminalRecord: {
     // 파일 정보로 변경
     name: '범죄경력증명서.pdf',
     size: 1024 * 1024,
@@ -306,8 +306,9 @@ const getResumeInfo = async () => {
   setCareerInfo();
 
   setEducationInfo();
+
   // 총 경력과 최종학력 계산
-  // basicInfo.value.lastEducation = getLastEducation(educationList.value);
+  // basicInfo.value.finalEducation = getLastEducation(educationList.value);
 };
 
 // 경력 정보 세팅
@@ -344,10 +345,11 @@ const setEducationInfo = () => {
           id: edu.id,
           resumeId: edu.resumeId,
           schoolName: edu.schoolName,
-          period: `${edu?.startDt?.slice(0, 7).replace('-', '.')} - ${edu?.endDt?.slice(0, 7).replace('-', '.')}`,
+          period: `${edu?.startDt} - ${edu?.endDt}`,
           isGraduated: edu.isGraduated,
           educationType: toRaw(type),
           educationLevelCd: edu.educationLevelCd,
+          isFinal: edu.isFinal,
           major: edu.major,
           content: edu.content,
           fileId: edu.fileId
@@ -597,33 +599,51 @@ const modifyCareer = (index) => {
 };
 
 // 최종학력 찾기
-const getLastEducation = (educationList) => {
-  const sortedEducation = [...educationList].sort((a, b) => {
-    const eduOrder = {
-      PHD: 5,
-      MASTERS: 4,
-      UNIVERSITY: 3,
-      COLLEGE: 2,
-      HIGH_SCHOOL: 1
-    };
-    return eduOrder[b.educationType.code] - eduOrder[a.educationType.code];
-  });
+const getFinalEducation = (educationList) => {
+  for (const edu of educationList) {
+    if (edu.isFinal) {
+      console.log(`${edu.schoolName} ${edu.major} ${edu.isGraduated ? '졸업' : '재학중'}`);
+      return `${edu.schoolName} ${edu.major} ${edu.isGraduated ? '졸업' : '재학중'}`;
+    }
+  }
 
-  if (sortedEducation.length === 0) return '학력 정보 없음';
-
-  const lastEdu = sortedEducation[0];
-  return `${lastEdu.schoolName} ${lastEdu.educationType.name} ${lastEdu.isGraduated ? '졸업' : '재학중'}`;
+  return '';
 };
 
-// 최종학력 설정 함수 추가
+// const getLastEducation = (educationList) => {
+//   const sortedEducation = [...educationList].sort((a, b) => {
+//     const eduOrder = {
+//       PHD: 5,
+//       MASTERS: 4,
+//       UNIVERSITY: 3,
+//       COLLEGE: 2,
+//       HIGH_SCHOOL: 1
+//     };
+//     return eduOrder[b.educationType.code] - eduOrder[a.educationType.code];
+//   });
+
+//   if (sortedEducation.length === 0) return '학력 정보 없음';
+
+//   const lastEdu = sortedEducation[0];
+//   return `${lastEdu.schoolName} ${lastEdu.educationType.name} ${lastEdu.isGraduated ? '졸업' : '재학중'}`;
+// };
+
+// 최종학력 변경 감지
+watch(
+  () => educationList.value,
+  () => {
+    basicInfo.value.finalEducation = getFinalEducation(educationList.value);
+  },
+  { deep: true }
+);
+
+// 최종학력 교체
 const setLastEducation = (selectedIndex) => {
   educationList.value.forEach((edu, index) => {
-    edu.isLastEducation = index === selectedIndex;
-  });
+    edu.isFinal = index === selectedIndex;
 
-  // 선택된 학력을 최종학력으로 설정
-  const selectedEducation = educationList.value[selectedIndex];
-  basicInfo.value.lastEducation = `${selectedEducation.schoolName} ${selectedEducation.isGraduated ? '졸업' : '재학중'}`;
+    basicInfo.value.finalEducation = `${edu.schoolName} ${edu.major} ${edu.isGraduated ? '졸업' : '재학중'}`;
+  });
 };
 
 const closeEducationModal = () => {
@@ -647,6 +667,7 @@ watch(
         startDate: null,
         endDate: null,
         isGraduated: false,
+        isFinal: '',
         major: '',
         content: '',
         fileId: null
@@ -700,6 +721,7 @@ const saveEducationInfo = async () => {
       endDt: educationInfo.value.isGraduated ? getNextMonth(formatYearMonthWithDot(educationInfo.value.endDate)) : null,
       isGraduated: educationInfo.value.isGraduated,
       educationLevelCd: educationInfo.value.educationType.code,
+      isFinal: educationInfo.value.isFinal,
       major: educationInfo.value.major,
       content: educationInfo.value.content,
       fileId: response.id
@@ -714,6 +736,7 @@ const saveEducationInfo = async () => {
       endDt: educationInfo.value.isGraduated ? getNextMonth(formatYearMonthWithDot(educationInfo.value.endDate)) : null,
       isGraduated: educationInfo.value.isGraduated,
       educationLevelCd: educationInfo.value.educationType.code,
+      isFinal: educationInfo.value.isFinal,
       major: educationInfo.value.major,
       content: educationInfo.value.content
     };
@@ -1165,7 +1188,7 @@ const handleEducationFileUpload = (event) => {
             <div class="mb-4 p-4 bg-gray-50 rounded-lg">
               <div class="flex items-center gap-2">
                 <span class="text-gray-600">최종학력 :</span>
-                <span class="font-medium">{{ basicInfo.lastEducation }}</span>
+                <span class="font-medium">{{ basicInfo.finalEducation }}</span>
               </div>
             </div>
 
@@ -1181,7 +1204,7 @@ const handleEducationFileUpload = (event) => {
                     <!-- 최종학력 체크박스 추가 -->
                     <div class="flex items-center gap-3 mb-2">
                       <Checkbox
-                        :modelValue="education.isLastEducation"
+                        :modelValue="education.isFinal"
                         @update:modelValue="setLastEducation(index)"
                         :binary="true"
                       />
