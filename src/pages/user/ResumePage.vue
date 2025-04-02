@@ -7,12 +7,13 @@ import { getAccount } from '@/apis/auth/authApis';
 import { getCodeList, fileUpload } from '@/apis/common/commonApis';
 import {
   getResume,
-  upsertExperience,
   updateResume,
+  upsertExperience,
   deleteExperience,
   upsertEducation,
   deleteEducation,
-  upsertCertification
+  upsertCertification,
+  deleteCertification
 } from '@/apis/user/userApis';
 import { isInteger, isLength, isNil } from 'es-toolkit/compat';
 
@@ -818,7 +819,7 @@ const saveCertificationInfo = async () => {
 
     if (hasEmptyField) {
       messagePop.toast('필수 항목을 입력해주세요.', 'warn');
-      return;
+      return true;
     }
   }
 
@@ -871,7 +872,9 @@ const addCertification = () => {
 const removeCertification = (index) => {
   messagePop.confirm({
     message: '해당 자격증을 삭제하시겠습니까?',
-    onCloseYes: () => {
+    onCloseYes: async () => {
+      await deleteCertification(certificationList.value[index].id);
+
       certificationList.value.splice(index, 1);
     }
   });
@@ -889,8 +892,12 @@ const saveResume = () => {
     message: '이력서를 저장하시겠습니까?',
     onCloseYes: async () => {
       try {
-        // 이력서 저장 API 호출 - 공개여부, 자격증 저장
-        saveCertificationInfo();
+        // 이력서 공개여부, 자격증 저장
+        const res = await saveCertificationInfo();
+        if (res) {
+          // 에러나면 return
+          return;
+        }
 
         const body = {
           isPublic: visibilityType.value
@@ -946,7 +953,7 @@ const handlePassportFileUpload = async (event) => {
 };
 
 // 경력증빙파일 업로드 핸들러
-const handleCareerFileUpload = async (event) => {
+const handleCareerFileUpload = (event) => {
   experienceImage.value = event.target.files[0];
   if (experienceImage.value) {
     if (experienceImage.value.size > 10 * 1024 * 1024) {

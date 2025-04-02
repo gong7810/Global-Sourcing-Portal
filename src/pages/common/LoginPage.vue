@@ -4,11 +4,10 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
 import { getAccount, login } from '@/apis/auth/authApis';
-import { useMessagePop } from '@/plugins/commonutils'
+import { useMessagePop } from '@/plugins/commonutils';
 
 const messagePop = useMessagePop();
 const authStore = useAuthStore();
-const { tokenInfo } = storeToRefs(authStore);
 const activeTab = ref('personal');
 
 const router = useRouter();
