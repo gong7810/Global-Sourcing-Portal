@@ -21,43 +21,38 @@ const basicInfo = ref({
 // {
 //   name: '최예지',
 //   birth: '1996.09.01',
-//   gender: { label: '여성', value: 'GENDER_FEMALE' },
+//   gender: { name: '여성', code: 'GENDER_FEMALE' },
 //   email: 'yeji@naver.com',
 //   mobile: '010-1234-7496',
 //   address: '윙스타워 505호',
 //   userId: 'yeji123',
 //   isSocialLogin: true,
-//   visitedKorea: false,
+//   hasCriminalRecord: false,
+//   hasVisitedKorea: false,
 //   maritalStatus: null,
-//   koreanLevel: null,
+//   koreanProficiencyCd: null,
 //   koreanStudyPeriod: ''
 // }
 
-const genders = ref([]);
-
 const profileImage = ref(null);
 const profileRawData = ref();
+const criminalRecordFile = ref(null);
 
-const maritalStatuses = [
-  { label: '미혼', value: 'single' },
-  { label: '기혼', value: 'married' }
-];
-
-const koreanLevels = [
-  { label: '초급', value: 'beginner' },
-  { label: '중급', value: 'intermediate' },
-  { label: '고급', value: 'advanced' },
-  { label: '원어민 수준', value: 'native' }
-];
-
-// 범죄경력 옵션 추가
+const genders = ref([]);
+const koreanLevels = ref([]);
+const maritalStatuses = ref([
+  { name: '미혼', code: false },
+  { name: '기혼', code: true }
+]);
 const criminalRecordOptions = [
-  { label: '없음', value: false },
-  { label: '있음', value: true }
+  { name: '없음', code: false },
+  { name: '있음', code: true }
 ];
 
 onMounted(() => {
   setGenderList();
+
+  setKoreanPerformance();
 
   setAccountInfo();
 });
@@ -67,7 +62,16 @@ const setGenderList = async () => {
   const response = await getCodeList(`GENDER_TY`);
 
   response.map((item) => {
-    genders.value.push({ label: item.name, value: item.code });
+    genders.value.push({ name: item.name, code: item.code });
+  });
+};
+
+// 한국어 실력 세팅
+const setKoreanPerformance = async () => {
+  const response = await getCodeList(`KOREAN_LV`);
+
+  response.map((item) => {
+    koreanLevels.value.push({ name: item.name, code: item.code });
   });
 };
 
@@ -78,8 +82,8 @@ const setAccountInfo = async () => {
   basicInfo.value = response;
 
   basicInfo.value.gender = {
-    label: basicInfo.value.gender.name,
-    value: basicInfo.value.gender.code
+    name: basicInfo.value.gender.name,
+    code: basicInfo.value.gender.code
   };
 
   // 프로필 이미지 세팅
@@ -127,7 +131,6 @@ const updatePassword = () => {
     return;
   }
 
-  // TODO: 비밀번호 변경 API 호출
   messagePop.confirm({
     message: '비밀번호를 변경하시겠습니까?',
     onCloseYes: async () => {
@@ -183,10 +186,10 @@ const saveAll = () => {
     messagePop.toast('전화번호를 입력해주세요.', 'warn');
     return;
   }
-  // if (!basicInfo.value.address) {
-  //   messagePop.toast('주소를 입력해주세요.', 'warn');
-  //   return;
-  // }
+  if (!basicInfo.value.address) {
+    messagePop.toast('주소를 입력해주세요.', 'warn');
+    return;
+  }
   // if (!basicInfo.value.criminalRecordFile) {
   //   messagePop.toast('범죄경력 확인서를 업로드해주세요.', 'warn');
   //   return;
@@ -195,15 +198,23 @@ const saveAll = () => {
   messagePop.confirm({
     message: '변경사항을 저장하시겠습니까?',
     onCloseYes: async () => {
-      let body = { ...basicInfo.value, genderCd: basicInfo.value.gender.value };
+      let body = { ...basicInfo.value, genderCd: basicInfo.value.gender.code };
 
       // 프로필 사진 수정 or 저장
       if (profileRawData.value) {
-        const formData = saveImage();
+        const formData = saveImage(profileRawData.value);
 
         const res = await fileUpload(formData);
 
-        body = { ...basicInfo.value, genderCd: basicInfo.value.gender.value, profileImage: res?.id };
+        body = { ...basicInfo.value, profileImage: res?.id };
+      }
+      // 범죄경력 증빙파일
+      if (criminalRecordFile.value) {
+        const formData = saveImage(criminalRecordFile.value);
+
+        const res = await fileUpload(formData);
+
+        body = { ...basicInfo.value, criminalRecordFileId: res?.id };
       }
 
       const response = await updateAccount(body);
@@ -220,9 +231,9 @@ const saveAll = () => {
 };
 
 // 이미지 바이너리 변환
-const saveImage = () => {
+const saveImage = (file) => {
   const formData = new FormData();
-  formData.append('file', profileRawData.value);
+  formData.append('file', file);
 
   return formData;
 };
@@ -275,28 +286,29 @@ const removeImage = () => {
   profileRawData.value = '';
 };
 
+// 범죄경력증명 파일 처리
 const handleCriminalRecordUpload = (event) => {
-  const file = event.target.files[0];
-  if (file) {
+  criminalRecordFile.value = event.target.files[0];
+  if (criminalRecordFile.value) {
     // 파일 크기 체크 (10MB)
-    if (file.size > 10 * 1024 * 1024) {
+    if (criminalRecordFile.value.size > 10 * 1024 * 1024) {
       messagePop.toast('파일 크기는 10MB 이하여야 합니다.', 'warn');
       return;
     }
 
     // 파일 형식 체크
-    if (!['application/pdf', 'image/jpeg', 'image/png'].includes(file.type)) {
+    if (!['application/pdf', 'image/jpeg', 'image/png'].includes(criminalRecordFile.value.type)) {
       messagePop.toast('PDF, JPG 또는 PNG 형식의 파일만 업로드 가능합니다.', 'warn');
       return;
     }
 
-    basicInfo.value.criminalRecordFile = file;
-    // TODO: 파일 업로드 API 호출
+    basicInfo.value.criminalRecordFile = criminalRecordFile.value;
   }
 };
 
 const removeCriminalRecord = () => {
   basicInfo.value.criminalRecordFile = null;
+  criminalRecordFile.value = null;
 };
 </script>
 
@@ -407,7 +419,7 @@ const removeCriminalRecord = () => {
                   class="w-full"
                   v-model="basicInfo.gender"
                   :options="genders"
-                  optionLabel="label"
+                  optionLabel="name"
                   placeholder="성별"
                   checkmark
                   highlightOnSelect
@@ -446,15 +458,15 @@ const removeCriminalRecord = () => {
               </div>
               <!-- 범죄 여부 선택 -->
               <div class="flex gap-4 mb-3">
-                <div v-for="option in criminalRecordOptions" :key="option.value" class="flex items-center gap-2">
-                  <RadioButton 
-                    v-model="basicInfo.hasCriminalRecord" 
-                    :value="option.value" 
-                    :inputId="'criminalRecord_' + option.value"
+                <div v-for="option in criminalRecordOptions" :key="option.code" class="flex items-center gap-2">
+                  <RadioButton
+                    v-model="basicInfo.hasCriminalRecord"
+                    :value="option.code"
+                    :inputId="'criminalRecord_' + option.code"
                   />
-                  <label :for="'criminalRecord_' + option.value">{{ option.label }}</label>
+                  <label :for="'criminalRecord_' + option.code">{{ option.name }}</label>
+                </div>
               </div>
-            </div>
 
               <!-- 필요 서류 안내 -->
               <div class="bg-gray-50 p-3 rounded-lg text-sm text-gray-600 mb-3">
@@ -466,21 +478,27 @@ const removeCriminalRecord = () => {
                   <li>신원진술서</li>
                 </ul>
                 <p class="mt-2 text-xs text-gray-500">* 발급일로부터 3개월 이내의 서류만 유효합니다.</p>
-            </div>
+              </div>
 
               <!-- 파일 업로드 영역 -->
               <div class="border rounded-lg p-4">
-                <div v-if="!basicInfo.criminalRecordFile" class="flex flex-col items-center gap-2">
+                <div v-if="!basicInfo.criminalRecordFileId" class="flex flex-col items-center gap-2">
                   <label class="cursor-pointer text-center">
                     <input type="file" accept=".pdf,image/*" class="hidden" @change="handleCriminalRecordUpload" />
                     <i class="pi pi-upload text-2xl text-gray-400"></i>
                     <p class="text-sm text-gray-600">클릭하여 파일 업로드</p>
                     <p class="text-xs text-gray-400">PDF, JPG, PNG 형식 (10MB 이하)</p>
                   </label>
-              </div>
+                </div>
                 <div v-else class="flex items-center justify-between">
-                  <span class="text-sm text-gray-600">{{ basicInfo.criminalRecordFile.name }}</span>
-                  <button @click="removeCriminalRecord" class="text-red-500 hover:text-red-600">
+                  <span class="text-sm text-gray-600">{{
+                    basicInfo.criminalRecordFile?.name || '범죄기록서류 : 제출완료'
+                  }}</span>
+                  <button
+                    v-if="basicInfo.criminalRecordFile?.name"
+                    class="text-red-500 hover:text-red-600"
+                    @click="removeCriminalRecord"
+                  >
                     <i class="pi pi-times"></i>
                   </button>
                 </div>
@@ -493,7 +511,7 @@ const removeCriminalRecord = () => {
                 <label class="text-sm">한국 방문 경험</label>
               </div>
               <div class="flex items-center gap-2">
-                <Checkbox v-model="basicInfo.visitedKorea" :binary="true" />
+                <Checkbox v-model="basicInfo.hasVisitedKorea" :binary="true" />
                 <span>한국에 방문한 적이 있습니다.</span>
               </div>
             </div>
@@ -504,9 +522,10 @@ const removeCriminalRecord = () => {
                 <label class="text-sm">혼인사항</label>
               </div>
               <Select
-                v-model="basicInfo.maritalStatus"
+                v-model="basicInfo.isMarried"
                 :options="maritalStatuses"
-                optionLabel="label"
+                optionLabel="name"
+                optionValue="code"
                 placeholder="혼인사항 선택"
                 class="w-full"
               />
@@ -519,9 +538,10 @@ const removeCriminalRecord = () => {
                   <label class="text-sm">한국어 실력</label>
                 </div>
                 <Select
-                  v-model="basicInfo.koreanLevel"
+                  v-model="basicInfo.koreanProficiencyCd"
                   :options="koreanLevels"
-                  optionLabel="label"
+                  optionLabel="name"
+                  optionValue="code"
                   placeholder="한국어 실력 선택"
                   class="w-full"
                 />
