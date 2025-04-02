@@ -52,7 +52,7 @@ const criminalRecordOptions = [
 onMounted(() => {
   setGenderList();
 
-  setKoreanPerformance();
+  setKoreanLevel();
 
   setAccountInfo();
 });
@@ -67,7 +67,7 @@ const setGenderList = async () => {
 };
 
 // 한국어 실력 세팅
-const setKoreanPerformance = async () => {
+const setKoreanLevel = async () => {
   const response = await getCodeList(`KOREAN_LV`);
 
   response.map((item) => {

@@ -1,11 +1,20 @@
 <script setup>
-import { onMounted, ref, watch, toRaw } from 'vue';
+import { onMounted, ref, watch, toRaw, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMessagePop } from '@/plugins/commonutils';
 
 import { getAccount } from '@/apis/auth/authApis';
 import { getCodeList, fileUpload } from '@/apis/common/commonApis';
-import { getResume, upsertExperience, updateResume, deleteExperience, upsertEducation } from '@/apis/user/userApis';
+import {
+  getResume,
+  upsertExperience,
+  updateResume,
+  deleteExperience,
+  upsertEducation,
+  deleteEducation,
+  upsertCertification
+} from '@/apis/user/userApis';
+import { isInteger, isLength, isNil } from 'es-toolkit/compat';
 
 const router = useRouter();
 const messagePop = useMessagePop();
@@ -20,12 +29,13 @@ const careerModifyFlag = ref(false);
 const educationModifyFlag = ref(false);
 
 const profileImage = ref();
-const passportImage = ref();
 const experienceImage = ref();
 const educationImage = ref();
+const certificationImage = ref();
 
 const educationTypes = ref([]); // 학력종류
 const jobCategories = ref([]); // 직무종류
+const koreanLevels = ref([]); // 한국어실력
 
 // 이력서 공개여부
 const visibilityType = ref(null);
@@ -38,23 +48,20 @@ const visibilityOptions = [
 
 // 구직자 기본정보
 const basicInfo = ref({
-  name: '최예지',
-  birthDate: '1996.09.01',
-  gender: '여성',
-  email: 'yeji@naver.com',
-  phone: '010-1234-7496',
-  address: '505호',
-  hasCriminalRecord: {
-    // 파일 정보로 변경
-    name: '범죄경력증명서.pdf',
-    size: 1024 * 1024,
-    type: 'application/pdf'
-  },
-  koreanVisitExperience: '없음',
-  maritalStatus: '미혼',
-  koreanProficiency: '고급',
-  koreanStudyDuration: '2년'
+  name: '',
+  birthDate: '',
+  gender: '',
+  email: '',
+  phone: '',
+  address: '',
+  finalEducation: null,
+  hasCriminalRecord: {},
+  hasVisitedKorea: false,
+  isMarried: false,
+  koreanProficiency: '',
+  koreanStudyPeriod: ''
 });
+
 const resumeInfo = ref();
 const globalAge = ref('');
 
@@ -67,50 +74,9 @@ const passportInfo = ref({});
 // 경력리스트
 const careerList = ref([]);
 // 학력리스트
-const educationList = ref([
-  {
-    educationType: { name: '대학교(4년)', code: 'EDUCATION_LEVEL_3' },
-    schoolName: '서울대학교',
-    period: '2019.03 - 2023.02',
-    major: '컴퓨터공학과',
-    isGraduated: true,
-    content: '졸업논문: AI 기반 추천 시스템 개발',
-    isLastEducation: true,
-    certificateFile: {
-      name: '서울대학교_졸업증명서.pdf',
-      size: 1024 * 1024, // 1MB로 가정
-      type: 'application/pdf'
-    }
-  },
-  {
-    educationType: { name: '대학교(4년)', code: 'EDUCATION_LEVEL_3' },
-    schoolName: '한국대학교',
-    period: '2015.03 - 2019.02',
-    major: '경영학과',
-    isGraduated: true,
-    content: '복수전공: 경영정보학',
-    isLastEducation: false,
-    certificateFile: {
-      name: '한국대학교_졸업증명서.pdf',
-      size: 1024 * 1024,
-      type: 'application/pdf'
-    }
-  },
-  {
-    educationType: { name: '고등학교', code: 'EDUCATION_LEVEL_1' },
-    schoolName: '한국고등학교',
-    period: '2012.03 - 2015.02',
-    major: '문과계열',
-    isGraduated: true,
-    content: '학생회장 활동',
-    isLastEducation: false,
-    certificateFile: {
-      name: '한국고등학교_졸업증명서.pdf',
-      size: 1024 * 1024,
-      type: 'application/pdf'
-    }
-  }
-]);
+const educationList = ref([]);
+// 자격증리스트
+const certificationList = ref([]);
 
 // 경력 정보 관련 상태
 const totalCareer = ref('');
@@ -138,6 +104,9 @@ const educationInfo = ref({
   fileId: null
 });
 
+// 자격증 정보 관련 상태
+const certificationInfo = ref([]);
+
 const sections = [
   {
     title: '경력',
@@ -157,16 +126,16 @@ const sections = [
 const checkRequiredInfo = () => {
   const requiredFields = {
     name: { value: basicInfo.value.name, label: '이름' },
-    birthDate: { value: basicInfo.value.birthDate, label: '생년월일' },
+    birthDate: { value: basicInfo.value.birth, label: '생년월일' },
     gender: { value: basicInfo.value.gender, label: '성별' },
     email: { value: basicInfo.value.email, label: '이메일' },
-    phone: { value: basicInfo.value.phone, label: '전화번호' },
+    phone: { value: basicInfo.value.mobile, label: '전화번호' },
     address: { value: basicInfo.value.address, label: '주소' },
-    criminalRecordFile: { value: basicInfo.value.criminalRecordFile, label: '범죄경력확인서' }
+    hasCriminalRecord: { value: basicInfo.value.hasCriminalRecord, label: '범죄경력확인서' }
   };
 
   const missingFields = Object.entries(requiredFields)
-    .filter(([_, field]) => !field.value)
+    .filter(([_, field]) => isNil(field.value) && isLength(field.value))
     .map(([_, field]) => field.label);
 
   if (missingFields.length > 0) {
@@ -181,39 +150,17 @@ const checkRequiredInfo = () => {
   return true;
 };
 
-onMounted(() => {
+onMounted(async () => {
   // 기본 코드 정보 조회
   getEduCode();
   getJobCategoryCode();
+  getKoreanLevelCode();
 
+  await nextTick();
   // 사용자 정보 조회
   getUserInfo();
   // 이력서 정보 조회
   getResumeInfo();
-
-  // 페이지 진입 시 필수 정보 체크
-  // const requiredFields = {
-  //   name: { value: basicInfo.value.name, label: '이름' },
-  //   birthDate: { value: basicInfo.value.birth, label: '생년월일' },
-  //   gender: { value: basicInfo.value.gender.name, label: '성별' },
-  //   email: { value: basicInfo.value.email, label: '이메일' },
-  //   phone: { value: basicInfo.value.phone, label: '전화번호' },
-  //   address: { value: basicInfo.value.address, label: '주소' },
-  //   criminalRecordFile: { value: basicInfo.value?.criminalRecordFile, label: '범죄경력확인서' }
-  // };
-
-  // const missingFields = Object.entries(requiredFields)
-  //   .filter(([_, field]) => !field.value)
-  //   .map(([_, field]) => field.label);
-
-  // if (missingFields.length > 0) {
-  //   messagePop.confirm({
-  //     message: `필수 정보(${missingFields.join(', ')})가 누락되었습니다.\n저장하기 전에 기본정보를 입력해주세요.`,
-  //     onCloseYes: () => {
-  //       router.push('/user/userPage');
-  //     }
-  //   });
-  // }
 });
 
 // 학력 코드 조회
@@ -240,17 +187,63 @@ const getJobCategoryCode = async () => {
   });
 };
 
+// 한국어 실력코드드 조회
+const getKoreanLevelCode = async () => {
+  const response = await getCodeList(`KOREAN_LV`);
+
+  response.map((item) => {
+    koreanLevels.value.push({
+      name: item.name,
+      code: item.code
+    });
+  });
+};
+
 // 사용자 정보 조회
 const getUserInfo = async () => {
   const response = await getAccount();
 
   basicInfo.value = response;
-  // console.log(basicInfo.value);
+
+  koreanLevels.value.map((item) => {
+    if (item.code === basicInfo.value.koreanProficiencyCd) {
+      basicInfo.value = { ...basicInfo.value, koreanProficiency: item.name };
+    }
+  });
 
   // 프로필 이미지 세팅
   if (basicInfo.value.imageFile) {
     profileImage.value = `${import.meta.env.VITE_UPLOAD_PATH}/${basicInfo.value.imageFile.fileName}`;
   }
+
+  setTimeout(() => {
+    // 페이지 진입 시 필수 정보 체크
+    const requiredFields = {
+      name: { value: basicInfo.value.name, label: '이름' },
+      birthDate: { value: basicInfo.value.birth, label: '생년월일' },
+      gender: { value: basicInfo.value.gender.name, label: '성별' },
+      email: { value: basicInfo.value.email, label: '이메일' },
+      mobile: { value: basicInfo.value.mobile, label: '전화번호' },
+      address: { value: basicInfo.value.address, label: '주소' },
+      hasCriminalRecord: { value: basicInfo.value?.hasCriminalRecord, label: '범죄경력확인서' }
+      // criminalRecordFile: { value: basicInfo.value?.criminalRecordFile, label: '범죄경력확인서' }
+    };
+
+    const missingFields = Object.entries(requiredFields)
+      .filter(([_, field]) => isNil(field.value) && isLength(field.value))
+      .map(([_, field]) => field.label);
+
+    if (missingFields.length > 0) {
+      messagePop.confirm({
+        message: `필수 정보(${missingFields.join(', ')})가 누락되었습니다.\n저장하기 전에 기본정보를 입력해주세요.`,
+        onCloseYes: () => {
+          router.push('/user/userPage');
+        }
+      });
+    } else {
+      resumeFlag.value = true;
+    }
+  }, 0);
 
   getGlobalAge();
 };
@@ -303,9 +296,13 @@ const getResumeInfo = async () => {
     fileImage: response.passportFileId
   };
 
-  setCareerInfo();
+  setTimeout(() => {
+    setCareerInfo();
 
-  setEducationInfo();
+    setEducationInfo();
+
+    setCertificationInfo();
+  }, 100);
 
   // 총 경력과 최종학력 계산
   // basicInfo.value.finalEducation = getLastEducation(educationList.value);
@@ -345,7 +342,7 @@ const setEducationInfo = () => {
           id: edu.id,
           resumeId: edu.resumeId,
           schoolName: edu.schoolName,
-          period: `${edu?.startDt} - ${edu?.endDt}`,
+          period: `${edu?.startDt} - ${edu?.endDt ? edu?.endDt : '재학중'}`,
           isGraduated: edu.isGraduated,
           educationType: toRaw(type),
           educationLevelCd: edu.educationLevelCd,
@@ -355,6 +352,28 @@ const setEducationInfo = () => {
           fileId: edu.fileId
         });
       }
+
+      if (edu.isFinal) {
+        basicInfo.value.finalEducation = `${edu.schoolName} ${edu.major} ${edu.isGraduated ? '졸업' : '재학중'}`;
+      }
+    });
+  });
+
+  // basicInfo.value.finalEducation = getFinalEducation(educationList.value);
+};
+
+// 자격증 정보 세팅
+const setCertificationInfo = () => {
+  certificationList.value = [];
+
+  resumeInfo.value.certifications.map((cer) => {
+    certificationList.value.push({
+      id: cer.id,
+      name: cer.name,
+      issuer: cer.issuer,
+      certificationNo: cer.certificationNo,
+      acquiredDt: cer.acquiredDt.slice(0, 10).replaceAll('-', '.'),
+      fileId: cer.fileId
     });
   });
 };
@@ -418,19 +437,23 @@ watch(
 
 // 모든 경력 기간을 합산하는 로직
 const calculateTotalCareer = (careerList) => {
-  let totalMonths = 0;
-  careerList.forEach((career) => {
-    const [start, end] = career.period.split(' - ');
-    const startDate = new Date(start);
-    const endDate = end === '재직중' ? new Date() : new Date(end);
-    const months =
-      (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth() + 1);
-    totalMonths += months;
-  });
+  let totalMonth = resumeInfo.value.experienceDurationMonth;
+  return totalMonth % 12
+    ? `(총 ${Math.floor(totalMonth / 12)}년 ${totalMonth % 12}개월)`
+    : `(총 ${Math.floor(totalMonth / 12)}년)`;
+  // let totalMonths = 0;
+  // careerList.forEach((career) => {
+  //   const [start, end] = career.period.split(' - ');
+  //   const startDate = new Date(start);
+  //   const endDate = end === '재직중' ? new Date() : new Date(end);
+  //   const months =
+  //     (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth() + 1);
+  //   totalMonths += months;
+  // });
 
-  return totalMonths % 12
-    ? `(총 ${Math.floor(totalMonths / 12)}년 ${totalMonths % 12}개월)`
-    : `(총 ${Math.floor(totalMonths / 12)}년)`;
+  // return totalMonths % 12
+  //   ? `(총 ${Math.floor(totalMonths / 12)}년 ${totalMonths % 12}개월)`
+  //   : `(총 ${Math.floor(totalMonths / 12)}년)`;
 };
 
 // ISO문자열 처리를 위한 다음달 구하는 함수
@@ -539,23 +562,6 @@ const saveCareerInfo = async () => {
   await upsertExperience(body);
 
   getResumeInfo();
-  // const insertCareer = {
-  //   companyName: careerInfo.value.companyName,
-  //   period: careerInfo.value.isCurrent
-  //     ? `${careerInfo.value.startDate.getFullYear()}.${(careerInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')} - 재직중`
-  //     : `${careerInfo.value.startDate.getFullYear()}.${(careerInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')} - ${careerInfo.value.endDate.getFullYear()}.${(careerInfo.value.endDate.getMonth() + 1).toString().padStart(2, '0')}`,
-  //   jobCategory: careerInfo.value.jobCategory,
-  //   position: careerInfo.value.position,
-  //   department: careerInfo.value.department,
-  //   content: careerInfo.value.content,
-  //   certificateFile: careerInfo.value.fileId
-  // };
-
-  // if (careerModifyFlag.value) {
-  //   careerList.value[careerModifyIdx.value] = insertCareer;
-  // } else {
-  //   careerList.value.push(insertCareer);
-  // }
 
   careerModifyFlag.value = false;
   showCareerModal.value = false;
@@ -602,31 +608,12 @@ const modifyCareer = (index) => {
 const getFinalEducation = (educationList) => {
   for (const edu of educationList) {
     if (edu.isFinal) {
-      console.log(`${edu.schoolName} ${edu.major} ${edu.isGraduated ? '졸업' : '재학중'}`);
       return `${edu.schoolName} ${edu.major} ${edu.isGraduated ? '졸업' : '재학중'}`;
     }
   }
 
   return '';
 };
-
-// const getLastEducation = (educationList) => {
-//   const sortedEducation = [...educationList].sort((a, b) => {
-//     const eduOrder = {
-//       PHD: 5,
-//       MASTERS: 4,
-//       UNIVERSITY: 3,
-//       COLLEGE: 2,
-//       HIGH_SCHOOL: 1
-//     };
-//     return eduOrder[b.educationType.code] - eduOrder[a.educationType.code];
-//   });
-
-//   if (sortedEducation.length === 0) return '학력 정보 없음';
-
-//   const lastEdu = sortedEducation[0];
-//   return `${lastEdu.schoolName} ${lastEdu.educationType.name} ${lastEdu.isGraduated ? '졸업' : '재학중'}`;
-// };
 
 // 최종학력 변경 감지
 watch(
@@ -667,7 +654,7 @@ watch(
         startDate: null,
         endDate: null,
         isGraduated: false,
-        isFinal: '',
+        isFinal: false,
         major: '',
         content: '',
         fileId: null
@@ -707,6 +694,16 @@ const saveEducationInfo = async () => {
 
   // DONE: 저장 로직 시작
   let body = {};
+  // let startDate = `${educationInfo.value.startDate.getFullYear()}.${(educationInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')}`;
+  let startDate =
+    educationInfo.value.startDate?.length === 7
+      ? educationInfo.value.startDate
+      : `${educationInfo.value.startDate}.${(educationInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')}`;
+  let endDate = educationInfo.value.isGraduated
+    ? educationInfo.value.endDate?.length === 7
+      ? educationInfo.value.endDate
+      : `${educationInfo.value.endDate.getFullYear()}.${(educationInfo.value.endDate.getMonth() + 1).toString().padStart(2, '0')}`
+    : null;
 
   if (educationInfo.value.fileId) {
     let formData = saveImage(educationInfo.value.fileId);
@@ -717,8 +714,8 @@ const saveEducationInfo = async () => {
       id: educationInfo.value.id,
       resumeId: resumeInfo.value.id,
       schoolName: educationInfo.value.schoolName,
-      startDt: new Date(`${educationInfo.value.startDate}-01`).toISOString(),
-      endDt: educationInfo.value.isGraduated ? getNextMonth(formatYearMonthWithDot(educationInfo.value.endDate)) : null,
+      startDt: startDate,
+      endDt: endDate,
       isGraduated: educationInfo.value.isGraduated,
       educationLevelCd: educationInfo.value.educationType.code,
       isFinal: educationInfo.value.isFinal,
@@ -732,8 +729,8 @@ const saveEducationInfo = async () => {
       id: educationInfo.value.id,
       resumeId: resumeInfo.value.id,
       schoolName: educationInfo.value.schoolName,
-      startDt: new Date(`${educationInfo.value.startDate}-01`).toISOString(),
-      endDt: educationInfo.value.isGraduated ? getNextMonth(formatYearMonthWithDot(educationInfo.value.endDate)) : null,
+      startDt: startDate,
+      endDt: endDate,
       isGraduated: educationInfo.value.isGraduated,
       educationLevelCd: educationInfo.value.educationType.code,
       isFinal: educationInfo.value.isFinal,
@@ -774,39 +771,110 @@ const modifyEducation = (index) => {
   educationModifyFlag.value = true;
   educationModifyIdx.value = index;
 
-  let startDate = educationList.value[index].period.split('-')[0];
-  let endDate = educationList.value[index].period.split('-')[1];
+  let startDate = educationList.value[index].period.split('-')[0].trim();
+  let endDate = educationList.value[index].period.split('-')[1].trim();
 
   educationInfo.value = {
     id: educationList.value[index].id,
     schoolName: educationList.value[index].schoolName,
-    isGraduated: endDate.trim() !== '재학중' ? true : false,
-    startDate: new Date(startDate),
-    endDate: endDate.trim() !== '재학중' ? new Date(endDate.trim()) : null,
+    isGraduated: educationList.value[index].isGraduated,
+    startDate: startDate,
+    endDate: educationList.value[index].isGraduated ? endDate : null,
     educationType: educationList.value[index].educationType,
-    educationTypeCd: educationList.value[index].educationTypeCd,
+    educationLevelCd: educationList.value[index].educationLevelCd,
     major: educationList.value[index].major,
     content: educationList.value[index].content,
     fileId: educationList.value[index].fileId
   };
 
-  console.log(educationInfo.value);
-
   showEducationModal.value = true;
 };
 
 // 학력 삭제 로직
-const deleteEducation = (index) => {
+const deleteEducations = (education) => {
   messagePop.confirm({
     message: '해당 학력을 삭제하시겠습니까?',
-    onCloseYes: () => {
+    onCloseYes: async () => {
+      await deleteEducation(education.id);
+
       educationList.value.splice(index, 1);
     }
   });
 };
 
-const formatCurrency = (value) => {
-  return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+// 자격증 추가, 수정 로직
+const saveCertificationInfo = async () => {
+  // 필수 필드 검증
+  for (const cer of certificationList.value) {
+    const requiredFields = {
+      name: cer.name,
+      issuer: cer.issuer,
+      acquiredDt: new Date(cer.acquiredDt).toISOString()
+    };
+
+    const hasEmptyField = Object.values(requiredFields).some(
+      (value) => value === null || value === '' || value === undefined
+    );
+
+    if (hasEmptyField) {
+      messagePop.toast('필수 항목을 입력해주세요.', 'warn');
+      return;
+    }
+  }
+
+  // DONE: 저장 로직 시작
+  for (const cer of certificationList.value) {
+    let body = {};
+
+    if (cer.fileId && !isInteger(cer.fileId)) {
+      let formData = saveImage(cer.fileId);
+
+      const response = await fileUpload(formData);
+
+      body = {
+        id: cer.id,
+        resumeId: resumeInfo.value.id,
+        name: cer.name,
+        issuer: cer.issuer,
+        certificationNo: cer.certificationNo,
+        acquiredDt: new Date(cer.acquiredDt).toISOString(),
+        fileId: response.id
+      };
+    } else {
+      body = {
+        id: cer.id,
+        resumeId: resumeInfo.value.id,
+        name: cer.name,
+        issuer: cer.issuer,
+        certificationNo: cer.certificationNo,
+        acquiredDt: new Date(cer.acquiredDt).toISOString(),
+        fileId: cer.fileId
+      };
+    }
+
+    await upsertCertification(body);
+  }
+};
+
+// 자격증 행 추가
+const addCertification = () => {
+  certificationList.value.push({
+    name: null,
+    issuer: null,
+    certificationNo: null,
+    acquiredDt: null,
+    fileId: null
+  });
+};
+
+// 자격증 삭제 함수
+const removeCertification = (index) => {
+  messagePop.confirm({
+    message: '해당 자격증을 삭제하시겠습니까?',
+    onCloseYes: () => {
+      certificationList.value.splice(index, 1);
+    }
+  });
 };
 
 // 이력서 공개여부 저장
@@ -821,31 +889,24 @@ const saveResume = () => {
     message: '이력서를 저장하시겠습니까?',
     onCloseYes: async () => {
       try {
-        // TODO: 이력서 저장 API 호출 - 사실상 공개여부만 수정
-        messagePop.toast('이력서가 저장되었습니다.', 'success');
+        // 이력서 저장 API 호출 - 공개여부, 자격증 저장
+        saveCertificationInfo();
+
+        const body = {
+          isPublic: visibilityType.value
+        };
+
+        const response = await updateResume(body);
+
+        if (response && response.success === undefined) {
+          messagePop.toast('이력서가 저장되었습니다.', 'success');
+        }
       } catch (error) {
         console.error('이력서 저장 중 오류:', error);
         messagePop.toast('이력서 저장 중 오류가 발생했습니다.', 'error');
       }
     }
   });
-};
-
-// 자격증 관련 상태
-const certificationList = ref([]);
-
-// 자격증 추가 함수
-const addCertification = () => {
-  certificationList.value.push({
-    id: Date.now(),
-    name: '',
-    date: null
-  });
-};
-
-// 자격증 삭제 함수
-const removeCertification = (index) => {
-  certificationList.value.splice(index, 1);
 };
 
 // 이미지 바이너리 변환
@@ -913,6 +974,29 @@ const handleEducationFileUpload = (event) => {
     educationInfo.value.fileId = educationImage.value;
   }
 };
+
+// 자격증빙파일 업로드 핸들러
+const handleCertificationFileUpload = (index, event) => {
+  certificationImage.value = event.target.files[0];
+  if (certificationImage.value) {
+    if (certificationImage.value.size > 10 * 1024 * 1024) {
+      // 10MB 제한
+      messagePop.toast('파일 크기는 10MB를 초과할 수 없습니다.', 'warn');
+
+      certificationImage.value = null;
+      return;
+    }
+    certificationList.value[index].fileId = certificationImage.value;
+  }
+
+  console.log(certificationList.value);
+};
+
+// 자격증빙파일 초기화
+const clearCertificationFile = (index) => {
+  certificationImage.value = null;
+  certificationList.value[index].fileId = null;
+};
 </script>
 
 <template>
@@ -967,9 +1051,9 @@ const handleEducationFileUpload = (event) => {
             <div class="space-y-3 text-gray-600 flex-grow">
               <!-- 이름과 생년월일 그룹 -->
               <div class="flex items-center">
-                <span class="text-xl font-medium">{{ basicInfo.name }}</span>
+                <span class="text-xl font-medium">{{ basicInfo?.name }}</span>
                 <span class="ml-4 text-gray-500"
-                  >{{ basicInfo.gender.name }} | {{ basicInfo.birth }} &nbsp; {{ globalAge }}</span
+                  >{{ basicInfo?.gender.name }} | {{ basicInfo?.birth }} &nbsp; {{ globalAge }}</span
                 >
               </div>
 
@@ -978,7 +1062,7 @@ const handleEducationFileUpload = (event) => {
                 <!-- 1행: 휴대폰, 한국어실력 -->
                 <div class="grid grid-cols-[120px_auto]">
                   <span class="text-gray-500">휴대폰</span>
-                  <span>{{ basicInfo.mobile }}</span>
+                  <span>{{ basicInfo?.mobile }}</span>
                 </div>
                 <div class="grid grid-cols-[120px_auto]">
                   <span class="text-gray-500">한국어 실력</span>
@@ -988,21 +1072,21 @@ const handleEducationFileUpload = (event) => {
                 <!-- 2행: 이메일, 한국어학습기간 -->
                 <div class="grid grid-cols-[120px_auto]">
                   <span class="text-gray-500">이메일</span>
-                  <span class="notranslate">{{ basicInfo.email }}</span>
+                  <span class="notranslate">{{ basicInfo?.email }}</span>
                 </div>
                 <div class="grid grid-cols-[120px_auto]">
                   <span class="text-gray-500">한국어 학습기간</span>
-                  <span>{{ basicInfo?.koreanStudyDuration }}</span>
+                  <span>{{ basicInfo?.koreanStudyPeriod }}</span>
                 </div>
 
                 <!-- 3행: 주소, 한국방문경험 -->
                 <div class="grid grid-cols-[120px_auto]">
                   <span class="text-gray-500">주소</span>
-                  <span>{{ basicInfo.address }}</span>
+                  <span>{{ basicInfo?.address }}</span>
                 </div>
                 <div class="grid grid-cols-[120px_auto]">
                   <span class="text-gray-500">한국방문경험</span>
-                  <span>{{ basicInfo?.koreanVisitExperience }}</span>
+                  <span>{{ basicInfo?.hasVisitedKorea ? '있음' : '없음' }}</span>
                 </div>
 
                 <!-- 4행: 범죄경력, 혼인사항 -->
@@ -1010,12 +1094,12 @@ const handleEducationFileUpload = (event) => {
                   <span class="text-gray-500">범죄경력</span>
                   <span class="flex items-center gap-2">
                     <!-- <i class="pi pi-file-pdf text-red-500"></i> -->
-                    <span>{{ basicInfo?.criminalRecordFile?.name }}</span>
+                    <span>{{ basicInfo?.hasCriminalRecord ? '있음' : '없음' }}</span>
                   </span>
                 </div>
                 <div class="grid grid-cols-[120px_auto]">
                   <span class="text-gray-500">혼인사항</span>
-                  <span>{{ basicInfo?.maritalStatus }}</span>
+                  <span>{{ basicInfo?.isMarried ? '기혼' : '미혼' }}</span>
                 </div>
               </div>
             </div>
@@ -1188,7 +1272,7 @@ const handleEducationFileUpload = (event) => {
             <div class="mb-4 p-4 bg-gray-50 rounded-lg">
               <div class="flex items-center gap-2">
                 <span class="text-gray-600">최종학력 :</span>
-                <span class="font-medium">{{ basicInfo.finalEducation }}</span>
+                <span class="font-medium">{{ basicInfo?.finalEducation }}</span>
               </div>
             </div>
 
@@ -1220,7 +1304,7 @@ const handleEducationFileUpload = (event) => {
                     <button class="text-gray-400 hover:text-gray-600" @click="modifyEducation(index)">
                       <i class="pi pi-pencil"></i>
                     </button>
-                    <button class="text-gray-400 hover:text-gray-600" @click="deleteEducation(index)">
+                    <button class="text-gray-400 hover:text-gray-600" @click="deleteEducations(education)">
                       <i class="pi pi-trash"></i>
                     </button>
                   </div>
@@ -1232,7 +1316,7 @@ const handleEducationFileUpload = (event) => {
                     <span class="text-sm text-gray-600">
                       {{ education.period.includes('재학중') ? '재학증명서' : '졸업증명서' }}: 제출완료
                       <span v-if="educationTypes.slice(1).includes(education.educationType)" class="text-red-500">
-                        *필수
+                        &nbsp;*필수
                       </span>
                     </span>
                   </div>
@@ -1280,13 +1364,27 @@ const handleEducationFileUpload = (event) => {
 
                 <div class="grid grid-cols-2 gap-4 mb-4">
                   <div class="space-y-2">
-                    <label class="block text-sm font-medium text-gray-700">자격증명</label>
+                    <label class="block text-sm font-medium text-gray-700">
+                      자격증 명<span class="text-red-500">*</span>
+                    </label>
                     <InputText v-model="cert.name" placeholder="자격증 이름을 입력하세요" class="w-full" />
                   </div>
                   <div class="space-y-2">
-                    <label class="block text-sm font-medium text-gray-700">취득일</label>
+                    <label class="block text-sm font-medium text-gray-700">
+                      주최기관<span class="text-red-500">*</span>
+                    </label>
+                    <InputText v-model="cert.issuer" placeholder="주최기관을 입력하세요" class="w-full" />
+                  </div>
+                  <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700">자격 번호</label>
+                    <InputText v-model="cert.certificationNo" placeholder="자격증 번호를 입력하세요" class="w-full" />
+                  </div>
+                  <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700">
+                      취득일<span class="text-red-500">*</span>
+                    </label>
                     <DatePicker
-                      v-model="cert.date"
+                      v-model="cert.acquiredDt"
                       dateFormat="yy.mm.dd"
                       placeholder="취득일을 선택하세요"
                       :showIcon="true"
@@ -1297,11 +1395,30 @@ const handleEducationFileUpload = (event) => {
 
                 <!-- 파일 업로드 영역 -->
                 <div class="flex items-center justify-between border-t pt-4">
-                  <span class="text-sm text-gray-600">자격증 스캔본</span>
+                  <span class="text-sm text-gray-600">
+                    자격증 스캔본 {{ cert.fileId ? ' : ' + (cert.fileId?.name || '제출완료') : '' }}
+                    <button
+                      v-if="cert.fileId?.name"
+                      class="ml-2 text-red-500 hover:text-red-700"
+                      @click="clearCertificationFile(index)"
+                    >
+                      <i class="pi pi-times"></i>
+                    </button>
+                  </span>
                   <div>
                     <label class="cursor-pointer px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
                       <span class="text-sm">파일 선택</span>
-                      <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" />
+                      <input
+                        type="file"
+                        class="hidden"
+                        accept=".pdf,.jpg,.jpeg,.png"
+                        @change="
+                          (event) => {
+                            handleCertificationFileUpload(index, event);
+                            event.target.value = '';
+                          }
+                        "
+                      />
                     </label>
                   </div>
                 </div>
@@ -1413,7 +1530,17 @@ const handleEducationFileUpload = (event) => {
             <div>
               <label class="cursor-pointer px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
                 <span class="text-sm">파일 선택</span>
-                <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" @change="handleCareerFileUpload" />
+                <input
+                  type="file"
+                  class="hidden"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  @change="
+                    (event) => {
+                      handleCareerFileUpload(event);
+                      event.target.value = '';
+                    }
+                  "
+                />
               </label>
             </div>
           </div>
@@ -1523,7 +1650,7 @@ const handleEducationFileUpload = (event) => {
         <div class="space-y-2">
           <div class="flex items-center justify-between">
             <label class="block text-sm font-medium text-gray-700">
-              졸업증명서
+              {{ educationInfo.isGraduated ? '졸업증명서' : '재학증명서' }}
               <span v-if="educationTypes.slice(1).includes(educationInfo.educationType)" class="text-red-500">
                 *필수
               </span>
@@ -1531,12 +1658,28 @@ const handleEducationFileUpload = (event) => {
             <div>
               <label class="cursor-pointer px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
                 <span class="text-sm">파일 선택</span>
-                <input type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" @change="handleEducationFileUpload" />
+                <input
+                  type="file"
+                  class="hidden"
+                  accept=".pdf,.jpg,.jpeg,.png"
+                  @change="
+                    (event) => {
+                      handleEducationFileUpload(event);
+                      event.target.value = '';
+                    }
+                  "
+                />
               </label>
             </div>
           </div>
           <div v-if="educationInfo.fileId" class="text-sm text-gray-600">
-            {{ educationInfo.fileId?.name ? `${educationInfo.fileId.name}` : '졸업증명서 제출 완료' }}
+            {{
+              educationInfo.fileId?.name
+                ? `${educationInfo.fileId.name}`
+                : educationInfo.isGraduated
+                  ? '졸업증명서 : 제출 완료'
+                  : '재학증명서 : 제출 완료'
+            }}
             <button
               v-if="educationInfo.fileId?.name"
               class="ml-2 text-red-500 hover:text-red-700"

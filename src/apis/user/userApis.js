@@ -67,3 +67,25 @@ export const deleteEducation = async (id) => {
     console.error(error);
   }
 };
+
+// 사용자 자격증 추가, 수정 API
+export const upsertCertification = async (body) => {
+  try {
+    const response = await api.post(`/certification`, body);
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// 사용자 자격증 삭제 API
+export const deleteCertification = async (id) => {
+  try {
+    const response = await api.del(`/certification/${id}`);
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
