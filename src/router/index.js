@@ -67,10 +67,12 @@ router.beforeEach((to, from, next) => {
 
   if (AUTH_EXCLUSIONS_ROUTER_NAME.includes(to.name)) {
     // 인증없이 접근가능 페이지 스킵
-    if (userInfo.value?.isCompany && !userInfo.value?.roleCd) {
-      return next({ path: '/business/index' });
-    } else if (userInfo.value?.roleCd) {
+    if (userInfo.value?.roleCd === 'ROLE_ADMIN' && to.name === 'dashboard') {
+      // 관리자
       return next({ path: '/admin/users' });
+    } else if (userInfo.value?.isCompany && userInfo.value?.roleCd === 'ROLE_MANAGER' && to.name === 'dashboard') {
+      // 기업회원
+      return next({ path: '/business/index' });
     } else {
       return next();
     }
@@ -91,7 +93,7 @@ router.beforeEach((to, from, next) => {
       return next();
     } else {
       messagePop.alert('접근 권한이 없습니다.', 'bad');
-      return next({ path: from.path });
+      return next({ path: from.path || 'dashboard' });
     }
   }
   /* 로그인진행 */

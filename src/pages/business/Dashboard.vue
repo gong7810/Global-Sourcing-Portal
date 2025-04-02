@@ -3,7 +3,6 @@ import { onMounted, ref, computed } from 'vue';
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
-import Dialog from 'primevue/dialog';
 import { isNil } from 'es-toolkit';
 
 const router = useRouter();
@@ -95,7 +94,8 @@ const bookmarkedTalents = ref([
         period: '2021.03 - 2024.03',
         jobCategory: { label: 'IT개발·데이터', value: 'it' },
         position: '프론트엔드 개발자 | 개발팀',
-        description: '웹 서비스 프론트엔드 개발 및 유지보수\n- React, TypeScript 기반 웹 애플리케이션 개발\n- 성능 최적화 및 사용자 경험 개선'
+        description:
+          '웹 서비스 프론트엔드 개발 및 유지보수\n- React, TypeScript 기반 웹 애플리케이션 개발\n- 성능 최적화 및 사용자 경험 개선'
       },
       {
         company: '(주)스타트업',
@@ -274,18 +274,18 @@ const calculateCareerPeriod = (period) => {
   const [start, end] = period.split(' - ');
   const startDate = new Date(start.split('.').join('-'));
   const endDate = end === '현재' ? new Date() : new Date(end.split('.').join('-'));
-  
+
   const years = endDate.getFullYear() - startDate.getFullYear();
   const months = endDate.getMonth() - startDate.getMonth();
-  
+
   let totalMonths = years * 12 + months;
   if (totalMonths < 12) {
     return `${totalMonths}개월`;
   }
-  
+
   const remainingYears = Math.floor(totalMonths / 12);
   const remainingMonths = totalMonths % 12;
-  
+
   if (remainingMonths === 0) {
     return `${remainingYears}년`;
   }
@@ -302,25 +302,25 @@ const getLatestEducation = (education) => {
 // script 섹션에 calculateTotalCareer 함수 추가
 const calculateTotalCareer = (careers) => {
   if (!careers?.length) return '0년';
-  
+
   let totalMonths = 0;
-  
-  careers.forEach(career => {
+
+  careers.forEach((career) => {
     const [start, end] = career.period.split(' - ');
     const startDate = new Date(start.replace('.', '-'));
     const endDate = end === '현재' ? new Date() : new Date(end.replace('.', '-'));
-    
-    const monthDiff = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
-                     (endDate.getMonth() - startDate.getMonth());
+
+    const monthDiff =
+      (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
     totalMonths += monthDiff;
   });
-  
+
   if (totalMonths >= 12) {
     const years = Math.floor(totalMonths / 12);
     const months = totalMonths % 12;
     return months > 0 ? `${years}년 ${months}개월` : `${years}년`;
   }
-  
+
   return `${totalMonths}개월`;
 };
 </script>
@@ -420,9 +420,9 @@ const calculateTotalCareer = (careers) => {
               <polyline points="9 22 9 12 15 12 15 22"></polyline>
             </svg>
           </div>
-          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
-            >기업 정보</span
-          >
+          <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">
+            기업 정보
+          </span>
         </div>
       </div>
 
@@ -543,9 +543,9 @@ const calculateTotalCareer = (careers) => {
                   @click="openInterviewOffer(talent)"
                   :disabled="talent.isInterviewOffered"
                   class="w-[140px] px-4 py-2 text-white rounded-lg transition-colors"
-                  :class="talent.isInterviewOffered 
-                    ? 'bg-gray-400 cursor-not-allowed' 
-                    : 'bg-[#8B8BF5] hover:bg-[#7A7AE6]'"
+                  :class="
+                    talent.isInterviewOffered ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#8B8BF5] hover:bg-[#7A7AE6]'
+                  "
                 >
                   {{ talent.isInterviewOffered ? '제안 완료' : '면접 제안하기' }}
                 </button>
@@ -592,7 +592,7 @@ const calculateTotalCareer = (careers) => {
               {{ selectedCandidate?.criminalRecordFile?.name || '미제출' }}
             </span>
             <span v-else>면접 제안 수락 후 확인 가능</span>
-            
+
             <span class="text-gray-600">한국어능력</span>
             <span>{{ selectedCandidate?.koreanProficiency || '미입력' }}</span>
             <span class="text-gray-600">학습기간</span>
@@ -673,9 +673,7 @@ const calculateTotalCareer = (careers) => {
       <!-- 학력 사항 -->
       <div class="mb-8 bg-gray-50 p-6 rounded-lg">
         <h3 class="text-lg font-medium mb-4">학력 사항</h3>
-        <div class="text-[#8B8BF5] mb-4">
-          최종학력: {{ getLatestEducation(selectedCandidate?.education) }}
-        </div>
+        <div class="text-[#8B8BF5] mb-4">최종학력: {{ getLatestEducation(selectedCandidate?.education) }}</div>
         <div v-for="(edu, index) in selectedCandidate?.education" :key="index" class="mb-4">
           <div class="font-medium">{{ edu.school }}</div>
           <div class="text-gray-600">{{ edu.type }}</div>
@@ -691,19 +689,16 @@ const calculateTotalCareer = (careers) => {
           <h3 class="text-lg font-medium">자격증 사항</h3>
         </div>
         <div v-if="selectedCandidate?.certificates?.length" class="space-y-4">
-          <div v-for="(cert, index) in selectedCandidate.certificates" 
-            :key="index" 
+          <div
+            v-for="(cert, index) in selectedCandidate.certificates"
+            :key="index"
             class="mb-4 pb-4 border-b last:border-b-0"
           >
             <div class="font-medium mb-1">{{ cert.name }}</div>
-            <div class="text-gray-600">
-              취득일: {{ cert.issuedDate }}
-            </div>
+            <div class="text-gray-600">취득일: {{ cert.issuedDate }}</div>
           </div>
         </div>
-        <div v-else class="text-center text-gray-500">
-          등록된 자격증이 없습니다
-        </div>
+        <div v-else class="text-center text-gray-500">등록된 자격증이 없습니다</div>
       </div>
     </div>
 
@@ -722,13 +717,11 @@ const calculateTotalCareer = (careers) => {
             style="font-size: 1.5rem"
           ></i>
         </Button>
-        <Button 
+        <Button
           @click="openInterviewOffer(selectedCandidate)"
           :disabled="selectedCandidate?.isInterviewOffered"
           class="transition-colors"
-          :class="selectedCandidate?.isInterviewOffered 
-            ? 'bg-gray-400' 
-            : 'bg-[#8B8BF5] hover:bg-[#7A7AE6]'"
+          :class="selectedCandidate?.isInterviewOffered ? 'bg-gray-400' : 'bg-[#8B8BF5] hover:bg-[#7A7AE6]'"
         >
           {{ selectedCandidate?.isInterviewOffered ? '제안 완료' : '면접 제안하기' }}
         </Button>
