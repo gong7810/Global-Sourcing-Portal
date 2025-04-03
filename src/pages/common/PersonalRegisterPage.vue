@@ -11,7 +11,6 @@ import { useAuthStore } from '@/store/auth/authStore';
 
 const messagePop = useMessagePop();
 const authStore = useAuthStore();
-const { tokenInfo } = storeToRefs(authStore);
 const router = useRouter();
 
 const files = ref();
@@ -58,11 +57,10 @@ const getNationList = async () => {
   const response = await getCodeList(`NATIONALITY_TY`);
 
   response.map((item) => {
-    const nation = {
+    nationalityOptions.value.push({
       label: item.name,
-      value: item.code
-    };
-    nationalityOptions.value.push(nation);
+      code: item.code
+    });
   });
 };
 
@@ -227,14 +225,14 @@ const submitForm = async () => {
         genderCd: `GENDER_${gender.value}`
       },
       resume: {
-        nationalityCd: nationality.value.value,
+        nationalityCd: nationality.value,
         passport: passportNo.value,
         passportName: `${passportFirstName.value} ${passportLastName.value}`,
         passportFirstName: passportFirstName.value,
         passportLastName: passportLastName.value,
         passportIssueDt: new Date(issueDate.value).toISOString(),
         passportExpiryDt: new Date(expirationDate.value).toISOString(),
-        passportCountryCd: issuingCountry.value.value,
+        passportCountryCd: issuingCountry.value,
         passportFileId: res.id,
         snsUrl: null,
         portfolioUrl: null,
@@ -350,6 +348,7 @@ const savePassportImage = () => {
                 v-model="nationality"
                 :options="nationalityOptions"
                 optionLabel="label"
+                optionValue="code"
                 placeholder="국적"
                 class="w-full"
               />
@@ -434,7 +433,8 @@ const savePassportImage = () => {
               <Select
                 v-model="issuingCountry"
                 :options="nationalityOptions"
-                optionLabel="label"
+                optionLabel="name"
+                optionValue="code"
                 placeholder="발급국가"
                 class="w-full"
               />

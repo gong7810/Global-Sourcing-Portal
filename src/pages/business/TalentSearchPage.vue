@@ -1,35 +1,29 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import InputText from 'primevue/inputtext';
-import Dropdown from 'primevue/dropdown';
-import MultiSelect from 'primevue/multiselect';
-import Button from 'primevue/button';
-import Dialog from 'primevue/dialog';
 
-// 검색 필터 상태 관리
-const searchKeyword = ref('');
-const selectedCareer = ref(null);
-const selectedNationalities = ref([]);
-const selectedSkills = ref([]);
+import { getCodeList } from '@/apis/common/commonApis';
+import { getResumeList } from '@/apis/owner/ownerApis';
 
 const router = useRouter();
 
+const showResumeModal = ref(false);
+const selectedCandidate = ref(null);
+const isAccepted = ref(false);
+
 // 필터 옵션
-const careerOptions = [
-  { label: '신입', value: 'entry' },
-  { label: '1~3년', value: 'junior' },
-  { label: '4~7년', value: 'middle' },
-  { label: '8년 이상', value: 'senior' }
-];
+const nationalityOptions = ref([]);
+const careerOptions = ref([]);
+const jobCategoryOptions = ref([]);
+const genderOptions = ref([]);
 
-const nationalityOptions = [
-  { label: '베트남', value: 'VN' },
-  { label: '중국', value: 'CN' },
-  { label: '일본', value: 'JP' },
-  { label: '기타', value: 'OTHER' }
-];
-
+// 검색 필터 상태 관리
+const filters = ref({
+  nationalityCd: null,
+  careerHistory: null,
+  jobCategoryCd: null,
+  genderCd: null
+});
 
 // 임시 인재 데이터
 const talents = ref([
@@ -37,7 +31,7 @@ const talents = ref([
     id: 1,
     name: '홍길동',
     nationality: '베트남',
-    career: '5년',
+    careerHistory: '5년',
     birthdate: '1996.09.01',
     gender: '남성',
     phone: '010-1234-5678',
@@ -50,15 +44,16 @@ const talents = ref([
     passportName: 'HONG GILDONG',
     passportNumber: 'M1234****',
     passportExpiry: '2028-09-01',
-    jobCategory: { label: 'IT개발·데이터', value: 'it' },
+    jobCategory: { name: 'IT개발·데이터', code: 'it' },
     isBookmarked: true,
     careers: [
       {
         company: '(주)테크솔루션',
         period: '2021.03 - 2024.03',
-        jobCategory: { label: 'IT개발·데이터', value: 'it' },
+        jobCategory: { name: 'IT개발·데이터', code: 'it' },
         position: '프론트엔드 개발자 | 개발팀',
-        description: '웹 서비스 프론트엔드 개발 및 유지보수\n- React, TypeScript 기반 웹 애플리케이션 개발\n- 성능 최적화 및 사용자 경험 개선',
+        description:
+          '웹 서비스 프론트엔드 개발 및 유지보수\n- React, TypeScript 기반 웹 애플리케이션 개발\n- 성능 최적화 및 사용자 경험 개선',
         file: {
           name: '테크솔루션_경력증명서.pdf',
           size: '1.2MB',
@@ -68,7 +63,7 @@ const talents = ref([
       {
         company: '(주)스타트업',
         period: '2019.03 - 2021.02',
-        jobCategory: { label: 'IT개발·데이터', value: 'it' },
+        jobCategory: { name: 'IT개발·데이터', code: 'it' },
         position: '웹 개발자 | 서비스개발팀',
         description: '자사 웹 서비스 개발\n- Vue.js 기반 프론트엔드 개발\n- REST API 연동 및 기능 구현',
         file: {
@@ -121,7 +116,7 @@ const talents = ref([
     id: 2,
     name: '김철수',
     nationality: '중국',
-    career: '3년',
+    careerHistory: '3년',
     birthdate: '1997.05.15',
     gender: '남성',
     phone: '010-2345-6789',
@@ -132,15 +127,16 @@ const talents = ref([
     passportName: 'KIM CHEOLSOO',
     passportNumber: 'M5678****',
     passportExpiry: '2027-05-15',
-    jobCategory: { label: 'IT개발·데이터', value: 'it' },
+    jobCategory: { name: 'IT개발·데이터', code: 'it' },
     isBookmarked: true,
     careers: [
       {
         company: '(주)데이터테크',
         period: '2021.01 - 2024.03',
-        jobCategory: { label: 'IT개발·데이터', value: 'it' },
+        jobCategory: { name: 'IT개발·데이터', code: 'it' },
         position: '백엔드 개발자 | 서버개발팀',
-        description: '백엔드 서버 개발 및 운영\n- Spring Boot 기반 REST API 개발\n- MSA 아키텍처 설계 및 구현\n- 대용량 데이터 처리 시스템 구축'
+        description:
+          '백엔드 서버 개발 및 운영\n- Spring Boot 기반 REST API 개발\n- MSA 아키텍처 설계 및 구현\n- 대용량 데이터 처리 시스템 구축'
       }
     ],
     education: [
@@ -176,7 +172,7 @@ const talents = ref([
     id: 3,
     name: '이영희',
     nationality: '일본',
-    career: '7년',
+    careerHistory: '7년',
     birthdate: '1994.08.20',
     gender: '여성',
     phone: '010-3456-7890',
@@ -187,20 +183,21 @@ const talents = ref([
     passportName: 'LEE YOUNGHEE',
     passportNumber: 'M9012****',
     passportExpiry: '2026-08-20',
-    jobCategory: { label: 'IT개발·데이터', value: 'it' },
+    jobCategory: { name: 'IT개발·데이터', code: 'it' },
     isBookmarked: false,
     careers: [
       {
         company: '(주)소프트뱅크',
         period: '2020.04 - 2024.03',
-        jobCategory: { label: 'IT개발·데이터', value: 'it' },
+        jobCategory: { name: 'IT개발·데이터', code: 'it' },
         position: '시스템 아키텍트 | 플랫폼개발팀',
-        description: '클라우드 플랫폼 설계 및 개발\n- AWS 기반 클라우드 아키텍처 설계\n- 마이크로서비스 아키텍처 구축\n- DevOps 파이프라인 구축'
+        description:
+          '클라우드 플랫폼 설계 및 개발\n- AWS 기반 클라우드 아키텍처 설계\n- 마이크로서비스 아키텍처 구축\n- DevOps 파이프라인 구축'
       },
       {
         company: '(주)테크놀로지',
         period: '2017.03 - 2020.03',
-        jobCategory: { label: 'IT개발·데이터', value: 'it' },
+        jobCategory: { name: 'IT개발·데이터', code: 'it' },
         position: '백엔드 개발자 | 백엔드팀',
         description: '자사 서비스 백엔드 개발\n- Java 기반 서버 애플리케이션 개발\n- 데이터베이스 설계 및 최적화'
       }
@@ -240,9 +237,59 @@ const talents = ref([
   }
 ]);
 
-const showResumeModal = ref(false);
-const selectedCandidate = ref(null);
-const isAccepted = ref(false);
+onMounted(() => {
+  getNationCode();
+  getJobCategoryCode();
+  getCareerPeriodCode();
+  setGenderCode();
+
+  searchTalents();
+});
+
+// 국적 코드 조회
+const getNationCode = async () => {
+  const response = await getCodeList(`NATIONALITY_TY`);
+
+  response.map((item) => {
+    nationalityOptions.value.push({
+      name: item.name,
+      code: item.code
+    });
+  });
+};
+
+// 경력 코드 조회
+const getCareerPeriodCode = async () => {
+  const response = await getCodeList(`CAREER_PERIOD`);
+
+  response.map((item) => {
+    careerOptions.value.push({
+      name: item.name,
+      code: item.code
+    });
+  });
+};
+
+// 직무 코드 조회
+const getJobCategoryCode = async () => {
+  const response = await getCodeList(`JOB_CATEGORY`);
+
+  response.map((item) => {
+    jobCategoryOptions.value.push({
+      name: item.name,
+      code: item.code
+    });
+  });
+};
+
+// 성별 세팅
+const setGenderCode = async () => {
+  const response = await getCodeList(`GENDER_TY`);
+
+  response.map((item) => {
+    genderOptions.value.push({ name: `${item.name}성`, code: item.code });
+  });
+};
 
 const openResumeModal = (candidate) => {
   selectedCandidate.value = candidate;
@@ -257,81 +304,73 @@ const openInterviewOffer = (talent) => {
   if (talent.isInterviewOffered) return;
   router.push(`/business/interview-offer/create/${talent.id}`);
   talent.isInterviewOffered = true;
-  
+
   // 모달이 열려있는 경우 selectedCandidate도 업데이트
   if (selectedCandidate.value?.id === talent.id) {
     selectedCandidate.value.isInterviewOffered = true;
   }
 };
 
-const searchTalents = () => {
-  // 검색 로직 구현
-  console.log('Searching with filters:', {
-    keyword: searchKeyword.value,
-    career: selectedCareer.value,
-    nationalities: selectedNationalities.value,
-    skills: selectedSkills.value
-  });
+// 인재 필터 조회
+const searchTalents = async () => {
+  let fromPeriod = '';
+  let toPeriod = '';
+
+  if (filters.value.careerHistory) {
+    switch (filters.value.careerHistory) {
+      case careerOptions.value[0].code:
+        fromPeriod = 0;
+        toPeriod = 1;
+        break;
+      case careerOptions.value[1].code:
+        fromPeriod = 1;
+        toPeriod = 3;
+        break;
+      case careerOptions.value[2].code:
+        fromPeriod = 3;
+        toPeriod = 7;
+        break;
+      case careerOptions.value[3].code:
+        fromPeriod = 7;
+        toPeriod = 50;
+        break;
+    }
+  }
+
+  let queryList = Object.entries(filters.value).reduce((acc, cur, idx) => {
+    if (idx !== 1 && cur[1]) {
+      acc.push(`${cur[0]}=${cur[1]}`);
+    } else if (cur[1]) {
+      acc.push(`fromPeriod=${fromPeriod}&toPeriod=${toPeriod}`);
+    }
+    return acc;
+  }, []);
+
+  const response = await getResumeList(queryList.join('&'));
+
+  talents.value = response.contents;
+
+  console.log(talents.value);
 };
 
-// 직무 카테고리 데이터
-const jobCategories = [
-  { label: '기획·전략', value: 'planning' },
-  { label: '마케팅·홍보·조사', value: 'marketing' },
-  { label: '회계·세무·재무', value: 'accounting' },
-  { label: '인사·노무·HRD', value: 'hr' },
-  { label: '총무·법무·사무', value: 'admin' },
-  { label: 'IT개발·데이터', value: 'it' },
-  { label: '디자인', value: 'design' },
-  { label: '영업·판매·무역', value: 'sales' },
-  { label: '고객상담·TM', value: 'cs' },
-  { label: '구매·자재·물류', value: 'purchasing' },
-  { label: '상품기획·MD', value: 'md' },
-  { label: '운전·운송·배송', value: 'delivery' },
-  { label: '서비스', value: 'service' },
-  { label: '생산', value: 'production' },
-  { label: '건설·건축', value: 'construction' },
-  { label: '의료', value: 'medical' },
-  { label: '연구·R&D', value: 'research' },
-  { label: '교육', value: 'education' },
-  { label: '미디어·문화·스포츠', value: 'media' },
-  { label: '금융·보험', value: 'finance' },
-  { label: '공공·복지', value: 'public' }
-];
-
-// 필터 상태
-const filters = ref({
-  jobCategory: null,
-  nationality: null,
-  career: null,
-  keyword: ''
-});
-
 // 필터링된 후보자 목록
-const filteredCandidates = computed(() => {
-  return talents.value.filter(candidate => {
-    // 직무 카테고리 필터
-    const categoryMatch = !filters.value.jobCategory || 
-      candidate.jobCategory === filters.value.jobCategory;
-    
-    // 국적 필터
-    const nationalityMatch = !filters.value.nationality || 
-      candidate.nationality === filters.value.nationality;
-    
-    // 경력 필터
-    const careerMatch = !filters.value.career || 
-      candidate.career === filters.value.career;
-    
-    // 키워드 검색 (이름, 학교, 전공)
-    const keyword = filters.value.keyword.toLowerCase();
-    const keywordMatch = !keyword || 
-      candidate.name.toLowerCase().includes(keyword) ||
-      candidate.education.toLowerCase().includes(keyword) ||
-      candidate.major.toLowerCase().includes(keyword);
+// const filteredCandidates = computed(() => {
+//   return talents.value.filter((candidate) => {
+//     // 국적 필터
+//     const nationalityMatch = !filters.value.nationalityCd || candidate.nationality.code === filters.value.nationalityCd;
 
-    return categoryMatch && nationalityMatch && careerMatch && keywordMatch;
-  });
-});
+//     // 경력 필터
+//     const careerMatch = !filters.value.careerHistory || candidate.careerHistory === filters.value.careerHistory.name;
+
+//     // 직무 카테고리 필터
+//     const categoryMatch = !filters.value.jobCategoryCd || candidate.jobCategory.code === filters.value.jobCategoryCd;
+
+//     // 성별 필터
+//     const genderMatch = !filters.value.genderCd || candidate.gender === filters.value.genderCd;
+
+//     return categoryMatch && nationalityMatch && careerMatch && genderMatch;
+//   });
+// });
 
 // 향후 일괄 선택을 위한 상태만 준비
 const selectedTalentIds = ref([]);
@@ -341,18 +380,18 @@ const calculateCareerPeriod = (period) => {
   const [start, end] = period.split(' - ');
   const startDate = new Date(start.split('.').join('-'));
   const endDate = end === '현재' ? new Date() : new Date(end.split('.').join('-'));
-  
+
   const years = endDate.getFullYear() - startDate.getFullYear();
   const months = endDate.getMonth() - startDate.getMonth();
-  
+
   let totalMonths = years * 12 + months;
   if (totalMonths < 12) {
     return `${totalMonths}개월`;
   }
-  
+
   const remainingYears = Math.floor(totalMonths / 12);
   const remainingMonths = totalMonths % 12;
-  
+
   if (remainingMonths === 0) {
     return `${remainingYears}년`;
   }
@@ -369,25 +408,25 @@ const getLatestEducation = (education) => {
 // 총 경력 계산 함수
 const calculateTotalCareer = (careers) => {
   if (!careers?.length) return '0년';
-  
+
   let totalMonths = 0;
-  
-  careers.forEach(career => {
+
+  careers.forEach((career) => {
     const [start, end] = career.period.split(' - ');
     const startDate = new Date(start.split('.').join('-'));
     const endDate = end === '현재' ? new Date() : new Date(end.split('.').join('-'));
-    
-    const monthDiff = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
-                     (endDate.getMonth() - startDate.getMonth());
+
+    const monthDiff =
+      (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
     totalMonths += monthDiff;
   });
-  
+
   if (totalMonths >= 12) {
     const years = Math.floor(totalMonths / 12);
     const months = totalMonths % 12;
     return months > 0 ? `${years}년 ${months}개월` : `${years}년`;
   }
-  
+
   return `${totalMonths}개월`;
 };
 </script>
@@ -411,103 +450,114 @@ const calculateTotalCareer = (careers) => {
         <!-- 국적 필터 -->
         <div class="w-[200px]">
           <label class="block text-sm font-medium text-gray-700 mb-1">국적</label>
-          <MultiSelect
-            v-model="selectedNationalities"
+          <Select
+            v-model="filters.nationalityCd"
             :options="nationalityOptions"
-            optionLabel="label"
-            placeholder="전체"
             class="w-full"
+            optionLabel="name"
+            optionValue="code"
+            placeholder="--Select--"
+            showClear
           />
         </div>
 
         <!-- 경력 필터 -->
         <div class="w-[150px]">
           <label class="block text-sm font-medium text-gray-700 mb-1">경력</label>
-          <Dropdown
-            v-model="selectedCareer"
+          <Select
+            v-model="filters.careerHistory"
             :options="careerOptions"
-            optionLabel="label"
-            placeholder="전체"
             class="w-full"
+            optionLabel="name"
+            optionValue="code"
+            placeholder="--Select--"
+            showClear
           />
         </div>
 
         <!-- 직무 카테고리 필터 -->
         <div class="w-[200px]">
           <label class="block text-sm font-medium text-gray-700 mb-1">직무</label>
-          <Dropdown
-            v-model="filters.jobCategory"
-            :options="jobCategories"
-            optionLabel="label"
-            placeholder="전체"
+          <Select
+            v-model="filters.jobCategoryCd"
+            :options="jobCategoryOptions"
             class="w-full"
+            optionLabel="name"
+            optionValue="code"
+            placeholder="--Select--"
+            showClear
           />
         </div>
 
-        <!-- 키워드 검색 -->
-        <div class="flex-1">
-          <label class="block text-sm font-medium text-gray-700 mb-1">키워드</label>
-          <InputText 
-            v-model="searchKeyword"
-            placeholder="이름, 학교, 전공 등"
+        <!-- 성별 카테고리 필터 -->
+        <div class="w-[200px]">
+          <label class="block text-sm font-medium text-gray-700 mb-1">성별</label>
+          <Select
+            v-model="filters.genderCd"
+            :options="genderOptions"
             class="w-full"
+            optionLabel="name"
+            optionValue="code"
+            placeholder="--Select--"
+            showClear
           />
         </div>
 
         <!-- 검색 버튼 -->
-        <div class="self-end mb-[2px]">
-          <Button 
-            @click="searchTalents" 
-            class="bg-[#8B8BF5] text-white px-6 h-[42px]"
-          >
-            검색하기
-          </Button>
+        <div class="self-end">
+          <Button @click="searchTalents" class="bt_btn widthFixed primary"> 검색하기 </Button>
         </div>
       </div>
     </div>
 
     <!-- 인재 목록 -->
     <div class="grid grid-cols-1 gap-4">
-      <div v-for="talent in filteredCandidates" :key="talent.id" 
-        class="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200">
+      <div
+        v-for="talent in talents"
+        :key="talent.id"
+        class="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200"
+      >
         <div class="flex justify-between items-start">
           <div class="flex-1">
             <div class="flex items-center gap-3 mb-3">
-              <h3 class="text-lg font-bold">{{ talent.name }}</h3>
-              <span class="text-sm text-gray-600">{{ talent.nationality }}</span>
+              <h3 class="text-lg font-bold">{{ talent?.user?.name }}</h3>
+              <span class="text-sm text-gray-600">{{ talent?.passportCountry?.name }}</span>
               <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">
-                경력 {{ talent.career }}
+                {{
+                  talent?.experienceDurationMonth
+                    ? '경력 ' +
+                      parseInt(talent.experienceDurationMonth / 12) +
+                      '년 ' +
+                      (talent.experienceDurationMonth % 12) +
+                      '개월'
+                    : '신입'
+                }}
               </span>
             </div>
-            
+
             <div class="text-gray-600">
-              <p>{{ talent.education[0].school }} · {{ talent.education[0].major }}</p>
+              <!-- <p>{{ talent?.education[0].school }} · {{ talent?.education[0].major }}</p> -->
             </div>
           </div>
 
           <div class="flex flex-col items-end gap-3">
-            <button 
-              @click="toggleBookmark(talent)" 
-              :class="[
-                'hover:text-[#8B8BF5]', 
-                talent.isBookmarked ? 'text-[#8B8BF5]' : 'text-gray-400'
-              ]"
+            <button
+              @click="toggleBookmark(talent)"
+              :class="['hover:text-[#8B8BF5]', talent.isBookmarked ? 'text-[#8B8BF5]' : 'text-gray-400']"
             >
               <i :class="['pi', talent.isBookmarked ? 'pi-bookmark-fill' : 'pi-bookmark']"></i>
             </button>
-            <button 
-              @click="openResumeModal(talent)" 
+            <button
+              @click="openResumeModal(talent)"
               class="w-[140px] px-4 py-2 border border-[#8B8BF5] text-[#8B8BF5] rounded-lg hover:bg-gray-50"
             >
               이력서 보기
             </button>
-            <button 
-              @click="openInterviewOffer(talent)" 
+            <button
+              @click="openInterviewOffer(talent)"
               :disabled="talent.isInterviewOffered"
               class="w-[140px] px-4 py-2 text-white rounded-lg transition-colors"
-              :class="talent.isInterviewOffered 
-                ? 'bg-gray-400 cursor-not-allowed' 
-                : 'bg-[#8B8BF5] hover:bg-[#7A7AE6]'"
+              :class="talent.isInterviewOffered ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#8B8BF5] hover:bg-[#7A7AE6]'"
             >
               {{ talent.isInterviewOffered ? '제안 완료' : '면접 제안하기' }}
             </button>
@@ -515,14 +565,8 @@ const calculateTotalCareer = (careers) => {
         </div>
       </div>
     </div>
-
     <!-- 이력서 상세 모달 -->
-    <Dialog 
-      v-model:visible="showResumeModal" 
-      :modal="true"
-      :style="{ width: '80vw' }"
-      :maximizable="true"
-    >
+    <Dialog v-model:visible="showResumeModal" :modal="true" :style="{ width: '80vw' }" :maximizable="true">
       <template #header>
         <div class="text-2xl font-bold">이력서</div>
       </template>
@@ -537,11 +581,11 @@ const calculateTotalCareer = (careers) => {
               <span class="text-gray-600">이름</span>
               <span>{{ selectedCandidate?.name }}</span>
               <span class="text-gray-600">생년월일</span>
-              <span>{{ selectedCandidate?.birthdate }}</span>
+              <span>{{ selectedCandidate?.birth }}</span>
               <span class="text-gray-600">성별</span>
               <span>{{ selectedCandidate?.gender }}</span>
               <span class="text-gray-600">휴대폰</span>
-              <span>{{ isAccepted ? selectedCandidate?.phone : '면접 제안 수락 후 확인 가능' }}</span>
+              <span>{{ isAccepted ? selectedCandidate?.mobile : '면접 제안 수락 후 확인 가능' }}</span>
               <span class="text-gray-600">이메일</span>
               <span>{{ isAccepted ? selectedCandidate?.email : '면접 제안 수락 후 확인 가능' }}</span>
               <span class="text-gray-600">주소</span>
@@ -556,15 +600,15 @@ const calculateTotalCareer = (careers) => {
                 {{ selectedCandidate?.criminalRecordFile?.name || '미제출' }}
               </span>
               <span v-else>면접 제안 수락 후 확인 가능</span>
-              
+
               <span class="text-gray-600">한국어능력</span>
               <span>{{ selectedCandidate?.koreanProficiency || '미입력' }}</span>
               <span class="text-gray-600">학습기간</span>
-              <span>{{ selectedCandidate?.koreanStudyDuration || '미입력' }}</span>
+              <span>{{ selectedCandidate?.koreanStudyPeriod || '미입력' }}</span>
               <span class="text-gray-600">한국방문경험</span>
-              <span>{{ selectedCandidate?.koreanVisitExperience || '미입력' }}</span>
+              <span>{{ selectedCandidate?.hasVisitedKorea || '미입력' }}</span>
               <span class="text-gray-600">혼인여부</span>
-              <span>{{ selectedCandidate?.maritalStatus || '미입력' }}</span>
+              <span>{{ selectedCandidate?.isMarried || '미입력' }}</span>
             </div>
 
             <!-- 프로필 사진 (오른쪽) -->
@@ -623,14 +667,17 @@ const calculateTotalCareer = (careers) => {
               총 {{ calculateTotalCareer(selectedCandidate?.careers) }}
             </span>
           </div>
-          <div v-for="(career, index) in selectedCandidate?.careers" :key="index" 
-            class="mb-4 pb-4 border-b last:border-b-0">
+          <div
+            v-for="(career, index) in selectedCandidate?.careers"
+            :key="index"
+            class="mb-4 pb-4 border-b last:border-b-0"
+          >
             <div class="flex items-center gap-2">
               <div class="font-medium">{{ career.company }}</div>
               <span class="text-sm text-gray-500">({{ calculateCareerPeriod(career.period) }})</span>
             </div>
             <div class="text-gray-600">{{ career.period }}</div>
-            <div class="text-gray-600">{{ career.jobCategory.label }} | {{ career.position }}</div>
+            <div class="text-gray-600">{{ career.jobCategory.name }} | {{ career.position }}</div>
             <div class="mt-2 whitespace-pre-line">{{ career.description }}</div>
           </div>
         </div>
@@ -642,16 +689,14 @@ const calculateTotalCareer = (careers) => {
           </div>
           <div v-if="selectedCandidate?.education?.length">
             <div class="text-[#8B8BF5] mb-4">
-              최종학력: {{ selectedCandidate.education[0].school }} 
-              ({{ selectedCandidate.education[0].type }})
+              최종학력: {{ selectedCandidate.education[0].school }} ({{ selectedCandidate.education[0].type }})
             </div>
-            <div v-for="(edu, index) in selectedCandidate.education" 
+            <div
+              v-for="(edu, index) in selectedCandidate.education"
               :key="index"
               class="mb-6 pb-6 border-b last:border-b-0"
             >
-              <div class="text-[#8B8BF5] mb-2">
-                {{ edu.school }} ({{ edu.type }})
-              </div>
+              <div class="text-[#8B8BF5] mb-2">{{ edu.school }} ({{ edu.type }})</div>
               <div class="text-gray-600">{{ edu.major }}</div>
               <div class="text-gray-600">{{ edu.period }}</div>
               <div class="whitespace-pre-line">{{ edu.description }}</div>
@@ -665,43 +710,35 @@ const calculateTotalCareer = (careers) => {
             <h3 class="text-lg font-medium">자격증 사항</h3>
           </div>
           <div v-if="selectedCandidate?.certificates?.length" class="space-y-4">
-            <div v-for="(cert, index) in selectedCandidate.certificates" 
-              :key="index" 
+            <div
+              v-for="(cert, index) in selectedCandidate.certificates"
+              :key="index"
               class="mb-4 pb-4 border-b last:border-b-0"
             >
               <div class="font-medium mb-1">{{ cert.name }}</div>
-              <div class="text-gray-600">
-                취득일: {{ cert.issuedDate }}
-              </div>
+              <div class="text-gray-600">취득일: {{ cert.issuedDate }}</div>
             </div>
           </div>
-          <div v-else class="text-center text-gray-500">
-            등록된 자격증이 없습니다
-          </div>
+          <div v-else class="text-center text-gray-500">등록된 자격증이 없습니다</div>
         </div>
       </div>
 
       <template #footer>
         <div class="flex justify-end gap-4">
-          <Button 
-            @click="toggleBookmark(selectedCandidate)" 
-            :class="[
-              'p-button-text', 
-              selectedCandidate?.isBookmarked ? 'text-[#8B8BF5]' : 'text-gray-400'
-            ]"
+          <Button
+            @click="toggleBookmark(selectedCandidate)"
+            :class="['p-button-text', selectedCandidate?.isBookmarked ? 'text-[#8B8BF5]' : 'text-gray-400']"
           >
-            <i 
-              :class="['pi', selectedCandidate?.isBookmarked ? 'pi-bookmark-fill' : 'pi-bookmark']" 
+            <i
+              :class="['pi', selectedCandidate?.isBookmarked ? 'pi-bookmark-fill' : 'pi-bookmark']"
               style="font-size: 1.5rem"
             ></i>
           </Button>
-          <Button 
-            @click="openInterviewOffer(selectedCandidate)" 
+          <Button
+            @click="openInterviewOffer(selectedCandidate)"
             :disabled="selectedCandidate?.isInterviewOffered"
             class="transition-colors"
-            :class="selectedCandidate?.isInterviewOffered 
-              ? 'bg-gray-400' 
-              : 'bg-[#8B8BF5] hover:bg-[#7A7AE6]'"
+            :class="selectedCandidate?.isInterviewOffered ? 'bg-gray-400' : 'bg-[#8B8BF5] hover:bg-[#7A7AE6]'"
           >
             {{ selectedCandidate?.isInterviewOffered ? '제안 완료' : '면접 제안하기' }}
           </Button>
@@ -721,4 +758,4 @@ const calculateTotalCareer = (careers) => {
 :deep(.p-multiselect-panel) {
   width: 100%;
 }
-</style> 
+</style>
