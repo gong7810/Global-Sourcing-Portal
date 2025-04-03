@@ -180,6 +180,10 @@ const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value; // 메뉴 토글
 };
 
+const closeMenu = () => {
+  isMenuOpen.value = false;
+};
+
 const getLogout = () => {
   messagePop.confirm({
     icon: 'info',
@@ -380,19 +384,15 @@ const formatDate = (dateString) => {
                 <a
                   class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50"
                   style="cursor: pointer"
-                  @click="router.push('/user/resume')"
+                  @click="() => { router.push('/user/resume'); closeMenu(); }"
                 >
                   <i class="pi pi-file-edit text-[#8FA1FF]"></i>
                   <span class="font-medium">이력서 관리</span>
                 </a>
-                <!-- <a class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50" style="cursor: pointer">
-                  <i class="pi pi-chart-line text-[#8FA1FF]"></i>
-                  <span class="font-medium">지원 현황</span>
-                </a> -->
                 <a
                   class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50"
                   style="cursor: pointer"
-                  @click="router.push('/faq')"
+                  @click="() => { router.push('/faq'); closeMenu(); }"
                 >
                   <i class="pi pi-question-circle text-[#8FA1FF]"></i>
                   <span class="font-medium">FAQ</span>
@@ -400,19 +400,11 @@ const formatDate = (dateString) => {
                 <a
                   class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50"
                   style="cursor: pointer"
-                  @click="loginFlag ? router.push('/inquiry') : router.push('/login')"
+                  @click="() => { loginFlag ? router.push('/inquiry') : router.push('/login'); closeMenu(); }"
                 >
                   <i class="pi pi-comments text-[#8FA1FF]"></i>
                   <span class="font-medium">문의하기</span>
                 </a>
-                <!-- <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50">
-                  <i class="pi pi-bookmark text-[#8FA1FF]"></i>
-                  <span class="font-medium">스크랩</span>
-                </a> -->
-                <!-- <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50">
-                  <i class="pi pi-cog text-[#8FA1FF]"></i>
-                  <span class="font-medium">설정</span>
-                </a> -->
               </div>
             </div>
           </div>
