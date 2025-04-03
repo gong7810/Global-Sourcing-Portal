@@ -699,7 +699,7 @@ const saveEducationInfo = async () => {
   let startDate =
     educationInfo.value.startDate?.length === 7
       ? educationInfo.value.startDate
-      : `${educationInfo.value.startDate}.${(educationInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')}`;
+      : `${educationInfo.value.startDate.getFullYear()}.${(educationInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')}`;
   let endDate = educationInfo.value.isGraduated
     ? educationInfo.value.endDate?.length === 7
       ? educationInfo.value.endDate
@@ -1378,7 +1378,7 @@ const clearCertificationFile = (index) => {
                   </div>
                   <div class="space-y-2">
                     <label class="block text-sm font-medium text-gray-700">
-                      주최기관<span class="text-red-500">*</span>
+                      발급기관<span class="text-red-500">*</span>
                     </label>
                     <InputText v-model="cert.issuer" placeholder="주최기관을 입력하세요" class="w-full" />
                   </div>
