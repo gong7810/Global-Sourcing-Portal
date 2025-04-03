@@ -361,14 +361,6 @@ const formatDate = (dateString) => {
             <div
               class="flex items-center cursor-pointer"
               @click="toggleMenu"
-              v-styleclass="{
-                selector: '@next',
-                enterFromClass: 'hidden opacity-0 translate-y-2',
-                enterActiveClass: 'transition-all duration-200',
-                enterToClass: 'opacity-100 translate-y-0',
-                leaveToClass: 'hidden',
-                hideOnOutsideClick: true
-              }"
             >
               <button
                 class="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 rounded-full transition-all"
@@ -380,8 +372,8 @@ const formatDate = (dateString) => {
 
             <!-- 메뉴 드롭다운 -->
             <div
-              v-if="isMenuOpen"
-              class="absolute right-0 top-[3.8rem] w-56 bg-white rounded-xl shadow-lg border border-gray-100 z-50"
+              v-show="isMenuOpen"
+              class="absolute right-0 top-[3.8rem] w-56 bg-white rounded-xl shadow-lg border border-gray-100 z-50 transition-all duration-200"
             >
               <!-- 메뉴 열림 상태에 따라 표시 -->
               <div class="py-2">
@@ -408,7 +400,7 @@ const formatDate = (dateString) => {
                 <a
                   class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50"
                   style="cursor: pointer"
-                  @click="router.push('/inquiry')"
+                  @click="loginFlag ? router.push('/inquiry') : router.push('/login')"
                 >
                   <i class="pi pi-comments text-[#8FA1FF]"></i>
                   <span class="font-medium">문의하기</span>

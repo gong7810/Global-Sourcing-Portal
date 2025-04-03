@@ -56,7 +56,7 @@ const fetchFaqs = async () => {
             sortAsc: false
         };
         const response = await getFaqList(params);
-        console.log('FAQ 목록 응답:', response);
+        // console.log('FAQ 목록 응답:', response);
         if (response && response.contents) {
             faqItems.value = response.contents.map(item => ({
                 ...item,
@@ -101,18 +101,18 @@ const addFaq = async () => {
         const faqData = {
             ...newFaq.value
         };
-        console.log('저장할 FAQ 데이터:', faqData);
+        // console.log('저장할 FAQ 데이터:', faqData);
         
         if (isEditMode.value) {
             const response = await saveFaq({
                 id: editingFaqId.value,
                 ...faqData
             });
-            console.log('FAQ 수정 응답:', response);
+            // console.log('FAQ 수정 응답:', response);
             messagePop.toast('FAQ가 수정되었습니다.', 'success');
         } else {
             const response = await saveFaq(faqData);
-            console.log('FAQ 추가 응답:', response);
+            // console.log('FAQ 추가 응답:', response);
             messagePop.toast('FAQ가 추가되었습니다.', 'success');
         }
         closeModal();
