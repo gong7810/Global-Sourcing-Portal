@@ -132,13 +132,13 @@ const markAsRead = (notification) => {
 
     // 기업용 알림 라우팅
     case 'interview_accepted':
-      router.push('/business/InterviewOffers'); // 면접제안 관리 페이지로 이동
+      router.push('/company/InterviewOffers'); // 면접제안 관리 페이지로 이동
       break;
     case 'schedule_selected':
-      router.push('/business/InterviewOffers'); // 면접제안 관리 페이지로 이동
+      router.push('/company/InterviewOffers'); // 면접제안 관리 페이지로 이동
       break;
     case 'interview_declined':
-      router.push('/business/InterviewOffers'); // 면접제안 관리 페이지로 이동
+      router.push('/company/InterviewOffers'); // 면접제안 관리 페이지로 이동
       break;
   }
 };
@@ -362,10 +362,7 @@ const formatDate = (dateString) => {
 
           <!-- 메뉴 버튼 -->
           <div class="relative">
-            <div
-              class="flex items-center cursor-pointer"
-              @click="toggleMenu"
-            >
+            <div class="flex items-center cursor-pointer" @click="toggleMenu">
               <button
                 class="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 rounded-full transition-all"
               >
@@ -384,7 +381,12 @@ const formatDate = (dateString) => {
                 <a
                   class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50"
                   style="cursor: pointer"
-                  @click="() => { router.push('/user/resume'); closeMenu(); }"
+                  @click="
+                    () => {
+                      router.push('/user/resume');
+                      closeMenu();
+                    }
+                  "
                 >
                   <i class="pi pi-file-edit text-[#8FA1FF]"></i>
                   <span class="font-medium">이력서 관리</span>
@@ -392,7 +394,12 @@ const formatDate = (dateString) => {
                 <a
                   class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50"
                   style="cursor: pointer"
-                  @click="() => { router.push('/faq'); closeMenu(); }"
+                  @click="
+                    () => {
+                      router.push('/faq');
+                      closeMenu();
+                    }
+                  "
                 >
                   <i class="pi pi-question-circle text-[#8FA1FF]"></i>
                   <span class="font-medium">FAQ</span>
@@ -400,7 +407,12 @@ const formatDate = (dateString) => {
                 <a
                   class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50"
                   style="cursor: pointer"
-                  @click="() => { loginFlag ? router.push('/inquiry') : router.push('/login'); closeMenu(); }"
+                  @click="
+                    () => {
+                      loginFlag ? router.push('/inquiry') : router.push('/login');
+                      closeMenu();
+                    }
+                  "
                 >
                   <i class="pi pi-comments text-[#8FA1FF]"></i>
                   <span class="font-medium">문의하기</span>

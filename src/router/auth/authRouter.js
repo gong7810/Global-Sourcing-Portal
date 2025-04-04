@@ -21,12 +21,12 @@ export const authRouter = [
     component: () => import('@/pages/common/RegisterSelect.vue')
   },
   {
-    path: '/personal/register',
+    path: '/common/register',
     name: 'personalRegister',
     component: () => import('@/pages/common/PersonalRegisterPage.vue')
   },
   {
-    path: '/business/register',
+    path: '/common/register',
     name: 'businessRegister',
     component: () => import('@/pages/common/BusinessRegisterPage.vue')
   },
@@ -36,9 +36,9 @@ export const authRouter = [
     component: () => import('@/pages/user/RegisterComplete.vue')
   },
   {
-    path: '/business/register/complete',
+    path: '/common/register/complete',
     name: 'businessRegisterComplete',
-    component: () => import('@/pages/business/RegisterComplete.vue')
+    component: () => import('@/pages/common/RegisterComplete.vue')
   },
   {
     path: '/find-id',

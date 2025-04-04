@@ -3,7 +3,7 @@ import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { getCodeList } from '@/apis/common/commonApis';
-import { getResumeList } from '@/apis/owner/ownerApis';
+import { getResumeList } from '@/apis/company/companyApis';
 
 const router = useRouter();
 
@@ -116,7 +116,8 @@ const openResumeModal = (candidate) => {
 
   selectedCandidate.value.user = {
     ...selectedCandidate.value.user,
-    profileImage: `${import.meta.env.VITE_UPLOAD_PATH}/${candidate.user?.imageFile?.fileName}`
+    // profileImage: `${import.meta.env.VITE_UPLOAD_PATH}/${candidate.user?.imageFile?.fileName}`
+    imageFile: `http://182.229.224.143/gsource/upload/woman1743320912414.jpg`
   };
 
   console.log(selectedCandidate.value);
@@ -183,7 +184,7 @@ const toggleBookmark = (talent) => {
 
 const openInterviewOffer = (talent) => {
   if (talent.isInterviewOffered) return;
-  router.push(`/business/interview-offer/create/${talent.id}`);
+  router.push(`/company/interview-offer/create/${talent.id}`);
   talent.isInterviewOffered = true;
 
   // 모달이 열려있는 경우 selectedCandidate도 업데이트
@@ -483,11 +484,17 @@ const getLatestEducation = (education) => {
               <span class="text-gray-600">성별</span>
               <span>{{ selectedCandidate?.user?.genderCd === 'GENDER_MALE' ? '남성' : '여성' }}</span>
               <span class="text-gray-600">휴대폰</span>
-              <span>{{ isAccepted ? selectedCandidate?.user?.mobile : '면접 제안 수락 후 확인 가능' }}</span>
+              <span class="text-[#8B8BF5]">{{
+                isAccepted ? selectedCandidate?.user?.mobile : '면접 제안 수락 후 확인 가능'
+              }}</span>
               <span class="text-gray-600">이메일</span>
-              <span>{{ isAccepted ? selectedCandidate?.user?.email : '면접 제안 수락 후 확인 가능' }}</span>
+              <span class="text-[#8B8BF5]">{{
+                isAccepted ? selectedCandidate?.user?.email : '면접 제안 수락 후 확인 가능'
+              }}</span>
               <span class="text-gray-600">주소</span>
-              <span>{{ isAccepted ? selectedCandidate?.user?.address : '면접 제안 수락 후 확인 가능' }}</span>
+              <span class="text-[#8B8BF5]">{{
+                isAccepted ? selectedCandidate?.user?.address : '면접 제안 수락 후 확인 가능'
+              }}</span>
             </div>
 
             <!-- 가운데 컬럼 -->
@@ -497,7 +504,7 @@ const getLatestEducation = (education) => {
                 <i class="pi pi-file-pdf text-red-500"></i>
                 {{ selectedCandidate?.user?.hasCriminalRecord ? '있음' : '없음' }}
               </span>
-              <span v-else>면접 제안 수락 후 확인 가능</span>
+              <span v-else class="text-[#8B8BF5]">면접 제안 수락 후 확인 가능</span>
 
               <span class="text-gray-600">한국어능력</span>
               <!-- <span>{{ selectedCandidate?.user?.koreanProficiencyCd || '미입력' }}</span> -->
@@ -526,8 +533,8 @@ const getLatestEducation = (education) => {
             <div class="flex flex-col items-center">
               <div class="w-[140px] h-[180px] bg-gray-100 rounded-lg overflow-hidden">
                 <img
-                  v-if="selectedCandidate?.user?.ImageFile?.id"
-                  :src="selectedCandidate?.user.profileImage"
+                  v-if="selectedCandidate?.user?.profileImage"
+                  :src="selectedCandidate?.user?.imageFile"
                   alt="프로필 사진"
                   class="w-full h-full object-cover"
                 />

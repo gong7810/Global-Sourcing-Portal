@@ -257,7 +257,7 @@ const openResumeModal = (talent) => {
 // 면접 제안 페이지로 이동하는 함수 수정
 const openInterviewOffer = (talent) => {
   if (talent.isInterviewOffered) return;
-  router.push(`/business/interview-offer/create/${talent.id}`);
+  router.push(`/company/interview-offer/create/${talent.id}`);
 };
 
 // 북마크된 인재 목록에서 교육 정보 표시를 위한 computed 속성 추가
@@ -332,7 +332,7 @@ const calculateTotalCareer = (careers) => {
       <!-- 상단 메뉴 아이콘들 -->
       <div class="flex justify-center gap-32 mb-12">
         <!-- 인재 검색 -->
-        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/TalentSearchPage')">
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/company/TalentSearchPage')">
           <div
             class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
           >
@@ -355,7 +355,7 @@ const calculateTotalCareer = (careers) => {
         </div>
 
         <!-- 면접 제안 내역 -->
-        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/InterviewOffers')">
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/company/InterviewOffers')">
           <div
             class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
           >
@@ -380,7 +380,7 @@ const calculateTotalCareer = (careers) => {
         </div>
 
         <!-- 면접 결과 내역 -->
-        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/InterviewResults')">
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/company/InterviewResults')">
           <div
             class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
           >
@@ -403,7 +403,7 @@ const calculateTotalCareer = (careers) => {
         </div>
 
         <!-- 기업 정보 -->
-        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/business/CompanyInfoPage')">
+        <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/company/CompanyInfoPage')">
           <div
             class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
           >
@@ -431,7 +431,7 @@ const calculateTotalCareer = (careers) => {
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-xl font-bold">북마크된 인재</h2>
           <router-link
-            to="/business/TalentSearchPage"
+            to="/company/TalentSearchPage"
             class="text-[#8B8BF5] hover:text-[#7A7AE6] text-sm flex items-center gap-1"
           >
             <span>인재 더보기</span>
@@ -491,7 +491,7 @@ const calculateTotalCareer = (careers) => {
             <p class="text-gray-500 mb-2">북마크된 인재가 없습니다</p>
             <p class="text-gray-400 text-sm mb-4">관심있는 인재를 북마크하고 관리해보세요</p>
             <router-link
-              to="/business/TalentSearchPage"
+              to="/company/TalentSearchPage"
               class="inline-flex items-center px-4 py-2 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7A7AE6] transition-colors"
             >
               <i class="pi pi-search mr-2"></i>
