@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { getCodeList } from '@/apis/common/commonApis';
@@ -10,6 +10,10 @@ const router = useRouter();
 const showResumeModal = ref(false);
 const selectedCandidate = ref(null);
 const isAccepted = ref(false);
+
+const koreanLv = ref('');
+const koreanLevelList = ref([]);
+const educationLevelList = ref([]);
 
 // 필터 옵션
 const nationalityOptions = ref([]);
@@ -25,11 +29,12 @@ const filters = ref({
   genderCd: null
 });
 
+const selectedFinalEducation = ref('');
+
 // 임시 인재 데이터
 const talents = ref([
   {
     id: 1,
-    name: '홍길동',
     nationality: '베트남',
     careerHistory: '5년',
     birthdate: '1996.09.01',
@@ -46,7 +51,8 @@ const talents = ref([
     passportExpiry: '2028-09-01',
     jobCategory: { name: 'IT개발·데이터', code: 'it' },
     isBookmarked: true,
-    careers: [
+    user: { name: '홍길동' },
+    experiences: [
       {
         company: '(주)테크솔루션',
         period: '2021.03 - 2024.03',
@@ -73,7 +79,7 @@ const talents = ref([
         }
       }
     ],
-    education: [
+    educations: [
       {
         school: '하노이공과대학교',
         type: '대학교(4년)',
@@ -114,7 +120,6 @@ const talents = ref([
   },
   {
     id: 2,
-    name: '김철수',
     nationality: '중국',
     careerHistory: '3년',
     birthdate: '1997.05.15',
@@ -129,7 +134,8 @@ const talents = ref([
     passportExpiry: '2027-05-15',
     jobCategory: { name: 'IT개발·데이터', code: 'it' },
     isBookmarked: true,
-    careers: [
+    user: { name: '김철수' },
+    experiences: [
       {
         company: '(주)데이터테크',
         period: '2021.01 - 2024.03',
@@ -139,7 +145,7 @@ const talents = ref([
           '백엔드 서버 개발 및 운영\n- Spring Boot 기반 REST API 개발\n- MSA 아키텍처 설계 및 구현\n- 대용량 데이터 처리 시스템 구축'
       }
     ],
-    education: [
+    educations: [
       {
         school: '베이징대학교',
         type: '대학교(4년)',
@@ -170,7 +176,6 @@ const talents = ref([
   },
   {
     id: 3,
-    name: '이영희',
     nationality: '일본',
     careerHistory: '7년',
     birthdate: '1994.08.20',
@@ -185,7 +190,8 @@ const talents = ref([
     passportExpiry: '2026-08-20',
     jobCategory: { name: 'IT개발·데이터', code: 'it' },
     isBookmarked: false,
-    careers: [
+    user: { name: '이영희' },
+    experiences: [
       {
         company: '(주)소프트뱅크',
         period: '2020.04 - 2024.03',
@@ -202,7 +208,7 @@ const talents = ref([
         description: '자사 서비스 백엔드 개발\n- Java 기반 서버 애플리케이션 개발\n- 데이터베이스 설계 및 최적화'
       }
     ],
-    education: [
+    educations: [
       {
         school: '도쿄대학교',
         type: '대학교(4년)',
@@ -238,13 +244,24 @@ const talents = ref([
 ]);
 
 onMounted(() => {
+  getKoreanLevelCode();
   getNationCode();
   getJobCategoryCode();
   getCareerPeriodCode();
+  getEducationLevelCode();
   setGenderCode();
 
   searchTalents();
 });
+
+// 한국어 실력 코드 조회
+const getKoreanLevelCode = async () => {
+  const response = await getCodeList(`KOREAN_LV`);
+
+  response.map((item) => {
+    koreanLevelList.value.push({ name: item.name, code: item.code });
+  });
+};
 
 // 국적 코드 조회
 const getNationCode = async () => {
@@ -282,6 +299,18 @@ const getJobCategoryCode = async () => {
   });
 };
 
+// 학력 코드 조회
+const getEducationLevelCode = async () => {
+  const response = await getCodeList(`EDUCATION_LEVEL`);
+
+  response.map((item) => {
+    educationLevelList.value.push({
+      name: item.name,
+      code: item.code
+    });
+  });
+};
+
 // 성별 세팅
 const setGenderCode = async () => {
   const response = await getCodeList(`GENDER_TY`);
@@ -293,8 +322,69 @@ const setGenderCode = async () => {
 
 const openResumeModal = (candidate) => {
   selectedCandidate.value = candidate;
+
+  selectedCandidate.value.user = {
+    ...selectedCandidate.value.user,
+    profileImage: `${import.meta.env.VITE_UPLOAD_PATH}/${candidate.user?.imageFile?.fileName}`
+  };
+
+  console.log(selectedCandidate.value);
+
   showResumeModal.value = true;
 };
+
+// 한국어 실력 코드 변환
+const convertCode = (code) => {
+  if (!code) return null;
+
+  let name = '';
+
+  koreanLevelList.value.filter((item) => {
+    if (item.code === code) {
+      name = item.name;
+    }
+  });
+
+  return name;
+};
+
+// 직무 코드 변환
+const convertJobCode = (code) => {
+  if (!code) return null;
+
+  let name = '';
+
+  jobCategoryOptions.value.filter((item) => {
+    if (item.code === code) {
+      name = item.name;
+    }
+  });
+
+  return name;
+};
+
+// 학력 코드 변환
+const convertEduLevelCode = (code) => {
+  if (!code) return null;
+
+  let name = '';
+
+  educationLevelList.value.filter((item) => {
+    if (item.code === code) {
+      name = item.name;
+    }
+  });
+
+  return name;
+};
+
+watch(
+  () => selectedCandidate.value,
+  () => {
+    koreanLv.value = convertCode(selectedCandidate.value?.user?.koreanProficiencyCd);
+  },
+  { deep: true }
+);
 
 const toggleBookmark = (talent) => {
   talent.isBookmarked = !talent.isBookmarked;
@@ -350,7 +440,11 @@ const searchTalents = async () => {
 
   talents.value = response.contents;
 
-  console.log(talents.value);
+  talents.value.map((tal) => {
+    if (tal?.educations.length) {
+      tal.lastEducation = '하버드 대학교 경영학과 졸업';
+    }
+  });
 };
 
 // 필터링된 후보자 목록
@@ -377,6 +471,8 @@ const selectedTalentIds = ref([]);
 
 // 개별 경력 기간 계산 함수
 const calculateCareerPeriod = (period) => {
+  // console.log(period);
+  return;
   const [start, end] = period.split(' - ');
   const startDate = new Date(start.split('.').join('-'));
   const endDate = end === '현재' ? new Date() : new Date(end.split('.').join('-'));
@@ -406,29 +502,29 @@ const getLatestEducation = (education) => {
 };
 
 // 총 경력 계산 함수
-const calculateTotalCareer = (careers) => {
-  if (!careers?.length) return '0년';
+// const calculateTotalCareer = (careers) => {
+//   if (!careers?.length) return '0년';
 
-  let totalMonths = 0;
+//   let totalMonths = 0;
 
-  careers.forEach((career) => {
-    const [start, end] = career.period.split(' - ');
-    const startDate = new Date(start.split('.').join('-'));
-    const endDate = end === '현재' ? new Date() : new Date(end.split('.').join('-'));
+//   careers.forEach((career) => {
+//     const [start, end] = career.period.split(' - ');
+//     const startDate = new Date(start.split('.').join('-'));
+//     const endDate = end === '현재' ? new Date() : new Date(end.split('.').join('-'));
 
-    const monthDiff =
-      (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
-    totalMonths += monthDiff;
-  });
+//     const monthDiff =
+//       (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
+//     totalMonths += monthDiff;
+//   });
 
-  if (totalMonths >= 12) {
-    const years = Math.floor(totalMonths / 12);
-    const months = totalMonths % 12;
-    return months > 0 ? `${years}년 ${months}개월` : `${years}년`;
-  }
+//   if (totalMonths >= 12) {
+//     const years = Math.floor(totalMonths / 12);
+//     const months = totalMonths % 12;
+//     return months > 0 ? `${years}년 ${months}개월` : `${years}년`;
+//   }
 
-  return `${totalMonths}개월`;
-};
+//   return `${totalMonths}개월`;
+// };
 </script>
 
 <template>
@@ -536,7 +632,14 @@ const calculateTotalCareer = (careers) => {
             </div>
 
             <div class="text-gray-600">
-              <!-- <p>{{ talent?.education[0].school }} · {{ talent?.education[0].major }}</p> -->
+              <p>
+                <!-- {{
+                  talent?.educations.length
+                    ? talent?.educations[2]?.schoolName + '·' + talent?.educations[2]?.major
+                    : ''
+                }} -->
+                {{ talent?.lastEducation }}
+              </p>
             </div>
           </div>
 
@@ -579,17 +682,17 @@ const calculateTotalCareer = (careers) => {
             <!-- 왼쪽 컬럼 -->
             <div class="grid grid-cols-[80px_auto] gap-y-2 text-sm text-gray-600">
               <span class="text-gray-600">이름</span>
-              <span>{{ selectedCandidate?.name }}</span>
+              <span>{{ selectedCandidate?.user?.name }}</span>
               <span class="text-gray-600">생년월일</span>
-              <span>{{ selectedCandidate?.birth }}</span>
+              <span>{{ selectedCandidate?.user?.birth }}</span>
               <span class="text-gray-600">성별</span>
-              <span>{{ selectedCandidate?.gender }}</span>
+              <span>{{ selectedCandidate?.user?.genderCd === 'GENDER_MALE' ? '남성' : '여성' }}</span>
               <span class="text-gray-600">휴대폰</span>
-              <span>{{ isAccepted ? selectedCandidate?.mobile : '면접 제안 수락 후 확인 가능' }}</span>
+              <span>{{ isAccepted ? selectedCandidate?.user?.mobile : '면접 제안 수락 후 확인 가능' }}</span>
               <span class="text-gray-600">이메일</span>
-              <span>{{ isAccepted ? selectedCandidate?.email : '면접 제안 수락 후 확인 가능' }}</span>
+              <span>{{ isAccepted ? selectedCandidate?.user?.email : '면접 제안 수락 후 확인 가능' }}</span>
               <span class="text-gray-600">주소</span>
-              <span>{{ isAccepted ? selectedCandidate?.address : '면접 제안 수락 후 확인 가능' }}</span>
+              <span>{{ isAccepted ? selectedCandidate?.user?.address : '면접 제안 수락 후 확인 가능' }}</span>
             </div>
 
             <!-- 가운데 컬럼 -->
@@ -597,26 +700,39 @@ const calculateTotalCareer = (careers) => {
               <span class="text-gray-600">범죄경력</span>
               <span v-if="isAccepted" class="flex items-center gap-2">
                 <i class="pi pi-file-pdf text-red-500"></i>
-                {{ selectedCandidate?.criminalRecordFile?.name || '미제출' }}
+                {{ selectedCandidate?.user?.hasCriminalRecord ? '있음' : '없음' }}
               </span>
               <span v-else>면접 제안 수락 후 확인 가능</span>
 
               <span class="text-gray-600">한국어능력</span>
-              <span>{{ selectedCandidate?.koreanProficiency || '미입력' }}</span>
+              <!-- <span>{{ selectedCandidate?.user?.koreanProficiencyCd || '미입력' }}</span> -->
+              <span>{{ koreanLv || '미입력' }}</span>
               <span class="text-gray-600">학습기간</span>
-              <span>{{ selectedCandidate?.koreanStudyPeriod || '미입력' }}</span>
+              <span>{{ selectedCandidate?.user?.koreanStudyPeriod || '미입력' }}</span>
               <span class="text-gray-600">한국방문경험</span>
-              <span>{{ selectedCandidate?.hasVisitedKorea || '미입력' }}</span>
+              <span>{{
+                selectedCandidate?.user?.hasVisitedKorea === false
+                  ? '없음'
+                  : selectedCandidate?.user?.hasVisitedKorea
+                    ? '있음'
+                    : '미입력'
+              }}</span>
               <span class="text-gray-600">혼인여부</span>
-              <span>{{ selectedCandidate?.isMarried || '미입력' }}</span>
+              <span>{{
+                selectedCandidate?.user?.isMarried === false
+                  ? '미혼'
+                  : selectedCandidate?.user?.isMarried
+                    ? '기혼'
+                    : '미입력'
+              }}</span>
             </div>
 
             <!-- 프로필 사진 (오른쪽) -->
             <div class="flex flex-col items-center">
               <div class="w-[140px] h-[180px] bg-gray-100 rounded-lg overflow-hidden">
                 <img
-                  v-if="selectedCandidate?.profileImage?.exists"
-                  :src="selectedCandidate.profileImage.url"
+                  v-if="selectedCandidate?.user?.ImageFile?.id"
+                  :src="selectedCandidate?.user.profileImage"
                   alt="프로필 사진"
                   class="w-full h-full object-cover"
                 />
@@ -632,7 +748,7 @@ const calculateTotalCareer = (careers) => {
         <div class="mb-8 bg-gray-50 p-6 rounded-lg">
           <h3 class="text-lg font-medium mb-4">국가</h3>
           <div>
-            <span>{{ selectedCandidate?.nationality }}</span>
+            <span>{{ selectedCandidate?.nationality?.name }}</span>
           </div>
         </div>
 
@@ -646,15 +762,15 @@ const calculateTotalCareer = (careers) => {
             </div>
             <div class="flex gap-8">
               <span class="text-gray-600 w-20">여권번호</span>
-              <span>{{ selectedCandidate?.passportNumber }}</span>
+              <span>{{ selectedCandidate?.passport }}</span>
             </div>
             <div class="flex gap-8">
               <span class="text-gray-600 w-20">국적</span>
-              <span>{{ selectedCandidate?.nationality }}</span>
+              <span>{{ selectedCandidate?.nationality?.name }}</span>
             </div>
             <div class="flex gap-8">
               <span class="text-gray-600 w-20">만료일</span>
-              <span>{{ selectedCandidate?.passportExpiry }}</span>
+              <span>{{ selectedCandidate?.passportExpiryDt.slice(0, 10) }}</span>
             </div>
           </div>
         </div>
@@ -664,22 +780,38 @@ const calculateTotalCareer = (careers) => {
           <div class="flex items-center gap-2 mb-4">
             <h3 class="text-lg font-medium">경력 사항</h3>
             <span class="text-sm text-[#8B8BF5] bg-[#8B8BF5] bg-opacity-10 px-2 py-1 rounded">
-              총 {{ calculateTotalCareer(selectedCandidate?.careers) }}
+              {{
+                selectedCandidate?.experienceDurationMonth
+                  ? '총 ' +
+                    parseInt(selectedCandidate?.experienceDurationMonth / 12) +
+                    '년 ' +
+                    (selectedCandidate?.experienceDurationMonth % 12) +
+                    '개월'
+                  : '신입'
+              }}
             </span>
           </div>
-          <div
-            v-for="(career, index) in selectedCandidate?.careers"
-            :key="index"
-            class="mb-4 pb-4 border-b last:border-b-0"
-          >
-            <div class="flex items-center gap-2">
-              <div class="font-medium">{{ career.company }}</div>
-              <span class="text-sm text-gray-500">({{ calculateCareerPeriod(career.period) }})</span>
+          <div v-if="selectedCandidate?.experiences.length">
+            <div
+              v-for="(career, index) in selectedCandidate?.experiences"
+              :key="index"
+              class="mb-4 pb-4 border-b last:border-b-0"
+            >
+              <div class="flex items-center gap-2">
+                <div class="font-medium">{{ career?.companyName }}</div>
+                <!-- <span class="text-sm text-gray-500">({{ calculateCareerPeriod(career) }})</span> -->
+                <span class="text-sm text-gray-500">
+                  ({{
+                    `${career?.startDt?.slice(0, 7).replaceAll('-', '.')} ~ ${career?.endDt?.slice(0, 7) ? career?.endDt?.slice(0, 7).replaceAll('-', '.') : '재직중'}`
+                  }})
+                </span>
+              </div>
+              <div class="text-gray-600">{{ career?.department }}</div>
+              <div class="text-gray-600">{{ convertJobCode(career?.jobCategoryCd) }} | {{ career.position }}</div>
+              <div class="mt-2 whitespace-pre-line">{{ career?.content }}</div>
             </div>
-            <div class="text-gray-600">{{ career.period }}</div>
-            <div class="text-gray-600">{{ career.jobCategory.name }} | {{ career.position }}</div>
-            <div class="mt-2 whitespace-pre-line">{{ career.description }}</div>
           </div>
+          <div v-else class="text-center text-gray-500">등록된 경력이 없습니다</div>
         </div>
 
         <!-- 학력 사항 -->
@@ -687,21 +819,26 @@ const calculateTotalCareer = (careers) => {
           <div class="mb-4">
             <h3 class="text-lg font-medium">학력 사항</h3>
           </div>
-          <div v-if="selectedCandidate?.education?.length">
+          <div v-if="selectedCandidate?.educations?.length">
             <div class="text-[#8B8BF5] mb-4">
-              최종학력: {{ selectedCandidate.education[0].school }} ({{ selectedCandidate.education[0].type }})
+              <!-- 최종학력: {{ selectedCandidate.educations[0]?.schoolName }} ({{ selectedCandidate.educations[0].type }}) -->
+
+              최종학력: {{ selectedCandidate.lastEducation }}
             </div>
             <div
-              v-for="(edu, index) in selectedCandidate.education"
+              v-for="(edu, index) in selectedCandidate?.educations"
               :key="index"
               class="mb-6 pb-6 border-b last:border-b-0"
             >
-              <div class="text-[#8B8BF5] mb-2">{{ edu.school }} ({{ edu.type }})</div>
-              <div class="text-gray-600">{{ edu.major }}</div>
-              <div class="text-gray-600">{{ edu.period }}</div>
-              <div class="whitespace-pre-line">{{ edu.description }}</div>
+              <div class="text-[#8B8BF5] mb-2">
+                {{ edu?.schoolName }} ({{ convertEduLevelCode(edu?.educationLevelCd) }})
+              </div>
+              <div class="text-gray-600">{{ edu?.major }}</div>
+              <div class="text-gray-600">{{ `${edu?.startDt} ~ ${edu?.endDt ? edu?.endDt : '재학중'}` }}</div>
+              <div class="whitespace-pre-line">{{ edu?.content }}</div>
             </div>
           </div>
+          <div v-else class="text-center text-gray-500">등록된 학력이 없습니다</div>
         </div>
 
         <!-- 자격증 사항 -->
@@ -709,14 +846,15 @@ const calculateTotalCareer = (careers) => {
           <div class="mb-4">
             <h3 class="text-lg font-medium">자격증 사항</h3>
           </div>
-          <div v-if="selectedCandidate?.certificates?.length" class="space-y-4">
+          <div v-if="selectedCandidate?.certifications?.length" class="space-y-4">
             <div
-              v-for="(cert, index) in selectedCandidate.certificates"
+              v-for="(cert, index) in selectedCandidate.certifications"
               :key="index"
               class="mb-4 pb-4 border-b last:border-b-0"
             >
               <div class="font-medium mb-1">{{ cert.name }}</div>
-              <div class="text-gray-600">취득일: {{ cert.issuedDate }}</div>
+              <div class="font-medium mb-1">발급기관 : {{ cert.issuer }}</div>
+              <div class="text-gray-600">취득일 : {{ cert.acquiredDt.slice(0, 10).replaceAll('-', '.') }}</div>
             </div>
           </div>
           <div v-else class="text-center text-gray-500">등록된 자격증이 없습니다</div>
@@ -724,7 +862,7 @@ const calculateTotalCareer = (careers) => {
       </div>
 
       <template #footer>
-        <div class="flex justify-end gap-4">
+        <div class="flex justify-end gap-4 pt-[15px]">
           <Button
             @click="toggleBookmark(selectedCandidate)"
             :class="['p-button-text', selectedCandidate?.isBookmarked ? 'text-[#8B8BF5]' : 'text-gray-400']"

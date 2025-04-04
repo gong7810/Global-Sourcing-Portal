@@ -51,3 +51,24 @@ export const useDynamicDialog = () => {
     }
   };
 };
+
+// export const useConvertCode = () => {
+//   const convert = async (codeList, code) => {
+//     if (!code) return '';
+
+//     let name = '';
+
+//     codeList.map((item) => {
+//       if (item.code === code) {
+//         name = item.name;
+//         return;
+//       }
+//     });
+
+//     return name;
+//   };
+
+//   return {
+//     convert
+//   };
+// };
