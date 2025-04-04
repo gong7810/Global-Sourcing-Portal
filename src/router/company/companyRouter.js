@@ -1,38 +1,38 @@
-export const businessRouter = [
+export const companyRouter = [
   {
-    path: '/business/index',
-    name: 'businessIndex',
-    component: () => import('@/pages/business/Dashboard.vue'),
+    path: '/company/index',
+    name: 'CompanyIndex',
+    component: () => import('@/pages/company/Dashboard.vue'),
     meta: { authorization: ['ROLE_MANAGER'] }
   },
   {
-    path: '/business/CompanyInfoPage',
+    path: '/company/CompanyInfoPage',
     name: 'CompanyInfoPage',
-    component: () => import('@/pages/business/CompanyInfoPage.vue'),
+    component: () => import('@/pages/company/CompanyInfoPage.vue'),
     meta: { authorization: ['ROLE_MANAGER'] }
   },
   {
-    path: '/business/TalentSearchPage',
+    path: '/company/TalentSearchPage',
     name: 'TalentSearchPage',
-    component: () => import('@/pages/business/TalentSearchPage.vue'),
+    component: () => import('@/pages/company/TalentSearchPage.vue'),
     meta: { authorization: ['ROLE_MANAGER'] }
   },
   {
-    path: '/business/InterviewOffers',
+    path: '/company/InterviewOffers',
     name: 'InterviewOffers',
-    component: () => import('@/pages/business/InterviewOffersPage.vue'),
+    component: () => import('@/pages/company/InterviewOffersPage.vue'),
     meta: { authorization: ['ROLE_MANAGER'] }
   },
   {
-    path: '/business/interview-offer/create/:id',
+    path: '/company/interview-offer/create/:id',
     name: 'CreateInterviewOffer',
-    component: () => import('@/pages/business/CreateInterviewOfferPage.vue'),
+    component: () => import('@/pages/company/CreateInterviewOfferPage.vue'),
     meta: { authorization: ['ROLE_MANAGER'] }
   },
   {
-    path: '/business/InterviewResults',
+    path: '/company/InterviewResults',
     name: 'InterviewResults',
-    component: () => import('@/pages/business/InterviewResultsPage.vue'),
+    component: () => import('@/pages/company/InterviewResultsPage.vue'),
     meta: { authorization: ['ROLE_MANAGER'] }
   }
   // {

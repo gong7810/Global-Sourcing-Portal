@@ -3,8 +3,8 @@ import AppLayout from '@/layout/AppLayout.vue';
 import { authRouter } from '@/router/auth/authRouter';
 import { adminRouter } from '@/router/admin/adminRouter';
 import { commonRouter } from '@/router/common/commonRouter';
+import { companyRouter } from '@/router/company/companyRouter';
 import { userRouter } from '@/router/user/userRouter';
-import { businessRouter } from '@/router/business/businessRouter';
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
 import { AUTH_EXCLUSIONS_ROUTER_NAME } from '@/apis/auth/authConstants';
@@ -30,7 +30,7 @@ const router = createRouter({
     {
       path: '/',
       component: AppLayout,
-      children: businessRouter
+      children: companyRouter
     },
     {
       path: '/',
@@ -72,7 +72,7 @@ router.beforeEach((to, from, next) => {
       return next({ path: '/admin/users' });
     } else if (userInfo.value?.isCompany && userInfo.value?.roleCd === 'ROLE_MANAGER' && to.name === 'dashboard') {
       // 기업회원
-      return next({ path: '/business/index' });
+      return next({ path: '/company/index' });
     } else {
       return next();
     }

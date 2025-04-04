@@ -3,7 +3,7 @@ import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { getCodeList } from '@/apis/common/commonApis';
-import { getResumeList } from '@/apis/owner/ownerApis';
+import { getResumeList } from '@/apis/company/companyApis';
 
 const router = useRouter();
 
@@ -184,7 +184,7 @@ const toggleBookmark = (talent) => {
 
 const openInterviewOffer = (talent) => {
   if (talent.isInterviewOffered) return;
-  router.push(`/business/interview-offer/create/${talent.id}`);
+  router.push(`/company/interview-offer/create/${talent.id}`);
   talent.isInterviewOffered = true;
 
   // 모달이 열려있는 경우 selectedCandidate도 업데이트

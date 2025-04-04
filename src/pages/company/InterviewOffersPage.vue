@@ -586,7 +586,7 @@ const completeInterview = (offer) => {
   offer.interviewCompleted = true;
   offer.interviewCompletedDate = new Date().toISOString().split('T')[0];
   // 바로 면접 결과 관리 페이지로 이동
-  router.push('/business/InterviewResults');
+  router.push('/company/InterviewResults');
 };
 
 // 샘플 파일 정보 수정 (일부는 파일이 없는 상태로)
@@ -619,57 +619,57 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
     alert('업로드된 파일이 없습니다.');
     return;
   }
-  const message = itemName 
+  const message = itemName
     ? `${itemName} ${fileType} 파일 다운로드 시도\n파일명: ${fileInfo.name}`
     : `${fileType} 파일 다운로드 시도\n파일명: ${fileInfo.name}`;
-  
+
   alert(`${message}\n(실제 다운로드는 백엔드 연동 후 구현 예정)`);
 };
 
 // 경력 기간 계산 함수
 const calculateCareerPeriod = (period) => {
   if (!period) return '';
-  
+
   const [start, end] = period.split(' - ');
   if (!start || !end) return '';
 
   const startDate = new Date(start.replace('.', '-'));
   const endDate = end === '현재' ? new Date() : new Date(end.replace('.', '-'));
-  
-  const monthDiff = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
-                  (endDate.getMonth() - startDate.getMonth());
-  
+
+  const monthDiff =
+    (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
+
   if (monthDiff >= 12) {
     const years = Math.floor(monthDiff / 12);
     const months = monthDiff % 12;
     return months > 0 ? `${years}년 ${months}개월` : `${years}년`;
   }
-  
+
   return `${monthDiff}개월`;
 };
 
 // 총 경력 계산 함수
 const calculateTotalCareer = (careerHistory) => {
   if (!careerHistory?.length) return '0년';
-  
+
   let totalMonths = 0;
-  
-  careerHistory.forEach(career => {
+
+  careerHistory.forEach((career) => {
     const [start, end] = career.period.split(' - ');
     const startDate = new Date(start.replace('.', '-'));
     const endDate = end === '현재' ? new Date() : new Date(end.replace('.', '-'));
-    
-    const monthDiff = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
-                     (endDate.getMonth() - startDate.getMonth());
+
+    const monthDiff =
+      (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
     totalMonths += monthDiff;
   });
-  
+
   if (totalMonths >= 12) {
     const years = Math.floor(totalMonths / 12);
     const months = totalMonths % 12;
     return months > 0 ? `${years}년 ${months}개월` : `${years}년`;
   }
-  
+
   return `${totalMonths}개월`;
 };
 </script>
@@ -751,7 +751,7 @@ const calculateTotalCareer = (careerHistory) => {
           </p>
           <router-link
             v-if="selectedFilter === 'all'"
-            to="/business/TalentSearchPage"
+            to="/company/TalentSearchPage"
             class="inline-flex items-center px-6 py-3 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7A7AE6] transition-colors"
           >
             <i class="pi pi-search mr-2"></i>
@@ -782,7 +782,9 @@ const calculateTotalCareer = (careerHistory) => {
         </div>
 
         <div class="mb-4">
-          <p class="text-gray-600">{{ offer.candidate.education[0].school }} · {{ offer.candidate.education[0].major }}</p>
+          <p class="text-gray-600">
+            {{ offer.candidate.education[0].school }} · {{ offer.candidate.education[0].major }}
+          </p>
         </div>
 
         <div class="border-t pt-4">
@@ -878,10 +880,7 @@ const calculateTotalCareer = (careerHistory) => {
     </div>
 
     <!-- 상세 정보 모달을 컴포넌트로 교체 -->
-    <InterviewResultsDetailModal
-      v-model:visible="showDetailModal"
-      :interview="selectedOffer"
-    />
+    <InterviewResultsDetailModal v-model:visible="showDetailModal" :interview="selectedOffer" />
 
     <!-- 면접 일정 잡기 모달 -->
     <Dialog v-model:visible="showScheduleModal" :modal="true" header="면접 일정 제안하기" :style="{ width: '500px' }">

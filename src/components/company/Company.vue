@@ -1,5 +1,5 @@
 <script setup></script>
 <template>
-    <div>CommonPage</div>
+  <div>CompanyPage</div>
 </template>
 <style lang="scss"></style>

@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router';
 import { cloneDeep } from 'es-toolkit/compat';
 import { useMessagePop } from '@/plugins/commonutils';
 
-import { getCompanyInfo, updateCompanyInfo } from '@/apis/owner/ownerApis';
+import { getCompanyInfo, updateCompanyInfo } from '@/apis/company/companyApis';
 import { getCodeList } from '@/apis/common/commonApis';
 
 const router = useRouter();
