@@ -1,42 +1,17 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import Button from 'primevue/button';
 import { useRouter } from 'vue-router';
 import AdminHeader from '@/components/admin/AdminHeader.vue';
 import AdminSidebar from '@/components/admin/AdminSidebar.vue';
+import { getFaqList, saveFaq, deleteFaq as deleteFaqApi } from '@/apis/admin/adminApis';
+import { useMessagePop } from '@/plugins/commonutils';
 
 const router = useRouter();
+const messagePop = useMessagePop();
 
-const faqItems = ref([
-    {
-        id: 1,
-        question: '글로벌 소싱 포털은 어떤 서비스인가요?',
-        answer: '글로벌 소싱 포털은 해외 인재와 국내 기업을 연결하는 채용 플랫폼입니다. 기업은 다양한 국가의 우수 인재를 만날 수 있으며, 구직자는 국내 기업에 지원할 수 있습니다.',
-        category: '일반',
-        isExpanded: false
-    },
-    {
-        id: 2,
-        question: '어떤 국가의 인재들이 등록되어 있나요?',
-        answer: '주로 베트남 등 아시아 국가의 IT 인재들이 등록되어 있으며, 지속적으로 다양한 국가의 인재풀을 확대하고 있습니다.',
-        category: '일반',
-        isExpanded: false
-    },
-    {
-        id: 3,
-        question: '채용 공고는 어떻게 등록하나요?',
-        answer: '기업 회원으로 가입 후, 대시보드의 "공고 등록" 메뉴를 통해 채용 공고를 등록할 수 있습니다.',
-        category: '서비스 이용',
-        isExpanded: false
-    },
-    {
-        id: 4,
-        question: '인재에게 직접 제안을 할 수 있나요?',
-        answer: '네, 가능합니다. 인재풀에서 마음에 드는 후보자를 발견하시면 "제안하기" 버튼을 통해 직접 채용 제안을 보내실 수 있습니다.',
-        category: '서비스 이용',
-        isExpanded: false
-    }
-]);
+const faqItems = ref([]);
+const loading = ref(true);
 
 const toggleFaq = (id) => {
     const faq = faqItems.value.find(item => item.id === id);
@@ -45,14 +20,19 @@ const toggleFaq = (id) => {
     }
 };
 
-const categories = ['전체', '일반', '회원가입', '서비스 이용'];
-const selectedCategory = ref('전체');
+const categories = [
+    { label: '전체', value: null },
+    { label: '일반', value: 'FAQ_TY_1' },
+    { label: '회원가입', value: 'FAQ_TY_2' },
+    { label: '서비스 이용', value: 'FAQ_TY_3' }
+];
+const selectedCategory = ref(null);
 
 const filteredFaqs = computed(() => {
-    if (selectedCategory.value === '전체') {
+    if (!selectedCategory.value) {
         return faqItems.value;
     }
-    return faqItems.value.filter(item => item.category === selectedCategory.value);
+    return faqItems.value.filter(item => item.categoryCd === selectedCategory.value);
 });
 
 // FAQ 추가/수정 모달 관련 상태
@@ -62,8 +42,37 @@ const editingFaqId = ref(null);
 const newFaq = ref({
     question: '',
     answer: '',
-    category: '일반'
+    categoryCd: 'FAQ_TY_1'
 });
+
+const fetchFaqs = async () => {
+    try {
+        loading.value = true;
+        const params = {
+            categoryCd: selectedCategory.value,
+            page: 1,
+            perPage: 100,
+            sortColumn: 'id',
+            sortAsc: false
+        };
+        const response = await getFaqList(params);
+        // console.log('FAQ 목록 응답:', response);
+        if (response && response.contents) {
+            faqItems.value = response.contents.map(item => ({
+                ...item,
+                category: item.category?.name || item.categoryCd,
+                isExpanded: false
+            }));
+        } else {
+            faqItems.value = [];
+        }
+    } catch (error) {
+        console.error('FAQ 목록 조회 실패:', error);
+        messagePop.toast('FAQ 목록을 불러오는데 실패했습니다.', 'error');
+    } finally {
+        loading.value = false;
+    }
+};
 
 const openEditModal = (faq) => {
     isEditMode.value = true;
@@ -71,7 +80,7 @@ const openEditModal = (faq) => {
     newFaq.value = {
         question: faq.question,
         answer: faq.answer,
-        category: faq.category
+        categoryCd: faq.categoryCd
     };
     showAddModal.value = true;
 };
@@ -83,35 +92,47 @@ const closeModal = () => {
     newFaq.value = {
         question: '',
         answer: '',
-        category: '일반'
+        categoryCd: 'FAQ_TY_1'
     };
 };
 
-const addFaq = () => {
-    if (isEditMode.value) {
-        // 수정 모드
-        const index = faqItems.value.findIndex(item => item.id === editingFaqId.value);
-        if (index !== -1) {
-            faqItems.value[index] = {
-                ...faqItems.value[index],
-                ...newFaq.value
-            };
+const addFaq = async () => {
+    try {
+        const faqData = {
+            ...newFaq.value
+        };
+        // console.log('저장할 FAQ 데이터:', faqData);
+        
+        if (isEditMode.value) {
+            const response = await saveFaq({
+                id: editingFaqId.value,
+                ...faqData
+            });
+            // console.log('FAQ 수정 응답:', response);
+            messagePop.toast('FAQ가 수정되었습니다.', 'success');
+        } else {
+            const response = await saveFaq(faqData);
+            // console.log('FAQ 추가 응답:', response);
+            messagePop.toast('FAQ가 추가되었습니다.', 'success');
         }
-    } else {
-        // 추가 모드
-        const newId = Math.max(...faqItems.value.map(item => item.id)) + 1;
-        faqItems.value.push({
-            id: newId,
-            ...newFaq.value,
-            isExpanded: false
-        });
+        closeModal();
+        await fetchFaqs();
+    } catch (error) {
+        console.error('FAQ 저장 실패:', error);
+        messagePop.toast('FAQ 저장에 실패했습니다.', 'error');
     }
-    closeModal();
 };
 
-const deleteFaq = (id) => {
+const deleteFaq = async (id) => {
     if (confirm('이 FAQ를 삭제하시겠습니까?')) {
-        faqItems.value = faqItems.value.filter(item => item.id !== id);
+        try {
+            await deleteFaqApi(id);
+            messagePop.toast('FAQ가 삭제되었습니다.', 'success');
+            await fetchFaqs(); // 목록 새로고침
+        } catch (error) {
+            console.error('FAQ 삭제 실패:', error);
+            messagePop.toast('FAQ 삭제에 실패했습니다.', 'error');
+        }
     }
 };
 
@@ -119,6 +140,10 @@ const deleteFaq = (id) => {
 const goBack = () => {
     router.push('/admin');
 };
+
+onMounted(() => {
+    fetchFaqs();
+});
 </script>
 
 <template>
@@ -143,15 +168,21 @@ const goBack = () => {
                 <!-- 카테고리 필터 -->
                 <div class="category-filter">
                     <div v-for="category in categories" 
-                        :key="category"
-                        :class="['category-item', { active: selectedCategory === category }]"
-                        @click="selectedCategory = category">
-                        {{ category }}
+                        :key="category.value"
+                        :class="['category-item', { active: selectedCategory === category.value }]"
+                        @click="selectedCategory = category.value">
+                        {{ category.label }}
                     </div>
                 </div>
 
                 <!-- FAQ 목록 -->
-                <div class="faq-list">
+                <div v-if="loading" class="flex justify-center items-center py-12">
+                    <i class="pi pi-spin pi-spinner text-4xl text-[#8FA1FF]"></i>
+                </div>
+                <div v-else-if="faqItems.length === 0" class="text-center py-12 text-gray-500">
+                    등록된 FAQ가 없습니다.
+                </div>
+                <div v-else class="faq-list">
                     <div v-for="item in filteredFaqs" 
                          :key="item.id" 
                          class="faq-item">
@@ -184,9 +215,11 @@ const goBack = () => {
                         </div>
                         <div class="form-group">
                             <label>카테고리</label>
-                            <select v-model="newFaq.category" class="form-input">
-                                <option v-for="category in categories.slice(1)" :key="category" :value="category">
-                                    {{ category }}
+                            <select v-model="newFaq.categoryCd" class="form-input">
+                                <option v-for="category in categories.slice(1)" 
+                                        :key="category.value" 
+                                        :value="category.value">
+                                    {{ category.label }}
                                 </option>
                             </select>
                         </div>
