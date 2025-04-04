@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import Dropdown from 'primevue/dropdown';
 import { useMessagePop } from '@/plugins/commonutils';
 
 const router = useRouter();
@@ -100,7 +99,7 @@ const submitOffer = () => {
           경력 {{ candidate.career }}
         </span>
         <span class="bg-gray-100 px-3 py-1 rounded-full text-sm text-gray-600">
-          {{ jobCategories.find(cat => cat.value === candidate.jobCategory)?.label }}
+          {{ jobCategories.find((cat) => cat.value === candidate.jobCategory)?.label }}
         </span>
       </div>
       <p class="text-gray-600">{{ candidate.education }} · {{ candidate.major }}</p>
@@ -109,7 +108,9 @@ const submitOffer = () => {
     <!-- 제안 폼 -->
     <div class="bg-white rounded-lg p-6 shadow-sm">
       <div class="mb-6">
-        <label class="block text-sm font-medium text-gray-700 mb-2">직무 카테고리<span class="text-red-500 ml-1">*</span></label>
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >직무 카테고리<span class="text-red-500 ml-1">*</span></label
+        >
         <Dropdown
           v-model="jobOffer.jobCategory"
           :options="jobCategories"
@@ -120,7 +121,9 @@ const submitOffer = () => {
       </div>
 
       <div class="mb-6">
-        <label class="block text-sm font-medium text-gray-700 mb-2">포지션<span class="text-red-500 ml-1">*</span></label>
+        <label class="block text-sm font-medium text-gray-700 mb-2"
+          >포지션<span class="text-red-500 ml-1">*</span></label
+        >
         <input
           v-model="jobOffer.position"
           type="text"
@@ -150,16 +153,10 @@ const submitOffer = () => {
       </div>
 
       <div class="flex justify-end gap-3">
-        <button
-          @click="router.back()"
-          class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-        >
+        <button @click="router.back()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
           취소
         </button>
-        <button
-          @click="submitOffer"
-          class="px-6 py-2 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7A7AE6]"
-        >
+        <button @click="submitOffer" class="px-6 py-2 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7A7AE6]">
           제안하기
         </button>
       </div>
@@ -175,11 +172,11 @@ const submitOffer = () => {
 }
 
 :deep(.p-dropdown:hover) {
-  border-color: #8B8BF5;
+  border-color: #8b8bf5;
 }
 
 :deep(.p-dropdown:not(.p-disabled).p-focus) {
   box-shadow: none;
-  border-color: #8B8BF5;
+  border-color: #8b8bf5;
 }
-</style> 
+</style>

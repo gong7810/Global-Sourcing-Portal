@@ -29,12 +29,12 @@ const mockJobOffers = [
       detailedWork: '웹 서비스 프론트엔드 개발 및 유지보수',
       message: '안녕하세요. 귀하의 프로필을 보고 연락드립니다.'
     },
-    status: 'accepted',  // 수락된 상태
+    status: 'accepted', // 수락된 상태
     isRead: false,
     createdAt: '2024-03-11T10:00:00',
     acceptedAt: '2024-03-12T14:30:00',
-    interviewProposed: true,  // 면접 일정이 제안된 상태
-    interviewConfirmed: false,  // 아직 확정되지 않음
+    interviewProposed: true, // 면접 일정이 제안된 상태
+    interviewConfirmed: false, // 아직 확정되지 않음
     proposedDates: [
       { date: '2024-03-25', time: '14:00' },
       { date: '2024-03-26', time: '10:00' },
@@ -182,7 +182,8 @@ const mockJobOffers = [
     jobOffer: {
       title: 'IT개발·데이터 | 시스템 엔지니어',
       detailedWork: '방산 체계 시스템 설계 및 개발',
-      message: '안녕하세요. 귀하의 프로필을 보고 연락드립니다. 저희 회사의 시스템 엔지니어 포지션에 적합한 경력을 보유하고 계신 것 같아 면접을 제안드립니다.'
+      message:
+        '안녕하세요. 귀하의 프로필을 보고 연락드립니다. 저희 회사의 시스템 엔지니어 포지션에 적합한 경력을 보유하고 계신 것 같아 면접을 제안드립니다.'
     },
     deadline: '2025-04-05',
     status: 'rejected',
@@ -257,14 +258,15 @@ const mockJobOffers = [
     jobOffer: {
       title: 'IT개발·데이터 | 기계설계 엔지니어',
       detailedWork: '철도차량 기계설계 및 시스템 개발',
-      message: '안녕하세요. 귀하의 프로필을 검토한 결과, 저희 회사의 기계설계 엔지니어 포지션과 잘 맞을 것 같아 면접을 제안드립니다.'
+      message:
+        '안녕하세요. 귀하의 프로필을 검토한 결과, 저희 회사의 기계설계 엔지니어 포지션과 잘 맞을 것 같아 면접을 제안드립니다.'
     },
     status: 'accepted',
     isRead: true,
     createdAt: '2024-03-12',
     acceptedAt: '2024-03-17',
-    interviewProposed: false,  // 아직 면접 일정이 제안되지 않음
-    interviewConfirmed: false,  // 면접 일정이 확정되지 않음
+    interviewProposed: false, // 아직 면접 일정이 제안되지 않음
+    interviewConfirmed: false, // 면접 일정이 확정되지 않음
     resumeSnapshot: {
       basicInfo: {
         name: '최예지',
@@ -352,7 +354,7 @@ const filteredJobOffers = computed(() => {
   if (selectedFilter.value === 'all') {
     return jobOffers.value;
   }
-  return jobOffers.value.filter(offer => offer.status === selectedFilter.value);
+  return jobOffers.value.filter((offer) => offer.status === selectedFilter.value);
 });
 
 // 제안 상세 보기
@@ -379,7 +381,7 @@ const acceptOffer = async (offer) => {
     onCloseYes: async () => {
       try {
         // 새로운 객체를 생성하여 할당
-        const index = jobOffers.value.findIndex(o => o.id === offer.id);
+        const index = jobOffers.value.findIndex((o) => o.id === offer.id);
         jobOffers.value[index] = {
           ...offer,
           status: 'accepted',
@@ -449,7 +451,7 @@ const confirmReject = () => {
       offer.status = 'rejected';
       offer.rejectedAt = new Date().toISOString();
       offer.rejectReason = rejectReason.value;
-      
+
       if (selectedDateIndices.value[offer.id] !== undefined) {
         selectedDateIndices.value[offer.id] = undefined;
       }
@@ -499,12 +501,12 @@ const getDaysUntilDeadline = (deadline) => {
   const deadlineDate = new Date(deadline);
   const diffTime = deadlineDate - today;
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-  
+
   // 기한이 지난 경우 '마감' 표시
   if (diffDays < 0) {
     return '마감';
   }
-  
+
   return diffDays;
 };
 
@@ -526,7 +528,7 @@ const calculateAge = (birthDate) => {
 const acceptInterviewSchedule = (offer) => {
   const selectedIndex = selectedDateIndices.value[offer.id];
   const selectedDate = offer.proposedDates[selectedIndex];
-  
+
   messagePop.confirm({
     icon: 'info',
     message: `<div class="text-center">
@@ -578,15 +580,15 @@ const formatDate = (dateString) => {
 
 // 경력 기간 계산 함수 추가
 const calculatePeriod = (period) => {
-  const [start, end] = period.split(' - ').map(date => {
+  const [start, end] = period.split(' - ').map((date) => {
     const [year, month] = date.split('.');
     return new Date(year, month - 1);
   });
-  
+
   const months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
   const years = Math.floor(months / 12);
   const remainingMonths = months % 12;
-  
+
   if (years === 0) {
     return `${remainingMonths}개월`;
   } else if (remainingMonths === 0) {
@@ -599,15 +601,14 @@ const calculatePeriod = (period) => {
 // 총 경력 계산 함수
 const calculateTotalCareer = (careers) => {
   if (!careers || careers.length === 0) return '경력 없음';
-  
+
   let totalMonths = 0;
-  careers.forEach(career => {
+  careers.forEach((career) => {
     const [start, end] = career.period.split(' - ');
     const startDate = new Date(start.replace(/\./g, '-'));
     const endDate = end === '재직중' ? new Date() : new Date(end.replace(/\./g, '-'));
-    
-    const months = (endDate.getFullYear() - startDate.getFullYear()) * 12 + 
-                  (endDate.getMonth() - startDate.getMonth());
+
+    const months = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
     totalMonths += months;
   });
 
@@ -626,7 +627,7 @@ const calculateTotalCareer = (careers) => {
 // 최종학력 정보 가져오기
 const getLatestEducation = (educations) => {
   if (!educations || educations.length === 0) return '학력 정보 없음';
-  
+
   const latest = educations[0]; // 이미 정렬되어 있다고 가정
   return `${latest.schoolName} ${latest.educationType.name} ${latest.isGraduated ? '졸업' : '재학중'}`;
 };
@@ -651,20 +652,16 @@ const getLatestEducation = (educations) => {
         @click="selectedFilter = option.value"
         :class="[
           'px-4 py-2 rounded-full text-sm transition-colors',
-          selectedFilter === option.value
-            ? 'bg-[#8B8BF5] text-white'
-            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          selectedFilter === option.value ? 'bg-[#8B8BF5] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
         ]"
       >
         {{ option.label }}
         <!-- 각 상태의 개수 표시 -->
         <span class="ml-1" v-if="option.value !== 'all'">
-          ({{ jobOffers.filter(offer => offer.status === option.value).length }})
+          ({{ jobOffers.filter((offer) => offer.status === option.value).length }})
         </span>
         <!-- 전체 개수 표시 -->
-        <span class="ml-1" v-else>
-          ({{ jobOffers.length }})
-        </span>
+        <span class="ml-1" v-else> ({{ jobOffers.length }}) </span>
       </button>
     </div>
 
@@ -692,18 +689,23 @@ const getLatestEducation = (educations) => {
               </div>
               <!-- 회신기한을 상단으로 이동 -->
               <div v-if="offer.status === 'pending'" class="text-right">
-                <span 
+                <span
                   :class="[
                     'text-sm flex items-center gap-2 justify-end',
-                    getDaysUntilDeadline(offer.deadline) === '마감' 
-                      ? 'text-red-500' 
-                      : getDaysUntilDeadline(offer.deadline) <= 3 
-                        ? 'text-orange-500' 
+                    getDaysUntilDeadline(offer.deadline) === '마감'
+                      ? 'text-red-500'
+                      : getDaysUntilDeadline(offer.deadline) <= 3
+                        ? 'text-orange-500'
                         : 'text-gray-500'
                   ]"
                 >
                   <i class="pi pi-calendar"></i>
-                  회신기한: {{ getDaysUntilDeadline(offer.deadline) === '마감' ? '마감' : 'D-' + getDaysUntilDeadline(offer.deadline) }}
+                  회신기한:
+                  {{
+                    getDaysUntilDeadline(offer.deadline) === '마감'
+                      ? '마감'
+                      : 'D-' + getDaysUntilDeadline(offer.deadline)
+                  }}
                 </span>
               </div>
             </div>
@@ -770,7 +772,12 @@ const getLatestEducation = (educations) => {
                 <div class="bg-blue-50 p-4 rounded-lg">
                   <p class="text-blue-700">
                     <i class="pi pi-info-circle mr-2"></i>
-                    회신기한: {{ getDaysUntilDeadline(offer.deadline) === '마감' ? '마감' : 'D-' + getDaysUntilDeadline(offer.deadline) }}
+                    회신기한:
+                    {{
+                      getDaysUntilDeadline(offer.deadline) === '마감'
+                        ? '마감'
+                        : 'D-' + getDaysUntilDeadline(offer.deadline)
+                    }}
                   </p>
                 </div>
                 <div class="flex gap-2 justify-end">
@@ -859,11 +866,7 @@ const getLatestEducation = (educations) => {
                       @click="acceptInterviewSchedule(offer)"
                       :disabled="selectedDateIndices[offer.id] === undefined"
                     />
-                    <Button
-                      label="면접 거절"
-                      severity="danger"
-                      @click="rejectInterviewSchedule(offer)"
-                    />
+                    <Button label="면접 거절" severity="danger" @click="rejectInterviewSchedule(offer)" />
                   </div>
                 </div>
                 <div v-else-if="!offer.interviewConfirmed" class="space-y-4">
@@ -894,7 +897,7 @@ const getLatestEducation = (educations) => {
                   <!-- 거절 사유 표시 추가 -->
                   <div v-if="offer.rejectReason" class="bg-red-50 p-4 rounded-lg mt-2">
                     <p class="text-red-700">
-                      <span class="font-medium">거절 사유:</span><br>
+                      <span class="font-medium">거절 사유:</span><br />
                       {{ offer.rejectReason }}
                     </p>
                   </div>
@@ -1001,7 +1004,12 @@ const getLatestEducation = (educations) => {
             <div class="bg-blue-50 p-4 rounded-lg">
               <p class="text-blue-700">
                 <i class="pi pi-info-circle mr-2"></i>
-                회신기한: {{ getDaysUntilDeadline(selectedOffer.deadline) === '마감' ? '마감' : 'D-' + getDaysUntilDeadline(selectedOffer.deadline) }}
+                회신기한:
+                {{
+                  getDaysUntilDeadline(selectedOffer.deadline) === '마감'
+                    ? '마감'
+                    : 'D-' + getDaysUntilDeadline(selectedOffer.deadline)
+                }}
               </p>
             </div>
             <!-- 버튼 추가 -->
@@ -1089,11 +1097,7 @@ const getLatestEducation = (educations) => {
                   @click="acceptInterviewSchedule(selectedOffer)"
                   :disabled="selectedDateIndices[selectedOffer.id] === undefined"
                 />
-                <Button
-                  label="면접 거절"
-                  severity="danger"
-                  @click="rejectInterviewSchedule(selectedOffer)"
-                />
+                <Button label="면접 거절" severity="danger" @click="rejectInterviewSchedule(selectedOffer)" />
               </div>
             </div>
             <div v-else-if="!selectedOffer.interviewConfirmed" class="space-y-4">
@@ -1120,7 +1124,7 @@ const getLatestEducation = (educations) => {
               <!-- 거절 사유 표시 추가 -->
               <div v-if="selectedOffer.rejectReason" class="bg-red-50 p-4 rounded-lg mt-2">
                 <p class="text-red-700">
-                  <span class="font-medium">거절 사유:</span><br>
+                  <span class="font-medium">거절 사유:</span><br />
                   {{ selectedOffer.rejectReason }}
                 </p>
               </div>
@@ -1208,7 +1212,10 @@ const getLatestEducation = (educations) => {
             <div class="grid gap-y-4">
               <div class="flex gap-8">
                 <span class="text-gray-600 w-20">이름</span>
-                <span>{{ selectedOffer.resumeSnapshot.passportInfo.surname }} {{ selectedOffer.resumeSnapshot.passportInfo.givenNames }}</span>
+                <span
+                  >{{ selectedOffer.resumeSnapshot.passportInfo.surname }}
+                  {{ selectedOffer.resumeSnapshot.passportInfo.givenNames }}</span
+                >
               </div>
               <div class="flex gap-8">
                 <span class="text-gray-600 w-20">여권번호</span>
@@ -1234,9 +1241,11 @@ const getLatestEducation = (educations) => {
               </span>
             </div>
             <div v-if="selectedOffer.resumeSnapshot.careers?.length > 0">
-              <div v-for="career in selectedOffer.resumeSnapshot.careers" 
-                   :key="career.companyName" 
-                   class="mb-4 pb-4 border-b last:border-b-0">
+              <div
+                v-for="career in selectedOffer.resumeSnapshot.careers"
+                :key="career.companyName"
+                class="mb-4 pb-4 border-b last:border-b-0"
+              >
                 <div class="flex justify-between items-start">
                   <div>
                     <div class="flex items-center gap-2">
@@ -1244,7 +1253,10 @@ const getLatestEducation = (educations) => {
                       <span class="text-sm text-gray-500">({{ calculatePeriod(career.period) }})</span>
                     </div>
                     <div class="text-gray-600">{{ career.period }}</div>
-                    <div class="text-gray-600">{{ career.jobCategory?.label || 'IT개발·데이터' }} | {{ career.jobTitle }} | {{ career.department }}</div>
+                    <div class="text-gray-600">
+                      {{ career.jobCategory?.label || 'IT개발·데이터' }} | {{ career.jobTitle }} |
+                      {{ career.department }}
+                    </div>
                     <div class="mt-2">{{ career.responsibilities }}</div>
                   </div>
                 </div>
@@ -1262,8 +1274,7 @@ const getLatestEducation = (educations) => {
               <div class="text-[#8B8BF5] mb-4">
                 최종학력: {{ getLatestEducation(selectedOffer.resumeSnapshot.educations) }}
               </div>
-              <div v-for="education in selectedOffer.resumeSnapshot.educations" 
-                   :key="education.schoolName">
+              <div v-for="education in selectedOffer.resumeSnapshot.educations" :key="education.schoolName">
                 <div class="flex justify-between items-start">
                   <div>
                     <div class="mb-2">{{ education.schoolName }}</div>
@@ -1284,36 +1295,30 @@ const getLatestEducation = (educations) => {
               <h3 class="text-lg font-medium">자격증 사항</h3>
             </div>
             <div v-if="selectedOffer.resumeSnapshot.certifications?.length" class="space-y-4">
-              <div v-for="(cert, index) in selectedOffer.resumeSnapshot.certifications" 
-                :key="index" 
+              <div
+                v-for="(cert, index) in selectedOffer.resumeSnapshot.certifications"
+                :key="index"
                 class="mb-4 pb-4 border-b last:border-b-0"
               >
                 <div class="flex items-start">
                   <div>
                     <div class="font-medium mb-1">{{ cert.name }}</div>
                     <div class="text-gray-600">
-                      <div>취득일: {{ cert.date }}</div>
-                      <div>발급기관: {{ cert.organization }}</div>
+                      <div>취득일 : {{ cert.date }}</div>
+                      <div>발급기관 : {{ cert.organization }}</div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-            <div v-else class="text-center text-gray-500">
-              등록된 자격증이 없습니다
-            </div>
+            <div v-else class="text-center text-gray-500">등록된 자격증이 없습니다</div>
           </div>
         </div>
       </div>
     </Dialog>
 
     <!-- 거절 사유 입력 모달 추가 -->
-    <Dialog 
-      v-model:visible="showRejectReasonModal" 
-      :modal="true" 
-      header="면접 거절 사유" 
-      :style="{ width: '500px' }"
-    >
+    <Dialog v-model:visible="showRejectReasonModal" :modal="true" header="면접 거절 사유" :style="{ width: '500px' }">
       <div class="p-6">
         <div class="space-y-4">
           <p class="text-xl mb-2">면접을 거절하시겠습니까?</p>
@@ -1334,22 +1339,14 @@ const getLatestEducation = (educations) => {
       </div>
       <template #footer>
         <div class="flex justify-end gap-2">
-          <Button 
-            label="취소" 
-            class="p-button-text" 
-            @click="showRejectReasonModal = false" 
-          />
-          <Button 
-            label="거절" 
-            severity="danger" 
-            @click="confirmReject" 
-          />
+          <Button label="취소" class="p-button-text" @click="showRejectReasonModal = false" />
+          <Button label="거절" severity="danger" @click="confirmReject" />
         </div>
       </template>
     </Dialog>
 
     <!-- 토스트 메시지 -->
-    <Toast />    
+    <Toast />
   </div>
 </template>
 
@@ -1385,14 +1382,14 @@ const getLatestEducation = (educations) => {
 
 :deep(.p-button.p-button-outlined) {
   background: transparent;
-  border-color: #8B8BF5;
-  color: #8B8BF5;
+  border-color: #8b8bf5;
+  color: #8b8bf5;
 }
 
 :deep(.p-button.p-button-outlined:hover) {
   background: rgba(139, 139, 245, 0.04);
-  border-color: #7070F3;
-  color: #7070F3;
+  border-color: #7070f3;
+  color: #7070f3;
 }
 
 /* 프로필 이미지 관련 스타일 추가 */

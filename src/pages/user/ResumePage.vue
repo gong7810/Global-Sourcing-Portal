@@ -1380,7 +1380,7 @@ const clearCertificationFile = (index) => {
                     <label class="block text-sm font-medium text-gray-700">
                       발급기관<span class="text-red-500">*</span>
                     </label>
-                    <InputText v-model="cert.issuer" placeholder="주최기관을 입력하세요" class="w-full" />
+                    <InputText v-model="cert.issuer" placeholder="발급기관을 입력하세요" class="w-full" />
                   </div>
                   <div class="space-y-2">
                     <label class="block text-sm font-medium text-gray-700">자격 번호</label>
