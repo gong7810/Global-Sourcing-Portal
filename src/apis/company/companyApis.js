@@ -34,3 +34,36 @@ export const getResumeList = async (query) => {
     console.error(error);
   }
 };
+
+// 인재 북마크 등록 API
+export const insertFavoriteResume = async (body) => {
+  try {
+    const response = await api.post(`/favoriteResume`, body);
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// 인재 북마크 삭제 API
+export const deleteFavoriteResume = async (userId, resumeId) => {
+  try {
+    const response = await api.del(`/favoriteResume?userId=${body.resumeId}&resumeId=${body.resumeId}`);
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// 북마크 인재 리스트 조회 API
+export const getFavoriteResumeList = async (query) => {
+  try {
+    const response = await api.get(`/favoriteResume/list${query ? '?' + query : ''}`);
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};

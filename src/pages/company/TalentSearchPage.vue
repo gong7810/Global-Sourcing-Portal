@@ -2,10 +2,17 @@
 import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
+import { useAuthStore } from '@/store/auth/authStore';
+import { useMessagePop } from '@/plugins/commonutils';
 import { getCodeList } from '@/apis/common/commonApis';
-import { getResumeList } from '@/apis/company/companyApis';
+import { deleteFavoriteResume, getResumeList, insertFavoriteResume } from '@/apis/company/companyApis';
+import { storeToRefs } from 'pinia';
 
 const router = useRouter();
+const authStore = useAuthStore();
+const messagePop = useMessagePop();
+
+const { userInfo } = storeToRefs(authStore);
 
 const showResumeModal = ref(false);
 const selectedCandidate = ref(null);
@@ -40,7 +47,7 @@ onMounted(() => {
   getJobCategoryCode();
   getCareerPeriodCode();
   getEducationLevelCode();
-  setGenderCode();
+  getGenderCode();
 
   searchTalents();
 });
@@ -103,7 +110,7 @@ const getEducationLevelCode = async () => {
 };
 
 // 성별 세팅
-const setGenderCode = async () => {
+const getGenderCode = async () => {
   const response = await getCodeList(`GENDER_TY`);
 
   response.map((item) => {
@@ -112,15 +119,13 @@ const setGenderCode = async () => {
 };
 
 const openResumeModal = (candidate) => {
-  selectedCandidate.value = candidate;
+  selectedCandidate.value = { ...candidate };
 
   selectedCandidate.value.user = {
     ...selectedCandidate.value.user,
     // profileImage: `${import.meta.env.VITE_UPLOAD_PATH}/${candidate.user?.imageFile?.fileName}`
     imageFile: `http://182.229.224.143/gsource/upload/woman1743320912414.jpg`
   };
-
-  console.log(selectedCandidate.value);
 
   showResumeModal.value = true;
 };
@@ -178,8 +183,30 @@ watch(
   { deep: true }
 );
 
-const toggleBookmark = (talent) => {
+// 인재 북마크 등록
+const toggleBookmark = async (talent) => {
   talent.isBookmarked = !talent.isBookmarked;
+
+  if (talent.isBookmarked) {
+    const body = {
+      userId: userInfo.value.id,
+      resumeId: talent.id
+    };
+
+    const response = await insertFavoriteResume(body);
+
+    if (response && response.success === undefined) {
+      messagePop.toast('북마크 되었습니다.', 'success');
+    }
+  } else {
+    // TODO: 백에서 삭제 조건절 수정 필요
+    return;
+    const response = await deleteFavoriteResume(userInfo.value.id, talent.id);
+
+    if (response && response.success === undefined) {
+      messagePop.toast('북마크 삭제되었습니다.', 'info');
+    }
+  }
 };
 
 const openInterviewOffer = (talent) => {
@@ -336,7 +363,7 @@ const getLatestEducation = (education) => {
     <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
       <div class="flex items-center gap-4">
         <!-- 국적 필터 -->
-        <div class="w-[200px]">
+        <div class="w-[150px]">
           <label class="block text-sm font-medium text-gray-700 mb-1">국적</label>
           <Select
             v-model="filters.nationalityCd"
@@ -350,7 +377,7 @@ const getLatestEducation = (education) => {
         </div>
 
         <!-- 경력 필터 -->
-        <div class="w-[150px]">
+        <div class="w-[200px]">
           <label class="block text-sm font-medium text-gray-700 mb-1">경력</label>
           <Select
             v-model="filters.careerHistory"
@@ -378,7 +405,7 @@ const getLatestEducation = (education) => {
         </div>
 
         <!-- 성별 카테고리 필터 -->
-        <div class="w-[200px]">
+        <div class="w-[150px]">
           <label class="block text-sm font-medium text-gray-700 mb-1">성별</label>
           <Select
             v-model="filters.genderCd"

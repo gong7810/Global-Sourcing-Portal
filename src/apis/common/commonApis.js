@@ -27,13 +27,13 @@ export const getCodeList = async (code) => {
 // FAQ 목록 조회
 export const getFaqList = async (params = {}) => {
   try {
-    const response = await api.get('/faq/list', params)
-    return response.data
+    const response = await api.get(`/faq/list`, params);
+    return response.data;
   } catch (error) {
-    console.error('FAQ 목록 조회 실패:', error)
-    throw error
+    console.error('FAQ 목록 조회 실패:', error);
+    throw error;
   }
-}
+};
 
 // FAQ 저장
 export const saveFaq = async (data) => {
@@ -80,7 +80,7 @@ export const getInquiries = async (params = {}) => {
       queryParams.subject = String(params.keyword);
     }
 
-    const response = await api.get('/help/list', { params: queryParams });
+    const response = await api.get(`/help/list`, { params: queryParams });
     return response.data;
   } catch (error) {
     console.error('문의 목록 조회 실패:', error);
@@ -110,7 +110,7 @@ export const getInquiryDetail = async (id) => {
  */
 export const saveReply = async (data) => {
   try {
-    const response = await api.post('/help/reply', {
+    const response = await api.post(`/help/reply`, {
       helpId: Number(data.helpId),
       reply: data.reply
     });

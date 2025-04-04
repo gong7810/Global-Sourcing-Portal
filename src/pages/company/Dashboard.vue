@@ -1,78 +1,47 @@
 <script setup>
 import { onMounted, ref, computed } from 'vue';
-import { useAuthStore } from '@/store/auth/authStore';
-import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
 import { isNil } from 'es-toolkit';
 
+import { useAuthStore } from '@/store/auth/authStore';
+import { storeToRefs } from 'pinia';
+import { getCodeList } from '@/apis/common/commonApis';
+import { getFavoriteResumeList } from '@/apis/company/companyApis';
+
 const router = useRouter();
-
-const careers = [
-  { label: '신입', value: 'entry' },
-  { label: '1~3년', value: 'junior' },
-  { label: '4~7년', value: 'middle' },
-  { label: '8년 이상', value: 'senior' }
-];
-
-const nationalities = [
-  { label: '베트남', value: 'VN' },
-  { label: '중국', value: 'CN' },
-  { label: '일본', value: 'JP' },
-  { label: '기타', value: 'OTHER' }
-];
-
 const authStore = useAuthStore();
 const { userInfo } = storeToRefs(authStore);
 
-// bookmarkStore 관련 코드 제거
-const bookmarkFlag = ref(true);
+const koreanLv = ref('');
+const koreanLevelList = ref([]);
+const educationLevelList = ref([]);
 
-onMounted(() => {
-  if (!isNil(userInfo.value?.isCompany) && !userInfo.value?.isCompany) {
-    bookmarkFlag.value = false;
-  }
+// 이력서 모달 관련 상태 추가
+const showResumeModal = ref(false);
+const selectedCandidate = ref(null);
+const isAccepted = ref(false); // 면접 제안 수락 여부 (연락처 표시용)
+
+// 필터 옵션
+const nationalityOptions = ref([]);
+const careerOptions = ref([]);
+const jobCategoryOptions = ref([]);
+const genderOptions = ref([]);
+
+// 검색 필터 상태 관리
+const filters = ref({
+  nationalityCd: null,
+  careerHistory: null,
+  jobCategoryCd: null,
+  genderCd: null
 });
 
-const formatCurrency = (value) => {
-  return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-};
-
-// 북마크 토글 함수 수정
-const toggleBookmark = (talent) => {
-  if (!talent) return;
-
-  // bookmarkedTalents에서 해당 인재 찾기
-  const index = bookmarkedTalents.value.findIndex((t) => t.id === talent.id);
-  if (index !== -1) {
-    // 북마크 상태 토글
-    const updatedTalent = { ...bookmarkedTalents.value[index] };
-    updatedTalent.isBookmarked = !updatedTalent.isBookmarked;
-
-    // 북마크가 해제되면 목록에서 제거
-    if (!updatedTalent.isBookmarked) {
-      bookmarkedTalents.value.splice(index, 1);
-      // 모달이 열려있고 해당 인재의 모달이라면 모달 닫기
-      if (selectedCandidate.value?.id === talent.id) {
-        showResumeModal.value = false;
-      }
-    } else {
-      // 북마크가 다시 설정되면 목록 업데이트
-      bookmarkedTalents.value[index] = updatedTalent;
-      // 모달이 열려있는 경우 selectedCandidate 업데이트
-      if (selectedCandidate.value?.id === talent.id) {
-        selectedCandidate.value = updatedTalent;
-      }
-    }
-  }
-};
-
-// bookmarkedTalents ref 수정 (모달에 필요한 정보 추가)
+// 북마크 인재 리스트
 const bookmarkedTalents = ref([
   {
     id: 1,
     name: '홍길동',
     nationality: '베트남',
-    career: '5년',
+    experienceDurationMonth: '5년',
     birthdate: '1996.09.01',
     gender: '남성',
     phone: '010-1234-5678',
@@ -88,13 +57,13 @@ const bookmarkedTalents = ref([
     jobCategory: { label: 'IT개발·데이터', value: 'it' },
     isBookmarked: true,
     bookmarkedDate: '2024-03-15',
-    careers: [
+    experiences: [
       {
         company: '(주)테크솔루션',
         period: '2021.03 - 2024.03',
         jobCategory: { label: 'IT개발·데이터', value: 'it' },
         position: '프론트엔드 개발자 | 개발팀',
-        description:
+        content:
           '웹 서비스 프론트엔드 개발 및 유지보수\n- React, TypeScript 기반 웹 애플리케이션 개발\n- 성능 최적화 및 사용자 경험 개선'
       },
       {
@@ -102,16 +71,16 @@ const bookmarkedTalents = ref([
         period: '2019.03 - 2021.02',
         jobCategory: { label: 'IT개발·데이터', value: 'it' },
         position: '웹 개발자 | 서비스개발팀',
-        description: '자사 웹 서비스 개발\n- Vue.js 기반 프론트엔드 개발\n- REST API 연동 및 기능 구현'
+        content: '자사 웹 서비스 개발\n- Vue.js 기반 프론트엔드 개발\n- REST API 연동 및 기능 구현'
       }
     ],
     education: [
       {
-        school: '하노이공과대학교',
+        schoolName: '하노이공과대학교',
         type: '대학교(4년)',
         major: '컴퓨터공학',
         period: '2015.03 - 2019.02',
-        description: '학점 4.0/4.5\n웹 개발 동아리 회장\n알고리즘 경진대회 수상'
+        content: '학점 4.0/4.5\n웹 개발 동아리 회장\n알고리즘 경진대회 수상'
       }
     ],
     certificates: [
@@ -143,7 +112,7 @@ const bookmarkedTalents = ref([
     id: 2,
     name: '김철수',
     nationality: '중국',
-    career: '3년',
+    experienceDurationMonth: '3년',
     birthdate: '1997.05.15',
     gender: '남성',
     phone: '010-2345-6789',
@@ -157,100 +126,214 @@ const bookmarkedTalents = ref([
     passportNumber: 'M5678****',
     passportExpiry: '2027-05-15',
     jobCategory: { label: 'IT개발·데이터', value: 'it' },
-    careers: [
+    experiences: [
       {
         company: '(주)데이터테크',
         period: '2021.01 - 2024.03',
         jobCategory: { label: 'IT개발·데이터', value: 'it' },
         position: '백엔드 개발자 | 서버개발팀',
-        description:
+        content:
           '백엔드 서버 개발 및 운영\n- Spring Boot 기반 REST API 개발\n- MSA 아키텍처 설계 및 구현\n- 대용량 데이터 처리 시스템 구축'
       }
     ],
     education: [
       {
-        school: '베이징대학교',
+        schoolName: '베이징대학교',
         type: '대학교(4년)',
         major: '소프트웨어공학',
         period: '2016.09 - 2020.08',
-        description: '학점 3.8/4.0\n클라우드 컴퓨팅 연구실 인턴\n교내 프로그래밍 대회 2위'
+        content: '학점 3.8/4.0\n클라우드 컴퓨팅 연구실 인턴\n교내 프로그래밍 대회 2위'
       }
     ],
     isInterviewOffered: false
   }
 ]);
 
-// 검색 필터 상태 관리
-const searchKeyword = ref('');
-const selectedCareer = ref(null);
-const selectedNationalities = ref([]);
+onMounted(() => {
+  getKoreanLevelCode();
+  getNationCode();
+  getJobCategoryCode();
+  getCareerPeriodCode();
+  getEducationLevelCode();
+  getGenderCode();
 
-// 직무 카테고리 추가
-const jobCategories = [
-  { label: '기획·전략', value: 'planning' },
-  { label: '마케팅·홍보·조사', value: 'marketing' },
-  { label: '회계·세무·재무', value: 'accounting' },
-  { label: '인사·노무·HRD', value: 'hr' },
-  { label: '총무·법무·사무', value: 'admin' },
-  { label: 'IT개발·데이터', value: 'it' },
-  { label: '디자인', value: 'design' },
-  { label: '영업·판매·무역', value: 'sales' },
-  { label: '고객상담·TM', value: 'cs' },
-  { label: '구매·자재·물류', value: 'purchasing' },
-  { label: '상품기획·MD', value: 'md' },
-  { label: '운전·운송·배송', value: 'delivery' },
-  { label: '서비스', value: 'service' },
-  { label: '생산', value: 'production' },
-  { label: '건설·건축', value: 'construction' },
-  { label: '의료', value: 'medical' },
-  { label: '연구·R&D', value: 'research' },
-  { label: '교육', value: 'education' },
-  { label: '미디어·문화·스포츠', value: 'media' },
-  { label: '금융·보험', value: 'finance' },
-  { label: '공공·복지', value: 'public' }
-];
+  searchTalents();
+});
 
-// 직무 필터 상태 추가
-const selectedJobCategory = ref(null);
+// 한국어 실력 코드 조회
+const getKoreanLevelCode = async () => {
+  const response = await getCodeList(`KOREAN_LV`);
+
+  response.map((item) => {
+    koreanLevelList.value.push({ name: item.name, code: item.code });
+  });
+};
+
+// 국적 코드 조회
+const getNationCode = async () => {
+  const response = await getCodeList(`NATIONALITY_TY`);
+
+  response.map((item) => {
+    nationalityOptions.value.push({
+      name: item.name,
+      code: item.code
+    });
+  });
+};
+
+// 경력 코드 조회
+const getCareerPeriodCode = async () => {
+  const response = await getCodeList(`CAREER_PERIOD`);
+
+  response.map((item) => {
+    careerOptions.value.push({
+      name: item.name,
+      code: item.code
+    });
+  });
+};
+
+// 직무 코드 조회
+const getJobCategoryCode = async () => {
+  const response = await getCodeList(`JOB_CATEGORY`);
+
+  response.map((item) => {
+    jobCategoryOptions.value.push({
+      name: item.name,
+      code: item.code
+    });
+  });
+};
+
+// 학력 코드 조회
+const getEducationLevelCode = async () => {
+  const response = await getCodeList(`EDUCATION_LEVEL`);
+
+  response.map((item) => {
+    educationLevelList.value.push({
+      name: item.name,
+      code: item.code
+    });
+  });
+};
+
+// 성별 세팅
+const getGenderCode = async () => {
+  const response = await getCodeList(`GENDER_TY`);
+
+  response.map((item) => {
+    genderOptions.value.push({ name: `${item.name}성`, code: item.code });
+  });
+};
+
+// 인재 필터 조회
+const searchTalents = async () => {
+  let fromPeriod = '';
+  let toPeriod = '';
+
+  if (filters.value.careerHistory) {
+    switch (filters.value.careerHistory) {
+      case careerOptions.value[0].code:
+        fromPeriod = 0;
+        toPeriod = 1;
+        break;
+      case careerOptions.value[1].code:
+        fromPeriod = 1;
+        toPeriod = 3;
+        break;
+      case careerOptions.value[2].code:
+        fromPeriod = 3;
+        toPeriod = 7;
+        break;
+      case careerOptions.value[3].code:
+        fromPeriod = 7;
+        toPeriod = 50;
+        break;
+    }
+  }
+
+  let queryList = Object.entries(filters.value).reduce((acc, cur, idx) => {
+    if (idx !== 1 && cur[1]) {
+      acc.push(`${cur[0]}=${cur[1]}`);
+    } else if (cur[1]) {
+      acc.push(`fromPeriod=${fromPeriod}&toPeriod=${toPeriod}`);
+    }
+    return acc;
+  }, []);
+
+  const response = await getFavoriteResumeList(queryList.join('&'));
+
+  bookmarkedTalents.value = response.contents;
+
+  bookmarkedTalents.value.map((tal) => {
+    if (tal?.educations.length) {
+      tal.lastEducation = '하버드 대학교 경영학과 졸업';
+    }
+  });
+};
+
+// 북마크 토글 함수 수정
+const toggleBookmark = (talent) => {
+  if (!talent) return;
+
+  // bookmarkedTalents에서 해당 인재 찾기
+  const index = bookmarkedTalents.value.findIndex((t) => t.id === talent.id);
+  if (index !== -1) {
+    // 북마크 상태 토글
+    const updatedTalent = { ...bookmarkedTalents.value[index] };
+    updatedTalent.isBookmarked = !updatedTalent.isBookmarked;
+
+    // 북마크가 해제되면 목록에서 제거
+    if (!updatedTalent.isBookmarked) {
+      bookmarkedTalents.value.splice(index, 1);
+      // 모달이 열려있고 해당 인재의 모달이라면 모달 닫기
+      if (selectedCandidate.value?.id === talent.id) {
+        showResumeModal.value = false;
+      }
+    } else {
+      // 북마크가 다시 설정되면 목록 업데이트
+      bookmarkedTalents.value[index] = updatedTalent;
+      // 모달이 열려있는 경우 selectedCandidate 업데이트
+      if (selectedCandidate.value?.id === talent.id) {
+        selectedCandidate.value = updatedTalent;
+      }
+    }
+  }
+};
 
 // 필터링된 북마크 목록
 const filteredBookmarks = computed(() => {
   return bookmarkedTalents.value.filter((talent) => {
     // 경력 필터
-    const careerMatch =
-      !selectedCareer.value || talent.career === careers.find((c) => c.value === selectedCareer.value)?.label;
+    // const careerMatch =
+    //   !selectedCareer.value ||
+    //   talent.experienceDurationMonth === careerOptions.value.find((c) => c.value === selectedCareer.value)?.name;
 
-    // 국적 필터
-    const nationalityMatch =
-      selectedNationalities.value.length === 0 ||
-      selectedNationalities.value.some(
-        (n) => talent.nationality === nationalities.find((nat) => nat.value === n)?.label
-      );
+    // // 국적 필터
+    // const nationalityMatch =
+    //   selectedNationalities.value.length === 0 ||
+    //   selectedNationalities.value.some(
+    //     (n) => talent.nationality === nationalities.find((nat) => nat.value === n)?.name
+    //   );
 
-    // 직무 필터 추가
-    const jobCategoryMatch = !selectedJobCategory.value || talent.jobCategory?.value === selectedJobCategory.value;
+    // // 직무 필터 추가
+    // const jobCategoryMatch = !selectedJobCategory.value || talent.jobCategory?.value === selectedJobCategory.value;
 
-    // 키워드 검색 (이름, 학교, 전공)
-    const keyword = searchKeyword.value.toLowerCase();
-    const keywordMatch =
-      !keyword ||
-      talent.name.toLowerCase().includes(keyword) ||
-      talent.education.toLowerCase().includes(keyword) ||
-      talent.major.toLowerCase().includes(keyword);
-
-    return careerMatch && nationalityMatch && jobCategoryMatch && keywordMatch;
+    // return careerMatch && nationalityMatch && jobCategoryMatch;
+    return true;
   });
 });
 
-// 이력서 모달 관련 상태 추가
-const showResumeModal = ref(false);
-const selectedCandidate = ref(null);
-const isAccepted = ref(false); // 면접 제안 수락 여부 (연락처 표시용)
-
 // 이력서 모달 열기 함수 수정
 const openResumeModal = (talent) => {
-  // 전달받은 talent 객체를 복사하여 selectedCandidate에 할당
   selectedCandidate.value = { ...talent };
+
+  selectedCandidate.value.user = {
+    ...selectedCandidate.value.user,
+    // profileImage: `${import.meta.env.VITE_UPLOAD_PATH}/${candidate.user?.imageFile?.fileName}`
+    imageFile: `http://182.229.224.143/gsource/upload/woman1743320912414.jpg`
+  };
+
   showResumeModal.value = true;
 };
 
@@ -264,7 +347,7 @@ const openInterviewOffer = (talent) => {
 const getEducationDisplay = (talent) => {
   if (Array.isArray(talent.education)) {
     const latestEducation = talent.education[0];
-    return `${latestEducation.school} · ${latestEducation.major}`;
+    return `${latestEducation.schoolName} · ${latestEducation.major}`;
   }
   return `${talent.education} · ${talent.major}`;
 };
@@ -296,7 +379,7 @@ const calculateCareerPeriod = (period) => {
 const getLatestEducation = (education) => {
   if (!education || education.length === 0) return '정보 없음';
   const latestEdu = education[0]; // 배열의 첫 번째 항목이 가장 최근 학력이라고 가정
-  return `${latestEdu.school} ${latestEdu.type} (${latestEdu.major})`;
+  return `${latestEdu.schoolName} ${latestEdu.type} (${latestEdu.major})`;
 };
 
 // script 섹션에 calculateTotalCareer 함수 추가
@@ -442,25 +525,29 @@ const calculateTotalCareer = (careers) => {
         <!-- 검색 필터 섹션 수정 -->
         <div class="flex items-center gap-4 mb-6">
           <!-- 국적 필터 -->
-          <div class="w-[200px]">
+          <div class="w-[150px]">
             <label class="block text-sm font-medium text-gray-700 mb-1">국적</label>
-            <MultiSelect
-              v-model="selectedNationalities"
-              :options="nationalities"
-              optionLabel="label"
-              placeholder="전체"
+            <Select
+              v-model="filters.nationalityCd"
+              :options="nationalityOptions"
+              optionLabel="name"
+              optionValue="code"
+              placeholder="--Select--"
+              showClear
               class="w-full"
             />
           </div>
 
           <!-- 경력 필터 -->
-          <div class="w-[150px]">
+          <div class="w-[200px]">
             <label class="block text-sm font-medium text-gray-700 mb-1">경력</label>
-            <Dropdown
-              v-model="selectedCareer"
-              :options="careers"
-              optionLabel="label"
-              placeholder="전체"
+            <Select
+              v-model="filters.careerHistory"
+              :options="careerOptions"
+              optionLabel="name"
+              optionValue="code"
+              placeholder="--Select--"
+              showClear
               class="w-full"
             />
           </div>
@@ -468,20 +555,41 @@ const calculateTotalCareer = (careers) => {
           <!-- 직무 필터 추가 -->
           <div class="w-[200px]">
             <label class="block text-sm font-medium text-gray-700 mb-1">직무</label>
-            <Dropdown
-              v-model="selectedJobCategory"
-              :options="jobCategories"
-              optionLabel="label"
-              placeholder="전체"
+            <Select
+              v-model="filters.jobCategoryCd"
+              :options="jobCategoryOptions"
               class="w-full"
+              optionLabel="name"
+              optionValue="code"
+              placeholder="--Select--"
+              showClear
             />
           </div>
 
+          <!-- 성별 카테고리 필터 -->
+          <div class="w-[150px]">
+            <label class="block text-sm font-medium text-gray-700 mb-1">성별</label>
+            <Select
+              v-model="filters.genderCd"
+              :options="genderOptions"
+              class="w-full"
+              optionLabel="name"
+              optionValue="code"
+              placeholder="--Select--"
+              showClear
+            />
+          </div>
+
+          <!-- 검색 버튼 -->
+          <div class="self-end">
+            <Button @click="searchTalents" class="bt_btn widthFixed primary"> 검색하기 </Button>
+          </div>
+
           <!-- 키워드 검색 -->
-          <div class="flex-1">
+          <!-- <div class="flex-1">
             <label class="block text-sm font-medium text-gray-700 mb-1">키워드</label>
             <InputText v-model="searchKeyword" placeholder="이름, 학교, 전공 등" class="w-full" />
-          </div>
+          </div> -->
         </div>
 
         <!-- 북마크된 인재가 없을 때 표시할 빈 상태 -->
@@ -501,7 +609,7 @@ const calculateTotalCareer = (careers) => {
         </div>
 
         <!-- 북마크된 인재는 있지만 필터링 결과가 없을 때 -->
-        <div v-else-if="filteredBookmarks.length === 0" class="text-center py-12">
+        <div v-else-if="filteredBookmarks?.length === 0" class="text-center py-12">
           <div class="flex flex-col items-center gap-4">
             <i class="pi pi-bookmark text-gray-300 text-5xl mb-2"></i>
             <p class="text-gray-500 mb-2">검색 결과가 없습니다</p>
@@ -666,7 +774,7 @@ const calculateTotalCareer = (careers) => {
           </div>
           <div class="text-gray-600">{{ career.period }}</div>
           <div class="text-gray-600">{{ career.jobCategory.label }} | {{ career.position }}</div>
-          <div class="mt-2 whitespace-pre-line">{{ career.description }}</div>
+          <div class="mt-2 whitespace-pre-line">{{ career.content }}</div>
         </div>
       </div>
 
@@ -675,11 +783,11 @@ const calculateTotalCareer = (careers) => {
         <h3 class="text-lg font-medium mb-4">학력 사항</h3>
         <div class="text-[#8B8BF5] mb-4">최종학력: {{ getLatestEducation(selectedCandidate?.education) }}</div>
         <div v-for="(edu, index) in selectedCandidate?.education" :key="index" class="mb-4">
-          <div class="font-medium">{{ edu.school }}</div>
+          <div class="font-medium">{{ edu.schoolName }}</div>
           <div class="text-gray-600">{{ edu.type }}</div>
           <div class="text-gray-600">{{ edu.major }}</div>
           <div class="text-gray-600">{{ edu.period }}</div>
-          <div class="whitespace-pre-line">{{ edu.description }}</div>
+          <div class="whitespace-pre-line">{{ edu.content }}</div>
         </div>
       </div>
 

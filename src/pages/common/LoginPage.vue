@@ -53,7 +53,7 @@ const getUserInfo = async () => {
   if (!response.isCompany) {
     router.push('/'); // 개인회원 메인 페이지
   } else if (response.isCompany) {
-    router.push('/business/index'); // 기업회원 대시보드
+    router.push('/company/index'); // 기업회원 대시보드
   }
 };
 
