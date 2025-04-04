@@ -792,7 +792,7 @@ const modifyEducation = (index) => {
 };
 
 // 학력 삭제 로직
-const deleteEducations = (education) => {
+const deleteEducations = (education, index) => {
   messagePop.confirm({
     message: '해당 학력을 삭제하시겠습니까?',
     onCloseYes: async () => {
@@ -1311,7 +1311,7 @@ const clearCertificationFile = (index) => {
                     <button class="text-gray-400 hover:text-gray-600" @click="modifyEducation(index)">
                       <i class="pi pi-pencil"></i>
                     </button>
-                    <button class="text-gray-400 hover:text-gray-600" @click="deleteEducations(education)">
+                    <button class="text-gray-400 hover:text-gray-600" @click="deleteEducations(education, index)">
                       <i class="pi pi-trash"></i>
                     </button>
                   </div>
