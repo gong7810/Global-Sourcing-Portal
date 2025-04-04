@@ -13,7 +13,7 @@ const inquiryForm = ref({
   title: '',
   content: '',
   email: '',
-  phone: ''
+  // phone: ''
 });
 
 const categories = [
@@ -78,13 +78,13 @@ const submitInquiry = () => {
             class="w-full" />
         </div>
 
-        <div>
+        <!-- <div>
           <label class="block text-gray-700 font-medium mb-2">연락처</label>
           <InputText
             v-model="inquiryForm.phone"
             placeholder="연락 가능한 전화번호를 입력해주세요"
             class="w-full" />
-        </div>
+        </div> -->
 
         <div class="flex justify-end gap-4">
           <Button
