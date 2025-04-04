@@ -4,7 +4,7 @@ import Button from 'primevue/button';
 import { useRouter } from 'vue-router';
 import AdminHeader from '@/components/admin/AdminHeader.vue';
 import AdminSidebar from '@/components/admin/AdminSidebar.vue';
-import { getFaqList, saveFaq, deleteFaq as deleteFaqApi } from '@/apis/admin/adminApis';
+import { getFaqList, saveFaq, deleteFaq as deleteFaqApi } from '@/apis/common/commonApis';
 import { useMessagePop } from '@/plugins/commonutils';
 
 const router = useRouter();

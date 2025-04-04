@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import faqApi from '@/apis/common/faq';
+import { getFaqList } from '@/apis/common/commonApis';
 import { useMessagePop } from '@/plugins/commonutils';
 
 const router = useRouter();
@@ -39,7 +39,7 @@ const fetchFaqs = async () => {
             sortColumn: 'id',
             sortAsc: false
         };
-        const response = await faqApi.getFaqList(params);
+        const response = await getFaqList(params);
         if (response && response.contents) {
             faqs.value = response.contents;
         } else {

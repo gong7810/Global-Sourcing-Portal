@@ -9,7 +9,7 @@ import { useToast } from 'primevue/usetoast';
 import Toast from 'primevue/toast';
 import AdminHeader from '@/components/admin/AdminHeader.vue';
 import Dialog from 'primevue/dialog';
-import { getInquiries, getInquiryDetail, saveReply } from '@/apis/common/inquiryApi';
+import { getInquiries, getInquiryDetail, saveReply } from '@/apis/common/commonApis';
 
 const router = useRouter();
 const toast = useToast();
@@ -537,9 +537,13 @@ const closeDetailModal = () => {
 
     :deep(.p-input-icon-right) {
         width: 100%;
+        position: relative;
         
         > i {
+            position: absolute;
             right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
             color: #6B7280;
             cursor: pointer;
             font-size: 0.9rem;
