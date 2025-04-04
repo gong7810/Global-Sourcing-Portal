@@ -1,11 +1,11 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
-
 import AdminHeader from '@/components/admin/AdminHeader.vue';
 import AdminSidebar from '@/components/admin/AdminSidebar.vue'; // 사이드바 컴포넌트 임포트
 import UserDetailModal from '@/components/admin/UserDetailModal.vue';
+import { getUserList, getUserStatus, updateUserStatus, updateUser } from '@/apis/admin/adminApis';
 
 const router = useRouter();
 const toast = useToast();
@@ -17,74 +17,13 @@ const USER_STATUS = {
   INACTIVE: 'INACTIVE'
 };
 
-// 샘플 사용자 데이터 수정
-const users = ref([
-  {
-    id: 9,
-    loginId: 'user9',
-    name: '고용주9',
-    mobile: '01011110000',
-    email: 'user10@gmail.com',
-    role: 'Admin',
-    gender: '남',
-    employer: 'Y',
-    active: 'N',
-    createdAt: '2025-03-29 13:09:21',
-    updatedAt: null
-  },
-  {
-    id: 8,
-    loginId: 'user10',
-    name: '구직자10',
-    mobile: '01011110000',
-    email: 'user3@gmail.com',
-    role: null,
-    gender: '남',
-    employer: 'N',
-    active: 'Y',
-    createdAt: '2025-03-29 13:07:50',
-    updatedAt: null
-  },
-  {
-    id: 7,
-    loginId: 'user6',
-    name: '고용주2',
-    mobile: null,
-    email: null,
-    role: null,
-    gender: null,
-    employer: 'Y',
-    active: 'Y',
-    createdAt: '2025-03-27 22:36:03',
-    updatedAt: '2025-03-27 22:36:13'
-  },
-  {
-    id: 6,
-    loginId: 'user5',
-    name: '고용주1',
-    mobile: null,
-    email: null,
-    role: null,
-    gender: null,
-    employer: 'Y',
-    active: 'Y',
-    createdAt: '2025-03-27 22:35:57',
-    updatedAt: '2025-03-27 22:36:12'
-  },
-  {
-    id: 5,
-    loginId: 'user4',
-    name: '구직자3',
-    mobile: '01022223333',
-    email: 'user4@gmail.com',
-    role: null,
-    gender: '여',
-    employer: 'N',
-    active: 'Y',
-    createdAt: '2025-03-26 14:02:20',
-    updatedAt: '2025-03-28 22:15:58'
-  }
-]);
+// API 관련 상태 및 함수
+const loading = ref(false);
+const users = ref([]);
+const pagination = ref({
+  page: 1,
+  totalCount: 0
+});
 
 // 각 컬럼별 검색어 상태
 const filters = ref({
@@ -103,39 +42,106 @@ const roleOptions = [
   { label: 'Admin', value: 'Admin' }
 ];
 
-// 필터링된 사용자 목록 로직은 그대로 유지
-const filteredUsers = computed(() => {
-  return users.value.filter((user) => {
-    const roleMatch = !filters.value.role || user.role === filters.value.role;
+// 공통으로 사용할 상태
+const selectedUser = ref(null);
+const showDetailModal = ref(false);
 
-    return (
-      roleMatch &&
-      (!filters.value.loginId || user.loginId?.toLowerCase().includes(filters.value.loginId.toLowerCase())) &&
-      (!filters.value.name || user.name?.toLowerCase().includes(filters.value.name.toLowerCase())) &&
-      (!filters.value.mobile || user.mobile?.includes(filters.value.mobile)) &&
-      (!filters.value.email || user.email?.toLowerCase().includes(filters.value.email.toLowerCase()))
-    );
-  });
+// API 호출 함수들
+const fetchUsers = async () => {
+  loading.value = true;
+  try {
+    const params = {
+      page: pagination.value.page,
+      perPage: 10,
+      ...filters.value
+    };
+    const response = await getUserList(params);
+    // 받아온 데이터를 생성일시 기준으로 정렬
+    users.value = response.contents.sort((a, b) => {
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+    pagination.value = response.pagination;
+  } catch (error) {
+    console.error('사용자 목록 조회 실패:', error);
+    toast.add({
+      severity: 'error',
+      summary: '오류',
+      detail: '사용자 목록을 불러오는데 실패했습니다.',
+      life: 3000
+    });
+  } finally {
+    loading.value = false;
+  }
+};
+
+const fetchUserStatus = async (userId) => {
+  try {
+    const response = await getUserStatus(userId);
+    return response;
+  } catch (error) {
+    console.error('사용자 상태 조회 실패:', error);
+    return null;
+  }
+};
+
+const handleStatusUpdate = async () => {
+  if (!selectedUser.value || !statusReason.value || !selectedNewStatus.value) return;
+
+  try {
+    const enabled = selectedNewStatus.value === USER_STATUS.ACTIVE;
+    await updateUserStatus({
+      userId: selectedUser.value.id,
+      enabled,
+      memo: statusReason.value
+    });
+    await fetchUsers(); // 목록 새로고침
+    toast.add({
+      severity: 'success',
+      summary: '성공',
+      detail: '사용자 상태가 변경되었습니다.',
+      life: 3000
+    });
+    closeStatusModal();
+  } catch (error) {
+    console.error('사용자 상태 변경 실패:', error);
+    toast.add({
+      severity: 'error',
+      summary: '오류',
+      detail: '사용자 상태 변경에 실패했습니다.',
+      life: 3000
+    });
+  }
+};
+
+// 페이지 로드 시 사용자 목록 조회
+onMounted(() => {
+  fetchUsers();
 });
 
-// 검색 핸들러
+// 검색 핸들러 수정
 const handleSearch = () => {
-  // 검색 로직 구현
-  // API 호출 또는 로컬 필터링
+  pagination.value.page = 1; // 페이지 초기화
+  fetchUsers();
 };
 
 // 상태 변경 모달 관련 코드 수정
 const showStatusModal = ref(false);
-const selectedUser = ref(null);
 const statusReason = ref('');
 const suspendEndDate = ref('');
 const selectedNewStatus = ref(null);
 
-const openStatusModal = (user) => {
+const openStatusModal = async (user) => {
   selectedUser.value = user;
   statusReason.value = '';
   suspendEndDate.value = '';
-  selectedNewStatus.value = user.active ? USER_STATUS.ACTIVE : USER_STATUS.SUSPENDED;
+  selectedNewStatus.value = user.enabled ? USER_STATUS.ACTIVE : USER_STATUS.SUSPENDED;
+  
+  // 사용자 상태 이력 조회
+  const statusHistory = await fetchUserStatus(user.id);
+  if (statusHistory) {
+    statusReason.value = statusHistory.memo || '';
+  }
+  
   showStatusModal.value = true;
 };
 
@@ -149,31 +155,6 @@ const closeStatusModal = () => {
 
 const selectStatus = (status) => {
   selectedNewStatus.value = status;
-};
-
-const updateUserStatus = () => {
-  if (!selectedUser.value || !statusReason.value || !selectedNewStatus.value) return;
-
-  const user = users.value.find((u) => u.id === selectedUser.value.id);
-  if (user) {
-    // 상태 변경 이력 추가
-    user.statusHistory = user.statusHistory || [];
-    user.statusHistory.unshift({
-      status: selectedNewStatus.value,
-      reason: statusReason.value,
-      date: new Date().toISOString().split('T')[0],
-      by: 'admin'
-    });
-
-    // 상태 업데이트
-    user.active = selectedNewStatus.value === USER_STATUS.ACTIVE;
-    if (selectedNewStatus.value === USER_STATUS.SUSPENDED) {
-      user.suspendEndDate = suspendEndDate.value;
-    } else {
-      user.suspendEndDate = null;
-    }
-  }
-  closeStatusModal();
 };
 
 // 상태별 스타일
@@ -200,7 +181,7 @@ const selectAll = ref(false);
 // 전체 선택/해제 처리 함수
 const handleSelectAll = () => {
   if (selectAll.value) {
-    selectedUsers.value = filteredUsers.value.map((user) => user.id);
+    selectedUsers.value = users.value.map((user) => user.id);
   } else {
     selectedUsers.value = [];
   }
@@ -208,7 +189,7 @@ const handleSelectAll = () => {
 
 // 개별 체크박스 선택 시 전체 선택 상태 업데이트
 const updateSelectAll = () => {
-  selectAll.value = filteredUsers.value.length > 0 && selectedUsers.value.length === filteredUsers.value.length;
+  selectAll.value = users.value.length > 0 && selectedUsers.value.length === users.value.length;
 };
 
 // 이미지 로드 실패 시 기본 이미지로 대체
@@ -216,30 +197,36 @@ const handleImageError = (e) => {
   e.target.src = '/default-avatar.png'; // 기본 프로필 이미지 경로
 };
 
-const showDetailModal = ref(false);
-
 const openDetailModal = (user) => {
   selectedUser.value = user;
   showDetailModal.value = true;
 };
 
+const closeDetailModal = () => {
+  showDetailModal.value = false;
+  selectedUser.value = null;
+};
+
 const handleUserUpdate = async (updatedUser) => {
   try {
-    // API 호출 예시
-    // await axios.put(`/api/users/${updatedUser.id}`, updatedUser);
-
-    // 임시로 로컬 데이터 업데이트
-    const index = users.value.findIndex((user) => user.id === updatedUser.id);
-    if (index !== -1) {
-      users.value[index] = { ...updatedUser };
-    }
-
+    // API 호출
+    const response = await updateUser(updatedUser);
+    
+    // 성공 시 목록 새로고침
+    await fetchUsers();
+    
+    // 업데이트된 사용자 정보로 selectedUser 업데이트
+    selectedUser.value = response;
+    
+    // 성공 메시지 표시
     toast.add({
       severity: 'success',
       summary: '성공',
       detail: '사용자 정보가 업데이트되었습니다.',
       life: 3000
     });
+
+    // 모달 닫기 제거
   } catch (error) {
     console.error('사용자 업데이트 실패:', error);
     toast.add({
@@ -251,36 +238,45 @@ const handleUserUpdate = async (updatedUser) => {
   }
 };
 
-// 사용자 삭제 처리
 const handleUserDelete = async (userId) => {
   try {
-    // 모의 삭제 처리 (0.5초 지연)
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
+    // API 호출 예시
+    // await deleteUser(userId);
+    await fetchUsers(); // 목록 새로고침
+    showDetailModal.value = false;
     toast.add({
       severity: 'success',
-      summary: '삭제 완료',
+      summary: '성공',
       detail: '사용자가 삭제되었습니다.',
       life: 3000
     });
-
-    // 모달 닫기
-    showDetailModal.value = false;
   } catch (error) {
+    console.error('사용자 삭제 실패:', error);
     toast.add({
       severity: 'error',
-      summary: '삭제 실패',
-      detail: '사용자 삭제 중 오류가 발생했습니다.',
+      summary: '오류',
+      detail: '사용자 삭제에 실패했습니다.',
       life: 3000
     });
   }
 };
 
-// 권한 표시를 위한 함수 추가
+// 권한 표시를 위한 함수 수정
 const getRoleLabel = (role) => {
   if (!role) return '-';
-  const option = roleOptions.find((opt) => opt.value === role.toUpperCase());
-  return option ? option.label : role;
+  if (typeof role === 'object') {
+    return role.name || '-';
+  }
+  return role;
+};
+
+// 성별 표시를 위한 함수 수정
+const getGenderLabel = (gender) => {
+  if (!gender) return '-';
+  if (typeof gender === 'object') {
+    return gender.name || '-';
+  }
+  return gender;
 };
 </script>
 
@@ -354,6 +350,9 @@ const getRoleLabel = (role) => {
 
           <!-- 기존 테이블 -->
           <div class="table-container">
+            <div v-if="loading" class="loading-overlay">
+              <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+            </div>
             <table>
               <thead>
                 <tr>
@@ -368,14 +367,14 @@ const getRoleLabel = (role) => {
                   <th>권한</th>
                   <th>성별</th>
                   <th>고용주</th>
-                  <th>Active</th>
+                  <th>활성</th>
                   <th>생성일시</th>
                   <th>수정일시</th>
                 </tr>
               </thead>
               <tbody>
                 <tr
-                  v-for="(user, index) in filteredUsers"
+                  v-for="(user, index) in users"
                   :key="user.id"
                   @click="openDetailModal(user)"
                   class="cursor-pointer hover:bg-gray-50"
@@ -383,20 +382,57 @@ const getRoleLabel = (role) => {
                   <td @click.stop>
                     <input type="checkbox" v-model="selectedUsers" :value="user.id" @change="updateSelectAll" />
                   </td>
-                  <td>{{ index + 1 }}</td>
+                  <td>{{ pagination.totalCount - ((pagination.page - 1) * 10 + index) }}</td>
                   <td>{{ user.loginId }}</td>
                   <td>{{ user.name }}</td>
                   <td>{{ user.mobile }}</td>
                   <td>{{ user.email }}</td>
                   <td>{{ getRoleLabel(user.role) }}</td>
-                  <td>{{ user.gender }}</td>
-                  <td>{{ user.employer ? 'Y' : 'N' }}</td>
-                  <td>{{ user.active ? 'Y' : 'N' }}</td>
+                  <td>{{ getGenderLabel(user.gender) }}</td>
+                  <td>{{ user.isCompany ? 'Y' : 'N' }}</td>
+                  <td>{{ user.enabled ? 'Y' : 'N' }}</td>
                   <td>{{ user.createdAt }}</td>
                   <td>{{ user.updatedAt }}</td>
                 </tr>
+                <tr v-if="users.length === 0">
+                  <td colspan="12" class="text-center py-4">데이터가 없습니다.</td>
+                </tr>
               </tbody>
             </table>
+          </div>
+
+          <!-- 페이지네이션 -->
+          <div class="pagination-container">
+            <div class="pagination-info">
+              총 {{ pagination.totalCount }}건 중 {{ (pagination.page - 1) * 10 + 1 }}-{{ Math.min(pagination.page * 10, pagination.totalCount) }}건
+            </div>
+            <div class="pagination-controls">
+              <Button
+                icon="pi pi-angle-double-left"
+                class="p-button-text"
+                :disabled="pagination.page === 1"
+                @click="pagination.page = 1; fetchUsers()"
+              />
+              <Button
+                icon="pi pi-angle-left"
+                class="p-button-text"
+                :disabled="pagination.page === 1"
+                @click="pagination.page--; fetchUsers()"
+              />
+              <span class="mx-2">{{ pagination.page }}</span>
+              <Button
+                icon="pi pi-angle-right"
+                class="p-button-text"
+                :disabled="pagination.page * 10 >= pagination.totalCount"
+                @click="pagination.page++; fetchUsers()"
+              />
+              <Button
+                icon="pi pi-angle-double-right"
+                class="p-button-text"
+                :disabled="pagination.page * 10 >= pagination.totalCount"
+                @click="pagination.page = Math.ceil(pagination.totalCount / 10); fetchUsers()"
+              />
+            </div>
           </div>
         </div>
 
@@ -429,31 +465,31 @@ const getRoleLabel = (role) => {
                     </tr>
                     <tr>
                       <th>생년월일</th>
-                      <td>{{ selectedUser?.birthDate || '001212' }}</td>
+                      <td>{{ selectedUser?.birthDate || '-' }}</td>
                     </tr>
                     <tr>
                       <th>모바일</th>
-                      <td>{{ selectedUser?.mobile }}</td>
+                      <td>{{ selectedUser?.mobile || '-' }}</td>
                     </tr>
                     <tr>
                       <th>이메일</th>
-                      <td>{{ selectedUser?.email }}</td>
+                      <td>{{ selectedUser?.email || '-' }}</td>
                     </tr>
                     <tr>
                       <th>권한</th>
-                      <td>{{ selectedUser?.role === 'ADMIN' ? '관리자' : '일반' }}</td>
+                      <td>{{ getRoleLabel(selectedUser?.role) }}</td>
                     </tr>
                     <tr>
                       <th>성별</th>
-                      <td>{{ selectedUser?.gender }}</td>
+                      <td>{{ getGenderLabel(selectedUser?.gender) }}</td>
                     </tr>
                     <tr>
                       <th>고용주 여부</th>
-                      <td>{{ selectedUser?.employer ? 'true' : 'false' }}</td>
+                      <td>{{ selectedUser?.isCompany ? '예' : '아니오' }}</td>
                     </tr>
                     <tr>
                       <th>활성여부</th>
-                      <td>{{ selectedUser?.active ? 'true' : 'false' }}</td>
+                      <td>{{ selectedUser?.enabled ? '활성' : '비활성' }}</td>
                     </tr>
                     <tr>
                       <th>최근 로그인</th>
@@ -461,7 +497,7 @@ const getRoleLabel = (role) => {
                     </tr>
                     <tr>
                       <th>생성일시</th>
-                      <td>{{ selectedUser?.createdAt }}</td>
+                      <td>{{ selectedUser?.createdAt || '-' }}</td>
                     </tr>
                     <tr>
                       <th>수정일시</th>
@@ -483,7 +519,7 @@ const getRoleLabel = (role) => {
         <UserDetailModal
           :is-open="showDetailModal"
           :user="selectedUser"
-          @close="showDetailModal = false"
+          @close="closeDetailModal"
           @update="handleUserUpdate"
           @delete="handleUserDelete"
         />
@@ -596,24 +632,42 @@ const getRoleLabel = (role) => {
       table {
         width: 100%;
         border-collapse: collapse;
+        font-size: 0.875rem; // 기본 폰트 크기 축소
 
         th,
         td {
-          padding: 1rem;
+          padding: 0.75rem;
           text-align: left;
           border-bottom: 1px solid #e9ecef;
+          white-space: nowrap; // 텍스트 줄바꿈 방지
+          overflow: hidden;
+          text-overflow: ellipsis; // 길이가 긴 텍스트는 ...으로 표시
         }
 
         th {
           background-color: #f8f9fa;
           font-weight: 600;
           color: #495057;
+          position: sticky;
+          top: 0;
+          z-index: 1;
+          font-size: 0.8125rem; // 헤더 폰트 크기 더 축소
         }
 
-        .status-badge {
-          padding: 0.25rem 0.75rem;
-          border-radius: 15px;
-          font-size: 0.875rem;
+        // 각 컬럼별 최대 너비 설정
+        td, th {
+          &:nth-child(1) { width: 40px; } // 체크박스
+          &:nth-child(2) { width: 60px; } // 순번
+          &:nth-child(3) { width: 100px; } // 로그인 ID
+          &:nth-child(4) { width: 120px; } // 이름
+          &:nth-child(5) { width: 120px; } // 모바일
+          &:nth-child(6) { width: 180px; } // 이메일
+          &:nth-child(7) { width: 80px; } // 권한
+          &:nth-child(8) { width: 60px; } // 성별
+          &:nth-child(9) { width: 60px; } // 고용주
+          &:nth-child(10) { width: 60px; } // Active
+          &:nth-child(11) { width: 140px; } // 생성일시
+          &:nth-child(12) { width: 140px; } // 수정일시
         }
 
         tbody {
@@ -818,5 +872,59 @@ const getRoleLabel = (role) => {
   bottom: 0;
   width: 250px;
   z-index: 900;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  .pagination-info {
+    color: #6b7280;
+    font-size: 0.875rem;
+  }
+
+  .pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    :deep(.p-button) {
+      width: 2.5rem;
+      height: 2.5rem;
+      padding: 0;
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+// 테이블 스크롤을 위한 컨테이너 설정
+.user-list {
+  .table-container {
+    max-height: calc(100vh - 300px); // 적절한 높이로 조정
+    overflow: auto;
+  }
 }
 </style>

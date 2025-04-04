@@ -17,17 +17,17 @@ const emit = defineEmits(['close', 'update', 'delete']);
 const isEditMode = ref(false);
 const editedUser = ref({});
 
-// 성별 옵션 단순화
-const genderOptions = [
-    { label: '남', value: '남' },
-    { label: '여', value: '여' }
+// 권한 옵션 수정
+const roleOptions = [
+    { label: 'USER', value: 'ROLE_USER' },
+    { label: 'MANAGER', value: 'ROLE_MANAGER' },
+    { label: 'ADMIN', value: 'ROLE_ADMIN' }
 ];
 
-// 권한 옵션 단순화
-const roleOptions = [
-    { label: 'USER', value: 'USER' },
-    { label: 'MANAGER', value: 'MANAGER' },
-    { label: 'ADMIN', value: 'ADMIN' }
+// 성별 옵션은 그대로 유지
+const genderOptions = [
+    { label: '남', value: 'GENDER_MALE' },
+    { label: '여', value: 'GENDER_FEMALE' }
 ];
 
 // 프로필 이미지 관련 상태 추가
@@ -67,7 +67,46 @@ const removeImage = () => {
 // 사용자 정보가 변경될 때마다 편집용 객체 초기화
 watch(() => props.user, (newUser) => {
     if (newUser) {
-        editedUser.value = { ...newUser };
+        // console.log('New User:', newUser); // 디버깅용
+        
+        // 권한과 성별 데이터 추출
+        let roleValue = '';
+        let genderValue = '';
+        
+        // 권한 데이터 추출
+        if (newUser.roleCd) {
+            roleValue = newUser.roleCd;
+        } else if (newUser.role && typeof newUser.role === 'object' && newUser.role.code) {
+            roleValue = newUser.role.code;
+        } else if (newUser.role) {
+            roleValue = newUser.role;
+        }
+        
+        // 성별 데이터 추출
+        if (newUser.genderCd) {
+            genderValue = newUser.genderCd;
+        } else if (newUser.gender && typeof newUser.gender === 'object' && newUser.gender.code) {
+            genderValue = newUser.gender.code;
+        } else if (newUser.gender) {
+            genderValue = newUser.gender;
+        }
+        
+        // 기본 정보 복사
+        editedUser.value = { 
+            ...newUser,
+            birthDate: newUser.birth || newUser.birthDate || '',
+            role: roleValue,
+            gender: genderValue,
+            active: newUser.enabled || false,
+            employer: newUser.isCompany || false,
+            mobile: newUser.mobile || '',
+            email: newUser.email || '',
+            name: newUser.name || '',
+            loginId: newUser.loginId || ''
+        };
+        // console.log('Initialized editedUser:', editedUser.value); // 디버깅용
+        
+        // 이미지 설정
         imagePreview.value = newUser.profileImage || null;
     }
 }, { immediate: true });
@@ -80,16 +119,68 @@ watch(() => props.isOpen, (newValue) => {
 });
 
 const toggleEditMode = () => {
-    isEditMode.value = !isEditMode.value;  // 상태를 반전시킴
-    
-    if (!isEditMode.value) {  // 편집 모드가 끝날 때
-        emit('update', editedUser.value);
+    if (isEditMode.value) {  // 편집 모드가 끝날 때 (저장 버튼 클릭)
+        // 업데이트할 데이터 준비
+        const updatedData = {
+            id: editedUser.value.id,
+            loginId: editedUser.value.loginId,
+            name: editedUser.value.name,
+            birthDate: editedUser.value.birthDate,
+            mobile: editedUser.value.mobile,
+            email: editedUser.value.email,
+            role: editedUser.value.role,
+            gender: editedUser.value.gender,
+            isCompany: editedUser.value.employer,
+            enabled: editedUser.value.active,
+            profileImage: imagePreview.value
+        };
+        // console.log('Updated Data:', updatedData); // 디버깅용
+        // console.log('Original editedUser:', editedUser.value); // 디버깅용
+        emit('update', updatedData);
+        isEditMode.value = false; // 편집 모드만 종료
+    } else {
+        isEditMode.value = true;
     }
 };
 
 const cancelEdit = () => {
     isEditMode.value = false;
-    editedUser.value = { ...props.user };
+    
+    // 권한과 성별 데이터 추출
+    let roleValue = '';
+    let genderValue = '';
+    
+    // 권한 데이터 추출
+    if (props.user.roleCd) {
+        roleValue = props.user.roleCd;
+    } else if (props.user.role && typeof props.user.role === 'object' && props.user.role.code) {
+        roleValue = props.user.role.code;
+    } else if (props.user.role) {
+        roleValue = props.user.role;
+    }
+    
+    // 성별 데이터 추출
+    if (props.user.genderCd) {
+        genderValue = props.user.genderCd;
+    } else if (props.user.gender && typeof props.user.gender === 'object' && props.user.gender.code) {
+        genderValue = props.user.gender.code;
+    } else if (props.user.gender) {
+        genderValue = props.user.gender;
+    }
+    
+    // 원본 데이터로 복원
+    editedUser.value = { 
+        ...props.user,
+        birthDate: props.user.birth || props.user.birthDate || '',
+        role: roleValue,
+        gender: genderValue,
+        active: props.user.enabled || false,
+        employer: props.user.isCompany || false,
+        mobile: props.user.mobile || '',
+        email: props.user.email || '',
+        name: props.user.name || '',
+        loginId: props.user.loginId || ''
+    };
 };
 
 const closeModal = () => {
@@ -103,10 +194,38 @@ const handleDelete = () => {
     }
 };
 
-// 권한 레이블 변환 함수 추가
-const getRoleLabel = (value) => {
-    const option = roleOptions.find(opt => opt.value === value);
-    return option ? option.label : value;
+// 권한 레이블 변환 함수 수정
+const getRoleLabel = (role) => {
+    if (!role) return '-';
+    if (typeof role === 'object' && role.name) {
+        return role.name;
+    }
+    // 코드 값을 레이블로 변환
+    const roleMap = {
+        'ROLE_USER': 'USER',
+        'ROLE_MANAGER': 'MANAGER',
+        'ROLE_ADMIN': 'ADMIN',
+        'User': 'USER',
+        'Manager': 'MANAGER',
+        'Admin': 'ADMIN'
+    };
+    return roleMap[role] || role;
+};
+
+// 성별 레이블 변환 함수 수정
+const getGenderLabel = (gender) => {
+    if (!gender) return '-';
+    if (typeof gender === 'object' && gender.name) {
+        return gender.name;
+    }
+    // 코드 값을 레이블로 변환
+    const genderMap = {
+        'GENDER_MALE': '남',
+        'GENDER_FEMALE': '여',
+        'Male': '남',
+        'Female': '여'
+    };
+    return genderMap[gender] || gender;
 };
 </script>
 
@@ -205,32 +324,26 @@ const getRoleLabel = (value) => {
                                 <th>권한</th>
                                 <td>
                                     <template v-if="isEditMode">
-                                        <Dropdown
-                                            v-model="editedUser.role"
-                                            :options="roleOptions"
-                                            optionLabel="label"
-                                            optionValue="value"
-                                            placeholder="권한 선택"
-                                            class="w-full"
-                                        />
+                                        <select v-model="editedUser.role" class="w-full p-2 border rounded">
+                                            <option v-for="option in roleOptions" :key="option.value" :value="option.value">
+                                                {{ option.label }}
+                                            </option>
+                                        </select>
                                     </template>
-                                    <template v-else>{{ getRoleLabel(user?.role) || '-' }}</template>
+                                    <template v-else>{{ getRoleLabel(user?.role) }}</template>
                                 </td>
                             </tr>
                             <tr>
                                 <th>성별</th>
                                 <td>
                                     <template v-if="isEditMode">
-                                        <Dropdown
-                                            v-model="editedUser.gender"
-                                            :options="genderOptions"
-                                            optionLabel="label"
-                                            optionValue="value"
-                                            placeholder="성별 선택"
-                                            class="w-full"
-                                        />
+                                        <select v-model="editedUser.gender" class="w-full p-2 border rounded">
+                                            <option v-for="option in genderOptions" :key="option.value" :value="option.value">
+                                                {{ option.label }}
+                                            </option>
+                                        </select>
                                     </template>
-                                    <template v-else>{{ user?.gender }}</template>
+                                    <template v-else>{{ getGenderLabel(user?.gender) }}</template>
                                 </td>
                             </tr>
                             <tr>
@@ -243,7 +356,7 @@ const getRoleLabel = (value) => {
                                         />
                                     </template>
                                     <template v-else>
-                                        {{ user?.employer ? '예' : '아니오' }}
+                                        {{ user?.isCompany ? '예' : '아니오' }}
                                     </template>
                                 </td>
                             </tr>
@@ -257,7 +370,7 @@ const getRoleLabel = (value) => {
                                         />
                                     </template>
                                     <template v-else>
-                                        {{ user?.active ? '활성' : '비활성' }}
+                                        {{ user?.enabled ? '활성' : '비활성' }}
                                     </template>
                                 </td>
                             </tr>
@@ -283,7 +396,7 @@ const getRoleLabel = (value) => {
                         label="취소" 
                         class="p-button-text" 
                         @click="() => {
-                            console.log('취소 버튼 클릭');
+                            // console.log('취소 버튼 클릭');
                             cancelEdit();
                         }" 
                     />
@@ -291,7 +404,7 @@ const getRoleLabel = (value) => {
                         label="저장" 
                         class="p-button-primary" 
                         @click="() => {
-                            console.log('저장 버튼 클릭');
+                            // console.log('저장 버튼 클릭');
                             toggleEditMode();
                         }" 
                     />
@@ -301,7 +414,7 @@ const getRoleLabel = (value) => {
                         label="닫기" 
                         class="p-button-text" 
                         @click="() => {
-                            console.log('닫기 버튼 클릭');
+                            // console.log('닫기 버튼 클릭');
                             closeModal();
                         }" 
                     />
@@ -386,15 +499,15 @@ const getRoleLabel = (value) => {
             border-color: #8B8BF5;
             
             &:hover {
-                background-color: darken(#8B8BF5, 5%);
-                border-color: darken(#8B8BF5, 5%);
+                background-color: #7070f4;
+                border-color: #7070f4;
             }
         }
 
         &.p-button-danger {
             &:hover {
-                background-color: darken(#dc2626, 5%);
-                border-color: darken(#dc2626, 5%);
+                background-color: #b91c1c;
+                border-color: #b91c1c;
             }
         }
     }
@@ -542,7 +655,7 @@ const getRoleLabel = (value) => {
                     transition: background-color 0.2s;
 
                     &:hover {
-                        background-color: darken(#8B8BF5, 5%);
+                        background-color: #7070f4;
                     }
 
                     input[type="file"] {
