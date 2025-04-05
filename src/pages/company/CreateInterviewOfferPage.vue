@@ -118,12 +118,11 @@ const submitOffer = () => {
     icon: 'info',
     message: '면접을 제안하시겠습니까?',
     onCloseYes: async () => {
-      console.log('면접 제안 전송:', jobOffer.value);
-      // TODO: API 연동
       const body = {
         companyId: userInfo.value.id,
         resumeId: candidate.value.id,
         statusCd: 'JO_ST_1',
+        result: true,
         ...jobOffer.value
       };
 
