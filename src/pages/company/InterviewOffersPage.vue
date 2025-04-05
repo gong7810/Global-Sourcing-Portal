@@ -822,7 +822,7 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
       >
         <div class="flex justify-between items-start mb-4">
           <div class="flex items-center gap-3">
-            <h3 class="text-lg font-bold">{{ offer?.resumeSnapshot?.user?.name }}</h3>
+            <h3 class="text-lg font-bold notranslate">{{ offer?.resumeSnapshot?.user?.name }}</h3>
             <span class="text-sm text-gray-600">{{ offer?.resumeSnapshot?.nationality?.name }}</span>
             <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">
               {{
