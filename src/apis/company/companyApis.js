@@ -100,3 +100,36 @@ export const getOfferList = async () => {
     console.error(error);
   }
 };
+
+// 미승인 기업 회원 신청 목록 조회 API
+export const getPendingCompanyApplications = async () => {
+  try {
+    const response = await api.get(`/company/notApproved`);
+    return response.data;
+  } catch (error) {
+    console.error('미승인 기업 회원 신청 목록 조회 실패:', error);
+    throw error;
+  }
+};
+
+// 기업 회원 승인/거절 처리 API
+export const approveCompanyApplication = async (data) => {
+  try {
+    const response = await api.post(`/company/approval`, data);
+    return response.data;
+  } catch (error) {
+    console.error('기업 회원 승인/거절 처리 실패:', error);
+    throw error;
+  }
+};
+
+// 모든 기업 회원 신청 목록 조회 API (승인/미승인 모두)
+export const getAllCompanyApplications = async (query = '') => {
+  try {
+    const response = await api.get(`/company/list${query ? '?' + query : ''}`);
+    return response.data;
+  } catch (error) {
+    console.error('기업 회원 신청 목록 조회 실패:', error);
+    throw error;
+  }
+};

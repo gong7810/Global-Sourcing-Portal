@@ -1,77 +1,79 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import Button from 'primevue/button';
 import Dialog from 'primevue/dialog';
 import { useRouter } from 'vue-router';
 import AdminSidebar from '@/components/admin/AdminSidebar.vue';
 import AdminHeader from '@/components/admin/AdminHeader.vue';
+import { getAllCompanyApplications, approveCompanyApplication, getPendingCompanyApplications } from '@/apis/company/companyApis';
+import { useMessagePop } from '@/plugins/commonutils';
 
 const router = useRouter();
+const messagePop = useMessagePop();
 
-// 샘플 신청 목록 데이터
-const applications = ref([
-    {
-        id: 1,
-        createdAt: '2024-03-20',
-        businessName: '(주)테크솔루션',
-        businessRegistrationNo: '123-45-67890',
-        ownerName: '김대표',
-        managerName: '이담당',
-        businessPhoneNo: '010-1234-5678',
-        businessEmail: 'tech@example.com',
-        businessAddress: '서울시 강남구 테헤란로 123',
-        businessType: '중소기업(300명이하)',
-        status: 'PENDING',
-        fileUrl: 'sample1.pdf',
-        fileName: '테크솔루션_사업자등록증명원.pdf'
-    },
-    {
-        id: 2,
-        createdAt: '2024-03-19',
-        businessName: '글로벌IT(주)',
-        businessRegistrationNo: '456-78-90123',
-        ownerName: '박사장',
-        managerName: '최매니저',
-        businessPhoneNo: '010-2345-6789',
-        businessEmail: 'global@example.com',
-        businessAddress: '서울시 서초구 반포대로 456',
-        businessType: '중견기업(300명이상)',
-        status: 'APPROVED',
-        fileUrl: 'sample2.pdf',
-        fileName: '글로벌IT_사업자등록증명원.pdf'
-    },
-    {
-        id: 3,
-        createdAt: '2024-03-18',
-        businessName: '스마트테크(주)',
-        businessRegistrationNo: '789-01-23456',
-        ownerName: '정대표',
-        managerName: '김책임',
-        businessPhoneNo: '010-3456-7890',
-        businessEmail: 'smart@example.com',
-        businessAddress: '경기도 성남시 분당구 판교로 789',
-        businessType: '벤처기업',
-        status: 'REJECTED',
-        fileUrl: 'sample3.pdf',
-        fileName: '스마트테크_사업자등록증명원.pdf',
-        rejectReason: '사업자등록증명원 식별 불가'
-    },
-    {
-        id: 4,
-        createdAt: '2024-03-17',
-        businessName: '퓨처시스템즈(주)',
-        businessRegistrationNo: '234-56-78901',
-        ownerName: '송사장',
-        managerName: '박과장',
-        businessPhoneNo: '010-4567-8901',
-        businessEmail: 'future@example.com',
-        businessAddress: '서울시 영등포구 여의대로 234',
-        businessType: '대기업',
-        status: 'PENDING',
-        fileUrl: 'sample4.pdf',
-        fileName: '퓨처시스템즈_사업자등록증명원.pdf'
+// 신청 목록 데이터
+const applications = ref([]);
+const filterStatus = ref('all'); // 'all', 'pending', 'approved', 'rejected'
+
+// 신청 목록 로드
+const loadApplications = async () => {
+    try {
+        // 미승인 기업 목록 가져오기
+        const pendingResponse = await getPendingCompanyApplications();
+        
+        // 승인된 기업 목록 가져오기 (notApproved=false로 설정)
+        const approvedResponse = await getAllCompanyApplications('&notApproved=false');
+        
+        // 두 응답을 합치기
+        let allApplications = [];
+        
+        if (pendingResponse && pendingResponse.contents) {
+            allApplications = [...pendingResponse.contents];
+        }
+        
+        if (approvedResponse && approvedResponse.contents) {
+            allApplications = [...allApplications, ...approvedResponse.contents];
+        }
+        
+        // 데이터 매핑
+        applications.value = allApplications.map(app => ({
+            id: app.id,
+            createdAt: app.createdAt,
+            businessName: app.name,
+            businessRegistrationNo: app.businessNumber,
+            ownerName: app.ceoName,
+            managerName: app.user?.name || '',
+            businessPhoneNo: app.phone,
+            businessEmail: app.user?.email || '',
+            businessAddress: app.address,
+            businessType: app.companyTypeCd,
+            status: app.isApproved === null ? 'PENDING' : (app.isApproved ? 'APPROVED' : 'REJECTED'),
+            fileUrl: app.registrationFile,
+            fileName: '사업자등록증명원.pdf'
+        }));
+        
+        // ID 기준으로 내림차순 정렬 (최신순)
+        applications.value.sort((a, b) => b.id - a.id);
+        
+        // 필터 적용
+        if (filterStatus.value !== 'all') {
+            applications.value = applications.value.filter(app => app.status === filterStatus.value.toUpperCase());
+        }
+    } catch (error) {
+        console.error('신청 목록 로드 실패:', error);
+        messagePop.toast('신청 목록을 불러오는데 실패했습니다.', 'error');
     }
-]);
+};
+
+// 필터 변경 시 목록 새로고침
+const handleFilterChange = () => {
+    loadApplications();
+};
+
+// 페이지 로드 시 신청 목록 가져오기
+onMounted(() => {
+    loadApplications();
+});
 
 const selectedApplication = ref(null);
 const showDetailModal = ref(false);
@@ -97,15 +99,17 @@ const viewDetail = (application) => {
 const approveApplication = async (id) => {
     if (confirm('이 신청을 승인하시겠습니까?')) {
         try {
-            // API 호출
-            // await approveBusinessApplication(id);
-            // 승인 이메일 발송
-            // await sendApprovalEmail(selectedApplication.value.businessEmail);
+            await approveCompanyApplication({
+                id: id,
+                isApproved: true
+            });
             
             // 목록 새로고침
-            // await loadApplications();
+            await loadApplications();
+            messagePop.toast('승인되었습니다.', 'success');
         } catch (error) {
             console.error('승인 처리 중 오류 발생:', error);
+            messagePop.toast('승인 처리 중 오류가 발생했습니다.', 'error');
         }
     }
 };
@@ -119,17 +123,19 @@ const rejectApplication = async (id) => {
     
     if (confirm('이 신청을 거절하시겠습니까?')) {
         try {
-            // API 호출
-            // await rejectBusinessApplication(id, rejectReason.value);
-            // 거절 이메일 발송
-            // await sendRejectionEmail(selectedApplication.value.businessEmail, rejectReason.value);
+            await approveCompanyApplication({
+                id: id,
+                isApproved: false,
+                rejectReason: rejectReason.value
+            });
             
             // 목록 새로고침
-            // await loadApplications();
-            
+            await loadApplications();
+            messagePop.toast('거절되었습니다.', 'success');
             closeDetailModal();
         } catch (error) {
             console.error('거절 처리 중 오류 발생:', error);
+            messagePop.toast('거절 처리 중 오류가 발생했습니다.', 'error');
         }
     }
 };
@@ -167,6 +173,14 @@ const goBack = () => {
                             @click="goBack"
                         />
                         <h1>기업회원 신청 관리</h1>
+                    </div>
+                    <div class="filter-section">
+                        <select v-model="filterStatus" @change="handleFilterChange" class="filter-select">
+                            <option value="all">전체</option>
+                            <option value="pending">대기</option>
+                            <option value="approved">승인</option>
+                            <option value="rejected">거절</option>
+                        </select>
                     </div>
                 </div>
 
@@ -327,6 +341,9 @@ const goBack = () => {
 
     .page-header {
         margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
 
         .header-content {
             display: flex;
@@ -345,6 +362,24 @@ const goBack = () => {
 
                 &:hover {
                     background-color: #f3f4f6;
+                }
+            }
+        }
+
+        .filter-section {
+            .filter-select {
+                padding: 0.5rem;
+                border: 1px solid #e5e7eb;
+                border-radius: 0.375rem;
+                background-color: white;
+                color: #374151;
+                font-size: 0.875rem;
+                cursor: pointer;
+
+                &:focus {
+                    outline: none;
+                    border-color: #8FA1FF;
+                    box-shadow: 0 0 0 2px rgba(143, 161, 255, 0.2);
                 }
             }
         }

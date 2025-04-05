@@ -80,11 +80,12 @@ export const signUpUser = async (body) => {
 // 기업회원가입 API
 export const signUpCompany = async (body) => {
   try {
-    const response = await api.post(`/auth/joinCompany`, body);
+    const response = await api.post(`/company`, body);
 
     return response.data;
   } catch (error) {
     console.error(error);
+    throw error;
   }
 };
 
