@@ -37,9 +37,9 @@ const filters = ref({
 // 권한 옵션 수정 - 전체 옵션 추가
 const roleOptions = [
   { label: '전체', value: null }, // 전체 옵션 추가
-  { label: 'User', value: 'User' },
-  { label: 'Manager', value: 'Manager' },
-  { label: 'Admin', value: 'Admin' }
+  { label: 'User', value: 'USER' },
+  { label: 'Manager', value: 'MANAGER' },
+  { label: 'Admin', value: 'ADMIN' }
 ];
 
 // 공통으로 사용할 상태
@@ -50,12 +50,42 @@ const showDetailModal = ref(false);
 const fetchUsers = async () => {
   loading.value = true;
   try {
+    // 빈 문자열 필터 제거
+    const cleanFilters = {};
+    Object.keys(filters.value).forEach(key => {
+      if (filters.value[key] !== null && filters.value[key] !== '') {
+        // role 파라미터를 roleCd로 변경
+        if (key === 'role') {
+          const roleValue = filters.value[key];
+          if (roleValue) {
+            // 권한 코드를 그대로 전달
+            cleanFilters['roleCd'] = roleValue;
+            console.log('권한 필터 적용:', roleValue);
+          }
+        } else {
+          cleanFilters[key] = filters.value[key];
+        }
+      }
+    });
+    
     const params = {
       page: pagination.value.page,
       perPage: 10,
-      ...filters.value
+      ...cleanFilters
     };
+    
+    console.log('검색 파라미터:', params);
+    console.log('원본 필터 값:', filters.value);
+    console.log('정리된 필터 값:', cleanFilters);
+    
+    // API 호출 전에 파라미터 확인
+    if (params.roleCd) {
+      console.log('API 호출 전 roleCd 확인:', params.roleCd);
+    }
+    
     const response = await getUserList(params);
+    console.log('API 응답:', response);
+    
     // 받아온 데이터를 생성일시 기준으로 정렬
     users.value = response.contents.sort((a, b) => {
       return new Date(b.createdAt) - new Date(a.createdAt);
@@ -120,6 +150,25 @@ onMounted(() => {
 
 // 검색 핸들러 수정
 const handleSearch = () => {
+  pagination.value.page = 1; // 페이지 초기화
+  fetchUsers();
+};
+
+// 필터 초기화 함수 추가
+const resetFilters = () => {
+  filters.value = {
+    role: null,
+    loginId: '',
+    name: '',
+    mobile: '',
+    email: ''
+  };
+  pagination.value.page = 1; // 페이지 초기화
+  fetchUsers();
+};
+
+// 필터 변경 시 즉시 검색 실행
+const handleFilterChange = () => {
   pagination.value.page = 1; // 페이지 초기화
   fetchUsers();
 };
@@ -267,7 +316,18 @@ const getRoleLabel = (role) => {
   if (typeof role === 'object') {
     return role.name || '-';
   }
-  return role;
+  
+  // 역할 코드를 레이블로 변환
+  switch (role) {
+    case 'USER':
+      return 'User';
+    case 'MANAGER':
+      return 'Manager';
+    case 'ADMIN':
+      return 'Admin';
+    default:
+      return role;
+  }
 };
 
 // 성별 표시를 위한 함수 수정
@@ -307,6 +367,7 @@ const getGenderLabel = (gender) => {
                   class="w-full"
                   optionLabel="label"
                   optionValue="value"
+                  @change="handleFilterChange"
                 />
               </div>
               <div class="search-field">
@@ -315,7 +376,7 @@ const getGenderLabel = (gender) => {
                   type="text"
                   placeholder="로그인 ID"
                   class="w-full"
-                  @keyup.enter="handleSearch"
+                  @input="handleFilterChange"
                 />
               </div>
               <div class="search-field">
@@ -324,7 +385,7 @@ const getGenderLabel = (gender) => {
                   type="text"
                   placeholder="이름"
                   class="w-full"
-                  @keyup.enter="handleSearch"
+                  @input="handleFilterChange"
                 />
               </div>
               <div class="search-field">
@@ -333,7 +394,7 @@ const getGenderLabel = (gender) => {
                   type="text"
                   placeholder="모바일"
                   class="w-full"
-                  @keyup.enter="handleSearch"
+                  @input="handleFilterChange"
                 />
               </div>
               <div class="search-field">
@@ -342,7 +403,7 @@ const getGenderLabel = (gender) => {
                   type="text"
                   placeholder="이메일"
                   class="w-full"
-                  @keyup.enter="handleSearch"
+                  @input="handleFilterChange"
                 />
               </div>
             </div>

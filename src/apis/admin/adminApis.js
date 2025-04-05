@@ -20,34 +20,44 @@ export const test = async () => {
 export const getUserList = async (params = {}) => {
   try {
     // 파라미터 정리
-    const queryParams = {
-      page: String(params.page || 1),
-      perPage: String(params.perPage || 10),
-      sortColumn: String(params.sortColumn || 'id'),
-      sortAsc: String(params.sortAsc || false)
-    };
+    const queryParams = new URLSearchParams();
+    
+    // 기본 파라미터 추가
+    queryParams.append('page', String(params.page || 1));
+    queryParams.append('perPage', String(params.perPage || 10));
+    queryParams.append('sortColumn', String(params.sortColumn || 'id'));
+    queryParams.append('sortAsc', String(params.sortAsc || false));
 
     // 검색 조건이 있는 경우 추가
-    if (params.role) {
-      queryParams.roleCd = String(params.role);
+    if (params.roleCd) {
+      // role_cd 파라미터로 전달
+      queryParams.append('role_cd', String(params.roleCd));
+      console.log('API에 전달되는 role_cd:', params.roleCd);
     }
     if (params.loginId) {
-      queryParams.loginId = String(params.loginId);
+      queryParams.append('loginId', String(params.loginId));
     }
     if (params.name) {
-      queryParams.name = String(params.name);
+      queryParams.append('name', String(params.name));
     }
     if (params.mobile) {
-      queryParams.mobile = String(params.mobile);
+      queryParams.append('mobile', String(params.mobile));
     }
     if (params.email) {
-      queryParams.email = String(params.email);
+      queryParams.append('email', String(params.email));
     }
     if (params.enabled !== undefined) {
-      queryParams.enabled = String(params.enabled);
+      queryParams.append('enabled', String(params.enabled));
     }
 
-    const response = await api.get('/user/list', { params: queryParams });
+    console.log('API 요청 파라미터:', Object.fromEntries(queryParams));
+    
+    // API 엔드포인트 확인
+    const endpoint = '/user/list';
+    console.log('API 엔드포인트:', endpoint);
+    
+    const response = await api.get(`${endpoint}?${queryParams.toString()}`);
+    console.log('API 응답 데이터:', response.data);
     return response.data;
   } catch (error) {
     console.error('사용자 목록 조회 실패:', error);

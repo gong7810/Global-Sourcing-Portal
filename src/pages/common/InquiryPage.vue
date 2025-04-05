@@ -5,9 +5,13 @@ import Button from 'primevue/button';
 import InputText from 'primevue/inputtext';
 import Textarea from 'primevue/textarea';
 import Dropdown from 'primevue/dropdown';
+import { createInquiry } from '@/apis/common/commonApis';
+import { useToast } from 'primevue/usetoast';
 
 const router = useRouter();
+const toast = useToast();
 
+const loading = ref(false);
 const inquiryForm = ref({
   category: null,
   title: '',
@@ -17,18 +21,55 @@ const inquiryForm = ref({
 });
 
 const categories = [
-  { label: '서비스 이용 문의', value: 'service' },
-  { label: '기술적 문제', value: 'technical' },
-  { label: '결제 관련', value: 'payment' },
-  { label: '제안/건의', value: 'suggestion' },
-  { label: '기타', value: 'other' }
+  { label: '서비스 이용 문의', value: 'HELP_TY_SV' },
+  { label: '기술적 문제', value: 'HELP_TY_TE' },
+  { label: '결제 관련', value: 'HELP_TY_PA' },
+  { label: '제안/건의', value: 'HELP_TY_SU' },
+  { label: '기타', value: 'HELP_TY_ET' }
 ];
 
-const submitInquiry = () => {
-  // TODO: API 연동
-  console.log('문의 내용:', inquiryForm.value);
-  alert('문의가 정상적으로 접수되었습니다.');
-  router.push('/');
+const submitInquiry = async () => {
+  if (!inquiryForm.value.category) {
+    toast.add({ severity: 'warn', summary: '알림', detail: '문의 유형을 선택해주세요.', life: 3000 });
+    return;
+  }
+  if (!inquiryForm.value.title.trim()) {
+    toast.add({ severity: 'warn', summary: '알림', detail: '제목을 입력해주세요.', life: 3000 });
+    return;
+  }
+  if (!inquiryForm.value.content.trim()) {
+    toast.add({ severity: 'warn', summary: '알림', detail: '내용을 입력해주세요.', life: 3000 });
+    return;
+  }
+  if (!inquiryForm.value.email.trim()) {
+    toast.add({ severity: 'warn', summary: '알림', detail: '이메일을 입력해주세요.', life: 3000 });
+    return;
+  }
+
+  try {
+    loading.value = true;
+    const response = await createInquiry(inquiryForm.value);
+    console.log('문의하기 응답:', response);
+    
+    if (response) {
+      toast.add({ severity: 'success', summary: '성공', detail: '문의가 정상적으로 접수되었습니다.', life: 3000 });
+      setTimeout(() => {
+        router.push('/');
+      }, 1500);
+    } else {
+      throw new Error('문의 등록에 실패했습니다.');
+    }
+  } catch (error) {
+    console.error('문의하기 등록 실패:', error);
+    toast.add({ 
+      severity: 'error', 
+      summary: '오류', 
+      detail: error.message || '문의 등록에 실패했습니다. 다시 시도해주세요.', 
+      life: 3000 
+    });
+  } finally {
+    loading.value = false;
+  }
 };
 </script>
 
@@ -94,7 +135,8 @@ const submitInquiry = () => {
             @click="router.back()" />
           <Button
             type="submit"
-            label="문의하기" />
+            label="문의하기"
+            :loading="loading" />
         </div>
       </form>
     </div>

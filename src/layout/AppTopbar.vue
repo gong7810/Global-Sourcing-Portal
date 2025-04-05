@@ -409,7 +409,7 @@ const formatDate = (dateString) => {
                   style="cursor: pointer"
                   @click="
                     () => {
-                      loginFlag ? router.push('/inquiry') : router.push('/login');
+                      router.push('/inquiry');
                       closeMenu();
                     }
                   "

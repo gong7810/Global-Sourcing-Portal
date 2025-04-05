@@ -51,20 +51,27 @@ const fetchInquiries = async () => {
         };
         
         // 필터 적용
-        if (filters.value.type) {
-            params.type = filters.value.type;
+        if (filters.value.type !== null) {
+            params.typeCd = filters.value.type;  // 문의유형 필터
         }
         
-        if (filters.value.keyword) {
-            params.keyword = filters.value.keyword;
+        if (filters.value.keyword?.trim()) {
+            params.keyword = filters.value.keyword.trim();  // 제목 검색
         }
         
         const response = await getInquiries(params);
-        inquiries.value = response.contents;
-        pagination.value = response.pagination;
+
+        // 응답 데이터 처리
+        if (response && Array.isArray(response.contents)) {
+            inquiries.value = response.contents;
+            pagination.value = response.pagination || { page: 1, totalCount: 0 };
+        } else {
+            console.error('응답 데이터 형식이 올바르지 않습니다:', response);
+            inquiries.value = [];
+        }
     } catch (error) {
         console.error('문의 목록 조회 실패:', error);
-        // 500 에러가 아닌 경우에만 토스트 메시지 표시
+        inquiries.value = [];
         if (error.response?.status !== 500) {
             toast.add({
                 severity: 'error',
@@ -80,7 +87,23 @@ const fetchInquiries = async () => {
 
 // 필터링된 문의 목록
 const filteredInquiries = computed(() => {
-    return inquiries.value;
+    let filtered = inquiries.value || [];
+    
+    // 문의유형 필터링
+    if (filters.value.type !== null) {
+        filtered = filtered.filter(item => item.typeCd === filters.value.type);
+    }
+    
+    // 키워드 검색 필터링
+    if (filters.value.keyword?.trim()) {
+        const keyword = filters.value.keyword.trim().toLowerCase();
+        filtered = filtered.filter(item => 
+            (item.subject && item.subject.toLowerCase().includes(keyword)) || 
+            (item.content && item.content.toLowerCase().includes(keyword))
+        );
+    }
+    
+    return filtered;
 });
 
 // 문의유형 레이블 가져오기 (함수명 변경)
@@ -153,14 +176,13 @@ const submitReply = async () => {
         detailLoading.value = true;
 
         // 답변 저장
-        await saveReply({
+        const response = await saveReply({
             helpId: selectedInquiry.value.id,
-            reply: replyContent.value
+            reply: replyContent.value,
+            userId: 1  // 관리자 ID
         });
 
-        // 문의 목록 새로고침
-        await fetchInquiries();
-        
+        // 답변이 성공적으로 등록됨
         toast.add({
             severity: 'success',
             summary: '답변 완료',
@@ -168,13 +190,23 @@ const submitReply = async () => {
             life: 3000
         });
 
+        // 문의 목록 새로고침
+        await fetchInquiries();
+        
+        // 선택된 문의 상태 업데이트
+        if (selectedInquiry.value) {
+            selectedInquiry.value.statusCd = 'HELP_ST_2';
+        }
+
         showDetailModal.value = false;
+        replyContent.value = '';  // 답변 입력창 초기화
+
     } catch (error) {
         console.error('답변 처리 중 오류 발생:', error);
         toast.add({
             severity: 'error',
             summary: '오류 발생',
-            detail: '답변 처리 중 문제가 발생했습니다. 다시 시도해주세요.',
+            detail: error.message || '답변 처리 중 문제가 발생했습니다. 다시 시도해주세요.',
             life: 3000
         });
     } finally {
@@ -244,7 +276,7 @@ const closeDetailModal = () => {
                             <span class="p-input-icon-right w-full">
                                 <InputText
                                     v-model="filters.keyword"
-                                    placeholder="제목, 내용으로 검색"
+                                    placeholder="제목 또는 내용으로 검색"
                                     class="w-full pr-8"
                                     @keyup.enter="handleFilterChange"
                                 />
@@ -265,8 +297,8 @@ const closeDetailModal = () => {
                             <tr>
                                 <th>등록일시</th>
                                 <th>문의유형</th>
-                                <th>제목</th>
                                 <th>문의자</th>
+                                <th>제목</th>
                                 <th>이메일</th>
                                 <th>상태</th>
                                 <th>관리</th>
@@ -275,9 +307,9 @@ const closeDetailModal = () => {
                         <tbody>
                             <tr v-for="inquiry in filteredInquiries" :key="inquiry.id">
                                 <td>{{ inquiry.createdAt }}</td>
-                                <td>{{ getInquiryTypeLabel(inquiry.type) }}</td>
+                                <td>{{ getInquiryTypeLabel(inquiry.typeCd) }}</td>
+                                <td>{{ inquiry.userId }}</td>
                                 <td>{{ inquiry.subject }}</td>
-                                <td>{{ inquiry.userName }}</td>
                                 <td>{{ inquiry.email }}</td>
                                 <td>
                                     <span :class="['status-badge', getStatusStyle(inquiry.statusCd)]">
@@ -334,9 +366,9 @@ const closeDetailModal = () => {
                             <div class="inquiry-detail">
                                 <h3>문의 내용</h3>
                                 <div class="detail-item">
-                                    <p><strong>문의유형:</strong> {{ getInquiryTypeLabel(selectedInquiry.type) }}</p>
+                                    <p><strong>문의유형:</strong> {{ getInquiryTypeLabel(selectedInquiry.typeCd) }}</p>
                                     <p><strong>제목:</strong> {{ selectedInquiry.subject }}</p>
-                                    <p><strong>문의자:</strong> {{ selectedInquiry.userName }}</p>
+                                    <p><strong>문의자:</strong> {{ selectedInquiry.userId }}</p>
                                     <p><strong>이메일:</strong> {{ selectedInquiry.email }}</p>
                                     <p><strong>문의 내용:</strong></p>
                                     <p class="content">{{ selectedInquiry.content }}</p>
