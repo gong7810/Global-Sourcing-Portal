@@ -30,9 +30,8 @@ export const getUserList = async (params = {}) => {
 
     // 검색 조건이 있는 경우 추가
     if (params.roleCd) {
-      // role_cd 파라미터로 전달
-      queryParams.append('role_cd', String(params.roleCd));
-      console.log('API에 전달되는 role_cd:', params.roleCd);
+      queryParams.append('roleCd', String(params.roleCd));
+      // console.log('API에 전달되는 roleCd:', params.roleCd);
     }
     if (params.loginId) {
       queryParams.append('loginId', String(params.loginId));
@@ -50,14 +49,14 @@ export const getUserList = async (params = {}) => {
       queryParams.append('enabled', String(params.enabled));
     }
 
-    console.log('API 요청 파라미터:', Object.fromEntries(queryParams));
+    // console.log('API 요청 파라미터:', Object.fromEntries(queryParams));
     
     // API 엔드포인트 확인
     const endpoint = '/user/list';
-    console.log('API 엔드포인트:', endpoint);
+    // console.log('API 엔드포인트:', endpoint);
     
     const response = await api.get(`${endpoint}?${queryParams.toString()}`);
-    console.log('API 응답 데이터:', response.data);
+    // console.log('API 응답 데이터:', response.data);
     return response.data;
   } catch (error) {
     console.error('사용자 목록 조회 실패:', error);

@@ -37,9 +37,9 @@ const filters = ref({
 // 권한 옵션 수정 - 전체 옵션 추가
 const roleOptions = [
   { label: '전체', value: null }, // 전체 옵션 추가
-  { label: 'User', value: 'USER' },
-  { label: 'Manager', value: 'MANAGER' },
-  { label: 'Admin', value: 'ADMIN' }
+  { label: 'User', value: 'ROLE_USER' },
+  { label: 'Manager', value: 'ROLE_MANAGER' },
+  { label: 'Admin', value: 'ROLE_ADMIN' }
 ];
 
 // 공통으로 사용할 상태
@@ -58,9 +58,8 @@ const fetchUsers = async () => {
         if (key === 'role') {
           const roleValue = filters.value[key];
           if (roleValue) {
-            // 권한 코드를 그대로 전달
             cleanFilters['roleCd'] = roleValue;
-            console.log('권한 필터 적용:', roleValue);
+            // console.log('권한 필터 적용:', roleValue);
           }
         } else {
           cleanFilters[key] = filters.value[key];
@@ -74,23 +73,37 @@ const fetchUsers = async () => {
       ...cleanFilters
     };
     
-    console.log('검색 파라미터:', params);
-    console.log('원본 필터 값:', filters.value);
-    console.log('정리된 필터 값:', cleanFilters);
+    // console.log('검색 파라미터:', params);
+    // console.log('원본 필터 값:', filters.value);
+    // console.log('정리된 필터 값:', cleanFilters);
     
     // API 호출 전에 파라미터 확인
     if (params.roleCd) {
-      console.log('API 호출 전 roleCd 확인:', params.roleCd);
+      // console.log('API 호출 전 roleCd 확인:', params.roleCd);
     }
     
     const response = await getUserList(params);
-    console.log('API 응답:', response);
+    // console.log('API 응답:', response);
     
-    // 받아온 데이터를 생성일시 기준으로 정렬
-    users.value = response.contents.sort((a, b) => {
-      return new Date(b.createdAt) - new Date(a.createdAt);
-    });
-    pagination.value = response.pagination;
+    // 응답 데이터 처리
+    if (response && response.contents) {
+      users.value = response.contents.map(user => ({
+        ...user,
+        role_cd: user.role_cd || user.roleCd || user.role
+      }));
+      
+      if (response.pagination) {
+        pagination.value = {
+          page: Number(response.pagination.page) || 1,
+          totalCount: Number(response.pagination.totalCount) || 0
+        };
+      }
+      
+      // console.log('처리된 사용자 데이터:', users.value);
+    } else {
+      users.value = [];
+      console.error('API 응답에 contents가 없습니다:', response);
+    }
   } catch (error) {
     console.error('사용자 목록 조회 실패:', error);
     toast.add({
@@ -317,16 +330,19 @@ const getRoleLabel = (role) => {
     return role.name || '-';
   }
   
+  // role_cd 또는 role 필드에서 권한 코드 가져오기
+  const roleCode = typeof role === 'string' ? role : role?.role_cd || role?.roleCd;
+  
   // 역할 코드를 레이블로 변환
-  switch (role) {
-    case 'USER':
+  switch (roleCode) {
+    case 'ROLE_USER':
       return 'User';
-    case 'MANAGER':
+    case 'ROLE_MANAGER':
       return 'Manager';
-    case 'ADMIN':
+    case 'ROLE_ADMIN':
       return 'Admin';
     default:
-      return role;
+      return roleCode || '-';
   }
 };
 
@@ -448,7 +464,7 @@ const getGenderLabel = (gender) => {
                   <td>{{ user.name }}</td>
                   <td>{{ user.mobile }}</td>
                   <td>{{ user.email }}</td>
-                  <td>{{ getRoleLabel(user.role) }}</td>
+                  <td>{{ getRoleLabel(user.role_cd || user.role) }}</td>
                   <td>{{ getGenderLabel(user.gender) }}</td>
                   <td>{{ user.isCompany ? 'Y' : 'N' }}</td>
                   <td>{{ user.enabled ? 'Y' : 'N' }}</td>
@@ -538,7 +554,7 @@ const getGenderLabel = (gender) => {
                     </tr>
                     <tr>
                       <th>권한</th>
-                      <td>{{ getRoleLabel(selectedUser?.role) }}</td>
+                      <td>{{ getRoleLabel(selectedUser?.role_cd || selectedUser?.role) }}</td>
                     </tr>
                     <tr>
                       <th>성별</th>
