@@ -21,14 +21,14 @@ export const authRouter = [
     component: () => import('@/pages/common/RegisterSelect.vue')
   },
   {
-    path: '/common/register',
+    path: '/common/personalRegister',
     name: 'personalRegister',
     component: () => import('@/pages/common/PersonalRegisterPage.vue')
   },
   {
-    path: '/common/register',
-    name: 'businessRegister',
-    component: () => import('@/pages/common/BusinessRegisterPage.vue')
+    path: '/common/companyRegister',
+    name: 'companyRegister',
+    component: () => import('@/pages/common/CompanyRegisterPage.vue')
   },
   {
     path: '/user/register/complete',
@@ -37,7 +37,7 @@ export const authRouter = [
   },
   {
     path: '/common/register/complete',
-    name: 'businessRegisterComplete',
+    name: 'companyRegisterComplete',
     component: () => import('@/pages/common/RegisterComplete.vue')
   },
   {

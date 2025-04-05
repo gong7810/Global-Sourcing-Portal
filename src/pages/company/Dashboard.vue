@@ -1,16 +1,13 @@
 <script setup>
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { isNil } from 'es-toolkit';
 
-import { useAuthStore } from '@/store/auth/authStore';
-import { storeToRefs } from 'pinia';
+import { useMessagePop } from '@/plugins/commonutils';
 import { getCodeList } from '@/apis/common/commonApis';
-import { getFavoriteResumeList } from '@/apis/company/companyApis';
+import { deleteFavoriteResume, getFavoriteResumeList, getUserResume } from '@/apis/company/companyApis';
 
 const router = useRouter();
-const authStore = useAuthStore();
-const { userInfo } = storeToRefs(authStore);
+const messagePop = useMessagePop();
 
 const koreanLv = ref('');
 const koreanLevelList = ref([]);
@@ -217,7 +214,7 @@ const getEducationLevelCode = async () => {
   });
 };
 
-// 성별 세팅
+// 성별 코드 조회
 const getGenderCode = async () => {
   const response = await getCodeList(`GENDER_TY`);
 
@@ -263,79 +260,160 @@ const searchTalents = async () => {
 
   const response = await getFavoriteResumeList(queryList.join('&'));
 
-  bookmarkedTalents.value = response.contents;
+  bookmarkedTalents.value = response.contents.sort((a, b) => a.id - b.id);
+};
 
-  bookmarkedTalents.value.map((tal) => {
-    if (tal?.educations.length) {
-      tal.lastEducation = '하버드 대학교 경영학과 졸업';
+// 인재 북마크 등록 / 해제
+const toggleBookmark = async (talent, isPage) => {
+  messagePop.confirm({
+    icon: 'info',
+    message: '북마크 해제하시겠습니까?',
+    onCloseYes: async () => {
+      const response = isPage
+        ? await deleteFavoriteResume(talent.id, null)
+        : await deleteFavoriteResume(null, talent.id);
+
+      if (response && response.success === undefined) {
+        messagePop.toast('북마크 삭제되었습니다.', 'info');
+
+        showResumeModal.value = false;
+        searchTalents();
+      }
     }
   });
 };
 
-// 북마크 토글 함수 수정
-const toggleBookmark = (talent) => {
-  if (!talent) return;
-
-  // bookmarkedTalents에서 해당 인재 찾기
-  const index = bookmarkedTalents.value.findIndex((t) => t.id === talent.id);
-  if (index !== -1) {
-    // 북마크 상태 토글
-    const updatedTalent = { ...bookmarkedTalents.value[index] };
-    updatedTalent.isBookmarked = !updatedTalent.isBookmarked;
-
-    // 북마크가 해제되면 목록에서 제거
-    if (!updatedTalent.isBookmarked) {
-      bookmarkedTalents.value.splice(index, 1);
-      // 모달이 열려있고 해당 인재의 모달이라면 모달 닫기
-      if (selectedCandidate.value?.id === talent.id) {
-        showResumeModal.value = false;
-      }
-    } else {
-      // 북마크가 다시 설정되면 목록 업데이트
-      bookmarkedTalents.value[index] = updatedTalent;
-      // 모달이 열려있는 경우 selectedCandidate 업데이트
-      if (selectedCandidate.value?.id === talent.id) {
-        selectedCandidate.value = updatedTalent;
-      }
-    }
-  }
-};
-
+// TODO: 임시 주석 (화면에서 직무 필터가 불가)
 // 필터링된 북마크 목록
 const filteredBookmarks = computed(() => {
   return bookmarkedTalents.value.filter((talent) => {
+    // 국적 필터
+    const nationalityMatch =
+      !filters.value.nationalityCd || talent.resume.nationalityCd === filters.value.nationalityCd;
+
     // 경력 필터
-    // const careerMatch =
-    //   !selectedCareer.value ||
-    //   talent.experienceDurationMonth === careerOptions.value.find((c) => c.value === selectedCareer.value)?.name;
+    let fromPeriod = 0;
+    let toPeriod = 600;
 
-    // // 국적 필터
-    // const nationalityMatch =
-    //   selectedNationalities.value.length === 0 ||
-    //   selectedNationalities.value.some(
-    //     (n) => talent.nationality === nationalities.find((nat) => nat.value === n)?.name
-    //   );
+    if (filters.value.careerHistory) {
+      switch (filters.value.careerHistory) {
+        case careerOptions.value[0].code:
+          fromPeriod = 0;
+          toPeriod = 12;
+          break;
+        case careerOptions.value[1].code:
+          fromPeriod = 12;
+          toPeriod = 36;
+          break;
+        case careerOptions.value[2].code:
+          fromPeriod = 6;
+          toPeriod = 84;
+          break;
+        case careerOptions.value[3].code:
+          fromPeriod = 84;
+          toPeriod = 600;
+          break;
+      }
+    }
 
-    // // 직무 필터 추가
-    // const jobCategoryMatch = !selectedJobCategory.value || talent.jobCategory?.value === selectedJobCategory.value;
+    const careerMatch =
+      !filters.value.careerHistory ||
+      (talent?.resume?.experienceDurationMonth >= fromPeriod && talent?.resume?.experienceDurationMonth < toPeriod);
 
-    // return careerMatch && nationalityMatch && jobCategoryMatch;
-    return true;
+    // // 직무 필터
+    // const response = await getUserResume()
+
+    // const jobCategoryMatch = !filters.value.jobCategoryCd || talent.resume.jobCategory?.value === selectedJobCategory.value;
+
+    // 성별 필터
+    const genderMatch = !filters.value.genderCd || talent?.resume?.user?.genderCd === filters.value.genderCd;
+
+    return nationalityMatch && careerMatch && genderMatch;
   });
 });
 
-// 이력서 모달 열기 함수 수정
-const openResumeModal = (talent) => {
-  selectedCandidate.value = { ...talent };
+// 이력서 모달 열기
+const openResumeModal = async (talent) => {
+  // 개별 이력서 조회 API 호출
+  const response = await getUserResume(talent.resume.id);
+
+  selectedCandidate.value = response;
 
   selectedCandidate.value.user = {
     ...selectedCandidate.value.user,
-    // profileImage: `${import.meta.env.VITE_UPLOAD_PATH}/${candidate.user?.imageFile?.fileName}`
-    imageFile: `http://182.229.224.143/gsource/upload/woman1743320912414.jpg`
+    profileImage: `${import.meta.env.VITE_UPLOAD_PATH}/${selectedCandidate.value.user?.imageFile?.fileName}`
   };
 
   showResumeModal.value = true;
 };
+
+// 국적 코드 변환
+const convertNationCode = (code) => {
+  if (!code) return null;
+
+  let name = '';
+
+  nationalityOptions.value.filter((item) => {
+    if (item.code === code) {
+      name = item.name;
+    }
+  });
+
+  return name;
+};
+
+// 한국어 실력 코드 변환
+const convertCode = (code) => {
+  if (!code) return null;
+
+  let name = '';
+
+  koreanLevelList.value.filter((item) => {
+    if (item.code === code) {
+      name = item.name;
+    }
+  });
+
+  return name;
+};
+
+// 직무 코드 변환
+const convertJobCode = (code) => {
+  if (!code) return null;
+
+  let name = '';
+
+  jobCategoryOptions.value.filter((item) => {
+    if (item.code === code) {
+      name = item.name;
+    }
+  });
+
+  return name;
+};
+
+// 학력 코드 변환
+const convertEduLevelCode = (code) => {
+  if (!code) return null;
+
+  let name = '';
+
+  educationLevelList.value.filter((item) => {
+    if (item.code === code) {
+      name = item.name;
+    }
+  });
+
+  return name;
+};
+
+watch(
+  () => selectedCandidate.value,
+  () => {
+    koreanLv.value = convertCode(selectedCandidate.value?.user?.koreanProficiencyCd);
+  },
+  { deep: true }
+);
 
 // 면접 제안 페이지로 이동하는 함수 수정
 const openInterviewOffer = (talent) => {
@@ -345,7 +423,7 @@ const openInterviewOffer = (talent) => {
 
 // 북마크된 인재 목록에서 교육 정보 표시를 위한 computed 속성 추가
 const getEducationDisplay = (talent) => {
-  if (Array.isArray(talent.education)) {
+  if (Array.isArray(talent.resume.lastEducation)) {
     const latestEducation = talent.education[0];
     return `${latestEducation.schoolName} · ${latestEducation.major}`;
   }
@@ -584,12 +662,6 @@ const calculateTotalCareer = (careers) => {
           <div class="self-end">
             <Button @click="searchTalents" class="bt_btn widthFixed primary"> 검색하기 </Button>
           </div>
-
-          <!-- 키워드 검색 -->
-          <!-- <div class="flex-1">
-            <label class="block text-sm font-medium text-gray-700 mb-1">키워드</label>
-            <InputText v-model="searchKeyword" placeholder="이름, 학교, 전공 등" class="w-full" />
-          </div> -->
         </div>
 
         <!-- 북마크된 인재가 없을 때 표시할 빈 상태 -->
@@ -609,7 +681,7 @@ const calculateTotalCareer = (careers) => {
         </div>
 
         <!-- 북마크된 인재는 있지만 필터링 결과가 없을 때 -->
-        <div v-else-if="filteredBookmarks?.length === 0" class="text-center py-12">
+        <div v-else-if="bookmarkedTalents?.length === 0" class="text-center py-12">
           <div class="flex flex-col items-center gap-4">
             <i class="pi pi-bookmark text-gray-300 text-5xl mb-2"></i>
             <p class="text-gray-500 mb-2">검색 결과가 없습니다</p>
@@ -620,26 +692,42 @@ const calculateTotalCareer = (careers) => {
         <!-- 북마크된 인재가 있을 때 표시할 목록 -->
         <div v-else class="grid grid-cols-1 gap-4">
           <div
-            v-for="talent in filteredBookmarks"
+            v-for="talent in bookmarkedTalents"
             :key="talent.id"
             class="border rounded-lg p-6 hover:border-[#8B8BF5] transition-all duration-200"
           >
             <div class="flex justify-between items-start">
               <div>
                 <div class="flex items-center gap-3 mb-3">
-                  <h3 class="text-lg font-bold">{{ talent.name }}</h3>
-                  <span class="text-sm text-gray-600">{{ talent.nationality }}</span>
+                  <h3 class="text-lg font-bold notranslate">{{ talent?.resume?.user?.name }}</h3>
+                  <span class="text-sm text-gray-600">{{ convertNationCode(talent?.resume?.nationalityCd) }}</span>
                   <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">
-                    경력 {{ talent.career }}
+                    {{
+                      talent?.resume?.experienceDurationMonth
+                        ? '경력 ' +
+                          parseInt(talent?.resume.experienceDurationMonth / 12) +
+                          '년 ' +
+                          (talent?.resume.experienceDurationMonth % 12) +
+                          '개월'
+                        : '신입'
+                    }}
                   </span>
                 </div>
-                <p class="text-gray-600">{{ getEducationDisplay(talent) }}</p>
+                <p class="text-gray-600">
+                  {{
+                    talent?.resume?.finalEducation
+                      ? `${talent?.resume?.finalEducation?.schoolName} ${talent?.resume?.finalEducation?.major} ${talent?.resume?.finalEducation?.isGraduated ? '졸업' : '재학중'}`
+                      : ''
+                  }}
+                </p>
               </div>
               <div class="flex flex-col items-end gap-3">
-                <button @click="toggleBookmark(talent)" class="text-[#8B8BF5]">
+                <button @click="toggleBookmark(talent, true)" class="text-[#8B8BF5]">
                   <i class="pi pi-bookmark-fill"></i>
                 </button>
-                <span class="text-sm text-gray-500">북마크: {{ talent.bookmarkedDate }}</span>
+                <span class="text-sm text-gray-500">
+                  북마크 {{ ' : ' + talent.createdAt?.slice(0, 10).replaceAll('-', '.') }}
+                </span>
                 <!-- 이력서 보기 버튼 추가 -->
                 <button
                   @click="openResumeModal(talent)"
@@ -666,7 +754,7 @@ const calculateTotalCareer = (careers) => {
   </div>
 
   <!-- 이력서 상세 모달 추가 -->
-  <Dialog v-model:visible="showResumeModal" :modal="true" :style="{ width: '80vw' }" :maximizable="true">
+  <Dialog v-model:visible="showResumeModal" modal :style="{ width: '80vw' }" :maximizable="true" :blockScroll="false">
     <template #header>
       <div class="text-2xl font-bold">이력서</div>
     </template>
@@ -679,17 +767,23 @@ const calculateTotalCareer = (careers) => {
           <!-- 왼쪽 컬럼 -->
           <div class="grid grid-cols-[80px_auto] gap-y-2 text-sm text-gray-600">
             <span class="text-gray-600">이름</span>
-            <span>{{ selectedCandidate?.name }}</span>
+            <span class="notranslate">{{ selectedCandidate?.user?.name }}</span>
             <span class="text-gray-600">생년월일</span>
-            <span>{{ selectedCandidate?.birthdate }}</span>
+            <span>{{ selectedCandidate?.user?.birth }}</span>
             <span class="text-gray-600">성별</span>
-            <span>{{ selectedCandidate?.gender }}</span>
+            <span>{{ selectedCandidate?.user?.genderCd === 'GENDER_MALE' ? '남성' : '여성' }}</span>
             <span class="text-gray-600">휴대폰</span>
-            <span>{{ isAccepted ? selectedCandidate?.phone : '면접 제안 수락 후 확인 가능' }}</span>
+            <span class="text-[#8B8BF5]">{{
+              isAccepted ? selectedCandidate?.user?.mobile : '면접 제안 수락 후 확인 가능'
+            }}</span>
             <span class="text-gray-600">이메일</span>
-            <span>{{ isAccepted ? selectedCandidate?.email : '면접 제안 수락 후 확인 가능' }}</span>
+            <span class="text-[#8B8BF5]">{{
+              isAccepted ? selectedCandidate?.user?.email : '면접 제안 수락 후 확인 가능'
+            }}</span>
             <span class="text-gray-600">주소</span>
-            <span>{{ isAccepted ? selectedCandidate?.address : '면접 제안 수락 후 확인 가능' }}</span>
+            <span class="text-[#8B8BF5]">{{
+              isAccepted ? selectedCandidate?.user?.address : '면접 제안 수락 후 확인 가능'
+            }}</span>
           </div>
 
           <!-- 가운데 컬럼 -->
@@ -697,26 +791,38 @@ const calculateTotalCareer = (careers) => {
             <span class="text-gray-600">범죄경력</span>
             <span v-if="isAccepted" class="flex items-center gap-2">
               <i class="pi pi-file-pdf text-red-500"></i>
-              {{ selectedCandidate?.criminalRecordFile?.name || '미제출' }}
+              {{ selectedCandidate?.user?.criminalRecordFile?.name || '미제출' }}
             </span>
-            <span v-else>면접 제안 수락 후 확인 가능</span>
+            <span v-else class="text-[#8B8BF5]">면접 제안 수락 후 확인 가능</span>
 
             <span class="text-gray-600">한국어능력</span>
-            <span>{{ selectedCandidate?.koreanProficiency || '미입력' }}</span>
+            <span>{{ koreanLv || '미입력' }}</span>
             <span class="text-gray-600">학습기간</span>
-            <span>{{ selectedCandidate?.koreanStudyDuration || '미입력' }}</span>
+            <span>{{ selectedCandidate?.user?.koreanStudyPeriod || '미입력' }}</span>
             <span class="text-gray-600">한국방문경험</span>
-            <span>{{ selectedCandidate?.koreanVisitExperience || '미입력' }}</span>
+            <span>{{
+              selectedCandidate?.user?.hasVisitedKorea === false
+                ? '없음'
+                : selectedCandidate?.user?.hasVisitedKorea
+                  ? '있음'
+                  : '미입력'
+            }}</span>
             <span class="text-gray-600">혼인여부</span>
-            <span>{{ selectedCandidate?.maritalStatus || '미입력' }}</span>
+            <span>{{
+              selectedCandidate?.user?.isMarried === false
+                ? '미혼'
+                : selectedCandidate?.user?.isMarried
+                  ? '기혼'
+                  : '미입력'
+            }}</span>
           </div>
 
           <!-- 프로필 사진 (오른쪽) -->
           <div class="flex flex-col items-center">
             <div class="w-[140px] h-[180px] bg-gray-100 rounded-lg overflow-hidden">
               <img
-                v-if="selectedCandidate?.profileImage?.exists"
-                :src="selectedCandidate.profileImage.url"
+                v-if="selectedCandidate?.user?.profileImage"
+                :src="selectedCandidate?.user?.profileImage || '/default-profile.jpg'"
                 alt="프로필 사진"
                 class="w-full h-full object-cover"
               />
@@ -732,7 +838,7 @@ const calculateTotalCareer = (careers) => {
       <div class="mb-8 bg-gray-50 p-6 rounded-lg">
         <h3 class="text-lg font-medium mb-4">국가</h3>
         <div>
-          <span>{{ selectedCandidate?.nationality }}</span>
+          <span>{{ selectedCandidate?.nationality?.name }}</span>
         </div>
       </div>
 
@@ -746,15 +852,15 @@ const calculateTotalCareer = (careers) => {
           </div>
           <div class="flex gap-8">
             <span class="text-gray-600 w-20">여권번호</span>
-            <span>{{ selectedCandidate?.passportNumber }}</span>
+            <span>{{ selectedCandidate?.passport }}</span>
           </div>
           <div class="flex gap-8">
             <span class="text-gray-600 w-20">국적</span>
-            <span>{{ selectedCandidate?.nationality }}</span>
+            <span>{{ selectedCandidate?.nationality?.name }}</span>
           </div>
           <div class="flex gap-8">
             <span class="text-gray-600 w-20">만료일</span>
-            <span>{{ selectedCandidate?.passportExpiry }}</span>
+            <span>{{ selectedCandidate?.passportExpiryDt.slice(0, 10) }}</span>
           </div>
         </div>
       </div>
@@ -764,61 +870,106 @@ const calculateTotalCareer = (careers) => {
         <div class="flex items-center gap-2 mb-4">
           <h3 class="text-lg font-medium">경력 사항</h3>
           <span class="text-sm text-[#8B8BF5] bg-[#8B8BF5] bg-opacity-10 px-2 py-1 rounded">
-            총 {{ calculateTotalCareer(selectedCandidate?.careers) }}
+            {{
+              selectedCandidate?.experienceDurationMonth
+                ? '총 ' +
+                  parseInt(selectedCandidate?.experienceDurationMonth / 12) +
+                  '년 ' +
+                  (selectedCandidate?.experienceDurationMonth % 12) +
+                  '개월'
+                : '신입'
+            }}
           </span>
         </div>
-        <div v-for="(career, index) in selectedCandidate?.careers" :key="index" class="mb-4">
-          <div class="flex items-center gap-2">
-            <div class="font-medium">{{ career.company }}</div>
-            <span class="text-sm text-gray-500">({{ calculateCareerPeriod(career.period) }})</span>
+        <div v-if="selectedCandidate?.experiences.length">
+          <div
+            v-for="(career, index) in selectedCandidate?.experiences"
+            :key="index"
+            class="mb-4 pb-4 border-b last:border-b-0"
+          >
+            <div class="flex items-center gap-2">
+              <div class="font-medium">{{ career?.companyName }}</div>
+              <span class="text-sm text-gray-500">
+                ({{
+                  `${career?.startDt?.slice(0, 7).replaceAll('-', '.')} ~ ${career?.endDt?.slice(0, 7) ? career?.endDt?.slice(0, 7).replaceAll('-', '.') : '재직중'}`
+                }})
+              </span>
+            </div>
+            <div class="text-gray-600">{{ career?.department }}</div>
+            <div class="text-gray-600">{{ convertJobCode(career?.jobCategoryCd) }} | {{ career.position }}</div>
+            <div class="mt-2 whitespace-pre-line">{{ career?.content }}</div>
           </div>
-          <div class="text-gray-600">{{ career.period }}</div>
-          <div class="text-gray-600">{{ career.jobCategory.label }} | {{ career.position }}</div>
-          <div class="mt-2 whitespace-pre-line">{{ career.content }}</div>
         </div>
+
+        <div v-else class="text-center text-gray-500">등록된 경력이 없습니다</div>
       </div>
 
       <!-- 학력 사항 -->
       <div class="mb-8 bg-gray-50 p-6 rounded-lg">
-        <h3 class="text-lg font-medium mb-4">학력 사항</h3>
-        <div class="text-[#8B8BF5] mb-4">최종학력: {{ getLatestEducation(selectedCandidate?.education) }}</div>
-        <div v-for="(edu, index) in selectedCandidate?.education" :key="index" class="mb-4">
-          <div class="font-medium">{{ edu.schoolName }}</div>
-          <div class="text-gray-600">{{ edu.type }}</div>
-          <div class="text-gray-600">{{ edu.major }}</div>
-          <div class="text-gray-600">{{ edu.period }}</div>
-          <div class="whitespace-pre-line">{{ edu.content }}</div>
+        <div class="flex items-center gap-2 mb-4">
+          <h3 class="text-lg font-medium">학력 사항</h3>
+          <span class="text-sm text-[#8B8BF5] bg-[#8B8BF5] bg-opacity-10 px-2 py-1 rounded">
+            {{
+              selectedCandidate?.finalEducation
+                ? '최종학력 : ' +
+                  `${selectedCandidate?.finalEducation?.schoolName} ${selectedCandidate?.finalEducation?.major} ${selectedCandidate?.finalEducation?.isGraduated ? '졸업' : '재학중'}`
+                : ''
+            }}
+          </span>
         </div>
+        <div v-if="selectedCandidate?.finalEducation">
+          <!-- <div class="text-[#8B8BF5] mb-4">
+            최종학력:
+            {{
+              selectedCandidate?.finalEducation
+                ? `${selectedCandidate?.finalEducation?.schoolName} ${selectedCandidate?.finalEducation?.major} ${selectedCandidate?.finalEducation?.isGraduated ? '졸업' : '재학중'}`
+                : ''
+            }}
+          </div> -->
+          <div
+            v-for="(edu, index) in selectedCandidate?.educations"
+            :key="index"
+            class="mb-6 pb-6 border-b last:border-b-0"
+          >
+            <div class="text-[#8B8BF5] mb-2">
+              {{ edu?.schoolName }} ({{ convertEduLevelCode(edu?.educationLevelCd) }})
+            </div>
+            <div class="text-gray-600">{{ edu?.major }}</div>
+            <div class="text-gray-600">{{ `${edu?.startDt} ~ ${edu?.endDt ? edu?.endDt : '재학중'}` }}</div>
+            <div class="whitespace-pre-line">{{ edu?.content }}</div>
+          </div>
+        </div>
+
+        <div v-else class="text-center text-gray-500">등록된 학력이 없습니다</div>
       </div>
 
-      <!-- 자격증 사항 섹션 추가 -->
+      <!-- 자격증 사항 -->
       <div class="mb-8 bg-gray-50 p-6 rounded-lg">
         <div class="mb-4">
           <h3 class="text-lg font-medium">자격증 사항</h3>
         </div>
-        <div v-if="selectedCandidate?.certificates?.length" class="space-y-4">
+        <div v-if="selectedCandidate?.certifications?.length" class="space-y-4">
           <div
-            v-for="(cert, index) in selectedCandidate.certificates"
+            v-for="(cert, index) in selectedCandidate.certifications"
             :key="index"
             class="mb-4 pb-4 border-b last:border-b-0"
           >
             <div class="font-medium mb-1">{{ cert.name }}</div>
-            <div class="text-gray-600">취득일: {{ cert.issuedDate }}</div>
+            <div class="font-medium mb-1">발급기관 : {{ cert.issuer }}</div>
+            <div class="text-gray-600">취득일 : {{ cert.acquiredDt.slice(0, 10).replaceAll('-', '.') }}</div>
           </div>
         </div>
+
         <div v-else class="text-center text-gray-500">등록된 자격증이 없습니다</div>
       </div>
     </div>
 
     <template #footer>
-      <div class="flex justify-end gap-4">
+      <div class="flex justify-end gap-4 pt-[15px]">
         <Button
-          @click="toggleBookmark(selectedCandidate)"
+          @click="toggleBookmark(selectedCandidate, false)"
           class="p-button-text"
-          :class="{
-            'text-[#8B8BF5]': selectedCandidate?.isBookmarked,
-            'text-gray-400': !selectedCandidate?.isBookmarked
-          }"
+          :class="['p-button-text', selectedCandidate?.isBookmarked ? 'text-[#8B8BF5]' : 'text-gray-400']"
         >
           <i
             :class="['pi', selectedCandidate?.isBookmarked ? 'pi-bookmark-fill' : 'pi-bookmark']"
@@ -876,5 +1027,14 @@ const calculateTotalCareer = (careers) => {
 :deep(.p-dropdown-panel),
 :deep(.p-multiselect-panel) {
   width: 100%;
+}
+
+/* 모달이 열릴 때 스크롤바 유지 */
+::v-deep .p-dialog-mask {
+  overflow-y: auto !important;
+}
+
+::v-deep .p-dialog {
+  margin: 0 auto !important;
 }
 </style>

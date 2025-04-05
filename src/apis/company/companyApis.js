@@ -24,10 +24,21 @@ export const updateCompanyInfo = async (body) => {
   }
 };
 
-// 인재 이력서 조회 API
+// 인재 이력서 리스트 조회 API
 export const getResumeList = async (query) => {
   try {
     const response = await api.get(`/resume/list${query ? '?' + query : ''}`);
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// 인재 이력서 개별 조회 API
+export const getUserResume = async (resumeId) => {
+  try {
+    const response = await api.get(`/resume/find/${resumeId}`);
 
     return response.data;
   } catch (error) {
@@ -47,9 +58,9 @@ export const insertFavoriteResume = async (body) => {
 };
 
 // 인재 북마크 삭제 API
-export const deleteFavoriteResume = async (userId, resumeId) => {
+export const deleteFavoriteResume = async (favoriteId, resumeId) => {
   try {
-    const response = await api.del(`/favoriteResume?userId=${body.resumeId}&resumeId=${body.resumeId}`);
+    const response = await api.del(`/favoriteResume/${favoriteId ? favoriteId : `resume/${resumeId}`}`);
 
     return response.data;
   } catch (error) {

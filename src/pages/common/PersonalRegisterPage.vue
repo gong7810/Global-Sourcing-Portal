@@ -319,7 +319,7 @@ const savePassportImage = () => {
             </div>
             <p :class="pwCheckFlag ? 'text-red-500' : 'text-green-500'">{{ pwCheckMessage }}</p>
           </div>
-          <InputText v-model="name" type="text" placeholder="이름(실명)" class="w-full px-4 py-3" />
+          <InputText v-model="name" type="text" placeholder="이름(영어)" class="w-full px-4 py-3" />
           <div class="flex space-x-4">
             <InputMask
               v-model="birthdate"

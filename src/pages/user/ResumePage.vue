@@ -6,7 +6,7 @@ import { useMessagePop } from '@/plugins/commonutils';
 import { getAccount } from '@/apis/auth/authApis';
 import { getCodeList, fileUpload } from '@/apis/common/commonApis';
 import {
-  getResume,
+  getMyResume,
   updateResume,
   upsertExperience,
   deleteExperience,
@@ -277,7 +277,7 @@ const getGlobalAge = () => {
 
 // 이력서 정보 조회
 const getResumeInfo = async () => {
-  const response = await getResume();
+  const response = await getMyResume();
 
   resumeInfo.value = response;
 

@@ -3,7 +3,7 @@ import { useApi } from '@/apis/index';
 const api = useApi();
 
 // 사용자 이력서 조회 API
-export const getResume = async () => {
+export const getMyResume = async () => {
   try {
     const response = await api.get(`/resume`);
 
