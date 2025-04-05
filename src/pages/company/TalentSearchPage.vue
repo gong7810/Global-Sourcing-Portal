@@ -348,7 +348,7 @@ const openInterviewOffer = (talent) => {
 
         <!-- 검색 버튼 -->
         <div class="self-end">
-          <Button @click="searchTalents" class="bt_btn widthFixed primary"> 검색하기 </Button>
+          <Button @click="searchTalents" class="bt_btn widthFixed primary"> 검색 </Button>
         </div>
       </div>
     </div>
@@ -412,7 +412,7 @@ const openInterviewOffer = (talent) => {
               :disabled="talent.isInterviewOffered"
               @click="openInterviewOffer(talent)"
             >
-              {{ talent.isInterviewOffered ? '제안 완료' : '면접 제안하기' }}
+              {{ talent.isInterviewOffered ? '제안 완료' : '면접 제안' }}
             </button>
           </div>
         </div>
@@ -455,13 +455,13 @@ const openInterviewOffer = (talent) => {
             <!-- 가운데 컬럼 -->
             <div class="grid grid-cols-[100px_auto] gap-y-2 text-sm text-gray-600">
               <span class="text-gray-600">범죄경력</span>
-              <span v-if="isAccepted" class="flex items-center gap-2">
-                <i class="pi pi-file-pdf text-red-500"></i>
+              <span v-if="isAccepted">
+                <!-- <i class="pi pi-file-pdf text-red-500"></i> -->
                 {{ selectedCandidate?.user?.hasCriminalRecord ? '있음' : '없음' }}
               </span>
               <span v-else class="text-[#8B8BF5]">면접 제안 수락 후 확인 가능</span>
 
-              <span class="text-gray-600">한국어능력</span>
+              <span class="text-gray-600">한국어 능력</span>
               <span>{{ koreanLv || '미입력' }}</span>
               <span class="text-gray-600">학습기간</span>
               <span>{{ selectedCandidate?.user?.koreanStudyPeriod || '미입력' }}</span>
@@ -502,7 +502,7 @@ const openInterviewOffer = (talent) => {
 
         <!-- 국가 -->
         <div class="mb-8 bg-gray-50 p-6 rounded-lg">
-          <h3 class="text-lg font-medium mb-4">국가</h3>
+          <h3 class="text-lg font-medium mb-4">국적</h3>
           <div>
             <span>{{ selectedCandidate?.nationality?.name }}</span>
           </div>
@@ -521,12 +521,12 @@ const openInterviewOffer = (talent) => {
               <span>{{ selectedCandidate?.passport }}</span>
             </div>
             <div class="flex gap-8">
-              <span class="text-gray-600 w-20">국적</span>
+              <span class="text-gray-600 w-20">발급국가</span>
               <span>{{ selectedCandidate?.nationality?.name }}</span>
             </div>
             <div class="flex gap-8">
               <span class="text-gray-600 w-20">만료일</span>
-              <span>{{ selectedCandidate?.passportExpiryDt.slice(0, 10) }}</span>
+              <span>{{ selectedCandidate?.passportExpiryDt.slice(0, 10).replaceAll('-', '.') }}</span>
             </div>
           </div>
         </div>
@@ -573,18 +573,26 @@ const openInterviewOffer = (talent) => {
 
         <!-- 학력 사항 -->
         <div class="mb-8 bg-gray-50 p-6 rounded-lg">
-          <div class="mb-4">
+          <div class="flex items-center gap-2 mb-4">
             <h3 class="text-lg font-medium">학력 사항</h3>
+            <span class="text-sm text-[#8B8BF5] bg-[#8B8BF5] bg-opacity-10 px-2 py-1 rounded">
+              {{
+                selectedCandidate?.finalEducation
+                  ? '최종학력 : ' +
+                    `${selectedCandidate?.finalEducation?.schoolName} ${selectedCandidate?.finalEducation?.major} ${selectedCandidate?.finalEducation?.isGraduated ? '졸업' : '재학중'}`
+                  : ''
+              }}
+            </span>
           </div>
           <div v-if="selectedCandidate?.finalEducation">
-            <div class="text-[#8B8BF5] mb-4">
+            <!-- <div class="text-[#8B8BF5] mb-4">
               최종학력:
               {{
                 selectedCandidate?.finalEducation
                   ? `${selectedCandidate?.finalEducation?.schoolName} ${selectedCandidate?.finalEducation?.major} ${selectedCandidate?.finalEducation?.isGraduated ? '졸업' : '재학중'}`
                   : ''
               }}
-            </div>
+            </div> -->
             <div
               v-for="(edu, index) in selectedCandidate?.educations"
               :key="index"
@@ -609,13 +617,13 @@ const openInterviewOffer = (talent) => {
           </div>
           <div v-if="selectedCandidate?.certifications?.length" class="space-y-4">
             <div
-              v-for="(cert, index) in selectedCandidate.certifications"
+              v-for="(cert, index) in selectedCandidate?.certifications"
               :key="index"
               class="mb-4 pb-4 border-b last:border-b-0"
             >
-              <div class="font-medium mb-1">{{ cert.name }}</div>
-              <div class="font-medium mb-1">발급기관 : {{ cert.issuer }}</div>
-              <div class="text-gray-600">취득일 : {{ cert.acquiredDt.slice(0, 10).replaceAll('-', '.') }}</div>
+              <div class="font-medium mb-1">{{ cert?.name }}</div>
+              <div class="font-medium mb-1">발급기관 : {{ cert?.issuer }}</div>
+              <div class="text-gray-600">취득일 : {{ cert?.acquiredDt?.slice(0, 10).replaceAll('-', '.') }}</div>
             </div>
           </div>
           <div v-else class="text-center text-gray-500">등록된 자격증이 없습니다</div>
@@ -634,12 +642,12 @@ const openInterviewOffer = (talent) => {
             ></i>
           </Button>
           <Button
-            class="transition-colors"
+            class="bt_btn primary transition-colors"
             :class="selectedCandidate?.isInterviewOffered ? 'bg-gray-400' : 'bg-[#8B8BF5] hover:bg-[#7A7AE6]'"
             :disabled="selectedCandidate?.isInterviewOffered"
             @click="openInterviewOffer(selectedCandidate)"
           >
-            {{ selectedCandidate?.isInterviewOffered ? '제안 완료' : '면접 제안하기' }}
+            {{ selectedCandidate?.isInterviewOffered ? '제안 완료' : '면접 제안' }}
           </Button>
         </div>
       </template>

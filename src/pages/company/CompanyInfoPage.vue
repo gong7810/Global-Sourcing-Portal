@@ -220,23 +220,18 @@ const cancelEdit = () => {
           <!-- 버튼 영역 -->
           <div class="px-8 py-6 bg-gray-50 border-t flex justify-center gap-4">
             <template v-if="isEditing">
+              <Button class="bt_btn secondary px-6 hover:bg-gray-100" type="button" label="취소" @click="cancelEdit" />
               <Button
-                type="button"
-                label="취소"
-                class="p-button-secondary px-6 hover:bg-gray-100"
-                @click="cancelEdit"
-              />
-              <Button
+                class="bt_btn primary px-6 bg-gradient-to-r from-[#8FA1FF] to-[#8B8BF5] border-none hover:bg-gradient-to-r hover:from-[#7B8FFF] hover:to-[#7878F2]"
                 type="submit"
                 label="저장"
-                class="p-button-primary px-6 bg-gradient-to-r from-[#8FA1FF] to-[#8B8BF5] border-none hover:bg-gradient-to-r hover:from-[#7B8FFF] hover:to-[#7878F2]"
               />
             </template>
             <Button
               v-else
+              class="bt_btn primary px-6 bg-gradient-to-r from-[#8FA1FF] to-[#8B8BF5] border-none hover:bg-gradient-to-r hover:from-[#7B8FFF] hover:to-[#7878F2]"
               type="button"
               label="수정"
-              class="p-button-primary px-6 bg-gradient-to-r from-[#8FA1FF] to-[#8B8BF5] border-none hover:bg-gradient-to-r hover:from-[#7B8FFF] hover:to-[#7878F2]"
               @click="toggleEdit"
             />
           </div>

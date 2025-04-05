@@ -55,9 +55,9 @@ const onCloseNo = () => {
 <template>
   <div class="modal_custom_wrap modal_sm">
     <div class="modal_header">
-      <button @click="onClose">
+      <Button @click="onClose">
         <span class="material-symbols-rounded notranslate">close</span>
-      </button>
+      </Button>
     </div>
     <div class="modal_body">
       <div v-if="param.icon" class="area_icon_circle" :class="param.icon">
@@ -66,11 +66,11 @@ const onCloseNo = () => {
       <p v-html="htmlTranslate"></p>
     </div>
     <div v-if="!param.isConfirm" class="modal_bottom btn_1">
-      <button class="bt_btn secondary_outline" @click="onClose">{{ param.labelConfirm }}</button>
+      <Button class="bt_btn secondary" @click="onClose">{{ param.labelConfirm }}</Button>
     </div>
     <div v-if="param.isConfirm" class="modal_bottom btn_2">
-      <button class="bt_btn secondary_outline" @click="onCloseNo">{{ param.labelNo }}</button>
-      <button class="bt_btn primary" @click="onCloseYes">{{ param.labelYes }}</button>
+      <Button class="bt_btn secondary" @click="onCloseNo">{{ param.labelNo }}</Button>
+      <Button class="bt_btn primary" @click="onCloseYes">{{ param.labelYes }}</Button>
     </div>
   </div>
 </template>

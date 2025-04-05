@@ -79,10 +79,21 @@ export const getFavoriteResumeList = async (query) => {
   }
 };
 
-// 면접 제안 API
+// 면접 제안 등록 API
 export const requestOffer = async (body) => {
   try {
     const response = await api.post(`/jobOffer`, body);
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// 면접 제안 리스트 조회 API
+export const getOfferList = async () => {
+  try {
+    const response = await api.get(`/jobOffer/listByCompany`);
 
     return response.data;
   } catch (error) {

@@ -361,7 +361,7 @@ const removeCriminalRecord = () => {
           <div class="mb-6 flex flex-col items-center">
             <div class="relative w-[120px] h-[160px] mb-4">
               <img
-                :src="profileImage || '/default-profile.png'"
+                :src="profileImage || '/default-profile.jpg'"
                 alt="프로필 이미지"
                 class="w-full h-full object-cover border border-gray-200 rounded-sm"
               />

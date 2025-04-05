@@ -66,6 +66,7 @@ $bt_txt_sub-color: #8b8e9b;
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
+  color: #24252a !important;
 
   &.widthFixed {
     width: 180px;
@@ -82,11 +83,13 @@ $bt_txt_sub-color: #8b8e9b;
   }
 
   &.primary {
-    color: #fff;
+    color: #fff !important;
     border: 1px solid $bt_primary-color;
     background-color: $bt_primary-color;
 
     &:hover:not(.disabled) {
+      background-color: #8585d8;
+      border-color: #8585d8;
       filter: brightness(0.9) contrast(150%);
     }
     &.focus {
@@ -116,6 +119,16 @@ $bt_txt_sub-color: #8b8e9b;
       background-color: #b2b2f5;
       border-color: #f1f4f9;
     }
+  }
+  &.secondary {
+    background-color: white;
+    border-color: #e5e7eb;
+    color: #374151;
+  }
+  &.secondary:hover {
+    background-color: #f3f4f6 !important;
+    border-color: #e5e7eb !important;
+    color: #374151 !important;
   }
   &.secondary_outline {
     color: $bt_secondary-color;

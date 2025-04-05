@@ -1,17 +1,32 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+
 import { useMessagePop } from '@/plugins/commonutils';
-import InterviewResultsDetailModal from '@/components/modal/InterviewResultsDetailModal.vue';
+import { getCodeList } from '@/apis/common/commonApis';
+import { getOfferList } from '@/apis/company/companyApis';
 
 const router = useRouter();
 const messagePop = useMessagePop();
+
+const showDetailModal = ref(false);
+const selectedOffer = ref(null);
+
+// 면접 일정 관련 상태
+const showScheduleModal = ref(false);
+const interviewDates = ref([
+  { date: null, hour: null, minute: null },
+  { date: null, hour: null, minute: null },
+  { date: null, hour: null, minute: null }
+]);
+const interviewTypeCd = ref(null);
+const interviewInfo = ref('');
 
 // 면접 제안 내역 데이터
 const interviewOffers = ref([
   {
     id: 1,
-    candidate: {
+    user: {
       name: '최예지',
       nationality: '베트남',
       career: '5년',
@@ -26,7 +41,7 @@ const interviewOffers = ref([
         country: '대한민국',
         expiryDate: '2030-01-01'
       },
-      careerHistory: [
+      experiences: [
         {
           company: '(주)비티로봇',
           period: '2023.03 - 2024.03',
@@ -50,7 +65,7 @@ const interviewOffers = ref([
           }
         }
       ],
-      education: [
+      educations: [
         {
           school: '한국대학교',
           degree: '대학교(4년)',
@@ -64,7 +79,7 @@ const interviewOffers = ref([
           }
         }
       ],
-      certificates: [
+      certifications: [
         {
           name: 'TOPIK 6급',
           issuedDate: '2023-05-15',
@@ -101,10 +116,10 @@ const interviewOffers = ref([
       maritalStatus: '미혼'
     },
     position: 'Frontend Developer',
-    jobDescription: '웹 서비스 프론트엔드 개발 및 유지보수',
-    message: '안녕하세요. 귀하의 프로필을 보고 연락드립니다.',
-    status: 'pending',
-    offerDate: '2024-03-20',
+    positionDetail: '웹 서비스 프론트엔드 개발 및 유지보수',
+    content: '안녕하세요. 귀하의 프로필을 보고 연락드립니다.',
+    statusCd: 'JO_ST_1',
+    createdAt: '2024-03-20T11:33:35.000Z',
     responseDate: null
   },
   {
@@ -124,7 +139,7 @@ const interviewOffers = ref([
         country: '중국',
         expiryDate: '2025-12-31'
       },
-      careerHistory: [
+      experiences: [
         {
           company: '(주)테크솔루션',
           period: '2021.01 - 2024.03',
@@ -132,7 +147,7 @@ const interviewOffers = ref([
           description: 'REST API 개발 및 서버 관리'
         }
       ],
-      education: [
+      educations: [
         {
           school: '베이징대학교',
           degree: '대학교(4년)',
@@ -157,10 +172,10 @@ const interviewOffers = ref([
       maritalStatus: '미혼'
     },
     position: 'Backend Developer',
-    jobDescription: 'REST API 개발 및 서버 관리',
-    message: '안녕하세요. 귀하의 프로필을 보고 연락드립니다.',
-    status: 'accepted',
-    offerDate: '2024-03-15',
+    positionDetail: 'REST API 개발 및 서버 관리',
+    content: '안녕하세요. 귀하의 프로필을 보고 연락드립니다.',
+    status: 'JO_ST_2',
+    createdAt: '2024-03-15T11:33:35.000Z',
     responseDate: '2024-03-16',
     interviewScheduled: false
   },
@@ -181,7 +196,7 @@ const interviewOffers = ref([
         country: '일본',
         expiryDate: '2026-06-30'
       },
-      careerHistory: [
+      experiences: [
         {
           company: '(주)소프트뱅크',
           period: '2020.04 - 2024.03',
@@ -189,7 +204,7 @@ const interviewOffers = ref([
           description: '자바 기반 백엔드 서버 개발'
         }
       ],
-      education: [
+      educations: [
         {
           school: '도쿄대학교',
           degree: '대학교(4년)',
@@ -214,10 +229,10 @@ const interviewOffers = ref([
       maritalStatus: '미혼'
     },
     position: 'Frontend Developer',
-    jobDescription: '웹 애플리케이션 프론트엔드 개발',
-    message: '귀하의 프로필을 보고 면접 제안드립니다.',
-    status: 'accepted',
-    offerDate: '2024-03-14',
+    positionDetail: '웹 애플리케이션 프론트엔드 개발',
+    content: '귀하의 프로필을 보고 면접 제안드립니다.',
+    status: 'JO_ST_2',
+    createdAt: '2024-03-14T11:33:35.000Z',
     responseDate: '2024-03-15',
     interviewScheduled: true,
     proposedDates: [
@@ -234,8 +249,8 @@ const interviewOffers = ref([
         time: '15:30'
       }
     ],
-    interviewType: 'offline',
-    interviewLocation: '서울시 강남구 테헤란로 123 OO빌딩 8층',
+    interviewTypeCd: 'INTERVIEW_TY_1',
+    interviewInfo: '서울시 강남구 테헤란로 123 OO빌딩 8층',
     interviewConfirmed: false
   },
   {
@@ -255,7 +270,7 @@ const interviewOffers = ref([
         country: '일본',
         expiryDate: '2026-06-30'
       },
-      careerHistory: [
+      experiences: [
         {
           company: '(주)소프트뱅크',
           period: '2020.04 - 2024.03',
@@ -263,7 +278,7 @@ const interviewOffers = ref([
           description: '자바 기반 백엔드 서버 개발'
         }
       ],
-      education: [
+      educations: [
         {
           school: '도쿄대학교',
           degree: '대학교(4년)',
@@ -288,10 +303,10 @@ const interviewOffers = ref([
       maritalStatus: '미혼'
     },
     position: 'Full Stack Developer',
-    jobDescription: '웹 서비스 풀스택 개발',
-    message: '귀하의 경력이 저희 회사와 잘 맞을 것 같습니다.',
-    status: 'accepted',
-    offerDate: '2024-03-12',
+    positionDetail: '웹 서비스 풀스택 개발',
+    content: '귀하의 경력이 저희 회사와 잘 맞을 것 같습니다.',
+    status: 'JO_ST_2',
+    createdAt: '2024-03-12T11:33:35.000Z',
     responseDate: '2024-03-13',
     interviewScheduled: true,
     proposedDates: [
@@ -308,8 +323,8 @@ const interviewOffers = ref([
         time: '11:00'
       }
     ],
-    interviewType: 'online',
-    interviewLocation: 'https://zoom.us/j/123456789',
+    interviewTypeCd: 'INTERVIEW_TY_1',
+    interviewInfo: 'https://zoom.us/j/123456789',
     interviewConfirmed: true,
     confirmedDate: {
       date: '2024-03-22',
@@ -333,7 +348,7 @@ const interviewOffers = ref([
         country: '중국',
         expiryDate: '2025-12-31'
       },
-      careerHistory: [
+      experiences: [
         {
           company: '(주)테크솔루션',
           period: '2021.01 - 2024.03',
@@ -341,7 +356,7 @@ const interviewOffers = ref([
           description: 'REST API 개발 및 서버 관리'
         }
       ],
-      education: [
+      educations: [
         {
           school: '베이징대학교',
           degree: '대학교(4년)',
@@ -366,10 +381,10 @@ const interviewOffers = ref([
       maritalStatus: '미혼'
     },
     position: 'Backend Developer',
-    jobDescription: '백엔드 서버 개발',
-    message: '백엔드 개발자 포지션에 관심 있으신가요?',
-    status: 'declined',
-    offerDate: '2024-03-10',
+    positionDetail: '백엔드 서버 개발',
+    content: '백엔드 개발자 포지션에 관심 있으신가요?',
+    status: 'JO_ST_3',
+    createdAt: '2024-03-10T11:33:35.000Z',
     responseDate: '2024-03-11'
   }
 ]);
@@ -377,99 +392,169 @@ const interviewOffers = ref([
 // 필터 상태 추가
 const selectedFilter = ref('all');
 
-// 필터 옵션
-const filterOptions = [
-  { label: '전체', value: 'all' },
-  { label: '대기중', value: 'pending' },
-  { label: '수락됨', value: 'accepted' },
-  { label: '거절됨', value: 'declined' }
-];
+// 면접 제안 상태 필터 옵션
+const jobOfferStateOptions = ref([{ name: '전체', code: 'all' }]);
 
 // 직무 필터 상태 추가
 const selectedJobFilter = ref('all');
 
-// 전체 직무 카테고리 옵션 (TalentSearchPage와 동일하게 사용)
-const jobCategories = [
-  { label: '기획·전략', value: 'planning' },
-  { label: '마케팅·홍보·조사', value: 'marketing' },
-  { label: '회계·세무·재무', value: 'accounting' },
-  { label: '인사·노무·HRD', value: 'hr' },
-  { label: '총무·법무·사무', value: 'admin' },
-  { label: 'IT개발·데이터', value: 'it' },
-  { label: '디자인', value: 'design' },
-  { label: '영업·판매·무역', value: 'sales' },
-  { label: '고객상담·TM', value: 'cs' },
-  { label: '구매·자재·물류', value: 'purchasing' },
-  { label: '상품기획·MD', value: 'md' },
-  { label: '운전·운송·배송', value: 'delivery' },
-  { label: '서비스', value: 'service' },
-  { label: '생산', value: 'production' },
-  { label: '건설·건축', value: 'construction' },
-  { label: '의료', value: 'medical' },
-  { label: '연구·R&D', value: 'research' },
-  { label: '교육', value: 'education' },
-  { label: '미디어·문화·스포츠', value: 'media' },
-  { label: '금융·보험', value: 'finance' },
-  { label: '공공·복지', value: 'public' }
-];
+const koreanLevelOptions = ref([]);
+const educationLevelOptions = ref([]);
+// 전체 직무 카테고리 옵션
+const jobCategoryOptions = ref([]);
 
 // 필터링된 제안 목록
 const filteredOffers = computed(() => {
   return interviewOffers.value.filter((offer) => {
     // 상태 필터
-    const statusMatch = selectedFilter.value === 'all' || offer.status === selectedFilter.value;
+    const statusMatch = selectedFilter.value === 'all' || offer.statusCd === selectedFilter.value;
 
     // 직무 필터
-    const jobMatch =
-      selectedJobFilter.value === 'all' || (offer.jobCategory?.value || 'it') === selectedJobFilter.value;
+    const jobMatch = selectedJobFilter.value === 'all' || offer.jobCategoryCd === selectedJobFilter.value.code;
 
     return statusMatch && jobMatch;
   });
 });
 
+onMounted(() => {
+  getJobOfferStateCode();
+  getKoreanLevelCode();
+  getEducationLevelCode();
+  getJobCategoryCode();
+
+  getJobOfferList();
+});
+
+// 면접 제안 상태 코드 조회
+const getJobOfferStateCode = async () => {
+  const response = await getCodeList(`JOB_OFFER_ST`);
+
+  response.map((item) => {
+    jobOfferStateOptions.value.push({
+      name: item.name,
+      code: item.code
+    });
+  });
+};
+
+// 한국어 실력 코드 조회
+const getKoreanLevelCode = async () => {
+  const response = await getCodeList(`KOREAN_LV`);
+
+  response.map((item) => {
+    koreanLevelOptions.value.push({ name: item.name, code: item.code });
+  });
+};
+
+// 학력 코드 조회
+const getEducationLevelCode = async () => {
+  const response = await getCodeList(`EDUCATION_LEVEL`);
+
+  response.map((item) => {
+    educationLevelOptions.value.push({
+      name: item.name,
+      code: item.code
+    });
+  });
+};
+
+// 직무 코드 조회
+const getJobCategoryCode = async () => {
+  const response = await getCodeList(`JOB_CATEGORY`);
+
+  response.map((item) => {
+    jobCategoryOptions.value.push({
+      name: item.name,
+      code: item.code
+    });
+  });
+};
+
+// 직무 코드 변환
+const convertJobCode = (code) => {
+  if (!code) return null;
+
+  let name = '';
+
+  jobCategoryOptions.value.filter((item) => {
+    if (item.code === code) {
+      name = item.name;
+    }
+  });
+
+  return name;
+};
+
+// 면접 제안 리스트 조회
+const getJobOfferList = async () => {
+  const response = await getOfferList();
+
+  interviewOffers.value = response.contents;
+
+  // TODO: 데이터 누락 대응건
+  // interviewOffers.value = [];
+  // response.contents.map((item, index) => {
+  //   if (!index) {
+  //     interviewOffers.value.push({
+  //       ...item,
+  //       statusCd: 'JO_ST_2',
+  //       jobCategoryCd: 'JOB_06',
+  //       position: '프론트엔드 개발 PL',
+  //       positionDetail: '프론트엔드 개발 리딩'
+  //     });
+  //   } else {
+  //     interviewOffers.value.push({
+  //       ...item,
+  //       jobCategoryCd: 'JOB_08',
+  //       position: '영업사원',
+  //       positionDetail: '외국계 영업'
+  //     });
+  //   }
+  // });
+};
+
 // 각 직무별 제안 수를 계산하는 함수
 const getJobCount = (jobValue) => {
-  return interviewOffers.value.filter((offer) => (offer.jobCategory?.value || 'it') === jobValue).length;
+  if (!jobValue?.name) {
+    // 전체인 경우
+    return interviewOffers.value.length;
+  } else {
+    return interviewOffers.value.filter((offer) => offer.jobCategoryCd === jobValue.code).length;
+  }
 };
 
 // 상태에 따른 스타일과 텍스트
 const getStatusInfo = (status) => {
   switch (status) {
-    case 'pending':
+    case 'JO_ST_1':
       return {
         text: '대기중',
         class: 'bg-yellow-50 text-yellow-600'
       };
-    case 'accepted':
+    case 'JO_ST_2':
       return {
         text: '수락됨',
         class: 'bg-green-50 text-green-600'
       };
-    case 'declined':
+    case 'JO_ST_3':
       return {
         text: '거절됨',
         class: 'bg-red-50 text-red-600'
       };
+    default:
+      return {
+        text: '대기중',
+        class: 'bg-yellow-50 text-yellow-600'
+      };
   }
 };
 
-const showDetailModal = ref(false);
-const selectedOffer = ref(null);
-
 const openDetailModal = (offer) => {
   selectedOffer.value = offer;
+
+  console.log(selectedOffer.value);
   showDetailModal.value = true;
 };
-
-// 면접 일정 관련 상태
-const showScheduleModal = ref(false);
-const interviewDates = ref([
-  { date: null, hour: null, minute: null },
-  { date: null, hour: null, minute: null },
-  { date: null, hour: null, minute: null }
-]);
-const interviewType = ref(null);
-const interviewLocation = ref('');
 
 // 시간 선택 옵션 수정
 const hours = Array.from({ length: 24 }, (_, i) => {
@@ -498,8 +583,8 @@ const formatTime = (hour, minute) => {
 
 // 면접 방식 옵션
 const interviewTypes = [
-  { label: '대면 면접', value: 'offline' },
-  { label: '화상 면접', value: 'online' }
+  { name: '화상 면접', code: 'INTERVIEW_TY_1' },
+  { name: '대면 면접', code: 'INTERVIEW_TY_2' }
 ];
 
 const openScheduleModal = (offer) => {
@@ -507,21 +592,22 @@ const openScheduleModal = (offer) => {
   showScheduleModal.value = true;
 };
 
-const scheduleInterview = () => {
+const scheduleInterview = async () => {
   // 기존 유효성 검사
-  if (!interviewDates.value[0].date || !interviewDates.value[0].hour || !interviewDates.value[0].minute) {
+  // if (!interviewDates.value[0].date || !interviewDates.value[0].hour || !interviewDates.value[0].minute) {
+  if (!interviewDates.value.filter((item) => item.date && item.hour && item.minute).length) {
     alert('최소 하나의 면접 일정을 입력해주세요.');
     return;
   }
 
-  if (!interviewType.value || !interviewLocation.value) {
+  if (!interviewTypeCd.value || !interviewInfo.value) {
     alert('면접 방식과 장소를 입력해주세요.');
     return;
   }
 
   // 제안된 일정들 필터링 (날짜가 입력된 것만)
-  const proposedDates = interviewDates.value
-    .filter((d) => d.date && d.hour !== null && d.minute !== null)
+  let proposedDates = interviewDates.value
+    .filter((d) => d.date && d.hour && d.minute)
     .map((d) => ({
       date: d.date
         .toLocaleDateString('ko-KR', {
@@ -530,38 +616,52 @@ const scheduleInterview = () => {
           day: '2-digit'
         })
         .replace(/\. /g, '-')
-        .replace('.', ''),
+        .replace('.', '')
+        .replaceAll('-', '.'),
       time: formatTime(d.hour, d.minute)
     }));
+
+  proposedDates = proposedDates.map((item) => {
+    return `${item.date} ${item.time}`;
+  });
 
   // 첫 번째 확인 팝업 표시
   messagePop.confirm({
     icon: 'info',
     message: `<div class="text-center">
-      <p class="text-xl mb-2">${selectedOffer.value.candidate.name}님께 면접 일정을 제안하시겠습니까?</p>
+      <p class="text-xl mb-2">면접 일정을 제안하시겠습니까?</p>
       <div class="text-sm text-gray-600 text-left mt-4">
         <p class="font-medium mb-2">제안된 일정:</p>
-        ${proposedDates.map((d, i) => `<p>${i + 1}. ${d.date} ${d.time}</p>`).join('')}
-        <p class="mt-2">면접 방식: ${interviewType.value.label}</p>
-        <p>장소: ${interviewLocation.value}</p>
+        ${proposedDates.map((time) => `<div class="mb-2">${time}</div>`).join('')}
+        <p class="mt-2">면접 방식: ${interviewTypeCd === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접'}</p>
+        <p>장소/링크: ${interviewInfo.value}</p>
         <p class="mt-4 text-red-500">* 확인 시 알림과 이메일이 발송됩니다.</p>
       </div>
     </div>`,
-    acceptLabel: '제안하기',
+    acceptLabel: '제안',
     rejectLabel: '취소',
     onCloseYes: () => {
-      // 기존 로직 실행
+      // TODO: 면접 일정 제안 API 연동
       selectedOffer.value.interviewScheduled = true;
-      selectedOffer.value.proposedDates = proposedDates;
-      selectedOffer.value.interviewType = interviewType.value;
-      selectedOffer.value.interviewLocation = interviewLocation.value;
+      ['reserveTime1', 'reserveTime2', 'reserveTime3']
+        .map((item, index) => {
+          selectedOffer.value[item] = proposedDates[index];
+        })
+        .filter((time) => time);
+
+      // selectedOffer.value.proposedDates = proposedDates;
+      selectedOffer.value.interviewTypeCd = interviewTypeCd.value;
+      selectedOffer.value.interviewInfo = interviewInfo.value;
+
+      console.log(selectedOffer.value);
+      return;
 
       // 성공 메시지 표시
       messagePop.confirm({
         icon: 'info',
         message: `<div class="text-center">
           <p class="text-xl mb-2">면접 일정이 제안되었습니다.</p>
-          <p class="text-sm text-gray-600">${selectedOffer.value.candidate.name}님께 알림과 이메일이 발송되었습니다.</p>
+          <p class="text-sm text-gray-600">${selectedOffer.value?.resumeSnapshot?.user?.name}님께 알림과 이메일이 발송되었습니다.</p>
         </div>`,
         acceptLabel: '확인',
         showReject: false,
@@ -573,8 +673,8 @@ const scheduleInterview = () => {
             { date: null, hour: null, minute: null },
             { date: null, hour: null, minute: null }
           ];
-          interviewType.value = null;
-          interviewLocation.value = '';
+          interviewTypeCd.value = null;
+          interviewInfo.value = '';
         }
       });
     }
@@ -596,17 +696,17 @@ const sampleFiles = {
     size: '2.1MB',
     exists: true
   },
-  career: {
+  experiences: {
     name: '경력증명서.pdf',
     size: '1.5MB',
     exists: false // 파일 없음
   },
-  education: {
+  educations: {
     name: '졸업증명서.pdf',
     size: '1.8MB',
     exists: true
   },
-  certificate: {
+  certifications: {
     name: '자격증.pdf',
     size: '1.2MB',
     exists: false // 파일 없음
@@ -625,53 +725,6 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
 
   alert(`${message}\n(실제 다운로드는 백엔드 연동 후 구현 예정)`);
 };
-
-// 경력 기간 계산 함수
-const calculateCareerPeriod = (period) => {
-  if (!period) return '';
-
-  const [start, end] = period.split(' - ');
-  if (!start || !end) return '';
-
-  const startDate = new Date(start.replace('.', '-'));
-  const endDate = end === '현재' ? new Date() : new Date(end.replace('.', '-'));
-
-  const monthDiff =
-    (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
-
-  if (monthDiff >= 12) {
-    const years = Math.floor(monthDiff / 12);
-    const months = monthDiff % 12;
-    return months > 0 ? `${years}년 ${months}개월` : `${years}년`;
-  }
-
-  return `${monthDiff}개월`;
-};
-
-// 총 경력 계산 함수
-const calculateTotalCareer = (careerHistory) => {
-  if (!careerHistory?.length) return '0년';
-
-  let totalMonths = 0;
-
-  careerHistory.forEach((career) => {
-    const [start, end] = career.period.split(' - ');
-    const startDate = new Date(start.replace('.', '-'));
-    const endDate = end === '현재' ? new Date() : new Date(end.replace('.', '-'));
-
-    const monthDiff =
-      (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
-    totalMonths += monthDiff;
-  });
-
-  if (totalMonths >= 12) {
-    const years = Math.floor(totalMonths / 12);
-    const months = totalMonths % 12;
-    return months > 0 ? `${years}년 ${months}개월` : `${years}년`;
-  }
-
-  return `${totalMonths}개월`;
-};
 </script>
 
 <template>
@@ -685,53 +738,53 @@ const calculateTotalCareer = (careerHistory) => {
       <h1 class="text-3xl font-bold">면접 제안 내역</h1>
     </div>
 
-    <!-- 필터 섹션 수정 -->
+    <!-- 필터 섹션 -->
     <div class="flex flex-col gap-4 mb-6">
       <!-- 상태 필터 -->
       <div class="flex gap-2">
         <button
-          v-for="option in filterOptions"
-          :key="option.value"
-          @click="selectedFilter = option.value"
+          v-for="option in jobOfferStateOptions"
+          :key="option.name"
+          @click="selectedFilter = option.code"
           :class="[
             'px-4 py-2 rounded-full text-sm transition-colors',
-            selectedFilter === option.value ? 'bg-[#8B8BF5] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            selectedFilter === option.code ? 'bg-[#8B8BF5] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           ]"
         >
-          {{ option.label }}
+          {{ option.name }}
           <span class="ml-1">
-            ({{ interviewOffers.filter((offer) => option.value === 'all' || offer.status === option.value).length }})
+            ({{ interviewOffers.filter((offer) => option.code === 'all' || offer?.statusCd === option.code).length }})
           </span>
         </button>
       </div>
 
-      <!-- 직무 필터를 드롭다운으로 변경 -->
+      <!-- 직무 필터 -->
       <div class="flex items-center gap-2">
         <label class="text-sm font-medium text-gray-700">직무</label>
-        <Dropdown
+        <Select
           v-model="selectedJobFilter"
-          :options="[{ label: '전체', value: 'all' }, ...jobCategories]"
-          optionLabel="label"
+          :options="[{ name: '전체', code: 'all' }, ...jobCategoryOptions]"
+          optionLabel="name"
           placeholder="직무 선택"
-          class="w-[200px]"
+          class="w-[280px]"
         >
           <template #value="slotProps">
             <div class="flex items-center gap-2">
-              <span>{{ slotProps.value?.label || '전체' }}</span>
-              <span v-if="slotProps.value?.value !== 'all'" class="text-sm text-gray-500">
-                ({{ getJobCount(slotProps.value?.value) }})
+              <span>{{ slotProps.value?.name || '전체' }}</span>
+              <span v-if="slotProps.value?.code !== 'all'" class="text-sm text-gray-500">
+                ({{ getJobCount(slotProps.value) }})
               </span>
             </div>
           </template>
           <template #option="slotProps">
             <div class="flex items-center justify-between">
-              <span>{{ slotProps.option.label }}</span>
-              <span v-if="slotProps.option.value !== 'all'" class="text-sm text-gray-500">
-                ({{ getJobCount(slotProps.option.value) }})
+              <span>{{ slotProps.option?.name }}</span>
+              <span v-if="slotProps.option?.code !== 'all'" class="text-sm text-gray-500">
+                ({{ getJobCount(slotProps.option) }})
               </span>
             </div>
           </template>
-        </Dropdown>
+        </Select>
       </div>
     </div>
 
@@ -755,7 +808,7 @@ const calculateTotalCareer = (careerHistory) => {
             class="inline-flex items-center px-6 py-3 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7A7AE6] transition-colors"
           >
             <i class="pi pi-search mr-2"></i>
-            인재 검색하기
+            인재 검색
           </router-link>
         </div>
       </div>
@@ -769,49 +822,61 @@ const calculateTotalCareer = (careerHistory) => {
       >
         <div class="flex justify-between items-start mb-4">
           <div class="flex items-center gap-3">
-            <h3 class="text-lg font-bold">{{ offer.candidate.name }}</h3>
-            <span class="text-sm text-gray-600">{{ offer.candidate.nationality }}</span>
+            <h3 class="text-lg font-bold">{{ offer?.resumeSnapshot?.user?.name }}</h3>
+            <span class="text-sm text-gray-600">{{ offer?.resumeSnapshot?.nationality?.name }}</span>
             <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">
-              경력 {{ offer.candidate.career }}
+              {{
+                offer?.resumeSnapshot?.experienceDurationMonth
+                  ? '경력 ' +
+                    parseInt(offer?.resumeSnapshot?.experienceDurationMonth / 12) +
+                    '년 ' +
+                    (offer?.resumeSnapshot?.experienceDurationMonth % 12) +
+                    '개월'
+                  : '신입'
+              }}
             </span>
-            <span :class="`px-3 py-1 rounded-full text-sm ${getStatusInfo(offer.status).class}`">
-              {{ getStatusInfo(offer.status).text }}
+            <span :class="`px-3 py-1 rounded-full text-sm ${getStatusInfo(offer?.statusCd)?.class}`">
+              {{ getStatusInfo(offer?.statusCd)?.text }}
             </span>
           </div>
-          <div class="text-sm text-gray-500">제안일: {{ offer.offerDate }}</div>
+          <div class="text-sm text-gray-500">제안일: {{ offer?.createdAt.slice(0, 10).replaceAll('-', '.') }}</div>
         </div>
 
         <div class="mb-4">
           <p class="text-gray-600">
-            {{ offer.candidate.education[0].school }} · {{ offer.candidate.education[0].major }}
+            {{
+              offer?.finalEducation
+                ? `${offer?.finalEducation?.schoolName} ${offer?.finalEducation?.major} ${offer?.finalEducation?.isGraduated ? '졸업' : '재학중'}`
+                : ''
+            }}
           </p>
         </div>
 
         <div class="border-t pt-4">
           <div class="mb-4">
             <h4 class="text-base font-bold text-gray-900 mb-2">직무 · 제안 포지션</h4>
-            <p class="text-gray-600">{{ offer.jobCategory?.label || 'IT개발·데이터' }} | {{ offer.position }}</p>
+            <p class="text-gray-600">{{ convertJobCode(offer?.jobCategoryCd) }} | {{ offer?.position }}</p>
           </div>
 
           <div class="mb-4">
             <h4 class="text-base font-bold text-gray-900 mb-2">상세 업무</h4>
-            <p class="text-gray-600">{{ offer.jobDescription }}</p>
+            <p class="text-gray-600">{{ offer?.positionDetail }}</p>
           </div>
 
           <div class="mb-4">
             <h4 class="text-base font-bold text-gray-900 mb-2">메시지</h4>
-            <p class="text-gray-600">{{ offer.message }}</p>
+            <p class="text-gray-600">{{ offer?.content }}</p>
           </div>
         </div>
 
-        <div v-if="offer.status === 'accepted'" class="mt-4 border-t pt-4">
+        <div v-if="offer?.statusCd === 'JO_ST_2'" class="mt-4 border-t pt-4">
           <p class="text-green-600">
             <i class="pi pi-check-circle mr-2"></i>
-            {{ offer.responseDate }}에 수락되었습니다
+            {{ offer?.updatedAt?.slice(0, 10).replaceAll('-', '.') }}에 수락되었습니다
           </p>
 
           <!-- 면접 일정이 잡히지 않은 경우에만 버튼 표시 -->
-          <div v-if="!offer.interviewScheduled" class="mt-3">
+          <div v-if="!offer?.interviewTime" class="mt-3">
             <button
               @click="openScheduleModal(offer)"
               class="px-4 py-2 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7A7AE6]"
@@ -825,17 +890,18 @@ const calculateTotalCareer = (careerHistory) => {
             <h4 class="font-medium text-gray-900 mb-2">면접 일정</h4>
 
             <!-- 확정된 면접 일정이 있는 경우 -->
-            <div v-if="offer.interviewConfirmed" class="p-4 bg-green-50 rounded-lg">
+            <div v-if="offer?.interviewTime" class="p-4 bg-green-50 rounded-lg">
               <p class="text-green-600 font-medium mb-3">확정된 면접 일정</p>
               <div class="space-y-2 ml-4">
-                <p class="text-gray-600">날짜: {{ offer.confirmedDate.date }}</p>
-                <p class="text-gray-600">시간: {{ offer.confirmedDate.time }}</p>
-                <p class="text-gray-600">방식: {{ offer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}</p>
-                <p class="text-gray-600">장소: {{ offer.interviewLocation }}</p>
+                <p class="text-gray-600">날짜·시간: {{ offer?.interviewTime }}</p>
+                <p class="text-gray-600">
+                  방식: {{ offer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접' }}
+                </p>
+                <p class="text-gray-600">장소: {{ offer?.interviewInfo }}</p>
               </div>
 
               <!-- 면접 완료 버튼 추가 -->
-              <div v-if="!offer.interviewCompleted" class="mt-4">
+              <div v-if="!offer?.interviewCompleted" class="mt-4">
                 <Button @click="completeInterview(offer)" class="bg-[#8B8BF5] text-white"> 면접 완료 </Button>
               </div>
               <!-- 면접 완료된 경우 표시 -->
@@ -849,21 +915,27 @@ const calculateTotalCareer = (careerHistory) => {
 
             <!-- 아직 확정되지 않은 경우 제안된 일정들 표시 -->
             <div v-else class="space-y-4">
-              <div v-for="(date, index) in offer.proposedDates" :key="index" class="mb-2">
-                <p class="text-gray-600">제안 {{ index + 1 }}</p>
-                <p class="text-gray-600 ml-4">날짜: {{ date.date }}</p>
-                <p class="text-gray-600 ml-4">시간: {{ date.time }}</p>
+              <div
+                v-for="(time, index) in ['reserveTime1', 'reserveTime2', 'reserveTime3']
+                  .map((key) => offer[key])
+                  .filter((time) => time)"
+                :key="index"
+                class="mb-2"
+              >
+                {{ time }}
               </div>
-              <p class="text-gray-600">방식: {{ offer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}</p>
-              <p class="text-gray-600">장소: {{ offer.interviewLocation }}</p>
+              <p class="text-gray-600">
+                방식: {{ offer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접' }}
+              </p>
+              <p class="text-gray-600">장소: {{ offer?.interviewInfo }}</p>
             </div>
           </div>
         </div>
 
-        <div v-if="offer.status === 'declined'" class="mt-4 border-t pt-4">
+        <div v-if="offer?.statusCd === 'JO_ST_3'" class="mt-4 border-t pt-4">
           <p class="text-red-600">
             <i class="pi pi-times-circle mr-2"></i>
-            {{ offer.responseDate }}에 거절되었습니다
+            {{ offer?.updatedAt?.slice(0, 10).replaceAll('-', '.') }}에 거절되었습니다
           </p>
         </div>
 
@@ -880,14 +952,21 @@ const calculateTotalCareer = (careerHistory) => {
     </div>
 
     <!-- 상세 정보 모달을 컴포넌트로 교체 -->
-    <InterviewResultsDetailModal v-model:visible="showDetailModal" :interview="selectedOffer" />
+    <InterviewResultsDetailModal
+      v-if="showDetailModal"
+      v-model:visible="showDetailModal"
+      :interviewer="selectedOffer"
+      :jobCategoryOptions="jobCategoryOptions"
+      :koreanLevelOptions="koreanLevelOptions"
+      :educationLevelOptions="educationLevelOptions"
+    />
 
     <!-- 면접 일정 잡기 모달 -->
-    <Dialog v-model:visible="showScheduleModal" :modal="true" header="면접 일정 제안하기" :style="{ width: '500px' }">
+    <Dialog v-model:visible="showScheduleModal" modal header="면접 일정 제안하기" :style="{ width: '500px' }">
       <div class="p-4">
         <div class="mb-4">
           <h3 class="font-medium mb-2">후보자</h3>
-          <p>{{ selectedOffer?.candidate.name }}</p>
+          <p>{{ selectedOffer?.resumeSnapshot?.user?.name }}</p>
         </div>
 
         <!-- 3개의 면접 일정 입력 -->
@@ -900,11 +979,11 @@ const calculateTotalCareer = (careerHistory) => {
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="block text-sm mb-1">시간</label>
-              <Dropdown v-model="dateSlot.hour" :options="hours" optionLabel="label" placeholder="시" class="w-full" />
+              <Select v-model="dateSlot.hour" :options="hours" optionLabel="label" placeholder="시" class="w-full" />
             </div>
             <div>
               <label class="block text-sm mb-1">분</label>
-              <Dropdown
+              <Select
                 v-model="dateSlot.minute"
                 :options="minutes"
                 optionLabel="label"
@@ -917,10 +996,11 @@ const calculateTotalCareer = (careerHistory) => {
 
         <div class="mb-4">
           <label class="block font-medium mb-2">면접 방식</label>
-          <Dropdown
-            v-model="interviewType"
+          <Select
+            v-model="interviewTypeCd"
             :options="interviewTypes"
-            optionLabel="label"
+            optionLabel="name"
+            optionValue="code"
             placeholder="면접 방식 선택"
             class="w-full"
           />
@@ -929,17 +1009,19 @@ const calculateTotalCareer = (careerHistory) => {
         <div class="mb-4">
           <label class="block font-medium mb-2">면접 장소 또는 화상 면접 링크</label>
           <InputText
-            v-model="interviewLocation"
+            v-model="interviewInfo"
             class="w-full"
-            :placeholder="interviewType?.value === 'online' ? 'Zoom 링크를 입력해주세요' : '면접 장소를 입력해주세요'"
+            :placeholder="
+              interviewTypeCd === 'INTERVIEW_TY_1' ? 'Zoom 링크를 입력해주세요' : '면접 장소를 입력해주세요'
+            "
           />
         </div>
       </div>
 
       <template #footer>
-        <div class="flex justify-end gap-2">
-          <Button @click="showScheduleModal = false" class="p-button-text"> 취소 </Button>
-          <Button @click="scheduleInterview" class="bg-[#8B8BF5]"> 일정 제안하기 </Button>
+        <div class="flex justify-end gap-2 pt-[15px]">
+          <Button @click="showScheduleModal = false" class="bt_btn p-button-text"> 취소 </Button>
+          <Button @click="scheduleInterview" class="bt_btn primary bg-[#8B8BF5]"> 일정 제안하기 </Button>
         </div>
       </template>
     </Dialog>

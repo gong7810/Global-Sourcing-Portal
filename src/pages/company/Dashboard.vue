@@ -478,7 +478,7 @@ const openInterviewOffer = async (talent, isPage) => {
 
           <!-- 검색 버튼 -->
           <div class="self-end">
-            <Button @click="searchTalents" class="bt_btn widthFixed primary"> 검색하기 </Button>
+            <Button @click="searchTalents" class="bt_btn widthFixed primary"> 검색 </Button>
           </div>
         </div>
 
@@ -561,7 +561,7 @@ const openInterviewOffer = async (talent, isPage) => {
                   :disabled="talent.isInterviewOffered"
                   @click="openInterviewOffer(talent, true)"
                 >
-                  {{ talent?.isInterviewOffered ? '제안 완료' : '면접 제안하기' }}
+                  {{ talent?.isInterviewOffered ? '제안 완료' : '면접 제안' }}
                 </button>
               </div>
             </div>
@@ -613,7 +613,7 @@ const openInterviewOffer = async (talent, isPage) => {
             </span>
             <span v-else class="text-[#8B8BF5]">면접 제안 수락 후 확인 가능</span>
 
-            <span class="text-gray-600">한국어능력</span>
+            <span class="text-gray-600">한국어 능력</span>
             <span>{{ koreanLv || '미입력' }}</span>
             <span class="text-gray-600">학습기간</span>
             <span>{{ selectedCandidate?.user?.koreanStudyPeriod || '미입력' }}</span>
@@ -654,7 +654,7 @@ const openInterviewOffer = async (talent, isPage) => {
 
       <!-- 국가 -->
       <div class="mb-8 bg-gray-50 p-6 rounded-lg">
-        <h3 class="text-lg font-medium mb-4">국가</h3>
+        <h3 class="text-lg font-medium mb-4">국적</h3>
         <div>
           <span>{{ selectedCandidate?.nationality?.name }}</span>
         </div>
@@ -673,12 +673,12 @@ const openInterviewOffer = async (talent, isPage) => {
             <span>{{ selectedCandidate?.passport }}</span>
           </div>
           <div class="flex gap-8">
-            <span class="text-gray-600 w-20">국적</span>
+            <span class="text-gray-600 w-20">발급국가</span>
             <span>{{ selectedCandidate?.nationality?.name }}</span>
           </div>
           <div class="flex gap-8">
             <span class="text-gray-600 w-20">만료일</span>
-            <span>{{ selectedCandidate?.passportExpiryDt.slice(0, 10) }}</span>
+            <span>{{ selectedCandidate?.passportExpiryDt.slice(0, 10).replaceAll('-', '.') }}</span>
           </div>
         </div>
       </div>
@@ -795,12 +795,12 @@ const openInterviewOffer = async (talent, isPage) => {
           ></i>
         </Button>
         <Button
-          class="transition-colors"
+          class="bt_btn primary transition-colors"
           :class="selectedCandidate?.isInterviewOffered ? 'bg-gray-400' : 'bg-[#8B8BF5] hover:bg-[#7A7AE6]'"
           :disabled="selectedCandidate?.isInterviewOffered"
           @click="openInterviewOffer(selectedCandidate, false)"
         >
-          {{ selectedCandidate?.isInterviewOffered ? '제안 완료' : '면접 제안하기' }}
+          {{ selectedCandidate?.isInterviewOffered ? '제안 완료' : '면접 제안' }}
         </Button>
       </div>
     </template>

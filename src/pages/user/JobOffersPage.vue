@@ -1169,7 +1169,7 @@ const getLatestEducation = (educations) => {
                   <i class="pi pi-file-pdf text-red-500"></i>
                   {{ selectedOffer.resumeSnapshot.basicInfo.criminalRecordFile?.name || '미제출' }}
                 </span>
-                <span class="text-gray-600">한국어능력</span>
+                <span class="text-gray-600">한국어 능력</span>
                 <span>{{ selectedOffer.resumeSnapshot.basicInfo.koreanProficiency || '미입력' }}</span>
                 <span class="text-gray-600">학습기간</span>
                 <span>{{ selectedOffer.resumeSnapshot.basicInfo.koreanStudyDuration || '미입력' }}</span>

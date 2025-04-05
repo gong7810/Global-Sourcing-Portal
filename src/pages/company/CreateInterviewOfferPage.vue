@@ -292,12 +292,8 @@ const submitOffer = () => {
       </div>
 
       <div class="flex justify-end gap-3">
-        <button @click="router.back()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-          취소
-        </button>
-        <button @click="submitOffer" class="px-6 py-2 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7A7AE6]">
-          제안하기
-        </button>
+        <Button @click="router.back()" class="bt_btn secondary"> 취소 </Button>
+        <Button @click="submitOffer" class="bt_btn primary"> 제안하기 </Button>
       </div>
     </div>
   </div>

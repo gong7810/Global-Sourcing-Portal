@@ -1,12 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import Button from 'primevue/button';
-import Dialog from 'primevue/dialog';
-import Dropdown from 'primevue/dropdown';
-import InputTextarea from 'primevue/textarea';
 import { useMessagePop } from '@/plugins/commonutils';
-import InterviewResultsDetailModal from '@/components/modal/InterviewResultsDetailModal.vue';
 
 const router = useRouter();
 const messagePop = useMessagePop();
@@ -114,7 +109,7 @@ const interviewResults = ref([
           file: {
             name: 'AWS_SAA_Certificate.pdf',
             size: '800KB',
-            exists: false  // 첨부파일 없는 경우
+            exists: false // 첨부파일 없는 경우
           }
         }
       ]
@@ -151,7 +146,8 @@ const interviewResults = ref([
           period: '2021.01 - 2024.03',
           jobCategory: { label: 'IT개발·데이터', value: 'it' },
           position: '백엔드 개발자 | 서버개발팀',
-          description: '백엔드 서버 개발 및 운영\n- Spring Boot 기반 REST API 개발\n- MSA 아키텍처 설계 및 구현\n- 대용량 데이터 처리 시스템 구축'
+          description:
+            '백엔드 서버 개발 및 운영\n- Spring Boot 기반 REST API 개발\n- MSA 아키텍처 설계 및 구현\n- 대용량 데이터 처리 시스템 구축'
         }
       ],
       education: [
@@ -231,18 +227,17 @@ const saveResult = () => {
   // 알림이 필요한 경우:
   // 1. 최초 결과 입력 시 (합격/불합격만)
   // 2. 기존 결과에서 다른 결과로 변경 시 (모든 변경)
-  const needsNotification = (isNewResult && editResult.value !== 'pending') || 
-                          (isResultChanged);
+  const needsNotification = (isNewResult && editResult.value !== 'pending') || isResultChanged;
 
   const confirmMessage = isNewResult
     ? `${selectedInterview.value.candidate.name}님의 면접 결과를 입력하시겠습니까?`
     : `${selectedInterview.value.candidate.name}님의 면접 결과를 수정하시겠습니까?`;
 
   const detailMessage = needsNotification
-    ? `\n\n결과: ${resultOptions.find(opt => opt.value === editResult.value).label}\n` +
+    ? `\n\n결과: ${resultOptions.find((opt) => opt.value === editResult.value).label}\n` +
       `피드백: ${editFeedback.value || '(없음)'}\n\n` +
       '* 확인 시 구직자에게 알림과 이메일이 발송됩니다.'
-    : `\n\n결과: ${resultOptions.find(opt => opt.value === editResult.value).label}\n` +
+    : `\n\n결과: ${resultOptions.find((opt) => opt.value === editResult.value).label}\n` +
       `피드백: ${editFeedback.value || '(없음)'}`;
 
   messagePop.confirm({
@@ -260,7 +255,7 @@ const saveResult = () => {
       selectedInterview.value.result = editResult.value;
       selectedInterview.value.feedback = editFeedback.value;
       selectedInterview.value.updatedAt = new Date().toISOString().split('T')[0];
-      
+
       // 알림/이메일 발송이 필요한 경우에만 성공 메시지에 알림 발송 문구 포함
       if (needsNotification) {
         messagePop.confirm({
@@ -345,9 +340,9 @@ const filteredResults = computed(() => {
     return interviewResults.value;
   }
   if (selectedFilter.value === 'none') {
-    return interviewResults.value.filter(interview => interview.result === null);
+    return interviewResults.value.filter((interview) => interview.result === null);
   }
-  return interviewResults.value.filter(interview => interview.result === selectedFilter.value);
+  return interviewResults.value.filter((interview) => interview.result === selectedFilter.value);
 });
 
 // 상세 정보 모달 관련 상태만 유지
@@ -382,24 +377,20 @@ const openDetailModal = (interview) => {
         @click="selectedFilter = option.value"
         :class="[
           'px-4 py-2 rounded-full text-sm transition-colors',
-          selectedFilter === option.value
-            ? 'bg-[#8B8BF5] text-white'
-            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          selectedFilter === option.value ? 'bg-[#8B8BF5] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
         ]"
       >
         {{ option.label }}
         <!-- 각 상태의 개수 표시 -->
         <span class="ml-1" v-if="option.value !== 'all'">
-          ({{ 
-            option.value === 'none' 
-              ? interviewResults.filter(interview => interview.result === null).length 
-              : interviewResults.filter(interview => interview.result === option.value).length 
+          ({{
+            option.value === 'none'
+              ? interviewResults.filter((interview) => interview.result === null).length
+              : interviewResults.filter((interview) => interview.result === option.value).length
           }})
         </span>
         <!-- 전체 개수 표시 -->
-        <span class="ml-1" v-else>
-          ({{ interviewResults.length }})
-        </span>
+        <span class="ml-1" v-else> ({{ interviewResults.length }}) </span>
       </button>
     </div>
 
@@ -416,8 +407,12 @@ const openDetailModal = (interview) => {
       </div>
 
       <!-- 기존 결과 목록 (filteredResults 사용) -->
-      <div v-else v-for="interview in filteredResults" :key="interview.id"
-        class="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200">
+      <div
+        v-else
+        v-for="interview in filteredResults"
+        :key="interview.id"
+        class="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200"
+      >
         <div class="flex justify-between items-start mb-4">
           <div class="flex items-center gap-3">
             <h3 class="text-lg font-bold">{{ interview.candidate.name }}</h3>
@@ -425,16 +420,15 @@ const openDetailModal = (interview) => {
             <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">
               경력 {{ interview.candidate.career }}
             </span>
-            <span v-if="interview.result !== null" :class="`px-3 py-1 rounded-full text-sm ${getResultInfo(interview.result).class}`">
+            <span
+              v-if="interview.result !== null"
+              :class="`px-3 py-1 rounded-full text-sm ${getResultInfo(interview.result).class}`"
+            >
               {{ getResultInfo(interview.result).text }}
             </span>
-            <span v-else class="px-3 py-1 rounded-full text-sm bg-gray-50 text-gray-600">
-              결과 미입력
-            </span>
+            <span v-else class="px-3 py-1 rounded-full text-sm bg-gray-50 text-gray-600"> 결과 미입력 </span>
           </div>
-          <div class="text-sm text-gray-500">
-            면접일: {{ interview.interviewDate }}
-          </div>
+          <div class="text-sm text-gray-500">면접일: {{ interview.interviewDate }}</div>
         </div>
 
         <div class="mb-4">
@@ -476,8 +470,8 @@ const openDetailModal = (interview) => {
             <span>상세 정보 보기</span>
             <i class="pi pi-arrow-right text-sm"></i>
           </button>
-          
-          <Button 
+
+          <Button
             @click="openResultModal(interview)"
             class="bg-[#8B8BF5] text-white"
             :disabled="interview.result !== null"
@@ -489,12 +483,7 @@ const openDetailModal = (interview) => {
     </div>
 
     <!-- 결과 수정 모달 -->
-    <Dialog 
-      v-model:visible="showResultModal"
-      modal
-      :header="'면접 결과 입력'"
-      :style="{ width: '500px' }"
-    >
+    <Dialog v-model:visible="showResultModal" modal :header="'면접 결과 입력'" :style="{ width: '500px' }">
       <div class="p-4 space-y-4">
         <div>
           <label class="block font-medium mb-2">면접 결과</label>
@@ -523,17 +512,8 @@ const openDetailModal = (interview) => {
 
       <template #footer>
         <div class="flex justify-end gap-2">
-          <Button 
-            @click="showResultModal = false"
-            class="p-button-text"
-          >
-            닫기
-          </Button>
-          <Button 
-            @click="saveResult"
-            class="bg-[#8B8BF5]"
-            :disabled="selectedInterview?.result !== null"
-          >
+          <Button @click="showResultModal = false" class="p-button-text"> 닫기 </Button>
+          <Button @click="saveResult" class="bg-[#8B8BF5]" :disabled="selectedInterview?.result !== null">
             입력
           </Button>
         </div>
@@ -541,9 +521,6 @@ const openDetailModal = (interview) => {
     </Dialog>
 
     <!-- 상세 정보 모달을 컴포넌트로 교체 -->
-    <InterviewResultsDetailModal
-      v-model:visible="showDetailModal"
-      :interview="selectedDetailInterview"
-    />
+    <InterviewResultsDetailModal v-model:visible="showDetailModal" :interview="selectedDetailInterview" />
   </div>
-</template> 
+</template>

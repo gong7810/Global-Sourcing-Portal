@@ -105,9 +105,6 @@ const educationInfo = ref({
   fileId: null
 });
 
-// 자격증 정보 관련 상태
-const certificationInfo = ref([]);
-
 const sections = [
   {
     title: '경력',
@@ -304,9 +301,6 @@ const getResumeInfo = async () => {
 
     setCertificationInfo();
   }, 100);
-
-  // 총 경력과 최종학력 계산
-  // basicInfo.value.finalEducation = getLastEducation(educationList.value);
 };
 
 // 경력 정보 세팅
@@ -1115,7 +1109,7 @@ const clearCertificationFile = (index) => {
             <div class="flex-shrink-0 ml-8">
               <div class="w-[120px] h-[160px] overflow-hidden border border-gray-200 rounded-sm">
                 <img
-                  :src="profileImage || '/default-profile.png'"
+                  :src="profileImage || '/default-profile.jpg'"
                   alt="프로필 이미지"
                   class="w-full h-full object-cover"
                 />

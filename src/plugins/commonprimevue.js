@@ -104,10 +104,13 @@ import TreeTable from 'primevue/treetable';
 // import VirtualScroller from 'primevue/virtualscroller';
 // import AnimateOnScroll from 'primevue/animateonscroll';
 
+// 커스텀 컴포넌트
 import BusinessServiceTerms from '@/components/terms/BusinessServiceTerms.vue';
 import BusinessPrivacyTerms from '@/components/terms/BusinessPrivacyTerms.vue';
 import SmsServiceTerms from '@/components/terms/SmsServiceTerms.vue';
 import BusinessOptionalPrivacyTerms from '@/components/terms/BusinessOptionalPrivacyTerms.vue';
+
+import InterviewResultsDetailModal from '@/components/company/InterviewResultsDetailModal.vue';
 
 export default {
   install: (app, options) => {
@@ -223,5 +226,6 @@ export default {
     app.component('TreeTable', TreeTable);
     // app.component('TriStateCheckbox', TriStateCheckbox);
     // app.component('VirtualScroller', VirtualScroller);
+    app.component('InterviewResultsDetailModal', InterviewResultsDetailModal);
   }
 };
