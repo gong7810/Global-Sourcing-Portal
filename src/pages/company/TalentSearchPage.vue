@@ -118,19 +118,6 @@ const getGenderCode = async () => {
   });
 };
 
-// 이력서 모달 열기
-const openResumeModal = (candidate) => {
-  // 북마킹 표시 연동을 위해 shallow-copy로 처리
-  selectedCandidate.value = candidate;
-
-  selectedCandidate.value.user = {
-    ...selectedCandidate.value.user,
-    profileImage: `${import.meta.env.VITE_UPLOAD_PATH}/${candidate.user?.imageFile?.fileName}`
-  };
-
-  showResumeModal.value = true;
-};
-
 // 한국어 실력 코드 변환
 const convertCode = (code) => {
   if (!code) return null;
@@ -184,6 +171,59 @@ watch(
   { deep: true }
 );
 
+// 인재 필터 조회
+const searchTalents = async () => {
+  let fromPeriod = '';
+  let toPeriod = '';
+
+  if (filters.value.careerHistory) {
+    switch (filters.value.careerHistory) {
+      case careerOptions.value[0].code:
+        fromPeriod = 0;
+        toPeriod = 1;
+        break;
+      case careerOptions.value[1].code:
+        fromPeriod = 1;
+        toPeriod = 3;
+        break;
+      case careerOptions.value[2].code:
+        fromPeriod = 3;
+        toPeriod = 7;
+        break;
+      case careerOptions.value[3].code:
+        fromPeriod = 7;
+        toPeriod = 50;
+        break;
+    }
+  }
+
+  let queryList = Object.entries(filters.value).reduce((acc, cur, idx) => {
+    if (idx !== 1 && cur[1]) {
+      acc.push(`${cur[0]}=${cur[1]}`);
+    } else if (cur[1]) {
+      acc.push(`fromPeriod=${fromPeriod}&toPeriod=${toPeriod}`);
+    }
+    return acc;
+  }, []);
+
+  const response = await getResumeList(queryList.join('&'));
+
+  talents.value = response.contents;
+};
+
+// 이력서 모달 열기
+const openResumeModal = (candidate) => {
+  // 북마킹 표시 연동을 위해 shallow-copy로 처리
+  selectedCandidate.value = candidate;
+
+  selectedCandidate.value.user = {
+    ...selectedCandidate.value.user,
+    profileImage: `${import.meta.env.VITE_UPLOAD_PATH}/${candidate.user?.imageFile?.fileName}`
+  };
+
+  showResumeModal.value = true;
+};
+
 // 인재 북마크 등록 / 해제
 const toggleBookmark = async (talent) => {
   if (!talent.isBookmarked && !talent.favorites?.length) {
@@ -231,46 +271,6 @@ const openInterviewOffer = (talent) => {
   if (selectedCandidate.value?.id === talent.id) {
     selectedCandidate.value.isInterviewOffered = true;
   }
-};
-
-// 인재 필터 조회
-const searchTalents = async () => {
-  let fromPeriod = '';
-  let toPeriod = '';
-
-  if (filters.value.careerHistory) {
-    switch (filters.value.careerHistory) {
-      case careerOptions.value[0].code:
-        fromPeriod = 0;
-        toPeriod = 1;
-        break;
-      case careerOptions.value[1].code:
-        fromPeriod = 1;
-        toPeriod = 3;
-        break;
-      case careerOptions.value[2].code:
-        fromPeriod = 3;
-        toPeriod = 7;
-        break;
-      case careerOptions.value[3].code:
-        fromPeriod = 7;
-        toPeriod = 50;
-        break;
-    }
-  }
-
-  let queryList = Object.entries(filters.value).reduce((acc, cur, idx) => {
-    if (idx !== 1 && cur[1]) {
-      acc.push(`${cur[0]}=${cur[1]}`);
-    } else if (cur[1]) {
-      acc.push(`fromPeriod=${fromPeriod}&toPeriod=${toPeriod}`);
-    }
-    return acc;
-  }, []);
-
-  const response = await getResumeList(queryList.join('&'));
-
-  talents.value = response.contents;
 };
 </script>
 

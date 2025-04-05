@@ -114,125 +114,6 @@ const getGenderCode = async () => {
   });
 };
 
-// 인재 필터 조회
-const searchTalents = async () => {
-  let fromPeriod = '';
-  let toPeriod = '';
-
-  if (filters.value.careerHistory) {
-    switch (filters.value.careerHistory) {
-      case careerOptions.value[0].code:
-        fromPeriod = 0;
-        toPeriod = 1;
-        break;
-      case careerOptions.value[1].code:
-        fromPeriod = 1;
-        toPeriod = 3;
-        break;
-      case careerOptions.value[2].code:
-        fromPeriod = 3;
-        toPeriod = 7;
-        break;
-      case careerOptions.value[3].code:
-        fromPeriod = 7;
-        toPeriod = 50;
-        break;
-    }
-  }
-
-  let queryList = Object.entries(filters.value).reduce((acc, cur, idx) => {
-    if (idx !== 1 && cur[1]) {
-      acc.push(`${cur[0]}=${cur[1]}`);
-    } else if (cur[1]) {
-      acc.push(`fromPeriod=${fromPeriod}&toPeriod=${toPeriod}`);
-    }
-    return acc;
-  }, []);
-
-  const response = await getFavoriteResumeList(queryList.join('&'));
-
-  bookmarkedTalents.value = response.contents.sort((a, b) => a.id - b.id);
-};
-
-// 인재 북마크 등록 / 해제
-const toggleBookmark = async (talent, isPage) => {
-  messagePop.confirm({
-    icon: 'info',
-    message: '북마크 해제하시겠습니까?',
-    onCloseYes: async () => {
-      const response = isPage
-        ? await deleteFavoriteResume(talent.id, null)
-        : await deleteFavoriteResume(null, talent.id);
-
-      if (response && response.success === undefined) {
-        messagePop.toast('북마크 삭제되었습니다.', 'info');
-
-        showResumeModal.value = false;
-        searchTalents();
-      }
-    }
-  });
-};
-
-// TODO: 임시 주석 (화면에서 직무 필터가 불가)
-// 필터링된 북마크 목록
-const filteredBookmarks = computed(() => {
-  return bookmarkedTalents.value.filter((talent) => {
-    // 국적 필터
-    const nationalityMatch =
-      !filters.value.nationalityCd || talent.resume.nationalityCd === filters.value.nationalityCd;
-
-    // 경력 필터
-    let fromPeriod = 0;
-    let toPeriod = 600;
-
-    if (filters.value.careerHistory) {
-      switch (filters.value.careerHistory) {
-        case careerOptions.value[0].code:
-          fromPeriod = 0;
-          toPeriod = 12;
-          break;
-        case careerOptions.value[1].code:
-          fromPeriod = 12;
-          toPeriod = 36;
-          break;
-        case careerOptions.value[2].code:
-          fromPeriod = 6;
-          toPeriod = 84;
-          break;
-        case careerOptions.value[3].code:
-          fromPeriod = 84;
-          toPeriod = 600;
-          break;
-      }
-    }
-
-    const careerMatch =
-      !filters.value.careerHistory ||
-      (talent?.resume?.experienceDurationMonth >= fromPeriod && talent?.resume?.experienceDurationMonth < toPeriod);
-
-    // 성별 필터
-    const genderMatch = !filters.value.genderCd || talent?.resume?.user?.genderCd === filters.value.genderCd;
-
-    return nationalityMatch && careerMatch && genderMatch;
-  });
-});
-
-// 이력서 모달 열기
-const openResumeModal = async (talent) => {
-  // 개별 이력서 조회 API 호출
-  const response = await getUserResume(talent.resume.id);
-
-  selectedCandidate.value = response;
-
-  selectedCandidate.value.user = {
-    ...selectedCandidate.value.user,
-    profileImage: `${import.meta.env.VITE_UPLOAD_PATH}/${selectedCandidate.value.user?.imageFile?.fileName}`
-  };
-
-  showResumeModal.value = true;
-};
-
 // 국적 코드 변환
 const convertNationCode = (code) => {
   if (!code) return null;
@@ -301,6 +182,124 @@ watch(
   { deep: true }
 );
 
+// 인재 필터 조회
+const searchTalents = async () => {
+  let fromPeriod = '';
+  let toPeriod = '';
+
+  if (filters.value.careerHistory) {
+    switch (filters.value.careerHistory) {
+      case careerOptions.value[0].code:
+        fromPeriod = 0;
+        toPeriod = 1;
+        break;
+      case careerOptions.value[1].code:
+        fromPeriod = 1;
+        toPeriod = 3;
+        break;
+      case careerOptions.value[2].code:
+        fromPeriod = 3;
+        toPeriod = 7;
+        break;
+      case careerOptions.value[3].code:
+        fromPeriod = 7;
+        toPeriod = 50;
+        break;
+    }
+  }
+
+  let queryList = Object.entries(filters.value).reduce((acc, cur, idx) => {
+    if (idx !== 1 && cur[1]) {
+      acc.push(`${cur[0]}=${cur[1]}`);
+    } else if (cur[1]) {
+      acc.push(`fromPeriod=${fromPeriod}&toPeriod=${toPeriod}`);
+    }
+    return acc;
+  }, []);
+
+  const response = await getFavoriteResumeList(queryList.join('&'));
+
+  bookmarkedTalents.value = response.contents.sort((a, b) => a.id - b.id);
+};
+
+// 인재 북마크 등록 / 해제
+const toggleBookmark = async (talent, isPage) => {
+  messagePop.confirm({
+    icon: 'info',
+    message: '북마크 해제하시겠습니까?',
+    onCloseYes: async () => {
+      const response = isPage
+        ? await deleteFavoriteResume(talent.id, null)
+        : await deleteFavoriteResume(null, talent.id);
+
+      if (response && response.success === undefined) {
+        messagePop.toast('북마크 삭제되었습니다.', 'info');
+
+        showResumeModal.value = false;
+        searchTalents();
+      }
+    }
+  });
+};
+
+// 필터링된 북마크 목록
+const filteredBookmarks = computed(() => {
+  return bookmarkedTalents.value.filter((talent) => {
+    // 국적 필터
+    const nationalityMatch =
+      !filters.value.nationalityCd || talent.resume.nationalityCd === filters.value.nationalityCd;
+
+    // 경력 필터
+    let fromPeriod = 0;
+    let toPeriod = 600;
+
+    if (filters.value.careerHistory) {
+      switch (filters.value.careerHistory) {
+        case careerOptions.value[0].code:
+          fromPeriod = 0;
+          toPeriod = 12;
+          break;
+        case careerOptions.value[1].code:
+          fromPeriod = 12;
+          toPeriod = 36;
+          break;
+        case careerOptions.value[2].code:
+          fromPeriod = 6;
+          toPeriod = 84;
+          break;
+        case careerOptions.value[3].code:
+          fromPeriod = 84;
+          toPeriod = 600;
+          break;
+      }
+    }
+
+    const careerMatch =
+      !filters.value.careerHistory ||
+      (talent?.resume?.experienceDurationMonth >= fromPeriod && talent?.resume?.experienceDurationMonth < toPeriod);
+
+    // 성별 필터
+    const genderMatch = !filters.value.genderCd || talent?.resume?.user?.genderCd === filters.value.genderCd;
+
+    return nationalityMatch && careerMatch && genderMatch;
+  });
+});
+
+// 이력서 모달 열기
+const openResumeModal = async (talent) => {
+  // 개별 이력서 조회 API 호출
+  const response = await getUserResume(talent.resume.id);
+
+  selectedCandidate.value = response;
+
+  selectedCandidate.value.user = {
+    ...selectedCandidate.value.user,
+    profileImage: `${import.meta.env.VITE_UPLOAD_PATH}/${selectedCandidate.value.user?.imageFile?.fileName}`
+  };
+
+  showResumeModal.value = true;
+};
+
 // 면접 제안
 const openInterviewOffer = async (talent, isPage) => {
   if (talent?.isInterviewOffered) return;
@@ -316,70 +315,6 @@ const openInterviewOffer = async (talent, isPage) => {
   }
 
   router.push(`/company/interview-offer/create/${id}`);
-};
-
-// 북마크된 인재 목록에서 교육 정보 표시를 위한 computed 속성 추가
-const getEducationDisplay = (talent) => {
-  if (Array.isArray(talent.resume.lastEducation)) {
-    const latestEducation = talent.education[0];
-    return `${latestEducation.schoolName} · ${latestEducation.major}`;
-  }
-  return `${talent.education} · ${talent.major}`;
-};
-
-// 개별 경력 기간 계산 함수
-const calculateCareerPeriod = (period) => {
-  const [start, end] = period.split(' - ');
-  const startDate = new Date(start.split('.').join('-'));
-  const endDate = end === '현재' ? new Date() : new Date(end.split('.').join('-'));
-
-  const years = endDate.getFullYear() - startDate.getFullYear();
-  const months = endDate.getMonth() - startDate.getMonth();
-
-  let totalMonths = years * 12 + months;
-  if (totalMonths < 12) {
-    return `${totalMonths}개월`;
-  }
-
-  const remainingYears = Math.floor(totalMonths / 12);
-  const remainingMonths = totalMonths % 12;
-
-  if (remainingMonths === 0) {
-    return `${remainingYears}년`;
-  }
-  return `${remainingYears}년 ${remainingMonths}개월`;
-};
-
-// 최종학력 표시 함수
-const getLatestEducation = (education) => {
-  if (!education || education.length === 0) return '정보 없음';
-  const latestEdu = education[0]; // 배열의 첫 번째 항목이 가장 최근 학력이라고 가정
-  return `${latestEdu.schoolName} ${latestEdu.type} (${latestEdu.major})`;
-};
-
-// script 섹션에 calculateTotalCareer 함수 추가
-const calculateTotalCareer = (careers) => {
-  if (!careers?.length) return '0년';
-
-  let totalMonths = 0;
-
-  careers.forEach((career) => {
-    const [start, end] = career.period.split(' - ');
-    const startDate = new Date(start.replace('.', '-'));
-    const endDate = end === '현재' ? new Date() : new Date(end.replace('.', '-'));
-
-    const monthDiff =
-      (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
-    totalMonths += monthDiff;
-  });
-
-  if (totalMonths >= 12) {
-    const years = Math.floor(totalMonths / 12);
-    const months = totalMonths % 12;
-    return months > 0 ? `${years}년 ${months}개월` : `${years}년`;
-  }
-
-  return `${totalMonths}개월`;
 };
 </script>
 
@@ -564,7 +499,7 @@ const calculateTotalCareer = (careers) => {
         </div>
 
         <!-- 북마크된 인재는 있지만 필터링 결과가 없을 때 -->
-        <div v-else-if="bookmarkedTalents?.length === 0" class="text-center py-12">
+        <div v-else-if="filteredBookmarks?.length === 0" class="text-center py-12">
           <div class="flex flex-col items-center gap-4">
             <i class="pi pi-bookmark text-gray-300 text-5xl mb-2"></i>
             <p class="text-gray-500 mb-2">검색 결과가 없습니다</p>
@@ -575,7 +510,7 @@ const calculateTotalCareer = (careers) => {
         <!-- 북마크된 인재가 있을 때 표시할 목록 -->
         <div v-else class="grid grid-cols-1 gap-4">
           <div
-            v-for="talent in bookmarkedTalents"
+            v-for="talent in filteredBookmarks"
             :key="talent.id"
             class="border rounded-lg p-6 hover:border-[#8B8BF5] transition-all duration-200"
           >

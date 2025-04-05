@@ -41,8 +41,6 @@ onMounted(() => {
     ...candidate.value.user,
     profileImage: `${import.meta.env.VITE_UPLOAD_PATH}/${candidate.value?.user?.imageFile?.fileName}`
   };
-
-  console.log(candidate.value);
 });
 
 // 한국어 실력 코드 조회
@@ -107,6 +105,7 @@ const getGlobalAge = (birth) => {
   }
 };
 
+// 면접 제안
 const submitOffer = () => {
   if (!jobOffer.value.jobCategoryCd) {
     alert('직무 카테고리를 선택해주세요.');
