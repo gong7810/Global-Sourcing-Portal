@@ -3,11 +3,13 @@ import { onMounted, ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { useMessagePop } from '@/plugins/commonutils';
+import { useCompanyStore } from '@/store/company/companyStore';
 import { getCodeList } from '@/apis/common/commonApis';
 import { deleteFavoriteResume, getFavoriteResumeList, getUserResume } from '@/apis/company/companyApis';
 
 const router = useRouter();
 const messagePop = useMessagePop();
+const companyStore = useCompanyStore();
 
 const koreanLv = ref('');
 const koreanLevelList = ref([]);
@@ -33,118 +35,7 @@ const filters = ref({
 });
 
 // 북마크 인재 리스트
-const bookmarkedTalents = ref([
-  {
-    id: 1,
-    name: '홍길동',
-    nationality: '베트남',
-    experienceDurationMonth: '5년',
-    birthdate: '1996.09.01',
-    gender: '남성',
-    phone: '010-1234-5678',
-    email: 'hong@example.com',
-    address: '서울시 강남구 테헤란로 123',
-    profileImage: {
-      url: '/images/profile1.jpg',
-      exists: true
-    },
-    passportName: 'HONG GILDONG',
-    passportNumber: 'M1234****',
-    passportExpiry: '2028-09-01',
-    jobCategory: { label: 'IT개발·데이터', value: 'it' },
-    isBookmarked: true,
-    bookmarkedDate: '2024-03-15',
-    experiences: [
-      {
-        company: '(주)테크솔루션',
-        period: '2021.03 - 2024.03',
-        jobCategory: { label: 'IT개발·데이터', value: 'it' },
-        position: '프론트엔드 개발자 | 개발팀',
-        content:
-          '웹 서비스 프론트엔드 개발 및 유지보수\n- React, TypeScript 기반 웹 애플리케이션 개발\n- 성능 최적화 및 사용자 경험 개선'
-      },
-      {
-        company: '(주)스타트업',
-        period: '2019.03 - 2021.02',
-        jobCategory: { label: 'IT개발·데이터', value: 'it' },
-        position: '웹 개발자 | 서비스개발팀',
-        content: '자사 웹 서비스 개발\n- Vue.js 기반 프론트엔드 개발\n- REST API 연동 및 기능 구현'
-      }
-    ],
-    education: [
-      {
-        schoolName: '하노이공과대학교',
-        type: '대학교(4년)',
-        major: '컴퓨터공학',
-        period: '2015.03 - 2019.02',
-        content: '학점 4.0/4.5\n웹 개발 동아리 회장\n알고리즘 경진대회 수상'
-      }
-    ],
-    certificates: [
-      {
-        name: 'TOPIK 6급',
-        issuedDate: '2023-05-15'
-      },
-      {
-        name: 'AWS Solutions Architect Associate',
-        issuedDate: '2023-08-20'
-      },
-      {
-        name: 'JLPT N1',
-        issuedDate: '2023-07-10'
-      }
-    ],
-    criminalRecordFile: {
-      name: '범죄경력확인서.pdf',
-      size: '1.2MB',
-      exists: true
-    },
-    koreanProficiency: '고급',
-    koreanStudyDuration: '2년',
-    koreanVisitExperience: '없음',
-    maritalStatus: '미혼',
-    isInterviewOffered: true
-  },
-  {
-    id: 2,
-    name: '김철수',
-    nationality: '중국',
-    experienceDurationMonth: '3년',
-    birthdate: '1997.05.15',
-    gender: '남성',
-    phone: '010-2345-6789',
-    email: 'kim@example.com',
-    address: '서울시 서초구 서초대로 456',
-    education: '베이징대학교',
-    major: '소프트웨어공학',
-    bookmarkedDate: '2024-03-14',
-    isBookmarked: true,
-    passportName: 'KIM CHEOLSOO',
-    passportNumber: 'M5678****',
-    passportExpiry: '2027-05-15',
-    jobCategory: { label: 'IT개발·데이터', value: 'it' },
-    experiences: [
-      {
-        company: '(주)데이터테크',
-        period: '2021.01 - 2024.03',
-        jobCategory: { label: 'IT개발·데이터', value: 'it' },
-        position: '백엔드 개발자 | 서버개발팀',
-        content:
-          '백엔드 서버 개발 및 운영\n- Spring Boot 기반 REST API 개발\n- MSA 아키텍처 설계 및 구현\n- 대용량 데이터 처리 시스템 구축'
-      }
-    ],
-    education: [
-      {
-        schoolName: '베이징대학교',
-        type: '대학교(4년)',
-        major: '소프트웨어공학',
-        period: '2016.09 - 2020.08',
-        content: '학점 3.8/4.0\n클라우드 컴퓨팅 연구실 인턴\n교내 프로그래밍 대회 2위'
-      }
-    ],
-    isInterviewOffered: false
-  }
-]);
+const bookmarkedTalents = ref([]);
 
 onMounted(() => {
   getKoreanLevelCode();
@@ -320,11 +211,6 @@ const filteredBookmarks = computed(() => {
       !filters.value.careerHistory ||
       (talent?.resume?.experienceDurationMonth >= fromPeriod && talent?.resume?.experienceDurationMonth < toPeriod);
 
-    // // 직무 필터
-    // const response = await getUserResume()
-
-    // const jobCategoryMatch = !filters.value.jobCategoryCd || talent.resume.jobCategory?.value === selectedJobCategory.value;
-
     // 성별 필터
     const genderMatch = !filters.value.genderCd || talent?.resume?.user?.genderCd === filters.value.genderCd;
 
@@ -415,10 +301,21 @@ watch(
   { deep: true }
 );
 
-// 면접 제안 페이지로 이동하는 함수 수정
-const openInterviewOffer = (talent) => {
-  if (talent.isInterviewOffered) return;
-  router.push(`/company/interview-offer/create/${talent.id}`);
+// 면접 제안
+const openInterviewOffer = async (talent, isPage) => {
+  if (talent?.isInterviewOffered) return;
+
+  let response = {};
+  let id = talent.id;
+
+  if (isPage) {
+    response = await getUserResume(talent.resume.id);
+
+    companyStore.setOfferUserResume(response);
+    id = talent.resume.id;
+  }
+
+  router.push(`/company/interview-offer/create/${id}`);
 };
 
 // 북마크된 인재 목록에서 교육 정보 표시를 위한 computed 속성 추가
@@ -600,10 +497,10 @@ const calculateTotalCareer = (careers) => {
           </router-link>
         </div>
 
-        <!-- 검색 필터 섹션 수정 -->
+        <!-- 검색 필터 섹션 -->
         <div class="flex items-center gap-4 mb-6">
           <!-- 국적 필터 -->
-          <div class="w-[150px]">
+          <div class="w-[250px]">
             <label class="block text-sm font-medium text-gray-700 mb-1">국적</label>
             <Select
               v-model="filters.nationalityCd"
@@ -617,7 +514,7 @@ const calculateTotalCareer = (careers) => {
           </div>
 
           <!-- 경력 필터 -->
-          <div class="w-[200px]">
+          <div class="w-[250px]">
             <label class="block text-sm font-medium text-gray-700 mb-1">경력</label>
             <Select
               v-model="filters.careerHistory"
@@ -630,22 +527,8 @@ const calculateTotalCareer = (careers) => {
             />
           </div>
 
-          <!-- 직무 필터 추가 -->
-          <div class="w-[200px]">
-            <label class="block text-sm font-medium text-gray-700 mb-1">직무</label>
-            <Select
-              v-model="filters.jobCategoryCd"
-              :options="jobCategoryOptions"
-              class="w-full"
-              optionLabel="name"
-              optionValue="code"
-              placeholder="--Select--"
-              showClear
-            />
-          </div>
-
-          <!-- 성별 카테고리 필터 -->
-          <div class="w-[150px]">
+          <!-- 성별 필터 -->
+          <div class="w-[250px]">
             <label class="block text-sm font-medium text-gray-700 mb-1">성별</label>
             <Select
               v-model="filters.genderCd"
@@ -736,14 +619,14 @@ const calculateTotalCareer = (careers) => {
                   이력서 보기
                 </button>
                 <button
-                  @click="openInterviewOffer(talent)"
-                  :disabled="talent.isInterviewOffered"
                   class="w-[140px] px-4 py-2 text-white rounded-lg transition-colors"
                   :class="
-                    talent.isInterviewOffered ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#8B8BF5] hover:bg-[#7A7AE6]'
+                    talent?.isInterviewOffered ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#8B8BF5] hover:bg-[#7A7AE6]'
                   "
+                  :disabled="talent.isInterviewOffered"
+                  @click="openInterviewOffer(talent, true)"
                 >
-                  {{ talent.isInterviewOffered ? '제안 완료' : '면접 제안하기' }}
+                  {{ talent?.isInterviewOffered ? '제안 완료' : '면접 제안하기' }}
                 </button>
               </div>
             </div>
@@ -977,10 +860,10 @@ const calculateTotalCareer = (careers) => {
           ></i>
         </Button>
         <Button
-          @click="openInterviewOffer(selectedCandidate)"
-          :disabled="selectedCandidate?.isInterviewOffered"
           class="transition-colors"
           :class="selectedCandidate?.isInterviewOffered ? 'bg-gray-400' : 'bg-[#8B8BF5] hover:bg-[#7A7AE6]'"
+          :disabled="selectedCandidate?.isInterviewOffered"
+          @click="openInterviewOffer(selectedCandidate, false)"
         >
           {{ selectedCandidate?.isInterviewOffered ? '제안 완료' : '면접 제안하기' }}
         </Button>

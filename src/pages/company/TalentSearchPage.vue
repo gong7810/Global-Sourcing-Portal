@@ -1,15 +1,17 @@
 <script setup>
 import { ref, onMounted, watch, toRaw } from 'vue';
 import { useRouter } from 'vue-router';
+import { storeToRefs } from 'pinia';
 
 import { useAuthStore } from '@/store/auth/authStore';
-import { storeToRefs } from 'pinia';
+import { useCompanyStore } from '@/store/company/companyStore';
 import { useMessagePop } from '@/plugins/commonutils';
 import { getCodeList } from '@/apis/common/commonApis';
 import { deleteFavoriteResume, getResumeList, insertFavoriteResume } from '@/apis/company/companyApis';
 
 const router = useRouter();
 const authStore = useAuthStore();
+const companyStore = useCompanyStore();
 const messagePop = useMessagePop();
 
 const { userInfo } = storeToRefs(authStore);
@@ -216,8 +218,12 @@ const toggleBookmark = async (talent) => {
   }
 };
 
+// 면접 제안
 const openInterviewOffer = (talent) => {
   if (talent.isInterviewOffered) return;
+
+  companyStore.setOfferUserResume(talent);
+
   router.push(`/company/interview-offer/create/${talent.id}`);
   talent.isInterviewOffered = true;
 
@@ -285,7 +291,7 @@ const searchTalents = async () => {
     <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
       <div class="flex items-center gap-4">
         <!-- 국적 필터 -->
-        <div class="w-[150px]">
+        <div class="w-[250px]">
           <label class="block text-sm font-medium text-gray-700 mb-1">국적</label>
           <Select
             v-model="filters.nationalityCd"
@@ -299,7 +305,7 @@ const searchTalents = async () => {
         </div>
 
         <!-- 경력 필터 -->
-        <div class="w-[200px]">
+        <div class="w-[250px]">
           <label class="block text-sm font-medium text-gray-700 mb-1">경력</label>
           <Select
             v-model="filters.careerHistory"
@@ -313,7 +319,7 @@ const searchTalents = async () => {
         </div>
 
         <!-- 직무 카테고리 필터 -->
-        <div class="w-[200px]">
+        <div class="w-[250px]">
           <label class="block text-sm font-medium text-gray-700 mb-1">직무</label>
           <Select
             v-model="filters.jobCategoryCd"
@@ -327,7 +333,7 @@ const searchTalents = async () => {
         </div>
 
         <!-- 성별 카테고리 필터 -->
-        <div class="w-[150px]">
+        <div class="w-[250px]">
           <label class="block text-sm font-medium text-gray-700 mb-1">성별</label>
           <Select
             v-model="filters.genderCd"
@@ -401,10 +407,10 @@ const searchTalents = async () => {
               이력서 보기
             </button>
             <button
-              @click="openInterviewOffer(talent)"
-              :disabled="talent.isInterviewOffered"
               class="w-[140px] px-4 py-2 text-white rounded-lg transition-colors"
               :class="talent.isInterviewOffered ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#8B8BF5] hover:bg-[#7A7AE6]'"
+              :disabled="talent.isInterviewOffered"
+              @click="openInterviewOffer(talent)"
             >
               {{ talent.isInterviewOffered ? '제안 완료' : '면접 제안하기' }}
             </button>
@@ -628,10 +634,10 @@ const searchTalents = async () => {
             ></i>
           </Button>
           <Button
-            @click="openInterviewOffer(selectedCandidate)"
-            :disabled="selectedCandidate?.isInterviewOffered"
             class="transition-colors"
             :class="selectedCandidate?.isInterviewOffered ? 'bg-gray-400' : 'bg-[#8B8BF5] hover:bg-[#7A7AE6]'"
+            :disabled="selectedCandidate?.isInterviewOffered"
+            @click="openInterviewOffer(selectedCandidate)"
           >
             {{ selectedCandidate?.isInterviewOffered ? '제안 완료' : '면접 제안하기' }}
           </Button>

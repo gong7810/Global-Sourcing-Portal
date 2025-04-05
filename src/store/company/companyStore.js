@@ -4,10 +4,13 @@ import { ref } from 'vue';
 export const useCompanyStore = defineStore(
   'companyStore',
   () => {
-    const user = ref('');
+    const offerUserResume = ref();
+
+    const setOfferUserResume = (resume) => (offerUserResume.value = resume);
 
     return {
-      user
+      offerUserResume,
+      setOfferUserResume
     };
   },
   {

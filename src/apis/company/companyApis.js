@@ -78,3 +78,14 @@ export const getFavoriteResumeList = async (query) => {
     console.error(error);
   }
 };
+
+// 면접 제안 API
+export const requestOffer = async (body) => {
+  try {
+    const response = await api.post(`/jobOffer`, body);
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
