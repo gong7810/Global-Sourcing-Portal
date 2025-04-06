@@ -183,9 +183,7 @@ const confirmReject = () => {
 
       await answerOffer(body);
 
-      if (selectedDateIndices.value[offer.id] !== undefined) {
-        selectedDateIndices.value[offer.id] = undefined;
-      }
+      selectedDateIndices.value = {};
 
       messagePop.toast('제안이 거절되었습니다.', 'info');
 
@@ -454,7 +452,7 @@ const calculatePeriod = (period) => {
             <!-- 상태별 다른 내용 표시 -->
             <div class="mt-4 border-t pt-4">
               <!-- 대기중인 경우 -->
-              <div v-if="offer.statusCd === 'JO_ST_1'" class="space-y-4">
+              <div v-if="offer?.statusCd === 'JO_ST_1'" class="space-y-4">
                 <p class="text-gray-600">
                   <i class="pi pi-clock mr-2"></i>
                   제안받은 날짜: {{ offer?.createdAt?.slice(0, 10)?.replaceAll('-', '.') }}
@@ -478,7 +476,7 @@ const calculatePeriod = (period) => {
               </div>
 
               <!-- 수락된 경우 -->
-              <div v-else-if="offer.statusCd === 'JO_ST_2'" class="space-y-4">
+              <div v-else-if="offer?.statusCd === 'JO_ST_2'" class="space-y-4">
                 <div class="space-y-2">
                   <p class="text-gray-600">
                     <i class="pi pi-clock mr-2"></i>
@@ -579,21 +577,21 @@ const calculatePeriod = (period) => {
               </div>
 
               <!-- 거절된 경우 -->
-              <div v-else-if="offer.status === 'rejected'" class="space-y-4">
+              <div v-else-if="offer?.statusCd === 'JO_ST_3'" class="space-y-4">
                 <div class="space-y-2">
                   <p class="text-gray-600">
                     <i class="pi pi-clock mr-2"></i>
-                    제안받은 날짜: {{ formatDate(offer.createdAt) }}
+                    제안받은 날짜: {{ formatDate(offer?.createdAt) }}
                   </p>
                   <p class="text-red-600">
                     <i class="pi pi-times-circle mr-2"></i>
-                    {{ formatDate(offer.rejectedAt) }}에 거절되었습니다
+                    {{ formatDate(offer?.updatedAt) }}에 거절되었습니다
                   </p>
                   <!-- 거절 사유 표시 추가 -->
-                  <div v-if="offer.rejectReason" class="bg-red-50 p-4 rounded-lg mt-2">
+                  <div v-if="offer?.resultMemo" class="bg-red-50 p-4 rounded-lg mt-2">
                     <p class="text-red-700">
                       <span class="font-medium">거절 사유:</span><br />
-                      {{ offer.rejectReason }}
+                      {{ offer?.resultMemo }}
                     </p>
                   </div>
                 </div>
@@ -1039,7 +1037,13 @@ const calculatePeriod = (period) => {
     </Dialog>
 
     <!-- 거절 사유 입력 모달 추가 -->
-    <Dialog v-model:visible="showRejectReasonModal" :modal="true" header="면접 거절 사유" :style="{ width: '500px' }">
+    <Dialog
+      v-model:visible="showRejectReasonModal"
+      modal
+      header="면접 거절 사유"
+      draggable="false"
+      :style="{ width: '500px' }"
+    >
       <div class="p-6">
         <div class="space-y-4">
           <p class="text-xl mb-2">면접을 거절하시겠습니까?</p>

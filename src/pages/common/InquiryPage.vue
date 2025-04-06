@@ -26,19 +26,25 @@ const categories = [
 
 const submitInquiry = async () => {
   if (!inquiryForm.value.category) {
-    toast.add({ severity: 'warn', summary: '알림', detail: '문의 유형을 선택해주세요.', life: 3000 });
+    toast.add({
+      severity: 'warn',
+      summary: '알림',
+      detail: '문의 유형을 선택해주세요.',
+      group: 'apptc',
+      life: 3000
+    });
     return;
   }
   if (!inquiryForm.value.title.trim()) {
-    toast.add({ severity: 'warn', summary: '알림', detail: '제목을 입력해주세요.', life: 3000 });
+    toast.add({ severity: 'warn', summary: '알림', detail: '제목을 입력해주세요.', group: 'apptc', life: 3000 });
     return;
   }
   if (!inquiryForm.value.content.trim()) {
-    toast.add({ severity: 'warn', summary: '알림', detail: '내용을 입력해주세요.', life: 3000 });
+    toast.add({ severity: 'warn', summary: '알림', detail: '내용을 입력해주세요.', group: 'apptc', life: 3000 });
     return;
   }
   if (!inquiryForm.value.email.trim()) {
-    toast.add({ severity: 'warn', summary: '알림', detail: '이메일을 입력해주세요.', life: 3000 });
+    toast.add({ severity: 'warn', summary: '알림', detail: '이메일을 입력해주세요.', group: 'apptc', life: 3000 });
     return;
   }
 
@@ -48,7 +54,13 @@ const submitInquiry = async () => {
     console.log('문의하기 응답:', response);
 
     if (response) {
-      toast.add({ severity: 'success', summary: '성공', detail: '문의가 정상적으로 접수되었습니다.', life: 3000 });
+      toast.add({
+        severity: 'success',
+        summary: '성공',
+        detail: '문의가 정상적으로 접수되었습니다.',
+        group: 'apptc',
+        life: 3000
+      });
       setTimeout(() => {
         router.push('/');
       }, 1500);
@@ -61,6 +73,7 @@ const submitInquiry = async () => {
       severity: 'error',
       summary: '오류',
       detail: error.message || '문의 등록에 실패했습니다. 다시 시도해주세요.',
+      group: 'apptc',
       life: 3000
     });
   } finally {
@@ -127,7 +140,7 @@ const submitInquiry = async () => {
 
         <div class="flex justify-end gap-4">
           <Button type="button" label="취소" class="p-button-outlined p-button-secondary" @click="router.back()" />
-          <Button type="submit" label="문의하기" :loading="loading" />
+          <Button type="submit" label="문의하기" class="bt_btn primary" :loading="loading" />
         </div>
       </form>
     </div>
