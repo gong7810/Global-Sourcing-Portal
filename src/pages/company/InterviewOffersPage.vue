@@ -404,7 +404,6 @@ const interviewTypes = [
 // 직무 필터 상태 추가
 const selectedJobFilter = ref({ name: '전체', code: 'all' });
 
-const koreanLevelOptions = ref([]);
 const educationLevelOptions = ref([]);
 // 전체 직무 카테고리 옵션
 const jobCategoryOptions = ref([]);
@@ -424,7 +423,6 @@ const filteredOffers = computed(() => {
 
 onMounted(() => {
   getJobOfferStateCode();
-  getKoreanLevelCode();
   getEducationLevelCode();
   getJobCategoryCode();
 
@@ -440,15 +438,6 @@ const getJobOfferStateCode = async () => {
       name: item.name,
       code: item.code
     });
-  });
-};
-
-// 한국어 실력 코드 조회
-const getKoreanLevelCode = async () => {
-  const response = await getCodeList(`KOREAN_LV`);
-
-  response.map((item) => {
-    koreanLevelOptions.value.push({ name: item.name, code: item.code });
   });
 };
 

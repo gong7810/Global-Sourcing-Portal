@@ -1,14 +1,11 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import Button from 'primevue/button';
-import Dialog from 'primevue/dialog';
-import Toast from 'primevue/toast';
 import { useToast } from 'primevue/usetoast';
 import { useUserStore } from '@/store/user/userStore';
-import { storeToRefs } from 'pinia';
 import { useMessagePop } from '@/plugins/commonutils';
-import MessagePop from 'primevue/message';
+import { getOfferListByUser } from '@/apis/user/userApis';
+import { getCodeList } from '@/apis/common/commonApis';
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -17,23 +14,44 @@ const userStore = useUserStore();
 const toast = useToast();
 const messagePop = useMessagePop();
 
-// mockJobOffers 데이터를 먼저 정의
-const mockJobOffers = [
+// 전체 직무 카테고리 옵션
+const jobCategoryOptions = ref([]);
+
+// 상세 보기 모달 상태
+const showDetailModal = ref(false);
+const selectedOffer = ref(null);
+
+// 필터 상태 추가
+const selectedFilter = ref('all'); // 'all', 'accepted', 'pending', 'rejected'
+
+// 필터 옵션
+const filterOptions = [
+  { name: '전체', code: 'all' },
+  { name: '대기중', code: 'JO_ST_1' },
+  { name: '수락', code: 'JO_ST_2' },
+  { name: '거절', code: 'JO_ST_3' }
+];
+
+// 면접 일정 선택을 위한 상태
+const selectedDateIndices = ref({}); // 각 제안별로 선택된 일정을 추적
+
+// 면접 제안 목록
+const offerCompanyList = ref([
   {
     id: 1,
     companyName: '밥스(주)',
     business: '산업용 CFRP 물러, 디스플레이용 로봇핸드, 자동차 부품',
     address: '대전 유성구 국제과학로46(신동)',
     jobOffer: {
-      title: 'IT개발·데이터 | Frontend Developer',
-      detailedWork: '웹 서비스 프론트엔드 개발 및 유지보수',
-      message: '안녕하세요. 귀하의 프로필을 보고 연락드립니다.'
+      title: 'IT개발·데이터 | Frontend Developer'
     },
+    content: '안녕하세요. 귀하의 프로필을 보고 연락드립니다.',
+    positionDetail: '웹 서비스 프론트엔드 개발 및 유지보수',
     status: 'accepted', // 수락된 상태
     isRead: false,
     createdAt: '2024-03-11T10:00:00',
     acceptedAt: '2024-03-12T14:30:00',
-    interviewProposed: true, // 면접 일정이 제안된 상태
+    interviewInfo: true, // 면접 일정이 제안된 상태
     interviewConfirmed: false, // 아직 확정되지 않음
     proposedDates: [
       { date: '2024-03-25', time: '14:00' },
@@ -107,10 +125,10 @@ const mockJobOffers = [
     business: '항공기 제조 및 개발',
     address: '경상남도 사천시 사남면 공단1로 78',
     jobOffer: {
-      title: 'IT개발·데이터 | 항공전자 개발',
-      detailedWork: '항공전자 시스템 개발',
-      message: '귀하의 경력이 저희 회사의 항공전자 개발 직무와 잘 맞을 것 같습니다.'
+      title: 'IT개발·데이터 | 항공전자 개발'
     },
+    content: '귀하의 경력이 저희 회사의 항공전자 개발 직무와 잘 맞을 것 같습니다.',
+    positionDetail: '항공전자 시스템 개발',
     deadline: '2025-03-25',
     status: 'pending',
     isRead: true,
@@ -180,11 +198,11 @@ const mockJobOffers = [
     business: '방위산업 체계 개발',
     address: '서울특별시 강남구 언주로 45',
     jobOffer: {
-      title: 'IT개발·데이터 | 시스템 엔지니어',
-      detailedWork: '방산 체계 시스템 설계 및 개발',
-      message:
-        '안녕하세요. 귀하의 프로필을 보고 연락드립니다. 저희 회사의 시스템 엔지니어 포지션에 적합한 경력을 보유하고 계신 것 같아 면접을 제안드립니다.'
+      title: 'IT개발·데이터 | 시스템 엔지니어'
     },
+    content:
+      '안녕하세요. 귀하의 프로필을 보고 연락드립니다. 저희 회사의 시스템 엔지니어 포지션에 적합한 경력을 보유하고 계신 것 같아 면접을 제안드립니다.',
+    positionDetail: '방산 체계 시스템 설계 및 개발',
     deadline: '2025-04-05',
     status: 'rejected',
     isRead: true,
@@ -256,16 +274,16 @@ const mockJobOffers = [
     business: '철도차량 제작 및 방산장비 개발',
     address: '경상남도 창원시 성산구 창원대로 1003',
     jobOffer: {
-      title: 'IT개발·데이터 | 기계설계 엔지니어',
-      detailedWork: '철도차량 기계설계 및 시스템 개발',
-      message:
-        '안녕하세요. 귀하의 프로필을 검토한 결과, 저희 회사의 기계설계 엔지니어 포지션과 잘 맞을 것 같아 면접을 제안드립니다.'
+      title: 'IT개발·데이터 | 기계설계 엔지니어'
     },
+    content:
+      '안녕하세요. 귀하의 프로필을 검토한 결과, 저희 회사의 기계설계 엔지니어 포지션과 잘 맞을 것 같아 면접을 제안드립니다.',
+    positionDetail: '철도차량 기계설계 및 시스템 개발',
     status: 'accepted',
     isRead: true,
     createdAt: '2024-03-12',
     acceptedAt: '2024-03-17',
-    interviewProposed: false, // 아직 면접 일정이 제안되지 않음
+    interviewInfo: false, // 아직 면접 일정이 제안되지 않음
     interviewConfirmed: false, // 면접 일정이 확정되지 않음
     resumeSnapshot: {
       basicInfo: {
@@ -326,35 +344,54 @@ const mockJobOffers = [
       ]
     }
   }
-];
+]);
 
-// 그 다음에 jobOffers ref 생성
-const jobOffers = ref(mockJobOffers);
+onMounted(() => {
+  getJobCategoryCode();
 
-// 상세 보기 모달 상태
-const showDetailModal = ref(false);
-const selectedOffer = ref(null);
+  getOfferList();
+});
 
-// 면접 일정 선택을 위한 상태
-const selectedDateIndices = ref({}); // 각 제안별로 선택된 일정을 추적
+// 직무 코드 조회
+const getJobCategoryCode = async () => {
+  const response = await getCodeList(`JOB_CATEGORY`);
 
-// 필터 상태 추가
-const selectedFilter = ref('all'); // 'all', 'accepted', 'pending', 'rejected'
+  response.map((item) => {
+    jobCategoryOptions.value.push({
+      name: item.name,
+      code: item.code
+    });
+  });
+};
 
-// 필터 옵션
-const filterOptions = [
-  { label: '전체', value: 'all' },
-  { label: '수락됨', value: 'accepted' },
-  { label: '대기중', value: 'pending' },
-  { label: '거절됨', value: 'rejected' }
-];
+// 직무 코드 변환
+const convertJobCode = (code) => {
+  if (!code) return null;
+
+  let name = '';
+
+  jobCategoryOptions.value.filter((item) => {
+    if (item.code === code) {
+      name = item.name;
+    }
+  });
+
+  return name;
+};
+
+const getOfferList = async () => {
+  const response = await getOfferListByUser();
+
+  offerCompanyList.value = response.contents.filter((com) => {
+    return com?.statusCd === 'JO_ST_1';
+  });
+};
 
 // 필터링된 제안 목록 computed 속성 추가
 const filteredJobOffers = computed(() => {
-  if (selectedFilter.value === 'all') {
-    return jobOffers.value;
-  }
-  return jobOffers.value.filter((offer) => offer.status === selectedFilter.value);
+  return offerCompanyList.value.filter((offer) => {
+    return selectedFilter.value === 'all' || offer.statusCd === selectedFilter.value;
+  });
 });
 
 // 제안 상세 보기
@@ -381,12 +418,12 @@ const acceptOffer = async (offer) => {
     onCloseYes: async () => {
       try {
         // 새로운 객체를 생성하여 할당
-        const index = jobOffers.value.findIndex((o) => o.id === offer.id);
-        jobOffers.value[index] = {
+        const index = offerCompanyList.value.findIndex((o) => o.id === offer.id);
+        offerCompanyList.value[index] = {
           ...offer,
           status: 'accepted',
           acceptedAt: new Date().toISOString(),
-          interviewProposed: false,
+          interviewInfo: false,
           interviewConfirmed: false
         };
 
@@ -447,7 +484,7 @@ const confirmReject = () => {
     acceptClass: 'p-button-danger',
     onCloseYes: () => {
       const offer = offerToReject.value;
-      offer.interviewProposed = false;
+      offer.interviewInfo = false;
       offer.status = 'rejected';
       offer.rejectedAt = new Date().toISOString();
       offer.rejectReason = rejectReason.value;
@@ -470,11 +507,11 @@ const confirmReject = () => {
 };
 
 // 제안 상태에 따른 스타일 클래스
-const getStatusClass = (status) => {
-  switch (status) {
-    case 'accepted':
+const getStatusClass = (statusCd) => {
+  switch (statusCd) {
+    case 'JO_ST_2':
       return 'bg-green-100 text-green-700';
-    case 'rejected':
+    case 'JO_ST_3':
       return 'bg-red-100 text-red-700';
     default:
       return 'bg-yellow-100 text-yellow-700';
@@ -542,7 +579,7 @@ const acceptInterviewSchedule = (offer) => {
     rejectLabel: '취소',
     onCloseYes: () => {
       offer.interviewConfirmed = true;
-      offer.interviewProposed = false;
+      offer.interviewInfo = false;
       offer.interviewDate = selectedDate.date;
       offer.interviewTime = selectedDate.time;
       offer.interviewConfirmedAt = new Date().toISOString();
@@ -648,31 +685,31 @@ const getLatestEducation = (educations) => {
     <div class="flex gap-2 mb-6">
       <button
         v-for="option in filterOptions"
-        :key="option.value"
-        @click="selectedFilter = option.value"
+        :key="option.code"
+        @click="selectedFilter = option.code"
         :class="[
           'px-4 py-2 rounded-full text-sm transition-colors',
-          selectedFilter === option.value ? 'bg-[#8B8BF5] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          selectedFilter === option.code ? 'bg-[#8B8BF5] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
         ]"
       >
-        {{ option.label }}
+        {{ option.name }}
         <!-- 각 상태의 개수 표시 -->
-        <span class="ml-1" v-if="option.value !== 'all'">
-          ({{ jobOffers.filter((offer) => offer.status === option.value).length }})
+        <span class="ml-1" v-if="option.code !== 'all'">
+          ({{ offerCompanyList.filter((offer) => offer.statusCd === option.code).length }})
         </span>
         <!-- 전체 개수 표시 -->
-        <span class="ml-1" v-else> ({{ jobOffers.length }}) </span>
+        <span class="ml-1" v-else> ({{ offerCompanyList?.length }}) </span>
       </button>
     </div>
 
-    <!-- 제안 목록 (filteredJobOffers로 변경) -->
+    <!-- 제안 목록 -->
     <div class="space-y-4">
       <div
         v-for="offer in filteredJobOffers"
         :key="offer.id"
         :class="[
           'bg-white rounded-lg shadow-sm border hover:shadow-lg transition-shadow duration-200 w-full',
-          offer.interviewProposed ? 'border-[#8B8BF5] ring-2 ring-[#8B8BF5] ring-opacity-50' : 'border-gray-200'
+          offer?.interviewInfo ? 'border-[#8B8BF5] ring-2 ring-[#8B8BF5] ring-opacity-50' : 'border-gray-200'
         ]"
       >
         <div class="p-6">
@@ -681,11 +718,11 @@ const getLatestEducation = (educations) => {
             <!-- 회사 정보 및 상태 -->
             <div class="flex items-start justify-between mb-4">
               <div class="flex items-center gap-2">
-                <h3 class="text-lg font-bold">{{ offer.companyName }}</h3>
-                <span :class="getStatusClass(offer.status)" class="px-2 py-1 text-xs rounded">
-                  {{ getStatusText(offer.status) }}
+                <h3 class="text-lg font-bold">{{ offer?.company?.name }}</h3>
+                <span :class="getStatusClass(offer?.statusCd)" class="px-2 py-1 text-xs rounded">
+                  {{ offer?.status?.name }}
                 </span>
-                <span v-if="!offer.isRead" class="bg-red-500 text-white px-2 py-1 rounded text-xs">New</span>
+                <span v-if="!offer?.isRead" class="bg-red-500 text-white px-2 py-1 rounded text-xs">New</span>
               </div>
               <!-- 회신기한을 상단으로 이동 -->
               <div v-if="offer.status === 'pending'" class="text-right">
@@ -715,7 +752,7 @@ const getLatestEducation = (educations) => {
               <p v-if="offer.business" class="text-gray-600 text-sm mb-2">{{ offer.business }}</p>
               <p class="text-gray-500 text-sm flex items-center gap-2">
                 <i class="pi pi-map-marker"></i>
-                {{ offer.address }}
+                {{ offer?.company?.address }}
               </p>
             </div>
 
@@ -730,7 +767,9 @@ const getLatestEducation = (educations) => {
                   </span>
                 </h4>
                 <div class="bg-gray-50 p-4 rounded-lg">
-                  <p class="text-base text-gray-700">{{ offer.jobOffer.title }}</p>
+                  <p class="text-base text-gray-700">
+                    {{ convertJobCode(offer?.jobCategoryCd) }} | {{ offer?.position }}
+                  </p>
                 </div>
               </div>
 
@@ -743,7 +782,7 @@ const getLatestEducation = (educations) => {
                   </span>
                 </h4>
                 <div class="bg-gray-50 p-4 rounded-lg">
-                  <p class="text-base text-gray-700">{{ offer.jobOffer.detailedWork }}</p>
+                  <p class="text-base text-gray-700">{{ offer?.positionDetail }}</p>
                 </div>
               </div>
 
@@ -756,7 +795,7 @@ const getLatestEducation = (educations) => {
                   </span>
                 </h4>
                 <div class="bg-gray-50 p-4 rounded-lg">
-                  <p class="text-base text-gray-700 whitespace-pre-line">{{ offer.jobOffer.message }}</p>
+                  <p class="text-base text-gray-700 whitespace-pre-line">{{ offer?.content }}</p>
                 </div>
               </div>
             </div>
@@ -828,7 +867,7 @@ const getLatestEducation = (educations) => {
                     <span>{{ formatDate(offer.interviewConfirmedAt) }}에 면접 일정이 확정되었습니다</span>
                   </p>
                 </div>
-                <div v-else-if="offer.interviewProposed" class="space-y-4">
+                <div v-else-if="offer?.interviewInfo" class="space-y-4">
                   <!-- 면접 일정 정보를 담은 파란색 박스 -->
                   <div class="bg-blue-50 p-4 rounded-lg">
                     <h4 class="font-medium text-gray-900 mb-2">제안된 면접 일정</h4>
@@ -926,8 +965,8 @@ const getLatestEducation = (educations) => {
       <template #header>
         <div class="flex items-center gap-2">
           <span class="text-xl font-bold">{{ selectedOffer?.companyName }}</span>
-          <span v-if="selectedOffer" :class="getStatusClass(selectedOffer.status)" class="px-2 py-1 text-xs rounded">
-            {{ getStatusText(selectedOffer.status) }}
+          <span v-if="selectedOffer" :class="getStatusClass(selectedOffer.statusCd)" class="px-2 py-1 text-xs rounded">
+            {{ selectedOffer?.status?.name }}
           </span>
         </div>
       </template>
@@ -962,7 +1001,7 @@ const getLatestEducation = (educations) => {
               </span>
             </h4>
             <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-base text-gray-700">{{ selectedOffer.jobOffer.title }}</p>
+              <p class="text-base text-gray-700">{{ convertJobCode(offer?.jobCategoryCd) }} | {{ offer?.position }}</p>
             </div>
           </div>
 
@@ -975,7 +1014,7 @@ const getLatestEducation = (educations) => {
               </span>
             </h4>
             <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-base text-gray-700">{{ selectedOffer.jobOffer.detailedWork }}</p>
+              <p class="text-base text-gray-700">{{ selectedOffer?.positionDetail }}</p>
             </div>
           </div>
 
@@ -988,7 +1027,7 @@ const getLatestEducation = (educations) => {
               </span>
             </h4>
             <div class="bg-gray-50 p-4 rounded-lg">
-              <p class="text-base text-gray-700 whitespace-pre-line">{{ selectedOffer.jobOffer.message }}</p>
+              <p class="text-base text-gray-700 whitespace-pre-line">{{ selectedOffer?.content }}</p>
             </div>
           </div>
         </div>
@@ -1060,7 +1099,7 @@ const getLatestEducation = (educations) => {
                 <span>{{ formatDate(selectedOffer.interviewConfirmedAt) }}에 면접 일정이 확정되었습니다</span>
               </p>
             </div>
-            <div v-else-if="selectedOffer.interviewProposed" class="space-y-4">
+            <div v-else-if="selectedOffer?.interviewInfo" class="space-y-4">
               <!-- 면접 일정 정보를 담은 파란색 박스 -->
               <div class="bg-blue-50 p-4 rounded-lg">
                 <h4 class="font-medium text-gray-900 mb-2">제안된 면접 일정</h4>

@@ -89,3 +89,14 @@ export const deleteCertification = async (id) => {
     console.error(error);
   }
 };
+
+// 면접 제안 리스트 조회 API
+export const getOfferListByUser = async () => {
+  try {
+    const response = await api.get(`/jobOffer`);
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};

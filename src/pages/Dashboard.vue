@@ -1,10 +1,12 @@
 <script setup>
-import { onMounted, ref, toRaw } from 'vue';
-import { useAuthStore } from '@/store/auth/authStore';
-import { storeToRefs } from 'pinia';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { isNil, isNull } from 'es-toolkit/compat';
+import { storeToRefs } from 'pinia';
+
+import { useAuthStore } from '@/store/auth/authStore';
 import { useUserStore } from '@/store/user/userStore';
-import { isNil } from 'es-toolkit/compat';
+import { getOfferListByUser } from '@/apis/user/userApis';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -16,32 +18,10 @@ const bookmarkFlag = ref(true);
 const proposalFlag = ref(false);
 const interviewFlag = ref(false);
 
-const unreadOffers = ref(4);
-
-onMounted(() => {
-  if (!isNil(userInfo.value?.isCompany) && !userInfo.value?.isCompany) {
-    bookmarkFlag.value = false;
-    proposalFlag.value = true;
-    interviewFlag.value = true;
-  }
-
-  // getJobOfferList();
-});
-
-const getJobOfferList = async () => {
-  // TODO: 페이지가 렌더링될때 API호출로 채용제안 갯수를 가져와야함
-  // const body = {
-  //   id: userInfo.id
-  // }
-  // unreadOffers.value = response.filter((item) => item.status === 'pending').length;
-};
-
-// const formatCurrency = (value) => {
-//   return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
-// };
+const unreadOffers = ref(0);
 
 // JobOffersPage.vue의 데이터를 기반으로 한 면접 제안 데이터
-const pendingInterviews = ref([
+const offerCompanies = ref([
   {
     companyName: '밥스(주)',
     position: '항공기계설계',
@@ -73,7 +53,7 @@ const pendingInterviews = ref([
   }
 ]);
 
-const completedInterviews = ref([
+const completedCompanies = ref([
   {
     companyName: '한국로스트왁스',
     position: '생산기술',
@@ -91,43 +71,47 @@ const completedInterviews = ref([
   }
 ]);
 
-// 상태에 따른 텍스트 색상 반환
-const getStatusColor = (status) => {
-  switch (status) {
-    case 'waiting_accept':
-      return 'text-yellow-600';
-    case 'scheduling':
-      return 'text-blue-600';
-    case 'pending_schedule':
-      return 'text-purple-600';
-    case 'accepted':
-      return 'text-green-600';
-    case 'rejected':
-      return 'text-red-600';
-    case 'interview_completed':
-      return 'text-gray-600';
-    default:
-      return 'text-gray-600';
+onMounted(() => {
+  if (!isNil(userInfo.value?.isCompany) && !userInfo.value?.isCompany) {
+    bookmarkFlag.value = false;
+    proposalFlag.value = true;
+    interviewFlag.value = true;
   }
+
+  getJobOfferList();
+});
+
+// 면접 제안 목록 조회
+const getJobOfferList = async () => {
+  const response = await getOfferListByUser();
+
+  // 답변 대기중인 면접 제안
+  unreadOffers.value = response.contents.filter((com) => {
+    return com.statusCd === 'JO_ST_1';
+  }).length;
+
+  //진행중인 면접 : 면접 대기중, 수락 / 면접 결과 미입력
+  offerCompanies.value = response.contents.filter((com) => {
+    return com.statusCd !== 'JO_ST_3' && isNull(com?.resultCd);
+  });
+
+  //완료된 면접 : 면접 거절 / 면접 결과 합격 불합격
+  completedCompanies.value = response.contents.filter((com) => {
+    return com?.statusCd === 'JO_ST_3' || ['INTERVIEW_RESULT_1', 'INTERVIEW_RESULT_2'].includes(com?.resultCd);
+  });
 };
 
-// 상태 텍스트 반환 함수 수정
-const getStatusText = (status, interview) => {
-  switch (status) {
-    case 'waiting_accept':
-      return '면접 수락 대기중';
-    case 'scheduling':
-      return '면접 일정조율중';
-    case 'pending_schedule':
-      return '면접일정선택중';
-    case 'accepted':
-      return interview?.interviewConfirmed ? '면접 일정 확정' : '면접 수락됨';
-    case 'rejected':
-      return '면접 거절됨';
-    case 'interview_completed':
-      return '면접 완료';
+// 상태에 따른 텍스트 색상 반환
+const getStatusColor = (statusCd) => {
+  switch (statusCd) {
+    case 'JO_ST_1':
+      return 'text-yellow-600';
+    case 'JO_ST_2':
+      return 'text-green-600';
+    case 'JO_ST_3':
+      return 'text-red-600';
     default:
-      return '';
+      return 'text-gray-600';
   }
 };
 </script>
@@ -424,18 +408,18 @@ const getStatusText = (status, interview) => {
               <h2 class="text-xl font-bold mb-4">진행중인 면접 제안</h2>
               <div class="space-y-4">
                 <div
-                  v-for="interview in pendingInterviews"
-                  :key="interview.companyName"
+                  v-for="company in offerCompanies"
+                  :key="company?.id"
                   class="p-4 border border-gray-100 rounded-lg hover:shadow-md transition-all"
                 >
                   <div class="flex justify-between items-start">
                     <div>
-                      <h3 class="font-bold text-lg">{{ interview.companyName }}</h3>
-                      <p class="text-gray-600">{{ interview.position }}</p>
-                      <p class="text-sm text-gray-500">{{ interview.date }}</p>
+                      <h3 class="font-bold text-lg">{{ company?.company?.name }}</h3>
+                      <p class="text-gray-600">{{ company?.position }}</p>
+                      <p class="text-sm text-gray-500">{{ company?.createdAt?.slice(0, 10)?.replaceAll('-', '.') }}</p>
                     </div>
-                    <span :class="[getStatusColor(interview.status), 'font-medium']">
-                      {{ getStatusText(interview.status, interview) }}
+                    <span :class="[getStatusColor(company?.statusCd), 'font-medium']">
+                      {{ company?.status?.name }}
                     </span>
                   </div>
                 </div>
@@ -450,18 +434,18 @@ const getStatusText = (status, interview) => {
               <h2 class="text-xl font-bold mb-4">완료된 면접 제안</h2>
               <div class="space-y-4">
                 <div
-                  v-for="interview in completedInterviews"
-                  :key="interview.companyName"
+                  v-for="company in completedCompanies"
+                  :key="company.id"
                   class="p-4 border border-gray-100 rounded-lg hover:shadow-md transition-all"
                 >
                   <div class="flex justify-between items-start">
                     <div>
-                      <h3 class="font-bold text-lg">{{ interview.companyName }}</h3>
-                      <p class="text-gray-600">{{ interview.position }}</p>
-                      <p class="text-sm text-gray-500">{{ interview.date }}</p>
+                      <h3 class="font-bold text-lg">{{ company?.company?.name }}</h3>
+                      <p class="text-gray-600">{{ company?.position }}</p>
+                      <p class="text-sm text-gray-500">{{ company?.createdAt?.slice(0, 10)?.replaceAll('-', '.') }}</p>
                     </div>
-                    <span :class="[getStatusColor(interview.status), 'font-medium']">
-                      {{ getStatusText(interview.status, interview) }}
+                    <span :class="[getStatusColor(company?.statusCd), 'font-medium']">
+                      {{ company?.status?.name }}
                     </span>
                   </div>
                 </div>
