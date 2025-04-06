@@ -24,10 +24,13 @@ const router = createRouter({
       children: [
         ...policyRouter,
         ...commonRouter,
-        ...adminRouter,
         ...companyRouter,
         ...userRouter
       ]
+    },
+    {
+      path: '/',
+      children: adminRouter
     }
     // {
     //   path: '/landing',
