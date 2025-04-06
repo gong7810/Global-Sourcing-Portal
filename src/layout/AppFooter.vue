@@ -20,9 +20,9 @@
             </div>
 
             <div class="flex gap-6 text-sm">
-                <a href="#" class="text-blue-900 font-medium">개인정보처리방침</a>
-                <a href="#" class="text-gray-600">이용약관</a>
-                <a href="#" class="text-gray-600">이용자 준수사항</a>
+                <router-link to="/policy/privacy" class="text-blue-900 font-medium">개인정보처리방침</router-link>
+                <router-link to="/policy/terms" class="text-gray-600">이용약관</router-link>
+                <!-- <router-link to="/policy/rules" class="text-gray-600">이용자 준수사항</router-link> -->
             </div>
         </div>
     </div>

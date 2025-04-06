@@ -5,6 +5,7 @@ import { adminRouter } from '@/router/admin/adminRouter';
 import { commonRouter } from '@/router/common/commonRouter';
 import { companyRouter } from '@/router/company/companyRouter';
 import { userRouter } from '@/router/user/userRouter';
+import { policyRouter } from '@/router/policy/policyRouter';
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
 import { AUTH_EXCLUSIONS_ROUTER_NAME } from '@/apis/auth/authConstants';
@@ -20,22 +21,13 @@ const router = createRouter({
     {
       path: '/',
       component: AppLayout,
-      children: commonRouter
-    },
-    {
-      path: '/',
-      // component: AppLayout,
-      children: adminRouter
-    },
-    {
-      path: '/',
-      component: AppLayout,
-      children: companyRouter
-    },
-    {
-      path: '/',
-      component: AppLayout,
-      children: userRouter
+      children: [
+        ...policyRouter,
+        ...commonRouter,
+        ...adminRouter,
+        ...companyRouter,
+        ...userRouter
+      ]
     }
     // {
     //   path: '/landing',
