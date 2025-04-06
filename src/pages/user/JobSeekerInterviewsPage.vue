@@ -191,11 +191,18 @@ const isInterviewCompleted = (interview) => {
     </div>
 
     <!-- 필터링된 결과가 없을 때 표시할 메시지 -->
-    <div v-if="filteredInterviews.length === 0" class="text-center py-12">
-      <div class="text-gray-500">
-        <i class="pi pi-inbox text-4xl mb-4"></i>
-        <p class="text-lg">해당하는 면접 결과가 없습니다</p>
-      </div>
+    <div v-if="filteredInterviews.length === 0" class="p-8 text-center border border-gray-100 rounded-lg bg-gray-50">
+      <svg
+        class="w-12 h-12 text-gray-400 mx-auto mb-4"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <p class="text-gray-500 font-medium">해당하는 면접 결과가 없습니다</p>
+      <p class="text-gray-400 text-sm mt-1">면접이 완료되면 여기에 결과가 표시됩니다</p>
     </div>
   </div>
 </template>
