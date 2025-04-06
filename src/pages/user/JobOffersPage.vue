@@ -78,6 +78,7 @@ const convertJobCode = (code) => {
   return name;
 };
 
+// 면접 제안 현황 목록 조회
 const getOfferList = async () => {
   const response = await getOfferListByUser();
 
@@ -247,7 +248,7 @@ const acceptInterviewSchedule = (offer) => {
     message: `<div class="text-center">
       <p class="text-xl mb-2">면접 일정을 수락하시겠습니까?</p>
       <p class="text-md text-gray-600 mb-2">일시: ${selectedDate?.slice(0, 10)?.replaceAll('-', '.')} ${selectedDate?.slice(11, 16)}</p>
-      <p class="text-sm text-gray-600">면접 방식: ${offer.interviewTypeCd === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접'}</p>
+      <p class="text-sm text-gray-600">면접 방식: ${offer?.interviewType?.name}</p>
       <p class="text-sm text-gray-600 mb-4">장소/링크: ${offer.interviewInfo}</p>
       <p class="text-sm text-blue-600">확인 시 기업 담당자에게 알림과 메일이 발송됩니다.</p>
     </div>`,
@@ -507,7 +508,7 @@ const calculatePeriod = (period) => {
                     <div class="flex items-center gap-2">
                       <i class="pi pi-video text-green-600"></i>
                       <span class="text-gray-700">
-                        {{ offer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접' }}
+                        {{ offer?.interviewType?.name }}
                       </span>
                     </div>
                     <div class="flex items-center gap-2">

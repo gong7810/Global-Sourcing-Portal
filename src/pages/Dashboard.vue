@@ -23,23 +23,7 @@ const unreadOffers = ref(0);
 // JobOffersPage.vue의 데이터를 기반으로 한 면접 제안 데이터
 const offerCompanies = ref([]);
 
-const completedCompanies = ref([
-  {
-    companyName: '한국로스트왁스',
-    position: '생산기술',
-    status: 'rejected',
-    date: '2024-03-10'
-  },
-  {
-    companyName: '한화에어로스페이스',
-    position: '항공기계설계',
-    status: 'interview_completed',
-    date: '2024-03-05',
-    interviewDate: '2024-03-19',
-    interviewTime: '10:00',
-    completedAt: '2024-03-19T11:30:00'
-  }
-]);
+const completedCompanies = ref([]);
 
 onMounted(() => {
   if (!isNil(userInfo.value?.isCompany) && !userInfo.value?.isCompany) {
@@ -225,7 +209,7 @@ const getStatusColor = (statusCd) => {
               </div>
             </div>
             <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">
-              면접제안
+              면접 제안
             </span>
           </div>
           <div
@@ -408,7 +392,7 @@ const getStatusColor = (statusCd) => {
                       <p class="text-sm text-gray-500">{{ company?.createdAt?.slice(0, 10)?.replaceAll('-', '.') }}</p>
                     </div>
                     <span :class="[getStatusColor(company?.statusCd), 'font-medium']">
-                      {{ company?.status?.name }}
+                      {{ company?.result ? company?.result?.name : company?.status?.name }}
                     </span>
                   </div>
                 </div>

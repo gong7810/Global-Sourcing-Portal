@@ -1,74 +1,91 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import Button from 'primevue/button';
+import { getCodeList } from '@/apis/common/commonApis';
+import { getOfferListByUser } from '@/apis/user/userApis';
 
 const router = useRouter();
 
 // 면접 목록 데이터
-const interviews = ref([
-  {
-    id: 1,
-    company: {
-      name: '(주)테크솔루션',
-      logo: '/images/company-logo.png'
-    },
-    jobCategory: { label: 'IT개발·데이터', value: 'it' },
-    position: 'Frontend Developer',
-    interviewDate: '2024-03-22',
-    interviewType: 'online',
-    result: 'passed', // passed, failed, pending, null
-    feedback: '기술력이 우수하고 커뮤니케이션 능력이 뛰어남',
-    resultUpdatedAt: '2024-03-23'
-  },
-  {
-    id: 2,
-    company: {
-      name: '(주)비티포탈',
-    },
-    jobCategory: { label: 'IT개발·데이터', value: 'it' },
-    position: 'Frontend Developer',
-    interviewDate: '2024-03-15',
-    interviewType: 'offline',
-    result: 'failed',
-    feedback: '기술 스택이 부족하고 프로젝트 경험이 저희가 찾는 방향과 맞지 않아 아쉽습니다. 더 많은 실무 경험을 쌓으신 후 다시 지원해주시면 좋을 것 같습니다.',
-    resultUpdatedAt: '2024-03-16'
-  }
-  // ... 다른 면접 데이터
-]);
+const offerCompanies = ref([]);
 
 // 필터 상태 추가
 const selectedFilter = ref('all'); // 'all', 'passed', 'failed'
 
+// 전체 직무 카테고리 옵션
+const jobCategoryOptions = ref([]);
+
 // 필터 옵션
 const filterOptions = [
-  { label: '전체', value: 'all' },
-  { label: '합격', value: 'passed' },
-  { label: '불합격', value: 'failed' }
+  { name: '전체', code: 'all' },
+  { name: '합격', code: 'INTERVIEW_RESULT_1' },
+  { name: '불합격', code: 'INTERVIEW_RESULT_2' }
 ];
+
+onMounted(() => {
+  getJobCategoryCode();
+
+  getOfferResult();
+});
+
+// 직무 코드 조회
+const getJobCategoryCode = async () => {
+  const response = await getCodeList(`JOB_CATEGORY`);
+
+  response.map((item) => {
+    jobCategoryOptions.value.push({
+      name: item.name,
+      code: item.code
+    });
+  });
+};
+
+// 직무 코드 변환
+const convertJobCode = (code) => {
+  if (!code) return null;
+
+  let name = '';
+
+  jobCategoryOptions.value.filter((item) => {
+    if (item.code === code) {
+      name = item.name;
+    }
+  });
+
+  return name;
+};
+
+// 면접 결과 현황 리스트 조회
+const getOfferResult = async () => {
+  const response = await getOfferListByUser();
+
+  offerCompanies.value = response.contents.filter((com) => {
+    return ['INTERVIEW_RESULT_1', 'INTERVIEW_RESULT_2'].includes(com?.resultCd);
+  });
+};
 
 // 필터링된 면접 목록
 const filteredInterviews = computed(() => {
-  if (selectedFilter.value === 'all') {
-    return interviews.value;
-  }
-  return interviews.value.filter(interview => interview.result === selectedFilter.value);
+  return offerCompanies.value.filter(
+    (interview) => selectedFilter.value === 'all' || interview.resultCd === selectedFilter.value
+  );
 });
 
 // 결과에 따른 스타일과 텍스트
-const getResultInfo = (result) => {
-  switch (result) {
-    case 'passed':
+const getResultInfo = (resultCd) => {
+  switch (resultCd) {
+    case 'INTERVIEW_RESULT_1':
       return {
         text: '합격',
         class: 'bg-green-50 text-green-600'
       };
-    case 'failed':
+    case 'INTERVIEW_RESULT_2':
       return {
         text: '불합격',
         class: 'bg-red-50 text-red-600'
       };
-    case 'pending':
+    case 'INTERVIEW_RESULT_3':
       return null; // 보류는 구직자에게 표시하지 않음
     default:
       return {
@@ -103,31 +120,26 @@ const isInterviewCompleted = (interview) => {
     <div class="flex gap-2 mb-6">
       <button
         v-for="option in filterOptions"
-        :key="option.value"
-        @click="selectedFilter = option.value"
+        :key="option.code"
+        @click="selectedFilter = option.code"
         :class="[
           'px-4 py-2 rounded-full text-sm transition-colors',
-          selectedFilter === option.value
-            ? 'bg-[#8B8BF5] text-white'
-            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          selectedFilter === option.code ? 'bg-[#8B8BF5] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
         ]"
       >
-        {{ option.label }}
+        {{ option.name }}
         <!-- 각 상태의 개수 표시 -->
-        <span class="ml-1" v-if="option.value !== 'all'">
-          ({{ interviews.filter(interview => interview.result === option.value).length }})
+        <span class="ml-1" v-if="option.code !== 'all'">
+          ({{ offerCompanies.filter((interview) => interview.resultCd === option.code).length }})
         </span>
         <!-- 전체 개수 표시 -->
-        <span class="ml-1" v-else>
-          ({{ interviews.length }})
-        </span>
+        <span class="ml-1" v-else> ({{ offerCompanies.length }}) </span>
       </button>
     </div>
 
-    <!-- 면접 목록 (filteredInterviews로 변경) -->
+    <!-- 면접 목록 -->
     <div class="grid grid-cols-1 gap-4">
-      <div v-for="interview in filteredInterviews" :key="interview.id"
-        class="bg-white rounded-lg p-6 shadow-sm">
+      <div v-for="interview in filteredInterviews" :key="interview.id" class="bg-white rounded-lg p-6 shadow-sm">
         <div class="flex justify-between items-start mb-4">
           <!-- 회사 정보 -->
           <div>
@@ -135,16 +147,14 @@ const isInterviewCompleted = (interview) => {
           </div>
 
           <!-- 면접 결과 -->
-          <div v-if="isInterviewCompleted(interview)" class="text-right">
-            <div v-if="interview.result && interview.result !== 'pending'" 
-              class="mb-2"
-            >
-              <span :class="`px-3 py-1 rounded-full text-sm ${getResultInfo(interview.result).class}`">
-                {{ getResultInfo(interview.result).text }}
+          <div v-if="interview?.result && interview?.resultCd !== 'INTERVIEW_RESULT_3'" class="text-right">
+            <div class="mb-2">
+              <span :class="`px-3 py-1 rounded-full text-sm ${getResultInfo(interview.resultCd).class}`">
+                {{ getResultInfo(interview?.resultCd).text }}
               </span>
             </div>
-            <div v-if="interview.resultUpdatedAt" class="text-sm text-gray-500">
-              결과 발표일: {{ interview.resultUpdatedAt }}
+            <div class="text-sm text-gray-500">
+              결과 발표일: {{ interview?.updatedAt?.slice(0, 10).replaceAll('-', '.') }}
             </div>
           </div>
         </div>
@@ -153,27 +163,28 @@ const isInterviewCompleted = (interview) => {
         <div class="border-t pt-4">
           <div class="mb-4">
             <h4 class="text-base font-bold text-gray-900 mb-2">직무 · 제안 포지션</h4>
-            <p class="text-gray-600">
-              {{ interview.jobCategory?.label || 'IT개발·데이터' }} | {{ interview.position }}
-            </p>
+            <p class="text-gray-600">{{ convertJobCode(interview?.jobCategoryCd) }} | {{ interview?.position }}</p>
           </div>
-          
+
           <div class="mb-4">
             <h4 class="text-base font-bold text-gray-900 mb-2">면접 일시</h4>
-            <p class="text-gray-600">{{ interview.interviewDate }}</p>
+            <p class="text-gray-600">
+              {{ interview?.interviewTime?.slice(0, 10).replaceAll('-', '.') }} &nbsp;
+              {{ interview?.interviewTime?.slice(11, 16) }}
+            </p>
           </div>
 
           <div class="mb-4">
             <h4 class="text-base font-bold text-gray-900 mb-2">면접 방식</h4>
             <p class="text-gray-600">
-              {{ interview.interviewType === 'online' ? '화상 면접' : '대면 면접' }}
+              {{ interview?.interviewType?.name }}
             </p>
           </div>
 
           <!-- 합격/불합격 피드백 표시 -->
-          <div v-if="interview.result && interview.result !== 'pending' && interview.feedback">
-            <h4 class="text-base font-bold text-gray-900 mb-2">피드백</h4>
-            <p class="text-gray-600 whitespace-pre-line">{{ interview.feedback }}</p>
+          <div v-if="interview?.result && interview?.resultCd !== 'INTERVIEW_RESULT_3' && interview?.resultMemo">
+            <h4 class="text-base font-bold text-gray-900 mb-2">{{ interview?.result?.value ? '메세지' : '피드백' }}</h4>
+            <p class="text-gray-600 whitespace-pre-line">{{ interview?.resultMemo }}</p>
           </div>
         </div>
       </div>
