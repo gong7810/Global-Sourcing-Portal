@@ -620,12 +620,16 @@ watch(
 );
 
 // 최종학력 교체
-const setLastEducation = (selectedIndex) => {
+const setLastEducation = async (education, selectedIndex) => {
   educationList.value.forEach((edu, index) => {
-    edu.isFinal = index === selectedIndex;
+    if (index === selectedIndex) {
+      edu.isFinal = !edu.isFinal;
+    }
 
     basicInfo.value.finalEducation = `${edu.schoolName} ${edu.major} ${edu.isGraduated ? '졸업' : '재학중'}`;
   });
+
+  await upsertEducation(education);
 };
 
 const closeEducationModal = () => {
@@ -1290,7 +1294,7 @@ const clearCertificationFile = (index) => {
                     <div class="flex items-center gap-3 mb-2">
                       <Checkbox
                         :modelValue="education.isFinal"
-                        @update:modelValue="setLastEducation(index)"
+                        @update:modelValue="setLastEducation(education, index)"
                         :binary="true"
                       />
                       <label class="text-sm text-gray-600">최종학력으로 설정</label>

@@ -2,8 +2,11 @@
   "name": "sakai-vue",
   "version": "4.1.0",
   "scripts": {
-    "dev": "vite --port 5173",
+    "dev": "vite --mode development",
+    "prod": "vite --mode production",
     "build": "vite build",
+    "build:dev": "vite build --mode development",
+    "build:prod": "vite build --mode production",
     "preview": "vite preview",
     "lint": "eslint --fix . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore"
   },

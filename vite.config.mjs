@@ -23,14 +23,14 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
-  },
-  server: {
-    proxy: {
-      '/api': {
-        target: process.env.VITE_API_URL,
-        rewrite: (path) => path.replace(/^\/api/, ''),
-        changeOrigin: true
-      }
-    }
   }
+  // server: {
+  //   proxy: {
+  //     '/api': {
+  //       target: process.env.VITE_API_URL,
+  //       rewrite: (path) => path.replace(/^\/api/, ''),
+  //       changeOrigin: true
+  //     }
+  //   }
+  // }
 });

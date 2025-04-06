@@ -10,7 +10,7 @@ export function useApi() {
 
   // Axios 인스턴스 생성
   const api = axios.create({
-    baseURL: 'http://localhost:5173/api',
+    baseURL: import.meta.env.VITE_API_URL,
     headers: {
       'Content-Type': 'application/json',
       Authorization: tokenInfo.value?.accessToken ? `Bearer ${tokenInfo.value.accessToken}` : ''

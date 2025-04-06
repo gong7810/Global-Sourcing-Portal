@@ -21,8 +21,10 @@ yarn.lock
 .DS_Store
 .idea
 .env.local
+.env.development
 .env.development.local
 .env.test.local
+.env.production
 .env.production.local
 .env
 
