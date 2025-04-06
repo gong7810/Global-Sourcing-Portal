@@ -19,6 +19,7 @@ const { userInfo } = storeToRefs(authStore);
 const showResumeModal = ref(false);
 const selectedCandidate = ref(null);
 const isAccepted = ref(false);
+const isLoading = ref(false);
 
 const koreanLv = ref('');
 const koreanLevelList = ref([]);
@@ -173,6 +174,7 @@ watch(
 
 // 인재 필터 조회
 const searchTalents = async () => {
+  isLoading.value = true;
   let fromPeriod = '';
   let toPeriod = '';
 
@@ -206,9 +208,15 @@ const searchTalents = async () => {
     return acc;
   }, []);
 
-  const response = await getResumeList(queryList.join('&'));
-
-  talents.value = response.contents;
+  try {
+    const response = await getResumeList(queryList.join('&'));
+    talents.value = response.contents;
+  } catch (error) {
+    console.error('Error fetching talents:', error);
+    talents.value = [];
+  } finally {
+    isLoading.value = false;
+  }
 };
 
 // 이력서 모달 열기
@@ -355,7 +363,13 @@ const openInterviewOffer = (talent) => {
 
     <!-- 인재 목록 -->
     <div class="grid grid-cols-1 gap-4">
-      <div v-if="talents.length === 0" class="bg-white rounded-lg p-6 shadow-sm text-center text-gray-500">
+      <div v-if="isLoading" class="bg-white rounded-lg p-6 shadow-sm text-center">
+        <div class="flex flex-col items-center justify-center gap-4">
+          <i class="pi pi-spin pi-spinner text-4xl text-[#8B8BF5]"></i>
+          <p class="text-gray-600">인재 정보를 조회중입니다...</p>
+        </div>
+      </div>
+      <div v-else-if="talents.length === 0" class="bg-white rounded-lg p-6 shadow-sm text-center text-gray-500">
         등록된 인재가 없습니다.
       </div>
       <div
