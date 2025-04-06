@@ -15,6 +15,8 @@ export const AUTH_EXCLUSIONS_ROUTER_NAME = [
   'findPasswordResult',
   'InquiryPage',
   'FaqPage',
+  'PrivacyPolicy',
+  'TermsOfService',
   /* 이상 로그인 없이 접근 가능 */
   // 'userIndex',
   // 'businessIndex',
