@@ -1,10 +1,6 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
-import Textarea from 'primevue/textarea';
-import Dropdown from 'primevue/dropdown';
 import { createInquiry } from '@/apis/common/commonApis';
 import { useToast } from 'primevue/usetoast';
 
@@ -16,7 +12,7 @@ const inquiryForm = ref({
   category: null,
   title: '',
   content: '',
-  email: '',
+  email: ''
   // phone: ''
 });
 
@@ -50,7 +46,7 @@ const submitInquiry = async () => {
     loading.value = true;
     const response = await createInquiry(inquiryForm.value);
     console.log('문의하기 응답:', response);
-    
+
     if (response) {
       toast.add({ severity: 'success', summary: '성공', detail: '문의가 정상적으로 접수되었습니다.', life: 3000 });
       setTimeout(() => {
@@ -61,11 +57,11 @@ const submitInquiry = async () => {
     }
   } catch (error) {
     console.error('문의하기 등록 실패:', error);
-    toast.add({ 
-      severity: 'error', 
-      summary: '오류', 
-      detail: error.message || '문의 등록에 실패했습니다. 다시 시도해주세요.', 
-      life: 3000 
+    toast.add({
+      severity: 'error',
+      summary: '오류',
+      detail: error.message || '문의 등록에 실패했습니다. 다시 시도해주세요.',
+      life: 3000
     });
   } finally {
     loading.value = false;
@@ -76,29 +72,29 @@ const submitInquiry = async () => {
 <template>
   <div class="max-w-[800px] mx-auto px-4 py-12">
     <div class="flex items-center gap-4 mb-8">
-      <i class="pi pi-angle-left text-4xl text-gray-600 cursor-pointer transition-colors hover:text-[#8FA1FF]" 
-        @click="router.back()"></i>
+      <i
+        class="pi pi-angle-left text-4xl text-gray-600 cursor-pointer transition-colors hover:text-[#8FA1FF]"
+        @click="router.back()"
+      ></i>
       <h1 class="text-3xl font-bold">문의하기</h1>
     </div>
-    
+
     <div class="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
       <form @submit.prevent="submitInquiry" class="space-y-6">
         <div>
           <label class="block text-gray-700 font-medium mb-2">문의 유형</label>
-          <Dropdown
+          <Select
             v-model="inquiryForm.category"
             :options="categories"
             optionLabel="label"
             placeholder="문의 유형을 선택해주세요"
-            class="w-full" />
+            class="w-full"
+          />
         </div>
 
         <div>
           <label class="block text-gray-700 font-medium mb-2">제목</label>
-          <InputText
-            v-model="inquiryForm.title"
-            placeholder="문의 제목을 입력해주세요"
-            class="w-full" />
+          <InputText v-model="inquiryForm.title" placeholder="문의 제목을 입력해주세요" class="w-full" />
         </div>
 
         <div>
@@ -107,7 +103,8 @@ const submitInquiry = async () => {
             v-model="inquiryForm.content"
             placeholder="문의하실 내용을 자세히 적어주세요"
             rows="6"
-            class="w-full" />
+            class="w-full"
+          />
         </div>
 
         <div>
@@ -116,7 +113,8 @@ const submitInquiry = async () => {
             v-model="inquiryForm.email"
             type="email"
             placeholder="답변받으실 이메일 주소를 입력해주세요"
-            class="w-full" />
+            class="w-full"
+          />
         </div>
 
         <!-- <div>
@@ -128,15 +126,8 @@ const submitInquiry = async () => {
         </div> -->
 
         <div class="flex justify-end gap-4">
-          <Button
-            type="button"
-            label="취소"
-            class="p-button-outlined p-button-secondary"
-            @click="router.back()" />
-          <Button
-            type="submit"
-            label="문의하기"
-            :loading="loading" />
+          <Button type="button" label="취소" class="p-button-outlined p-button-secondary" @click="router.back()" />
+          <Button type="submit" label="문의하기" :loading="loading" />
         </div>
       </form>
     </div>
@@ -156,13 +147,13 @@ const submitInquiry = async () => {
 }
 
 :deep(.p-button.p-button-outlined) {
-  color: #8FA1FF;
-  border-color: #8FA1FF;
+  color: #8fa1ff;
+  border-color: #8fa1ff;
 }
 
 :deep(.p-button.p-button-outlined:hover) {
   background: rgba(143, 161, 255, 0.1);
-  border-color: #8FA1FF;
-  color: #8FA1FF;
+  border-color: #8fa1ff;
+  color: #8fa1ff;
 }
 </style>

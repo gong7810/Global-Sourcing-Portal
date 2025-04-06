@@ -678,9 +678,9 @@ const openInterviewOffer = async (talent, isPage) => {
               :key="index"
               class="mb-4 pb-4 border-b last:border-b-0"
             >
-              <div class="font-medium mb-1">{{ cert.name }}</div>
-              <div class="font-medium mb-1">발급기관 : {{ cert.issuer }}</div>
-              <div class="text-gray-600">취득일 : {{ cert.acquiredDt.slice(0, 10).replaceAll('-', '.') }}</div>
+              <div class="font-medium mb-1">{{ cert?.name }}</div>
+              <div class="font-medium mb-1">발급기관 : {{ cert?.issuer }}</div>
+              <div class="text-gray-600">취득일 : {{ cert?.acquiredDt.slice(0, 10).replaceAll('-', '.') }}</div>
             </div>
           </div>
 

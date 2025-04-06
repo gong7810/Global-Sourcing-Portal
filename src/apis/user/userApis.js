@@ -100,3 +100,14 @@ export const getOfferListByUser = async () => {
     console.error(error);
   }
 };
+
+// 면접 제안 답변 API
+export const answerOffer = async (body) => {
+  try {
+    const response = await api.post(`/jobOffer`, body);
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
