@@ -103,7 +103,9 @@ watch(
       // console.log('Initialized editedUser:', editedUser.value); // 디버깅용
 
       // 이미지 설정
-      imagePreview.value = `${import.meta.env.VITE_UPLOAD_PATH}/${newUser.imageFile.fileName}` || 'default-profile.jpg';
+      imagePreview.value = newUser?.imageFile
+        ? `${import.meta.env.VITE_UPLOAD_PATH}/${newUser?.imageFile?.fileName}`
+        : '/default-profile.jpg';
     }
   },
   { immediate: true }
