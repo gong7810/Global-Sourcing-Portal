@@ -952,10 +952,12 @@ const getLatestEducation = (educations) => {
     </div>
 
     <!-- 필터링된 결과가 없을 때 표시할 메시지 -->
-    <div v-if="filteredJobOffers.length === 0" class="text-center py-12">
-      <div class="text-gray-500">
-        <i class="pi pi-inbox text-4xl mb-4"></i>
-        <p class="text-lg">해당하는 면접 제안이 없습니다</p>
+    <div v-if="filteredJobOffers.length === 0" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div class="text-center py-12">
+        <div class="text-gray-500">
+          <i class="pi pi-inbox text-4xl mb-4"></i>
+          <p class="text-lg">해당하는 면접 제안이 없습니다</p>
+        </div>
       </div>
     </div>
 
