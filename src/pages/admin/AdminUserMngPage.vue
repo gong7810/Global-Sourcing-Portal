@@ -52,7 +52,7 @@ const fetchUsers = async () => {
   try {
     // 빈 문자열 필터 제거
     const cleanFilters = {};
-    Object.keys(filters.value).forEach(key => {
+    Object.keys(filters.value).forEach((key) => {
       if (filters.value[key] !== null && filters.value[key] !== '') {
         // role 파라미터를 roleCd로 변경
         if (key === 'role') {
@@ -66,39 +66,39 @@ const fetchUsers = async () => {
         }
       }
     });
-    
+
     const params = {
       page: pagination.value.page,
       perPage: 10,
       ...cleanFilters
     };
-    
+
     // console.log('검색 파라미터:', params);
     // console.log('원본 필터 값:', filters.value);
     // console.log('정리된 필터 값:', cleanFilters);
-    
+
     // API 호출 전에 파라미터 확인
     if (params.roleCd) {
       // console.log('API 호출 전 roleCd 확인:', params.roleCd);
     }
-    
+
     const response = await getUserList(params);
     // console.log('API 응답:', response);
-    
+
     // 응답 데이터 처리
     if (response && response.contents) {
-      users.value = response.contents.map(user => ({
+      users.value = response.contents.map((user) => ({
         ...user,
         role_cd: user.role_cd || user.roleCd || user.role
       }));
-      
+
       if (response.pagination) {
         pagination.value = {
           page: Number(response.pagination.page) || 1,
           totalCount: Number(response.pagination.totalCount) || 0
         };
       }
-      
+
       // console.log('처리된 사용자 데이터:', users.value);
     } else {
       users.value = [];
@@ -197,13 +197,13 @@ const openStatusModal = async (user) => {
   statusReason.value = '';
   suspendEndDate.value = '';
   selectedNewStatus.value = user.enabled ? USER_STATUS.ACTIVE : USER_STATUS.SUSPENDED;
-  
+
   // 사용자 상태 이력 조회
   const statusHistory = await fetchUserStatus(user.id);
   if (statusHistory) {
     statusReason.value = statusHistory.memo || '';
   }
-  
+
   showStatusModal.value = true;
 };
 
@@ -260,6 +260,7 @@ const handleImageError = (e) => {
 };
 
 const openDetailModal = (user) => {
+  console.log(user);
   selectedUser.value = user;
   showDetailModal.value = true;
 };
@@ -273,13 +274,13 @@ const handleUserUpdate = async (updatedUser) => {
   try {
     // API 호출
     const response = await updateUser(updatedUser);
-    
+
     // 성공 시 목록 새로고침
     await fetchUsers();
-    
+
     // 업데이트된 사용자 정보로 selectedUser 업데이트
     selectedUser.value = response;
-    
+
     // 성공 메시지 표시
     toast.add({
       severity: 'success',
@@ -329,10 +330,10 @@ const getRoleLabel = (role) => {
   if (typeof role === 'object') {
     return role.name || '-';
   }
-  
+
   // role_cd 또는 role 필드에서 권한 코드 가져오기
   const roleCode = typeof role === 'string' ? role : role?.role_cd || role?.roleCd;
-  
+
   // 역할 코드를 레이블로 변환
   switch (roleCode) {
     case 'ROLE_USER':
@@ -481,33 +482,47 @@ const getGenderLabel = (gender) => {
           <!-- 페이지네이션 -->
           <div class="pagination-container">
             <div class="pagination-info">
-              총 {{ pagination.totalCount }}건 중 {{ (pagination.page - 1) * 10 + 1 }}-{{ Math.min(pagination.page * 10, pagination.totalCount) }}건
+              총 {{ pagination.totalCount }}건 중 {{ (pagination.page - 1) * 10 + 1 }}-{{
+                Math.min(pagination.page * 10, pagination.totalCount)
+              }}건
             </div>
             <div class="pagination-controls">
               <Button
                 icon="pi pi-angle-double-left"
                 class="p-button-text"
                 :disabled="pagination.page === 1"
-                @click="pagination.page = 1; fetchUsers()"
+                @click="
+                  pagination.page = 1;
+                  fetchUsers();
+                "
               />
               <Button
                 icon="pi pi-angle-left"
                 class="p-button-text"
                 :disabled="pagination.page === 1"
-                @click="pagination.page--; fetchUsers()"
+                @click="
+                  pagination.page--;
+                  fetchUsers();
+                "
               />
               <span class="mx-2">{{ pagination.page }}</span>
               <Button
                 icon="pi pi-angle-right"
                 class="p-button-text"
                 :disabled="pagination.page * 10 >= pagination.totalCount"
-                @click="pagination.page++; fetchUsers()"
+                @click="
+                  pagination.page++;
+                  fetchUsers();
+                "
               />
               <Button
                 icon="pi pi-angle-double-right"
                 class="p-button-text"
                 :disabled="pagination.page * 10 >= pagination.totalCount"
-                @click="pagination.page = Math.ceil(pagination.totalCount / 10); fetchUsers()"
+                @click="
+                  pagination.page = Math.ceil(pagination.totalCount / 10);
+                  fetchUsers();
+                "
               />
             </div>
           </div>
@@ -542,7 +557,7 @@ const getGenderLabel = (gender) => {
                     </tr>
                     <tr>
                       <th>생년월일</th>
-                      <td>{{ selectedUser?.birthDate || '-' }}</td>
+                      <td>{{ selectedUser?.birth || '-' }}</td>
                     </tr>
                     <tr>
                       <th>모바일</th>
@@ -554,11 +569,11 @@ const getGenderLabel = (gender) => {
                     </tr>
                     <tr>
                       <th>권한</th>
-                      <td>{{ getRoleLabel(selectedUser?.role_cd || selectedUser?.role) }}</td>
+                      <td>{{ getRoleLabel(selectedUser?.roleCd || selectedUser?.role) }}</td>
                     </tr>
                     <tr>
                       <th>성별</th>
-                      <td>{{ getGenderLabel(selectedUser?.gender) }}</td>
+                      <td>{{ selectedUser?.gender.name }}</td>
                     </tr>
                     <tr>
                       <th>고용주 여부</th>
@@ -732,19 +747,44 @@ const getGenderLabel = (gender) => {
         }
 
         // 각 컬럼별 최대 너비 설정
-        td, th {
-          &:nth-child(1) { width: 40px; } // 체크박스
-          &:nth-child(2) { width: 60px; } // 순번
-          &:nth-child(3) { width: 100px; } // 로그인 ID
-          &:nth-child(4) { width: 120px; } // 이름
-          &:nth-child(5) { width: 120px; } // 모바일
-          &:nth-child(6) { width: 180px; } // 이메일
-          &:nth-child(7) { width: 80px; } // 권한
-          &:nth-child(8) { width: 60px; } // 성별
-          &:nth-child(9) { width: 60px; } // 고용주
-          &:nth-child(10) { width: 60px; } // Active
-          &:nth-child(11) { width: 140px; } // 생성일시
-          &:nth-child(12) { width: 140px; } // 수정일시
+        td,
+        th {
+          &:nth-child(1) {
+            width: 40px;
+          } // 체크박스
+          &:nth-child(2) {
+            width: 60px;
+          } // 순번
+          &:nth-child(3) {
+            width: 100px;
+          } // 로그인 ID
+          &:nth-child(4) {
+            width: 120px;
+          } // 이름
+          &:nth-child(5) {
+            width: 120px;
+          } // 모바일
+          &:nth-child(6) {
+            width: 180px;
+          } // 이메일
+          &:nth-child(7) {
+            width: 80px;
+          } // 권한
+          &:nth-child(8) {
+            width: 60px;
+          } // 성별
+          &:nth-child(9) {
+            width: 60px;
+          } // 고용주
+          &:nth-child(10) {
+            width: 60px;
+          } // Active
+          &:nth-child(11) {
+            width: 140px;
+          } // 생성일시
+          &:nth-child(12) {
+            width: 140px;
+          } // 수정일시
         }
 
         tbody {

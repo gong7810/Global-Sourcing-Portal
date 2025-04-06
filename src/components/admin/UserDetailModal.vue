@@ -90,7 +90,7 @@ watch(
       // 기본 정보 복사
       editedUser.value = {
         ...newUser,
-        birthDate: newUser.birth || newUser.birthDate || '',
+        birth: newUser.birth || newUser.birth || '',
         role: roleValue,
         gender: genderValue,
         active: newUser.enabled || false,
@@ -103,7 +103,7 @@ watch(
       // console.log('Initialized editedUser:', editedUser.value); // 디버깅용
 
       // 이미지 설정
-      imagePreview.value = newUser.profileImage || null;
+      imagePreview.value = `${import.meta.env.VITE_UPLOAD_PATH}/${newUser.imageFile.fileName}` || 'default-profile.jpg';
     }
   },
   { immediate: true }
@@ -127,7 +127,7 @@ const toggleEditMode = () => {
       id: editedUser.value.id,
       loginId: editedUser.value.loginId,
       name: editedUser.value.name,
-      birthDate: editedUser.value.birthDate,
+      birth: editedUser.value.birth,
       mobile: editedUser.value.mobile,
       email: editedUser.value.email,
       role: editedUser.value.role,
@@ -173,7 +173,7 @@ const cancelEdit = () => {
   // 원본 데이터로 복원
   editedUser.value = {
     ...props.user,
-    birthDate: props.user.birth || props.user.birthDate || '',
+    birth: props.user.birth || props.user.birth || '',
     role: roleValue,
     gender: genderValue,
     active: props.user.enabled || false,
@@ -285,9 +285,9 @@ const getGenderLabel = (gender) => {
                 <th>생년월일</th>
                 <td>
                   <template v-if="isEditMode">
-                    <InputText v-model="editedUser.birthDate" class="w-full" />
+                    <InputText v-model="editedUser.birth" class="w-full" />
                   </template>
-                  <template v-else>{{ user?.birthDate || '001212' }}</template>
+                  <template v-else>{{ user?.birth }}</template>
                 </td>
               </tr>
               <tr>
