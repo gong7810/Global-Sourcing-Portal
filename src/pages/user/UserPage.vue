@@ -339,7 +339,12 @@ const removeCriminalRecord = () => {
             <div class="flex items-center gap-4">
               <i class="pi pi-lock"></i>
               <span class="w-20 text-gray-500">비밀번호</span>
-              <Button label="수정" class="p-button-text p-button-sm text-[#8FA1FF]" @click="openPasswordModal" />
+              <Button
+                label="수정"
+                class="p-button-text p-button-sm text-[#8FA1FF]"
+                style="color: #8fa1ff"
+                @click="openPasswordModal"
+              />
             </div>
           </div>
         </div>
@@ -556,10 +561,14 @@ const removeCriminalRecord = () => {
             </div>
             <!-- 버튼 영역 -->
             <div class="px-8 py-6 bg-gray-50 border-t flex justify-center gap-4">
-              <Button label="취소" class="p-button-secondary px-6 hover:bg-gray-100" @click="cancelEdit" />
               <Button
+                label="취소"
+                class="bt_btn secondary p-button-secondary px-6 hover:bg-gray-100"
+                @click="cancelEdit"
+              />
+              <Button
+                class="bt_btn primary p-button-primary px-6 bg-gradient-to-r from-[#8FA1FF] to-[#8B8BF5] border-none hover:bg-gradient-to-r hover:from-[#7B8FFF] hover:to-[#7878F2]"
                 label="저장"
-                class="p-button-primary px-6 bg-gradient-to-r from-[#8FA1FF] to-[#8B8BF5] border-none hover:bg-gradient-to-r hover:from-[#7B8FFF] hover:to-[#7878F2]"
                 @click="saveAll"
               />
             </div>
@@ -605,7 +614,7 @@ const removeCriminalRecord = () => {
       </div>
 
       <div class="p-6 border-t bg-gray-50 flex justify-center">
-        <Button label="변경하기" class="w-full" @click="updatePassword" />
+        <Button label="변경하기" class="bt_btn primary w-full" @click="updatePassword" />
       </div>
     </div>
   </div>

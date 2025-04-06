@@ -624,6 +624,8 @@ const setLastEducation = async (education, selectedIndex) => {
   educationList.value.forEach((edu, index) => {
     if (index === selectedIndex) {
       edu.isFinal = !edu.isFinal;
+    } else {
+      edu.isFinal = false;
     }
 
     basicInfo.value.finalEducation = `${edu.schoolName} ${edu.major} ${edu.isGraduated ? '졸업' : '재학중'}`;
@@ -1049,7 +1051,13 @@ const clearCertificationFile = (index) => {
         <div class="bg-white rounded-lg p-6 mb-6">
           <div class="flex justify-between items-center mb-4">
             <h2 class="text-lg font-bold">기본 정보</h2>
-            <Button label="수정" icon="pi pi-pencil" class="p-button-text p-button-sm" @click="goToEditInfo" />
+            <Button
+              label="수정"
+              icon="pi pi-pencil"
+              class="p-button-text p-button-sm"
+              style="color: #8fa1ff"
+              @click="goToEditInfo"
+            />
           </div>
           <div class="flex justify-between items-start">
             <!-- 기본 정보 -->
@@ -1213,6 +1221,7 @@ const clearCertificationFile = (index) => {
                 label="추가"
                 icon="pi pi-plus"
                 class="p-button-text p-button-sm"
+                style="color: #8fa1ff"
                 @click="navigateToSection(sections[0])"
               />
             </div>
@@ -1269,6 +1278,7 @@ const clearCertificationFile = (index) => {
                 label="추가"
                 icon="pi pi-plus"
                 class="p-button-text p-button-sm"
+                style="color: #8fa1ff"
                 @click="navigateToSection(sections[1])"
               />
             </div>
@@ -1341,6 +1351,7 @@ const clearCertificationFile = (index) => {
                 label="자격증 추가"
                 icon="pi pi-plus"
                 class="p-button-text p-button-sm"
+                style="color: #8fa1ff"
                 @click="addCertification"
               />
             </div>
@@ -1704,7 +1715,7 @@ const clearCertificationFile = (index) => {
   </div>
 </template>
 
-<style scoped>
+<style lang="scss">
 .w-96 {
   width: 36rem;
 }

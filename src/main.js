@@ -29,6 +29,20 @@ app.use(PrimeVue, {
     options: {
       darkModeSelector: '.app-dark'
     }
+  },
+  pt: {
+    checkbox: {
+      root: { class: 'custom-checkbox' },
+      box: ({ props, state }) => ({
+        class: 'custom-checkbox-box',
+        style: {
+          'background-color': props.modelValue ? '#8FA1FF' : 'transparent',
+          'border-color': state.focused ? '#8FA1FF' : props.modelValue ? '#8FA1FF' : '#ced4da',
+          transition: 'background-color 0.2s, border-color 0.2s'
+        }
+      }),
+      input: { class: 'custom-checkbox-input' }
+    }
   }
 });
 

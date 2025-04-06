@@ -38,7 +38,7 @@ const filters = ref({
   genderCd: null
 });
 
-// 임시 인재 데이터
+// 인재 데이터
 const talents = ref([]);
 
 onMounted(() => {
@@ -208,12 +208,24 @@ const toggleBookmark = async (talent, isPage) => {
 };
 
 // 면접 제안
-const openInterviewOffer = (talent) => {
+const openInterviewOffer = async (talent, isPage) => {
   if (talent.isInterviewOffered) return;
 
-  companyStore.setOfferUserResume(talent);
+  console.log(talent);
 
-  router.push(`/company/interview-offer/create/${talent.id}`);
+  let response = {};
+  let id = talent.id;
+
+  if (isPage) {
+    response = await getUserResume(talent.id);
+
+    companyStore.setOfferUserResume(response);
+    id = talent.resumeId;
+  } else {
+    companyStore.setOfferUserResume(talent);
+  }
+
+  router.push(`/company/interview-offer/create/${id}`);
   talent.isInterviewOffered = true;
 
   // 모달이 열려있는 경우 selectedCandidate도 업데이트
@@ -366,7 +378,7 @@ const openInterviewOffer = (talent) => {
               class="w-[140px] px-4 py-2 text-white rounded-lg transition-colors"
               :class="talent?.isInterviewOffered ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#8B8BF5] hover:bg-[#7A7AE6]'"
               :disabled="talent?.isInterviewOffered"
-              @click="openInterviewOffer(talent)"
+              @click="openInterviewOffer(talent, true)"
             >
               {{ talent.isInterviewOffered ? '제안 완료' : '면접 제안' }}
             </button>
@@ -592,7 +604,7 @@ const openInterviewOffer = (talent) => {
             class="bt_btn primary transition-colors"
             :class="selectedCandidate?.isInterviewOffered ? 'bg-gray-400' : 'bg-[#8B8BF5] hover:bg-[#7A7AE6]'"
             :disabled="selectedCandidate?.isInterviewOffered"
-            @click="openInterviewOffer(selectedCandidate)"
+            @click="openInterviewOffer(selectedCandidate, false)"
           >
             {{ selectedCandidate?.isInterviewOffered ? '제안 완료' : '면접 제안' }}
           </Button>

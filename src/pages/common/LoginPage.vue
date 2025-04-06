@@ -21,7 +21,7 @@ const id = ref('user1'); // 정의
 const pw = ref('1q2w3e4r5t!'); // 정의
 
 // 기업회원 입력 필드
-const businessId = ref('user2');
+const businessId = ref('com1');
 const businessPassword = ref('1q2w3e4r5t!');
 
 const setActiveTab = (tab) => {
