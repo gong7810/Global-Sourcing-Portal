@@ -1,13 +1,17 @@
 <script setup>
-import { ref, toRaw } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
-import { getAccount, login } from '@/apis/auth/authApis';
 import { useMessagePop } from '@/plugins/commonutils';
+
+import { useAuthStore } from '@/store/auth/authStore';
+import { useCompanyStore } from '@/store/company/companyStore';
+import { getAccount, login } from '@/apis/auth/authApis';
+import { getCompanyInfo } from '@/apis/company/companyApis';
 
 const messagePop = useMessagePop();
 const authStore = useAuthStore();
+const companyStore = useCompanyStore();
 const activeTab = ref('personal');
 
 const router = useRouter();
@@ -45,9 +49,14 @@ const getLogin = async () => {
 // 사용자 정보 조회
 const getUserInfo = async () => {
   const response = await getAccount();
-
   // 사용자 정보 저장
   authStore.setUserInfo(response);
+
+  if (activeTab.value !== 'personal') {
+    const res = await getCompanyInfo();
+    // 회사 정보 저장
+    companyStore.setCompanyData(res);
+  }
 
   // 탭에 따라 다른 경로로 이동
   if (!response.isCompany) {

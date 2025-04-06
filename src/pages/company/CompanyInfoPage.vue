@@ -6,9 +6,14 @@ import { useMessagePop } from '@/plugins/commonutils';
 
 import { getCompanyInfo, updateCompanyInfo } from '@/apis/company/companyApis';
 import { getCodeList } from '@/apis/common/commonApis';
+import { useCompanyStore } from '@/store/company/companyStore';
+import { storeToRefs } from 'pinia';
 
 const router = useRouter();
 const messagePop = useMessagePop();
+const companyStore = useCompanyStore();
+
+const { companyData } = storeToRefs(companyStore);
 
 // 수정 모드 상태
 const isEditing = ref(false);
@@ -66,6 +71,8 @@ const setCompanyInfo = async () => {
     companyType: { name: response.companyType.name, code: response.companyType.code }
   };
 
+  companyStore.setCompanyData(companyInfo.value);
+
   initCompanyInfo = cloneDeep(companyInfo.value);
 };
 
@@ -73,16 +80,20 @@ const setCompanyInfo = async () => {
 const toggleEdit = () => {
   if (isEditing.value) {
     // 수정 완료
-    console.log(companyInfo.value);
     messagePop.confirm({
       icon: 'info',
       message: '수정 하시겠습니까?',
       onCloseYes: async () => {
-        const body = { ...companyInfo.value, companyTypeCd: companyInfo.value.companyType.code };
+        const body = {
+          ...companyInfo.value,
+          user: { ...companyInfo.value.user, email: companyInfo.value.email },
+          companyTypeCd: companyInfo.value.companyType.code
+        };
 
         const response = await updateCompanyInfo(body);
 
-        if (response) {
+        if (response && response.success === undefined) {
+          companyStore.setCompanyData(body);
           router.back();
         } else {
           messagePop.toast('시스템 오류입니다.', 'error');

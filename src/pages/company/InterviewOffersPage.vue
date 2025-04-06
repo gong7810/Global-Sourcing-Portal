@@ -395,6 +395,12 @@ const selectedFilter = ref('all');
 // 면접 제안 상태 필터 옵션
 const jobOfferStateOptions = ref([{ name: '전체', code: 'all' }]);
 
+// 면접 방식 옵션
+const interviewTypes = [
+  { name: '화상 면접', code: 'INTERVIEW_TY_1' },
+  { name: '대면 면접', code: 'INTERVIEW_TY_2' }
+];
+
 // 직무 필터 상태 추가
 const selectedJobFilter = ref('all');
 
@@ -489,28 +495,7 @@ const convertJobCode = (code) => {
 const getJobOfferList = async () => {
   const response = await getOfferList();
 
-  // interviewOffers.value = response.contents;
-
-  // TODO: 데이터 누락 대응건
-  interviewOffers.value = [];
-  response.contents.map((item, index) => {
-    if (!index) {
-      interviewOffers.value.push({
-        ...item,
-        statusCd: 'JO_ST_2',
-        jobCategoryCd: 'JOB_06',
-        position: '프론트엔드 개발 PL',
-        positionDetail: '프론트엔드 개발 리딩'
-      });
-    } else {
-      interviewOffers.value.push({
-        ...item,
-        jobCategoryCd: 'JOB_08',
-        position: '영업사원',
-        positionDetail: '외국계 영업'
-      });
-    }
-  });
+  interviewOffers.value = response.contents;
 };
 
 // 각 직무별 제안 수를 계산하는 함수
@@ -579,15 +564,18 @@ const formatTime = (hour, minute) => {
   return `${hourValue.toString().padStart(2, '0')}:${minuteValue.toString().padStart(2, '0')}`;
 };
 
-// 면접 방식 옵션
-const interviewTypes = [
-  { name: '화상 면접', code: 'INTERVIEW_TY_1' },
-  { name: '대면 면접', code: 'INTERVIEW_TY_2' }
-];
-
 const openScheduleModal = (offer) => {
   selectedOffer.value = offer;
   showScheduleModal.value = true;
+};
+
+// 시간 형식 변경
+const convertToTimestamp = (dateTimeStr) => {
+  // "2025.04.07 02:30" 형식을 "2025-04-07T02:30:00" 형식으로 변환
+  const [date, time] = dateTimeStr.split(' ');
+  const [year, month, day] = date.split('.');
+
+  return `${year}-${month}-${day}T${time}:00.000Z`;
 };
 
 const scheduleInterview = async () => {
@@ -620,7 +608,7 @@ const scheduleInterview = async () => {
     }));
 
   proposedDates = proposedDates.map((item) => {
-    return `${item.date} ${item.time}`;
+    return convertToTimestamp(`${item.date} ${item.time}`);
   });
 
   // 첫 번째 확인 팝업 표시
@@ -647,45 +635,45 @@ const scheduleInterview = async () => {
         })
         .filter((time) => time);
 
-      // selectedOffer.value.proposedDates = proposedDates;
       selectedOffer.value.interviewTypeCd = interviewTypeCd.value;
       selectedOffer.value.interviewInfo = interviewInfo.value;
 
-      console.log(selectedOffer.value);
-      return;
+      const response = await requestOffer(selectedOffer.value);
 
-      const response = await requestOffer();
-
-      // 성공 메시지 표시
-      messagePop.confirm({
-        icon: 'info',
-        message: `<div class="text-center">
+      if (response && response.success === undefined) {
+        // 성공 메시지 표시
+        messagePop.confirm({
+          icon: 'info',
+          message: `<div class="text-center">
           <p class="text-xl mb-2">면접 일정이 제안되었습니다.</p>
           <p class="text-sm text-gray-600">${selectedOffer.value?.resumeSnapshot?.user?.name}님께 알림과 이메일이 발송되었습니다.</p>
         </div>`,
-        acceptLabel: '확인',
-        showReject: false,
-        onCloseYes: () => {
-          showScheduleModal.value = false;
-          // 입력값 초기화
-          interviewDates.value = [
-            { date: null, hour: null, minute: null },
-            { date: null, hour: null, minute: null },
-            { date: null, hour: null, minute: null }
-          ];
-          interviewTypeCd.value = null;
-          interviewInfo.value = '';
-        }
-      });
+          acceptLabel: '확인',
+          showReject: false,
+          onCloseYes: () => {
+            showScheduleModal.value = false;
+            getJobOfferList();
+
+            // 입력값 초기화
+            interviewDates.value = [
+              { date: null, hour: null, minute: null },
+              { date: null, hour: null, minute: null },
+              { date: null, hour: null, minute: null }
+            ];
+            interviewTypeCd.value = null;
+            interviewInfo.value = '';
+          }
+        });
+      } else {
+        messagePop.toast('시스템 오류입니다.', 'error');
+        showScheduleModal.value = false;
+      }
     }
   });
 };
 
-const completeInterview = (offer) => {
-  // 면접 완료 처리
-  offer.interviewCompleted = true;
-  offer.interviewCompletedDate = new Date().toISOString().split('T')[0];
-  // 바로 면접 결과 관리 페이지로 이동
+// 면접 완료 처리
+const completeInterview = () => {
   router.push('/company/InterviewResults');
 };
 
@@ -842,12 +830,10 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
           <div class="text-sm text-gray-500">제안일: {{ offer?.createdAt.slice(0, 10).replaceAll('-', '.') }}</div>
         </div>
 
-        <div class="mb-4">
+        <div v-if="offer?.resumeSnapshot?.finalEducation" class="mb-4">
           <p class="text-gray-600">
             {{
-              offer?.finalEducation
-                ? `${offer?.finalEducation?.schoolName} ${offer?.finalEducation?.major} ${offer?.finalEducation?.isGraduated ? '졸업' : '재학중'}`
-                : ''
+              `${offer?.resumeSnapshot?.finalEducation?.schoolName} ${offer?.resumeSnapshot?.finalEducation?.major} ${offer?.resumeSnapshot?.finalEducation?.isGraduated ? '졸업' : '재학중'}`
             }}
           </p>
         </div>
@@ -876,7 +862,7 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
           </p>
 
           <!-- 면접 일정이 잡히지 않은 경우에만 버튼 표시 -->
-          <div v-if="!offer?.interviewTime" class="mt-3">
+          <div v-if="!offer?.interviewTime && !offer?.interviewInfo" class="mt-3">
             <button
               @click="openScheduleModal(offer)"
               class="px-4 py-2 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7A7AE6]"
@@ -900,9 +886,9 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
                 <p class="text-gray-600">장소: {{ offer?.interviewInfo }}</p>
               </div>
 
-              <!-- 면접 완료 버튼 추가 -->
-              <div v-if="!offer?.interviewCompleted" class="mt-4">
-                <Button @click="completeInterview(offer)" class="bg-[#8B8BF5] text-white"> 면접 완료 </Button>
+              <!-- 면접 완료 -->
+              <div v-if="!offer?.resultCd" class="mt-4">
+                <Button @click="completeInterview" class="bg-[#8B8BF5] text-white"> 면접 완료 </Button>
               </div>
               <!-- 면접 완료된 경우 표시 -->
               <div v-else class="mt-4">
@@ -957,8 +943,6 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
       v-model:visible="showDetailModal"
       :interviewer="selectedOffer"
       :jobCategoryOptions="jobCategoryOptions"
-      :koreanLevelOptions="koreanLevelOptions"
-      :educationLevelOptions="educationLevelOptions"
     />
 
     <!-- 면접 일정 잡기 모달 -->

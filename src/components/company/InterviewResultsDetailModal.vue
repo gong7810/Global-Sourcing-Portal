@@ -1,6 +1,6 @@
 <script setup>
-import { isNull } from 'es-toolkit';
 import { defineProps, defineEmits, ref, onBeforeUnmount, onMounted, toRaw } from 'vue';
+import { isNull } from 'es-toolkit';
 
 const props = defineProps({
   visible: {
@@ -14,14 +14,6 @@ const props = defineProps({
   jobCategoryOptions: {
     type: Object,
     default: null
-  },
-  koreanLevelOptions: {
-    type: Object,
-    default: null
-  },
-  educationLevelOptions: {
-    type: Object,
-    default: null
   }
 });
 
@@ -29,8 +21,6 @@ const emit = defineEmits(['update:visible']);
 
 // 필터 옵션
 const jobCategoryOptions = ref([]);
-const koreanLevelOptions = ref([]);
-const educationLevelOptions = ref([]);
 
 // 이력서 스냅샷 정보
 const offerUserInfo = ref();
@@ -41,14 +31,15 @@ onBeforeUnmount(() => {
 
 onMounted(() => {
   jobCategoryOptions.value = props.jobCategoryOptions;
-  koreanLevelOptions.value = props.koreanLevelOptions;
-  educationLevelOptions.value = props.educationLevelOptions;
 
   offerUserInfo.value = toRaw(props.interviewer);
-  offerUserInfo.value.resumeSnapshot.user = {
-    ...offerUserInfo.value.resumeSnapshot.user,
-    profileImage: `${import.meta.env.VITE_UPLOAD_PATH}/${offerUserInfo.value.resumeSnapshot.user?.imageFile?.fileName}`
-  };
+
+  if (offerUserInfo.value?.resumeSnapshot && offerUserInfo.value.resumeSnapshot?.user) {
+    offerUserInfo.value.resumeSnapshot.user = {
+      ...offerUserInfo.value.resumeSnapshot.user,
+      profileImage: `${import.meta.env.VITE_UPLOAD_PATH}/${offerUserInfo.value.resumeSnapshot.user.imageFile?.fileName}`
+    };
+  }
 
   console.log(offerUserInfo.value);
 });
@@ -58,21 +49,6 @@ const onHide = () => {
   emit('update:visible', false);
 };
 
-// 한국어 실력 코드 변환
-const convertCode = (code) => {
-  if (!code) return null;
-
-  let name = '';
-
-  koreanLevelOptions.value.filter((item) => {
-    if (item.code === code) {
-      name = item.name;
-    }
-  });
-
-  return name;
-};
-
 // 직무 코드 변환
 const convertJobCode = (code) => {
   if (!code) return null;
@@ -80,21 +56,6 @@ const convertJobCode = (code) => {
   let name = '';
 
   jobCategoryOptions.value.filter((item) => {
-    if (item.code === code) {
-      name = item.name;
-    }
-  });
-
-  return name;
-};
-
-// 학력 코드 변환
-const convertEduLevelCode = (code) => {
-  if (!code) return null;
-
-  let name = '';
-
-  educationLevelOptions.value.filter((item) => {
     if (item.code === code) {
       name = item.name;
     }
@@ -258,9 +219,9 @@ const printResume = () => {
             <table>
               <tr><th>성명</th><td>${offerUserInfo.value?.resumeSnapshot?.user?.name}</td><th>국적</th><td>${offerUserInfo.value?.resumeSnapshot?.nationality?.name}</td></tr>
               <tr><th>생년월일</th><td>${offerUserInfo.value?.resumeSnapshot?.user?.birth}</td><th>성별</th><td>${offerUserInfo.value?.resumeSnapshot?.user?.genderCd === 'GENDER_MALE' ? '남성' : '여성'}</td></tr>
-              <tr><th>연락처</th><td colspan="3">${offerUserInfo?.statusCd === 'JO_ST_2' ? offerUserInfo.value?.resumeSnapshot?.user?.mobile : '🔒'}</td></tr>
-              <tr><th>이메일</th><td colspan="3">${offerUserInfo?.statusCd === 'JO_ST_2' ? offerUserInfo.value?.resumeSnapshot?.user?.email : '🔒'}</td></tr>
-              <tr><th>주소</th><td colspan="3">${offerUserInfo?.statusCd === 'JO_ST_2' ? offerUserInfo.value?.resumeSnapshot?.user?.address : '🔒'}</td></tr>
+              <tr><th>연락처</th><td colspan="3">${offerUserInfo.value?.statusCd === 'JO_ST_2' ? offerUserInfo.value?.resumeSnapshot?.user?.mobile : '🔒'}</td></tr>
+              <tr><th>이메일</th><td colspan="3">${offerUserInfo.value?.statusCd === 'JO_ST_2' ? offerUserInfo.value?.resumeSnapshot?.user?.email : '🔒'}</td></tr>
+              <tr><th>주소</th><td colspan="3">${offerUserInfo.value?.statusCd === 'JO_ST_2' ? offerUserInfo.value?.resumeSnapshot?.user?.address : '🔒'}</td></tr>
               <tr><th>여권번호</th><td colspan="3">${offerUserInfo.value?.resumeSnapshot?.passport || '-'}</td></tr>
             </table>
           </div>
@@ -270,8 +231,8 @@ const printResume = () => {
       <!-- 기타 사항 -->
       <section class="mb-4">
         <table>
-          <tr><th>범죄 여부</th><td colspan="3">${offerUserInfo?.statusCd === 'JO_ST_2' ? (offerUserInfo.value?.resumeSnapshot?.user?.hasCriminalRecord ? '있음' : '없음') : '🔒'}</td></tr>
-          <tr><th>한국어 능력</th><td>${!isNull(offerUserInfo.value?.resumeSnapshot?.user?.koreanProficiencyCd) ? convertCode(offerUserInfo.value?.resumeSnapshot?.user?.koreanProficiencyCd) : '-'}</td><th>공부 기간</th><td>${offerUserInfo.value?.resumeSnapshot?.user?.koreanStudyPeriod || '-'}</td></tr>
+          <tr><th>범죄 여부</th><td colspan="3">${offerUserInfo.value?.statusCd === 'JO_ST_2' ? (offerUserInfo.value?.resumeSnapshot?.user?.hasCriminalRecord ? '있음' : '없음') : '🔒'}</td></tr>
+          <tr><th>한국어 능력</th><td>${!isNull(offerUserInfo.value?.resumeSnapshot?.user?.koreanProficiency) ? offerUserInfo.value?.resumeSnapshot?.user?.koreanProficiency?.name : '-'}</td><th>공부 기간</th><td>${offerUserInfo.value?.resumeSnapshot?.user?.koreanStudyPeriod || '-'}</td></tr>
           <tr><th>한국 방문 경험</th><td>${!isNull(offerUserInfo.value?.resumeSnapshot?.user?.hasVisitedKorea) ? (offerUserInfo.value?.resumeSnapshot?.user?.hasVisitedKorea ? '있음' : '없음') : '-'}</td><th>혼인 사항</th><td>${!isNull(offerUserInfo.value?.resumeSnapshot?.user?.isMarried) ? (offerUserInfo.value?.resumeSnapshot?.user?.isMarried ? '기혼' : '미혼') : '-'}</td></tr>
         </table>
       </section>
@@ -291,7 +252,7 @@ const printResume = () => {
             (edu, index) => `
           <div class="mb-2">
             <table>
-              <tr><th>학교명</th><td>${edu?.schoolName || '-'}</td><th>학위</th><td>${convertEduLevelCode(edu.educationLevelCd) || '-'}</td></tr>
+              <tr><th>학교명</th><td>${edu?.schoolName || '-'}</td><th>학위</th><td>${edu?.educationLevel?.name || '-'}</td></tr>
               <tr><th>전공</th><td>${edu?.major || '-'}</td><th>재학 기간</th><td>${edu?.startDt + ' - ' + (edu?.endDt || '재학중') || '-'}</td></tr>
             </table>
           </div>
@@ -438,7 +399,7 @@ const printResume = () => {
             </span>
             <span v-else class="text-[#8B8BF5]">{{ '면접 제안 수락 후 확인 가능' }}</span>
             <span class="text-gray-600">한국어 능력</span>
-            <span>{{ convertCode(offerUserInfo?.resumeSnapshot?.user?.koreanProficiencyCd) || '미입력' }}</span>
+            <span>{{ offerUserInfo?.resumeSnapshot?.user?.koreanProficiency?.name || '미입력' }}</span>
             <span class="text-gray-600">학습기간</span>
             <span>{{ offerUserInfo?.resumeSnapshot?.user?.koreanStudyPeriod || '미입력' }}</span>
             <span class="text-gray-600">한국방문경험</span>
@@ -603,7 +564,7 @@ const printResume = () => {
             <div class="flex justify-between items-start">
               <div>
                 <div class="text-gray-900 font-medium mb-2">
-                  {{ edu?.schoolName }} ({{ convertEduLevelCode(edu?.educationLevelCd) }})
+                  {{ edu?.schoolName }} ({{ edu?.educationLevel?.name }})
                 </div>
                 <div class="text-gray-600">{{ edu?.major }}</div>
                 <div class="text-gray-600">{{ `${edu?.startDt} ~ ${edu?.endDt ? edu?.endDt : '재학중'}` }}</div>

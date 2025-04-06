@@ -101,6 +101,17 @@ export const getOfferList = async () => {
   }
 };
 
+// 면접 결과 설정 API
+export const setOfferResult = async (body) => {
+  try {
+    const response = await api.post(`/jobOffer/result`, body);
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 // 미승인 기업 회원 신청 목록 조회 API
 export const getPendingCompanyApplications = async () => {
   try {

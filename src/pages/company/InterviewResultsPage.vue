@@ -1,19 +1,43 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMessagePop } from '@/plugins/commonutils';
+import { isNull } from 'es-toolkit';
+import { getOfferList, setOfferResult } from '@/apis/company/companyApis';
+import { getCodeList } from '@/apis/common/commonApis';
 
 const router = useRouter();
 const messagePop = useMessagePop();
 
-// 면접 결과 상태 옵션
-const resultOptions = [
-  { label: '합격', value: 'passed' },
-  { label: '불합격', value: 'failed' },
-  { label: '보류', value: 'pending' }
+// 결과 수정 모달 관련 상태
+const showResultModal = ref(false);
+const selectedInterview = ref(null);
+const editResult = ref(null);
+const editFeedback = ref('');
+
+// 필터 상태 추가
+const selectedFilter = ref('all');
+
+// 전체 직무 카테고리 옵션
+const jobCategoryOptions = ref([]);
+
+// 필터 옵션
+const filterOptions = [
+  { name: '전체', code: 'all' },
+  { name: '결과 미입력', code: null },
+  { name: '합격', code: 'INTERVIEW_RESULT_1' },
+  { name: '불합격', code: 'INTERVIEW_RESULT_2' },
+  { name: '보류', code: 'INTERVIEW_RESULT_3' }
 ];
 
-// 면접 완료된 후보자 목록 데이터 구조 수정
+// 면접 결과 상태 옵션
+const resultOptions = [
+  { name: '합격', code: 'INTERVIEW_RESULT_1' },
+  { name: '불합격', code: 'INTERVIEW_RESULT_2' },
+  { name: '보류', code: 'INTERVIEW_RESULT_3' }
+];
+
+// 면접 완료된 후보자 목록
 const interviewResults = ref([
   {
     id: 1,
@@ -199,17 +223,53 @@ const interviewResults = ref([
   }
 ]);
 
-// 결과 수정 모달 관련 상태
-const showResultModal = ref(false);
-const selectedInterview = ref(null);
-const editResult = ref(null);
-const editFeedback = ref('');
+onMounted(() => {
+  getJobCategoryCode();
+  getFinishedInterviewr();
+});
+
+const getFinishedInterviewr = async () => {
+  const response = await getOfferList();
+
+  interviewResults.value = response.contents.filter((resume) => {
+    return resume.statusCd === 'JO_ST_2' && resume.interviewTime;
+  });
+
+  console.log(interviewResults.value);
+};
+
+// 직무 코드 조회
+const getJobCategoryCode = async () => {
+  const response = await getCodeList(`JOB_CATEGORY`);
+
+  response.map((item) => {
+    jobCategoryOptions.value.push({
+      name: item.name,
+      code: item.code
+    });
+  });
+};
+
+// 직무 코드 변환
+const convertJobCode = (code) => {
+  if (!code) return null;
+
+  let name = '';
+
+  jobCategoryOptions.value.filter((item) => {
+    if (item.code === code) {
+      name = item.name;
+    }
+  });
+
+  return name;
+};
 
 // 결과 수정 모달 열기
 const openResultModal = (interview) => {
   selectedInterview.value = interview;
   editResult.value = interview.result;
-  editFeedback.value = interview.feedback;
+  editFeedback.value = interview.resultMemo;
   showResultModal.value = true;
 };
 
@@ -226,18 +286,18 @@ const saveResult = () => {
 
   // 알림이 필요한 경우:
   // 1. 최초 결과 입력 시 (합격/불합격만)
-  // 2. 기존 결과에서 다른 결과로 변경 시 (모든 변경)
-  const needsNotification = (isNewResult && editResult.value !== 'pending') || isResultChanged;
+  // 2. 기존 결과에서 다른 결과로 변경 시 (보류 -> 합/불합)
+  const needsNotification = (isNewResult && editResult.value !== 'INTERVIEW_RESULT_3') || isResultChanged;
 
   const confirmMessage = isNewResult
-    ? `${selectedInterview.value.candidate.name}님의 면접 결과를 입력하시겠습니까?`
-    : `${selectedInterview.value.candidate.name}님의 면접 결과를 수정하시겠습니까?`;
+    ? `${selectedInterview.value?.resumeSnapshot?.user?.name}님의 면접 결과를 입력하시겠습니까?`
+    : `${selectedInterview.value?.resumeSnapshot?.user?.name}님의 면접 결과를 수정하시겠습니까?`;
 
   const detailMessage = needsNotification
-    ? `\n\n결과: ${resultOptions.find((opt) => opt.value === editResult.value).label}\n` +
+    ? `\n\n결과: ${resultOptions.find((opt) => opt.code === editResult.value).name}\n` +
       `피드백: ${editFeedback.value || '(없음)'}\n\n` +
       '* 확인 시 구직자에게 알림과 이메일이 발송됩니다.'
-    : `\n\n결과: ${resultOptions.find((opt) => opt.value === editResult.value).label}\n` +
+    : `\n\n결과: ${resultOptions.find((opt) => opt.code === editResult.value).name}\n` +
       `피드백: ${editFeedback.value || '(없음)'}`;
 
   messagePop.confirm({
@@ -250,11 +310,22 @@ const saveResult = () => {
     </div>`,
     acceptLabel: '확인',
     rejectLabel: '취소',
-    onCloseYes: () => {
+    onCloseYes: async () => {
       // 기존 결과 저장
-      selectedInterview.value.result = editResult.value;
-      selectedInterview.value.feedback = editFeedback.value;
-      selectedInterview.value.updatedAt = new Date().toISOString().split('T')[0];
+      selectedInterview.value.resultCd = editResult.value;
+      selectedInterview.value.resultMemo = editFeedback.value;
+
+      const body = {
+        id: selectedInterview.value.id,
+        resultCd: selectedInterview.value.resultCd,
+        resultMemo: selectedInterview.value.resultMemo
+      };
+
+      await setOfferResult(body);
+
+      getFinishedInterviewr();
+
+      showResultModal.value = false;
 
       // 알림/이메일 발송이 필요한 경우에만 성공 메시지에 알림 발송 문구 포함
       if (needsNotification) {
@@ -262,12 +333,11 @@ const saveResult = () => {
           icon: 'info',
           message: `<div class="text-center">
             <p class="text-xl mb-2">면접 결과가 저장되었습니다.</p>
-            <p class="text-sm text-gray-600">${selectedInterview.value.candidate.name}님께 알림과 이메일이 발송되었습니다.</p>
+            <p class="text-sm text-gray-600">알림과 이메일이 발송되었습니다.</p>
           </div>`,
           acceptLabel: '확인',
           showReject: false,
           onCloseYes: () => {
-            showResultModal.value = false;
             // 상태 초기화
             editResult.value = null;
             editFeedback.value = '';
@@ -284,7 +354,6 @@ const saveResult = () => {
           acceptLabel: '확인',
           showReject: false,
           onCloseYes: () => {
-            showResultModal.value = false;
             // 상태 초기화
             editResult.value = null;
             editFeedback.value = '';
@@ -299,17 +368,17 @@ const saveResult = () => {
 // 결과에 따른 스타일과 텍스트
 const getResultInfo = (result) => {
   switch (result) {
-    case 'passed':
+    case 'INTERVIEW_RESULT_1':
       return {
         text: '합격',
         class: 'bg-green-50 text-green-600'
       };
-    case 'failed':
+    case 'INTERVIEW_RESULT_2':
       return {
         text: '불합격',
         class: 'bg-red-50 text-red-600'
       };
-    case 'pending':
+    case 'INTERVIEW_RESULT_3':
       return {
         text: '보류',
         class: 'bg-yellow-50 text-yellow-600'
@@ -322,27 +391,14 @@ const getResultInfo = (result) => {
   }
 };
 
-// 필터 상태 추가
-const selectedFilter = ref('all');
-
-// 필터 옵션
-const filterOptions = [
-  { label: '전체', value: 'all' },
-  { label: '결과 미입력', value: 'none' },
-  { label: '합격', value: 'passed' },
-  { label: '불합격', value: 'failed' },
-  { label: '보류', value: 'pending' }
-];
-
 // 필터링된 결과 목록
 const filteredResults = computed(() => {
   if (selectedFilter.value === 'all') {
     return interviewResults.value;
+  } else if (isNull(selectedFilter.value)) {
+    return interviewResults.value.filter((interview) => interview?.resultCd === null);
   }
-  if (selectedFilter.value === 'none') {
-    return interviewResults.value.filter((interview) => interview.result === null);
-  }
-  return interviewResults.value.filter((interview) => interview.result === selectedFilter.value);
+  return interviewResults.value.filter((interview) => interview?.resultCd === selectedFilter.value);
 });
 
 // 상세 정보 모달 관련 상태만 유지
@@ -373,20 +429,20 @@ const openDetailModal = (interview) => {
     <div class="flex gap-2 mb-6">
       <button
         v-for="option in filterOptions"
-        :key="option.value"
-        @click="selectedFilter = option.value"
+        :key="option.code"
+        @click="selectedFilter = option.code"
         :class="[
           'px-4 py-2 rounded-full text-sm transition-colors',
-          selectedFilter === option.value ? 'bg-[#8B8BF5] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          selectedFilter === option.code ? 'bg-[#8B8BF5] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
         ]"
       >
-        {{ option.label }}
+        {{ option.name }}
         <!-- 각 상태의 개수 표시 -->
-        <span class="ml-1" v-if="option.value !== 'all'">
+        <span class="ml-1" v-if="option.code !== 'all'">
           ({{
-            option.value === 'none'
-              ? interviewResults.filter((interview) => interview.result === null).length
-              : interviewResults.filter((interview) => interview.result === option.value).length
+            isNull(option.code)
+              ? interviewResults.filter((interview) => interview?.resultCd === null).length
+              : interviewResults.filter((interview) => interview?.resultCd === option.code).length
           }})
         </span>
         <!-- 전체 개수 표시 -->
@@ -410,54 +466,73 @@ const openDetailModal = (interview) => {
       <div
         v-else
         v-for="interview in filteredResults"
-        :key="interview.id"
+        :key="interview?.id"
         class="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200"
       >
         <div class="flex justify-between items-start mb-4">
           <div class="flex items-center gap-3">
-            <h3 class="text-lg font-bold">{{ interview.candidate.name }}</h3>
-            <span class="text-sm text-gray-600">{{ interview.candidate.nationality }}</span>
+            <h3 class="text-lg font-bold">{{ interview?.resumeSnapshot?.user?.name }}</h3>
+            <span class="text-sm text-gray-600">{{ interview?.resumeSnapshot?.nationality?.name }}</span>
             <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">
-              경력 {{ interview.candidate.career }}
+              {{
+                interview?.resumeSnapshot?.experienceDurationMonth
+                  ? '경력 ' +
+                    parseInt(interview?.resumeSnapshot?.experienceDurationMonth / 12) +
+                    '년 ' +
+                    (interview?.resumeSnapshot?.experienceDurationMonth % 12) +
+                    '개월'
+                  : '신입'
+              }}
             </span>
             <span
-              v-if="interview.result !== null"
-              :class="`px-3 py-1 rounded-full text-sm ${getResultInfo(interview.result).class}`"
+              v-if="interview.result"
+              :class="`px-3 py-1 rounded-full text-sm ${getResultInfo(interview?.resultCd).class}`"
             >
-              {{ getResultInfo(interview.result).text }}
+              {{ interview?.result?.name }}
             </span>
             <span v-else class="px-3 py-1 rounded-full text-sm bg-gray-50 text-gray-600"> 결과 미입력 </span>
           </div>
-          <div class="text-sm text-gray-500">면접일: {{ interview.interviewDate }}</div>
+          <div class="text-sm text-gray-500">
+            면접일:
+            {{
+              interview?.interviewTime
+                ? interview?.interviewTime?.slice(0, 10)?.replaceAll('-', '.') +
+                  ' ' +
+                  interview?.interviewTime?.slice(11, 16)
+                : '미정'
+            }}
+          </div>
         </div>
 
         <div class="mb-4">
-          <p class="text-gray-600" v-if="interview.candidate.education?.length">
-            {{ interview.candidate.education[0].school }} · {{ interview.candidate.education[0].major }}
+          <p class="text-gray-600" v-if="interview?.resumeSnapshot?.finalEducation">
+            {{ interview?.resumeSnapshot?.finalEducation?.schoolName }} ·
+            {{ interview?.resumeSnapshot?.finalEducation?.major }} &nbsp;
+            {{ interview?.resumeSnapshot?.finalEducation?.isGraduated ? '졸업' : '재학중' }}
           </p>
         </div>
 
         <div class="border-t pt-4">
           <div class="mb-4">
             <h4 class="text-base font-bold text-gray-900 mb-2">직무 · 제안 포지션</h4>
-            <p class="text-gray-600">
-              {{ interview.jobCategory?.label || 'IT개발·데이터' }} | {{ interview.position }}
-            </p>
+            <p class="text-gray-600">{{ convertJobCode(interview?.jobCategoryCd) }} | {{ interview?.position }}</p>
           </div>
 
           <div class="mb-4">
             <h4 class="text-base font-bold text-gray-900 mb-2">면접 방식</h4>
-            <p class="text-gray-600">{{ interview.interviewType === 'online' ? '화상 면접' : '대면 면접' }}</p>
+            <p class="text-gray-600">
+              {{ interview?.interviewTypeCd === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접' }}
+            </p>
           </div>
 
-          <div v-if="interview.updatedAt" class="mb-4">
+          <!-- <div v-if="interview.updatedAt" class="mb-4">
             <h4 class="text-base font-bold text-gray-900 mb-2">결과 발표일</h4>
             <p class="text-gray-600">{{ interview.updatedAt }}</p>
-          </div>
+          </div> -->
 
           <div class="mb-4">
             <h4 class="text-base font-bold text-gray-900 mb-2">면접 피드백</h4>
-            <p class="text-gray-600">{{ interview.feedback || '아직 입력된 피드백이 없습니다.' }}</p>
+            <p class="text-gray-600">{{ interview?.resultMemo || '아직 입력된 피드백이 없습니다.' }}</p>
           </div>
         </div>
 
@@ -472,11 +547,15 @@ const openDetailModal = (interview) => {
           </button>
 
           <Button
+            class="bt_btn primary bg-[#8B8BF5] text-white"
+            :disabled="['INTERVIEW_RESULT_1', 'INTERVIEW_RESULT_2'].includes(interview?.resultCd)"
             @click="openResultModal(interview)"
-            class="bg-[#8B8BF5] text-white"
-            :disabled="interview.result !== null"
           >
-            {{ interview.result === null ? '면접 결과 입력' : '결과 확정됨' }}
+            {{
+              !['INTERVIEW_RESULT_1', 'INTERVIEW_RESULT_2'].includes(interview?.resultCd)
+                ? '면접 결과 입력'
+                : '결과 확정됨'
+            }}
           </Button>
         </div>
       </div>
@@ -487,40 +566,36 @@ const openDetailModal = (interview) => {
       <div class="p-4 space-y-4">
         <div>
           <label class="block font-medium mb-2">면접 결과</label>
-          <Dropdown
+          <Select
             v-model="editResult"
             :options="resultOptions"
-            optionLabel="label"
-            optionValue="value"
+            optionLabel="name"
+            optionValue="code"
             placeholder="결과 선택"
             class="w-full"
-            :disabled="selectedInterview?.result !== null"
           />
         </div>
 
         <div>
           <label class="block font-medium mb-2">피드백</label>
-          <InputTextarea
-            v-model="editFeedback"
-            rows="4"
-            class="w-full"
-            placeholder="면접 피드백을 입력해주세요"
-            :disabled="selectedInterview?.result !== null"
-          />
+          <Textarea v-model="editFeedback" rows="4" class="w-full" placeholder="면접 피드백을 입력해주세요" />
         </div>
       </div>
 
       <template #footer>
         <div class="flex justify-end gap-2">
-          <Button @click="showResultModal = false" class="p-button-text"> 닫기 </Button>
-          <Button @click="saveResult" class="bg-[#8B8BF5]" :disabled="selectedInterview?.result !== null">
-            입력
-          </Button>
+          <Button @click="showResultModal = false" class="bt_btn secondary p-button-text" label="닫기" />
+          <Button class="bt_btn primary bg-[#8B8BF5]" label="입력" @click="saveResult" />
         </div>
       </template>
     </Dialog>
 
     <!-- 상세 정보 모달을 컴포넌트로 교체 -->
-    <InterviewResultsDetailModal v-model:visible="showDetailModal" :interview="selectedDetailInterview" />
+    <InterviewResultsDetailModal
+      v-if="showDetailModal"
+      v-model:visible="showDetailModal"
+      :interviewer="selectedDetailInterview"
+      :jobCategoryOptions="jobCategoryOptions"
+    />
   </div>
 </template>
