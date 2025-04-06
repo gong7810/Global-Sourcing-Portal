@@ -58,11 +58,14 @@ const getJobOfferList = async () => {
 };
 
 // 상태에 따른 텍스트 색상 반환
-const getStatusColor = (statusCd) => {
+const getStatusColor = (statusCd, result = null) => {
   switch (statusCd) {
     case 'JO_ST_1':
       return 'text-yellow-600';
     case 'JO_ST_2':
+      if (result.code === 'INTERVIEW_RESULT_2') {
+        return 'text-red-600';
+      }
       return 'text-green-600';
     case 'JO_ST_3':
       return 'text-red-600';
@@ -389,9 +392,14 @@ const getStatusColor = (statusCd) => {
                     <div>
                       <h3 class="font-bold text-lg">{{ company?.company?.name }}</h3>
                       <p class="text-gray-600">{{ company?.position }}</p>
-                      <p class="text-sm text-gray-500">{{ company?.createdAt?.slice(0, 10)?.replaceAll('-', '.') }}</p>
+                      <p class="text-sm text-gray-500">
+                        {{
+                          company?.updatedAt?.slice(0, 10)?.replaceAll('-', '.') ||
+                          company?.createdAt?.slice(0, 10)?.replaceAll('-', '.')
+                        }}
+                      </p>
                     </div>
-                    <span :class="[getStatusColor(company?.statusCd), 'font-medium']">
+                    <span :class="[getStatusColor(company?.statusCd, company?.result), 'font-medium']">
                       {{ company?.result ? company?.result?.name : company?.status?.name }}
                     </span>
                   </div>
