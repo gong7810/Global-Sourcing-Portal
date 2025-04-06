@@ -11,10 +11,6 @@ const router = useRouter();
 const messagePop = useMessagePop();
 const companyStore = useCompanyStore();
 
-const koreanLv = ref('');
-const koreanLevelList = ref([]);
-const educationLevelList = ref([]);
-
 // 이력서 모달 관련 상태 추가
 const showResumeModal = ref(false);
 const selectedCandidate = ref(null);
@@ -24,7 +20,10 @@ const isAccepted = ref(false); // 면접 제안 수락 여부 (연락처 표시�
 const nationalityOptions = ref([]);
 const careerOptions = ref([]);
 const jobCategoryOptions = ref([]);
-const genderOptions = ref([]);
+const genderOptions = ref([
+  { name: '남성', code: 'GENDER_MALE' },
+  { name: '여성', code: 'GENDER_FEMALE' }
+]);
 
 // 검색 필터 상태 관리
 const filters = ref({
@@ -37,24 +36,12 @@ const filters = ref({
 const bookmarkedTalents = ref(['initial']);
 
 onMounted(() => {
-  getKoreanLevelCode();
   getNationCode();
   getJobCategoryCode();
   getCareerPeriodCode();
-  getEducationLevelCode();
-  getGenderCode();
 
   searchTalents();
 });
-
-// 한국어 실력 코드 조회
-const getKoreanLevelCode = async () => {
-  const response = await getCodeList(`KOREAN_LV`);
-
-  response.map((item) => {
-    koreanLevelList.value.push({ name: item.name, code: item.code });
-  });
-};
 
 // 국적 코드 조회
 const getNationCode = async () => {
@@ -91,95 +78,6 @@ const getJobCategoryCode = async () => {
     });
   });
 };
-
-// 학력 코드 조회
-const getEducationLevelCode = async () => {
-  const response = await getCodeList(`EDUCATION_LEVEL`);
-
-  response.map((item) => {
-    educationLevelList.value.push({
-      name: item.name,
-      code: item.code
-    });
-  });
-};
-
-// 성별 코드 조회
-const getGenderCode = async () => {
-  const response = await getCodeList(`GENDER_TY`);
-
-  response.map((item) => {
-    genderOptions.value.push({ name: `${item.name}성`, code: item.code });
-  });
-};
-
-// 국적 코드 변환
-const convertNationCode = (code) => {
-  if (!code) return null;
-
-  let name = '';
-
-  nationalityOptions.value.filter((item) => {
-    if (item.code === code) {
-      name = item.name;
-    }
-  });
-
-  return name;
-};
-
-// 한국어 실력 코드 변환
-const convertCode = (code) => {
-  if (!code) return null;
-
-  let name = '';
-
-  koreanLevelList.value.filter((item) => {
-    if (item.code === code) {
-      name = item.name;
-    }
-  });
-
-  return name;
-};
-
-// 직무 코드 변환
-const convertJobCode = (code) => {
-  if (!code) return null;
-
-  let name = '';
-
-  jobCategoryOptions.value.filter((item) => {
-    if (item.code === code) {
-      name = item.name;
-    }
-  });
-
-  return name;
-};
-
-// 학력 코드 변환
-const convertEduLevelCode = (code) => {
-  if (!code) return null;
-
-  let name = '';
-
-  educationLevelList.value.filter((item) => {
-    if (item.code === code) {
-      name = item.name;
-    }
-  });
-
-  return name;
-};
-
-watch(
-  () => selectedCandidate.value,
-  () => {
-    koreanLv.value = convertCode(selectedCandidate.value?.user?.koreanProficiencyCd);
-  },
-  { deep: true }
-);
 
 // 인재 필터 조회
 const searchTalents = async () => {
@@ -628,7 +526,7 @@ const openInterviewOffer = async (talent, isPage) => {
             <span v-else class="text-[#8B8BF5]">면접 제안 수락 후 확인 가능</span>
 
             <span class="text-gray-600">한국어 능력</span>
-            <span>{{ koreanLv || '미입력' }}</span>
+            <span>{{ selectedCandidate?.user?.koreanProficiency?.name || '미입력' }}</span>
             <span class="text-gray-600">학습기간</span>
             <span>{{ selectedCandidate?.user?.koreanStudyPeriod || '미입력' }}</span>
             <span class="text-gray-600">한국방문경험</span>
@@ -728,7 +626,7 @@ const openInterviewOffer = async (talent, isPage) => {
               </span>
             </div>
             <div class="text-gray-600">{{ career?.department }}</div>
-            <div class="text-gray-600">{{ convertJobCode(career?.jobCategoryCd) }} | {{ career.position }}</div>
+            <div class="text-gray-600">{{ career?.jobCategory?.name }} | {{ career.position }}</div>
             <div class="mt-2 whitespace-pre-line">{{ career?.content }}</div>
           </div>
         </div>
@@ -756,9 +654,7 @@ const openInterviewOffer = async (talent, isPage) => {
             :key="index"
             class="mb-6 pb-6 border-b last:border-b-0"
           >
-            <div class="text-[#8B8BF5] mb-2">
-              {{ edu?.schoolName }} ({{ convertEduLevelCode(edu?.educationLevelCd) }})
-            </div>
+            <div class="text-[#8B8BF5] mb-2">{{ edu?.schoolName }} {{ `(${edu?.educationLevel?.name})` }}</div>
             <div class="text-gray-600">{{ edu?.major }}</div>
             <div class="text-gray-600">{{ `${edu?.startDt} ~ ${edu?.endDt ? edu?.endDt : '재학중'}` }}</div>
             <div class="whitespace-pre-line">{{ edu?.content }}</div>

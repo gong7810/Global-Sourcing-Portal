@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router';
 
 import { useMessagePop } from '@/plugins/commonutils';
 import { getCodeList } from '@/apis/common/commonApis';
-import { getOfferList } from '@/apis/company/companyApis';
+import { getOfferList, requestOffer } from '@/apis/company/companyApis';
 
 const router = useRouter();
 const messagePop = useMessagePop();
@@ -489,28 +489,28 @@ const convertJobCode = (code) => {
 const getJobOfferList = async () => {
   const response = await getOfferList();
 
-  interviewOffers.value = response.contents;
+  // interviewOffers.value = response.contents;
 
   // TODO: 데이터 누락 대응건
-  // interviewOffers.value = [];
-  // response.contents.map((item, index) => {
-  //   if (!index) {
-  //     interviewOffers.value.push({
-  //       ...item,
-  //       statusCd: 'JO_ST_2',
-  //       jobCategoryCd: 'JOB_06',
-  //       position: '프론트엔드 개발 PL',
-  //       positionDetail: '프론트엔드 개발 리딩'
-  //     });
-  //   } else {
-  //     interviewOffers.value.push({
-  //       ...item,
-  //       jobCategoryCd: 'JOB_08',
-  //       position: '영업사원',
-  //       positionDetail: '외국계 영업'
-  //     });
-  //   }
-  // });
+  interviewOffers.value = [];
+  response.contents.map((item, index) => {
+    if (!index) {
+      interviewOffers.value.push({
+        ...item,
+        statusCd: 'JO_ST_2',
+        jobCategoryCd: 'JOB_06',
+        position: '프론트엔드 개발 PL',
+        positionDetail: '프론트엔드 개발 리딩'
+      });
+    } else {
+      interviewOffers.value.push({
+        ...item,
+        jobCategoryCd: 'JOB_08',
+        position: '영업사원',
+        positionDetail: '외국계 영업'
+      });
+    }
+  });
 };
 
 // 각 직무별 제안 수를 계산하는 함수
@@ -551,8 +551,6 @@ const getStatusInfo = (status) => {
 
 const openDetailModal = (offer) => {
   selectedOffer.value = offer;
-
-  console.log(selectedOffer.value);
   showDetailModal.value = true;
 };
 
@@ -640,7 +638,7 @@ const scheduleInterview = async () => {
     </div>`,
     acceptLabel: '제안',
     rejectLabel: '취소',
-    onCloseYes: () => {
+    onCloseYes: async () => {
       // TODO: 면접 일정 제안 API 연동
       selectedOffer.value.interviewScheduled = true;
       ['reserveTime1', 'reserveTime2', 'reserveTime3']
@@ -655,6 +653,8 @@ const scheduleInterview = async () => {
 
       console.log(selectedOffer.value);
       return;
+
+      const response = await requestOffer();
 
       // 성공 메시지 표시
       messagePop.confirm({
