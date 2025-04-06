@@ -7,7 +7,7 @@ import { useAuthStore } from '@/store/auth/authStore';
 import { useCompanyStore } from '@/store/company/companyStore';
 import { useMessagePop } from '@/plugins/commonutils';
 import { getCodeList } from '@/apis/common/commonApis';
-import { deleteFavoriteResume, getResumeList, insertFavoriteResume } from '@/apis/company/companyApis';
+import { deleteFavoriteResume, getResumeList, getUserResume, insertFavoriteResume } from '@/apis/company/companyApis';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -38,8 +38,8 @@ const filters = ref({
   genderCd: null
 });
 
-// 임시 인재 데이터
-const talents = ref([]);
+// 인재 데이터
+const talents = ref(['initial']);
 
 onMounted(() => {
   getKoreanLevelCode();
@@ -212,21 +212,29 @@ const searchTalents = async () => {
 };
 
 // 이력서 모달 열기
-const openResumeModal = (candidate) => {
+const openResumeModal = async (candidate) => {
   // 북마킹 표시 연동을 위해 shallow-copy로 처리
-  selectedCandidate.value = candidate;
+  let resumeId = candidate.id;
 
-  selectedCandidate.value.user = {
-    ...selectedCandidate.value.user,
-    profileImage: `${import.meta.env.VITE_UPLOAD_PATH}/${candidate.user?.imageFile?.fileName}`
-  };
+  const response = await getUserResume(resumeId);
 
-  showResumeModal.value = true;
+  if (response && response.success === undefined) {
+    selectedCandidate.value = response;
+
+    selectedCandidate.value.user = {
+      ...selectedCandidate.value.user,
+      profileImage: `${import.meta.env.VITE_UPLOAD_PATH}/${selectedCandidate.value.user?.imageFile?.fileName}`
+    };
+
+    showResumeModal.value = true;
+  } else {
+    messagePop.toast('시스템 오류입니다.', 'error');
+  }
 };
 
 // 인재 북마크 등록 / 해제
-const toggleBookmark = async (talent) => {
-  if (!talent.isBookmarked && !talent.favorites?.length) {
+const toggleBookmark = async (talent, isPage) => {
+  if (!talent.isBookmarked) {
     const body = {
       userId: userInfo.value.id,
       resumeId: talent.id
@@ -239,19 +247,39 @@ const toggleBookmark = async (talent) => {
 
       talent.isBookmarked = !talent.isBookmarked;
       talent.favorites = [{ id: response.id }];
+
+      if (!isPage) {
+        for (const tal of talents.value) {
+          if (tal.id === talent.id) {
+            tal.isBookmarked = !tal.isBookmarked;
+            tal.favorites = [{ id: response.id }];
+            return;
+          }
+        }
+      }
     }
   } else {
     messagePop.confirm({
       icon: 'info',
       message: '북마크 해제하시겠습니까?',
       onCloseYes: async () => {
-        const response = await deleteFavoriteResume(toRaw(talent.favorites[0]).id, null);
+        const response = await deleteFavoriteResume(null, talent.id);
 
         if (response && response.success === undefined) {
           messagePop.toast('북마크 삭제되었습니다.', 'info');
 
           talent.isBookmarked = !talent.isBookmarked;
           talent.favorites = [];
+
+          if (!isPage) {
+            for (const tal of talents.value) {
+              if (tal.id === talent.id) {
+                tal.isBookmarked = !tal.isBookmarked;
+                tal.favorites = [];
+                return;
+              }
+            }
+          }
         }
       }
     });
@@ -353,13 +381,18 @@ const openInterviewOffer = (talent) => {
       </div>
     </div>
 
-    <!-- 인재 목록 -->
+    <!-- 인재 목록 조회 대기중 -->
     <div class="grid grid-cols-1 gap-4">
-      <div v-if="talents.length === 0" class="bg-white rounded-lg p-6 shadow-sm text-center text-gray-500">
+      <div v-if="talents[0] === 'initial'" class="bg-white rounded-lg p-6 shadow-sm text-center text-gray-500">
+        인재 목록을 조회중입니다...
+      </div>
+
+      <div v-else-if="talents.length === 0" class="bg-white rounded-lg p-6 shadow-sm text-center text-gray-500">
         등록된 인재가 없습니다.
       </div>
+
       <div
-        v-else
+        v-else-if="talents[0] !== 'initial'"
         v-for="talent in talents"
         :key="talent.id"
         class="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200"
@@ -367,15 +400,15 @@ const openInterviewOffer = (talent) => {
         <div class="flex justify-between items-start">
           <div class="flex-1">
             <div class="flex items-center gap-3 mb-3">
-              <h3 class="text-lg font-bold notranslate">{{ talent?.user?.name }}</h3>
-              <span class="text-sm text-gray-600">{{ talent?.passportCountry?.name }}</span>
+              <h3 class="text-lg font-bold notranslate">{{ talent?.userName }}</h3>
+              <span class="text-sm text-gray-600">{{ talent?.nationalityName }}</span>
               <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">
                 {{
                   talent?.experienceDurationMonth
                     ? '경력 ' +
-                      parseInt(talent.experienceDurationMonth / 12) +
+                      parseInt(talent?.experienceDurationMonth / 12) +
                       '년 ' +
-                      (talent.experienceDurationMonth % 12) +
+                      (talent?.experienceDurationMonth % 12) +
                       '개월'
                     : '신입'
                 }}
@@ -385,9 +418,9 @@ const openInterviewOffer = (talent) => {
             <div class="text-gray-600">
               <p>
                 {{
-                  talent?.finalEducation
-                    ? `${talent?.finalEducation?.schoolName} ${talent?.finalEducation?.major} ${talent?.finalEducation?.isGraduated ? '졸업' : '재학중'}`
-                    : ''
+                  talent?.schoolName
+                    ? `${talent?.schoolName} ${talent?.major} ${talent?.isGraduated ? '졸업' : '재학중'}`
+                    : '-'
                 }}
               </p>
             </div>
@@ -395,7 +428,7 @@ const openInterviewOffer = (talent) => {
 
           <div class="flex flex-col items-end gap-3">
             <button
-              @click="toggleBookmark(talent)"
+              @click="toggleBookmark(talent, true)"
               :class="['hover:text-[#8B8BF5]', talent.isBookmarked ? 'text-[#8B8BF5]' : 'text-gray-400']"
             >
               <i :class="['pi', talent.isBookmarked ? 'pi-bookmark-fill' : 'pi-bookmark']"></i>
@@ -408,8 +441,8 @@ const openInterviewOffer = (talent) => {
             </button>
             <button
               class="w-[140px] px-4 py-2 text-white rounded-lg transition-colors"
-              :class="talent.isInterviewOffered ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#8B8BF5] hover:bg-[#7A7AE6]'"
-              :disabled="talent.isInterviewOffered"
+              :class="talent?.isInterviewOffered ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#8B8BF5] hover:bg-[#7A7AE6]'"
+              :disabled="talent?.isInterviewOffered"
               @click="openInterviewOffer(talent)"
             >
               {{ talent.isInterviewOffered ? '제안 완료' : '면접 제안' }}
@@ -575,24 +608,17 @@ const openInterviewOffer = (talent) => {
         <div class="mb-8 bg-gray-50 p-6 rounded-lg">
           <div class="flex items-center gap-2 mb-4">
             <h3 class="text-lg font-medium">학력 사항</h3>
-            <span class="text-sm text-[#8B8BF5] bg-[#8B8BF5] bg-opacity-10 px-2 py-1 rounded">
+            <span
+              v-if="selectedCandidate?.finalEducation"
+              class="text-sm text-[#8B8BF5] bg-[#8B8BF5] bg-opacity-10 px-2 py-1 rounded"
+            >
               {{
-                selectedCandidate?.finalEducation
-                  ? '최종학력 : ' +
-                    `${selectedCandidate?.finalEducation?.schoolName} ${selectedCandidate?.finalEducation?.major} ${selectedCandidate?.finalEducation?.isGraduated ? '졸업' : '재학중'}`
-                  : ''
+                '최종학력 : ' +
+                `${selectedCandidate?.finalEducation?.schoolName} ${selectedCandidate?.finalEducation?.major} ${selectedCandidate?.finalEducation?.isGraduated ? '졸업' : '재학중'}`
               }}
             </span>
           </div>
-          <div v-if="selectedCandidate?.finalEducation">
-            <!-- <div class="text-[#8B8BF5] mb-4">
-              최종학력:
-              {{
-                selectedCandidate?.finalEducation
-                  ? `${selectedCandidate?.finalEducation?.schoolName} ${selectedCandidate?.finalEducation?.major} ${selectedCandidate?.finalEducation?.isGraduated ? '졸업' : '재학중'}`
-                  : ''
-              }}
-            </div> -->
+          <div v-if="selectedCandidate?.educations.length">
             <div
               v-for="(edu, index) in selectedCandidate?.educations"
               :key="index"
@@ -633,7 +659,7 @@ const openInterviewOffer = (talent) => {
       <template #footer>
         <div class="flex justify-end gap-4 pt-[15px]">
           <Button
-            @click="toggleBookmark(selectedCandidate)"
+            @click="toggleBookmark(selectedCandidate, false)"
             :class="['p-button-text', selectedCandidate?.isBookmarked ? 'text-[#8B8BF5]' : 'text-gray-400']"
           >
             <i

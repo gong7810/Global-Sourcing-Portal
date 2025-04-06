@@ -34,7 +34,7 @@ const filters = ref({
 });
 
 // 북마크 인재 리스트
-const bookmarkedTalents = ref([]);
+const bookmarkedTalents = ref(['initial']);
 
 onMounted(() => {
   getKoreanLevelCode();
@@ -245,7 +245,6 @@ const toggleBookmark = async (talent, isPage) => {
 const filteredBookmarks = computed(() => {
   return bookmarkedTalents.value.filter((talent) => {
     // 국적 필터
-
     const nationalityMatch = !filters.value.nationality || talent?.nationalityName === filters.value.nationality?.name;
 
     // 경력 필터
@@ -481,8 +480,24 @@ const openInterviewOffer = async (talent, isPage) => {
           </div> -->
         </div>
 
+        <!-- 북마크된 인재가 조회중일때 표시할 Loader 상태 -->
+        <div v-if="bookmarkedTalents[0] === 'initial'" class="text-center py-12">
+          <div class="flex flex-col items-center gap-4">
+            <i class="pi pi-bookmark text-gray-300 text-5xl mb-2"></i>
+            <p class="text-gray-500 mb-2">북마크 인재를 조회중입니다...</p>
+            <p class="text-gray-400 text-sm mb-4">잠시만 기다려 주세요</p>
+            <!-- <router-link
+              to="/company/TalentSearchPage"
+              class="inline-flex items-center px-4 py-2 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7A7AE6] transition-colors"
+            >
+              <i class="pi pi-search mr-2"></i>
+              인재 검색하기
+            </router-link> -->
+          </div>
+        </div>
+
         <!-- 북마크된 인재가 없을 때 표시할 빈 상태 -->
-        <div v-if="bookmarkedTalents.length === 0" class="text-center py-12">
+        <div v-else-if="bookmarkedTalents.length === 0" class="text-center py-12">
           <div class="flex flex-col items-center gap-4">
             <i class="pi pi-bookmark text-gray-300 text-5xl mb-2"></i>
             <p class="text-gray-500 mb-2">북마크된 인재가 없습니다</p>
