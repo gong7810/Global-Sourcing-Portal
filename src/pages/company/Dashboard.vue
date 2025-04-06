@@ -28,10 +28,9 @@ const genderOptions = ref([]);
 
 // 검색 필터 상태 관리
 const filters = ref({
-  nationalityCd: null,
-  careerHistory: null,
-  jobCategoryCd: null,
-  genderCd: null
+  nationality: null,
+  experienceDurationMonth: null,
+  gender: null
 });
 
 // 북마크 인재 리스트
@@ -187,8 +186,8 @@ const searchTalents = async () => {
   let fromPeriod = '';
   let toPeriod = '';
 
-  if (filters.value.careerHistory) {
-    switch (filters.value.careerHistory) {
+  if (filters.value.experienceDurationMonth) {
+    switch (filters.value.experienceDurationMonth) {
       case careerOptions.value[0].code:
         fromPeriod = 0;
         toPeriod = 1;
@@ -246,15 +245,15 @@ const toggleBookmark = async (talent, isPage) => {
 const filteredBookmarks = computed(() => {
   return bookmarkedTalents.value.filter((talent) => {
     // 국적 필터
-    const nationalityMatch =
-      !filters.value.nationalityCd || talent.resume.nationalityCd === filters.value.nationalityCd;
+
+    const nationalityMatch = !filters.value.nationality || talent?.nationalityName === filters.value.nationality?.name;
 
     // 경력 필터
     let fromPeriod = 0;
     let toPeriod = 600;
 
-    if (filters.value.careerHistory) {
-      switch (filters.value.careerHistory) {
+    if (filters.value.experienceDurationMonth) {
+      switch (filters.value.experienceDurationMonth) {
         case careerOptions.value[0].code:
           fromPeriod = 0;
           toPeriod = 12;
@@ -275,11 +274,11 @@ const filteredBookmarks = computed(() => {
     }
 
     const careerMatch =
-      !filters.value.careerHistory ||
-      (talent?.resume?.experienceDurationMonth >= fromPeriod && talent?.resume?.experienceDurationMonth < toPeriod);
+      !filters.value.experienceDurationMonth ||
+      (talent?.experienceDurationMonth >= fromPeriod && talent?.experienceDurationMonth < toPeriod);
 
     // 성별 필터
-    const genderMatch = !filters.value.genderCd || talent?.resume?.user?.genderCd === filters.value.genderCd;
+    const genderMatch = !filters.value.gender || `${talent?.genderName}성` === filters.value.gender.name;
 
     return nationalityMatch && careerMatch && genderMatch;
   });
@@ -288,7 +287,7 @@ const filteredBookmarks = computed(() => {
 // 이력서 모달 열기
 const openResumeModal = async (talent) => {
   // 개별 이력서 조회 API 호출
-  const response = await getUserResume(talent.resume.id);
+  const response = await getUserResume(talent.resumeId);
 
   selectedCandidate.value = response;
 
@@ -308,10 +307,12 @@ const openInterviewOffer = async (talent, isPage) => {
   let id = talent.id;
 
   if (isPage) {
-    response = await getUserResume(talent.resume.id);
+    response = await getUserResume(talent.resumeId);
 
     companyStore.setOfferUserResume(response);
-    id = talent.resume.id;
+    id = talent.resumeId;
+  } else {
+    companyStore.setOfferUserResume(talent);
   }
 
   router.push(`/company/interview-offer/create/${id}`);
@@ -435,13 +436,12 @@ const openInterviewOffer = async (talent, isPage) => {
         <!-- 검색 필터 섹션 -->
         <div class="flex items-center gap-4 mb-6">
           <!-- 국적 필터 -->
-          <div class="w-[250px]">
+          <div class="w-[300px]">
             <label class="block text-sm font-medium text-gray-700 mb-1">국적</label>
             <Select
-              v-model="filters.nationalityCd"
+              v-model="filters.nationality"
               :options="nationalityOptions"
               optionLabel="name"
-              optionValue="code"
               placeholder="--Select--"
               showClear
               class="w-full"
@@ -449,10 +449,10 @@ const openInterviewOffer = async (talent, isPage) => {
           </div>
 
           <!-- 경력 필터 -->
-          <div class="w-[250px]">
+          <div class="w-[300px]">
             <label class="block text-sm font-medium text-gray-700 mb-1">경력</label>
             <Select
-              v-model="filters.careerHistory"
+              v-model="filters.experienceDurationMonth"
               :options="careerOptions"
               optionLabel="name"
               optionValue="code"
@@ -463,23 +463,22 @@ const openInterviewOffer = async (talent, isPage) => {
           </div>
 
           <!-- 성별 필터 -->
-          <div class="w-[250px]">
+          <div class="w-[300px]">
             <label class="block text-sm font-medium text-gray-700 mb-1">성별</label>
             <Select
-              v-model="filters.genderCd"
+              v-model="filters.gender"
               :options="genderOptions"
               class="w-full"
               optionLabel="name"
-              optionValue="code"
               placeholder="--Select--"
               showClear
             />
           </div>
 
           <!-- 검색 버튼 -->
-          <div class="self-end">
+          <!-- <div class="self-end">
             <Button @click="searchTalents" class="bt_btn widthFixed primary"> 검색 </Button>
-          </div>
+          </div> -->
         </div>
 
         <!-- 북마크된 인재가 없을 때 표시할 빈 상태 -->
@@ -517,15 +516,15 @@ const openInterviewOffer = async (talent, isPage) => {
             <div class="flex justify-between items-start">
               <div>
                 <div class="flex items-center gap-3 mb-3">
-                  <h3 class="text-lg font-bold notranslate">{{ talent?.resume?.user?.name }}</h3>
-                  <span class="text-sm text-gray-600">{{ convertNationCode(talent?.resume?.nationalityCd) }}</span>
+                  <h3 class="text-lg font-bold notranslate">{{ talent?.userName }}</h3>
+                  <span class="text-sm text-gray-600">{{ talent?.nationalityName }}</span>
                   <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">
                     {{
-                      talent?.resume?.experienceDurationMonth
+                      talent?.experienceDurationMonth
                         ? '경력 ' +
-                          parseInt(talent?.resume.experienceDurationMonth / 12) +
+                          parseInt(talent.experienceDurationMonth / 12) +
                           '년 ' +
-                          (talent?.resume.experienceDurationMonth % 12) +
+                          (talent.experienceDurationMonth % 12) +
                           '개월'
                         : '신입'
                     }}
@@ -533,9 +532,9 @@ const openInterviewOffer = async (talent, isPage) => {
                 </div>
                 <p class="text-gray-600">
                   {{
-                    talent?.resume?.finalEducation
-                      ? `${talent?.resume?.finalEducation?.schoolName} ${talent?.resume?.finalEducation?.major} ${talent?.resume?.finalEducation?.isGraduated ? '졸업' : '재학중'}`
-                      : ''
+                    talent?.schoolName
+                      ? `${talent?.schoolName} ${talent?.major} ${talent?.isGraduated ? '졸업' : '재학중'}`
+                      : '-'
                   }}
                 </p>
               </div>
@@ -544,7 +543,7 @@ const openInterviewOffer = async (talent, isPage) => {
                   <i class="pi pi-bookmark-fill"></i>
                 </button>
                 <span class="text-sm text-gray-500">
-                  북마크 {{ ' : ' + talent.createdAt?.slice(0, 10).replaceAll('-', '.') }}
+                  북마크 {{ ' : ' + talent?.createdAt?.slice(0, 10).replaceAll('-', '.') }}
                 </span>
                 <!-- 이력서 보기 버튼 추가 -->
                 <button
@@ -558,7 +557,7 @@ const openInterviewOffer = async (talent, isPage) => {
                   :class="
                     talent?.isInterviewOffered ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#8B8BF5] hover:bg-[#7A7AE6]'
                   "
-                  :disabled="talent.isInterviewOffered"
+                  :disabled="talent?.isInterviewOffered"
                   @click="openInterviewOffer(talent, true)"
                 >
                   {{ talent?.isInterviewOffered ? '제안 완료' : '면접 제안' }}
@@ -726,24 +725,17 @@ const openInterviewOffer = async (talent, isPage) => {
       <div class="mb-8 bg-gray-50 p-6 rounded-lg">
         <div class="flex items-center gap-2 mb-4">
           <h3 class="text-lg font-medium">학력 사항</h3>
-          <span class="text-sm text-[#8B8BF5] bg-[#8B8BF5] bg-opacity-10 px-2 py-1 rounded">
+          <span
+            v-if="selectedCandidate?.finalEducation"
+            class="text-sm text-[#8B8BF5] bg-[#8B8BF5] bg-opacity-10 px-2 py-1 rounded"
+          >
             {{
-              selectedCandidate?.finalEducation
-                ? '최종학력 : ' +
-                  `${selectedCandidate?.finalEducation?.schoolName} ${selectedCandidate?.finalEducation?.major} ${selectedCandidate?.finalEducation?.isGraduated ? '졸업' : '재학중'}`
-                : ''
+              '최종학력 : ' +
+              `${selectedCandidate?.finalEducation?.schoolName} ${selectedCandidate?.finalEducation?.major} ${selectedCandidate?.finalEducation?.isGraduated ? '졸업' : '재학중'}`
             }}
           </span>
         </div>
-        <div v-if="selectedCandidate?.finalEducation">
-          <!-- <div class="text-[#8B8BF5] mb-4">
-            최종학력:
-            {{
-              selectedCandidate?.finalEducation
-                ? `${selectedCandidate?.finalEducation?.schoolName} ${selectedCandidate?.finalEducation?.major} ${selectedCandidate?.finalEducation?.isGraduated ? '졸업' : '재학중'}`
-                : ''
-            }}
-          </div> -->
+        <div v-if="selectedCandidate?.educations.length">
           <div
             v-for="(edu, index) in selectedCandidate?.educations"
             :key="index"
