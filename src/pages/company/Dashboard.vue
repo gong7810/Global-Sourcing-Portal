@@ -5,7 +5,8 @@ import { useRouter } from 'vue-router';
 import { useMessagePop } from '@/plugins/commonutils';
 import { useCompanyStore } from '@/store/company/companyStore';
 import { getCodeList } from '@/apis/common/commonApis';
-import { deleteFavoriteResume, getFavoriteResumeList, getUserResume } from '@/apis/company/companyApis';
+import { deleteFavoriteResume, getFavoriteResumeList, getOfferList, getUserResume } from '@/apis/company/companyApis';
+import { isNull } from 'es-toolkit';
 
 const router = useRouter();
 const messagePop = useMessagePop();
@@ -13,6 +14,8 @@ const companyStore = useCompanyStore();
 
 const isLoading = ref(false);
 const isResumeLoading = ref(false);
+
+const unreadOffers = ref(0);
 
 // 이력서 모달 관련 상태 추가
 const showResumeModal = ref(false);
@@ -41,6 +44,7 @@ onMounted(() => {
   getNationCode();
   getCareerPeriodCode();
 
+  getOfferChange();
   searchTalents();
 });
 
@@ -66,6 +70,17 @@ const getCareerPeriodCode = async () => {
       code: item.code
     });
   });
+};
+
+// 면접 제안 사항 갯수 조회
+const getOfferChange = async () => {
+  const response = await getOfferList();
+
+  unreadOffers.value = response.contents.filter((com) => {
+    return com.statusCd !== 'JO_ST_1' && isNull(com?.resultCd);
+  }).length;
+
+  console.log(unreadOffers.value);
 };
 
 // 인재 필터 조회
@@ -252,7 +267,7 @@ const openInterviewOffer = async (talent, isPage) => {
         <!-- 면접 제안 내역 -->
         <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/company/InterviewOffers')">
           <div
-            class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
+            class="relative w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
           >
             <svg
               width="32"
@@ -268,6 +283,13 @@ const openInterviewOffer = async (talent, isPage) => {
               <line x1="8" y1="2" x2="8" y2="6"></line>
               <line x1="3" y1="10" x2="21" y2="10"></line>
             </svg>
+            <!-- 읽지 않은 제안이 있을 경우 표시되는 배지 -->
+            <div
+              v-if="unreadOffers"
+              class="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center bg-red-500 text-white text-xs rounded-full"
+            >
+              {{ unreadOffers }}
+            </div>
           </div>
           <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
             >면접 제안 내역</span

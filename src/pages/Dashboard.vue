@@ -21,37 +21,7 @@ const interviewFlag = ref(false);
 const unreadOffers = ref(0);
 
 // JobOffersPage.vue의 데이터를 기반으로 한 면접 제안 데이터
-const offerCompanies = ref([
-  {
-    companyName: '밥스(주)',
-    position: '항공기계설계',
-    status: 'waiting_accept',
-    date: '2024-03-20'
-  },
-  {
-    companyName: 'LIG넥스원',
-    position: '시스템 엔지니어',
-    status: 'scheduling',
-    date: '2024-03-22'
-  },
-  {
-    companyName: '대한항공',
-    position: '항공정비사',
-    status: 'pending_schedule',
-    date: '2024-03-25'
-  },
-  {
-    companyName: '한국항공우주산업(주)',
-    position: '품질관리',
-    status: 'accepted',
-    date: '2024-03-15',
-    interviewConfirmed: true,
-    interviewDate: '2024-03-28',
-    interviewTime: '14:00',
-    interviewType: 'offline',
-    interviewLocation: '경남 사천시 사남면 공단1로 78'
-  }
-]);
+const offerCompanies = ref([]);
 
 const completedCompanies = ref([
   {
@@ -78,7 +48,9 @@ onMounted(() => {
     interviewFlag.value = true;
   }
 
-  getJobOfferList();
+  if (userInfo.value) {
+    getJobOfferList();
+  }
 });
 
 // 면접 제안 목록 조회
@@ -246,7 +218,7 @@ const getStatusColor = (statusCd) => {
               </svg>
               <!-- 읽지 않은 제안이 있을 경우 표시되는 배지 -->
               <div
-                v-if="unreadOffers > 0"
+                v-if="unreadOffers"
                 class="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center bg-red-500 text-white text-xs rounded-full"
               >
                 {{ unreadOffers }}
@@ -384,9 +356,8 @@ const getStatusColor = (statusCd) => {
             <!-- 진행중인 면접 제안 -->
             <div class="bg-white rounded-lg p-6 border border-gray-200">
               <h2 class="text-xl font-bold mb-4">진행중인 면접 제안</h2>
-              <div class="space-y-4">
+              <div v-if="offerCompanies.length" class="space-y-4">
                 <div
-                  v-if="offerCompanies.length > 0"
                   v-for="company in offerCompanies"
                   :key="company?.id"
                   class="p-4 border border-gray-100 rounded-lg hover:shadow-md transition-all"
@@ -402,13 +373,19 @@ const getStatusColor = (statusCd) => {
                     </span>
                   </div>
                 </div>
-                <div v-else class="p-8 text-center border border-gray-100 rounded-lg bg-gray-50">
-                  <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                  </svg>
-                  <p class="text-gray-500 font-medium">진행중인 면접 제안이 없습니다</p>
-                  <p class="text-gray-400 text-sm mt-1">기업에서 면접 제안을 보내면 여기에 표시됩니다</p>
-                </div>
+              </div>
+              <div v-else class="p-8 text-center border border-gray-100 rounded-lg bg-gray-50">
+                <svg
+                  class="w-12 h-12 text-gray-400 mx-auto mb-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <p class="text-gray-500 font-medium">진행중인 면접 제안이 없습니다</p>
+                <p class="text-gray-400 text-sm mt-1">기업에서 면접 제안을 보내면 여기에 표시됩니다</p>
               </div>
             </div>
 
@@ -418,9 +395,8 @@ const getStatusColor = (statusCd) => {
             <!-- 완료된 면접 제안 -->
             <div class="bg-white rounded-lg p-6 border border-gray-200">
               <h2 class="text-xl font-bold mb-4">완료된 면접 제안</h2>
-              <div class="space-y-4">
+              <div v-if="completedCompanies.length" class="space-y-4">
                 <div
-                  v-if="completedCompanies.length > 0"
                   v-for="company in completedCompanies"
                   :key="company.id"
                   class="p-4 border border-gray-100 rounded-lg hover:shadow-md transition-all"
@@ -436,12 +412,18 @@ const getStatusColor = (statusCd) => {
                     </span>
                   </div>
                 </div>
-                <div v-else class="p-8 text-center border border-gray-100 rounded-lg bg-gray-50">
-                  <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  </svg>
-                  <p class="text-gray-500 font-medium">완료된 면접 제안이 없습니다</p>
-                </div>
+              </div>
+              <div v-else class="p-8 text-center border border-gray-100 rounded-lg bg-gray-50">
+                <svg
+                  class="w-12 h-12 text-gray-400 mx-auto mb-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="text-gray-500 font-medium">완료된 면접 제안이 없습니다</p>
               </div>
             </div>
           </div>

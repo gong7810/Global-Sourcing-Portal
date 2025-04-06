@@ -868,7 +868,10 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
             <div v-if="offer?.interviewTime" class="p-4 bg-green-50 rounded-lg">
               <p class="text-green-600 font-medium mb-3">확정된 면접 일정</p>
               <div class="space-y-2 ml-4">
-                <p class="text-gray-600">날짜·시간: {{ offer?.interviewTime }}</p>
+                <p class="text-gray-600">
+                  날짜·시간: {{ offer?.interviewTime.slice(0, 10).replaceAll('-', '.') }} &nbsp;
+                  {{ offer?.interviewTime.slice(11, 16) }}
+                </p>
                 <p class="text-gray-600">
                   방식: {{ offer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접' }}
                 </p>

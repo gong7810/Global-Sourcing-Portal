@@ -40,6 +40,11 @@ const selectedDateIndices = ref({}); // 각 제안별로 선택된 일정을 추
 // 면접 제안 목록
 const offerCompanyList = ref([]);
 
+// 거절 사유 모달 상태 추가
+const showRejectReasonModal = ref(false);
+const rejectReason = ref('');
+const offerToReject = ref(null);
+
 onMounted(() => {
   getJobCategoryCode();
 
@@ -114,49 +119,39 @@ const acceptOffer = async (offer) => {
   messagePop.confirm({
     icon: 'info',
     message: `<div class="text-center">
-      <p class="text-xl mb-2">${offer.companyName}의 면접 제안을 수락하시겠습니까?</p>
+      <p class="text-xl mb-2">${offer.company.name}의 면접 제안을 수락하시겠습니까?</p>
       <p class="text-sm text-gray-600">수락 시 기업 담당자에게 알림과 메일이 발송됩니다.</p>
       <p class="text-sm text-gray-600">이후 면접 일정 조율이 진행됩니다.</p>
     </div>`,
     acceptLabel: '수락',
     rejectLabel: '취소',
     onCloseYes: async () => {
-      try {
-        // 새로운 객체를 생성하여 할당
-        const index = offerCompanyList.value.findIndex((o) => o.id === offer.id);
-        offerCompanyList.value[index] = {
-          ...offer,
-          status: 'accepted',
-          acceptedAt: new Date().toISOString(),
-          interviewInfo: false,
-          interviewConfirmed: false
-        };
+      // 새로운 객체를 생성하여 할당
+      // const index = offerCompanyList.value.findIndex((o) => o.id === offer.id);
+      // offerCompanyList.value[index] = {
+      //   ...offer,
+      //   status: 'accepted',
+      //   acceptedAt: new Date().toISOString(),
+      //   interviewInfo: false,
+      //   interviewConfirmed: false
+      // };
 
-        toast.add({
-          severity: 'success',
-          summary: '제안 수락',
-          detail: `${offer.companyName}의 면접제안을 수락했습니다.`,
-          life: 3000
-        });
+      const body = { ...offer, statusCd: 'JO_ST_2' };
+
+      const response = await answerOffer(body);
+
+      if (response && response.success === undefined) {
+        messagePop.toast('제안을 수락했었습니다.', 'success');
 
         showDetailModal.value = false;
-      } catch (error) {
-        console.error('제안 수락 중 오류 발생:', error);
-        toast.add({
-          severity: 'error',
-          summary: '오류',
-          detail: '제안 수락 중 문제가 발생했습니다.',
-          life: 3000
-        });
+
+        getOfferList();
+      } else {
+        messagePop.toast('시스템 오류입니다.', 'error');
       }
     }
   });
 };
-
-// 거절 사유 모달 상태 추가
-const showRejectReasonModal = ref(false);
-const rejectReason = ref('');
-const offerToReject = ref(null);
 
 // 제안 거절
 const rejectOffer = (offer) => {
@@ -165,7 +160,7 @@ const rejectOffer = (offer) => {
   showRejectReasonModal.value = true;
 };
 
-// 거절 확인 함수 수정 (공통으로 사용)
+// 거절 확인 함수
 const confirmReject = () => {
   if (!rejectReason.value.trim()) {
     messagePop.toast('거절 사유를 입력해주세요.', 'warn');
@@ -183,13 +178,9 @@ const confirmReject = () => {
     rejectLabel: '취소',
     acceptClass: 'p-button-danger',
     onCloseYes: async () => {
-      const offer = { ...offerToReject.value };
-      offer.statusCd = 'JO_ST_3';
-      offer.resultMemo = rejectReason.value;
+      const body = { ...offerToReject.value, statusCd: 'JO_ST_3', resultMemo: rejectReason.value };
 
-      console.log(offer);
-
-      await answerOffer(offer);
+      await answerOffer(body);
 
       if (selectedDateIndices.value[offer.id] !== undefined) {
         selectedDateIndices.value[offer.id] = undefined;
@@ -214,20 +205,6 @@ const getStatusClass = (statusCd) => {
       return 'bg-red-100 text-red-700';
     default:
       return 'bg-yellow-100 text-yellow-700';
-  }
-};
-
-// 제안 상태 텍스트
-const getStatusText = (status) => {
-  switch (status) {
-    case 'accepted':
-      return '수락됨';
-    case 'rejected':
-      return '거절됨';
-    case 'pending':
-      return '대기중';
-    default:
-      return '대기중';
   }
 };
 
@@ -263,33 +240,36 @@ const calculateAge = (birthDate) => {
 // 면접 일정 수락
 const acceptInterviewSchedule = (offer) => {
   const selectedIndex = selectedDateIndices.value[offer.id];
-  const selectedDate = offer.proposedDates[selectedIndex];
+  const selectedDate = offer[`reserveTime${selectedIndex + 1}`];
 
   messagePop.confirm({
     icon: 'info',
     message: `<div class="text-center">
       <p class="text-xl mb-2">면접 일정을 수락하시겠습니까?</p>
-      <p class="text-sm text-gray-600 mb-2">일시: ${selectedDate.date} ${selectedDate.time}</p>
-      <p class="text-sm text-gray-600">면접 방식: ${offer.interviewType === 'online' ? '화상 면접' : '대면 면접'}</p>
-      <p class="text-sm text-gray-600 mb-4">장소: ${offer.interviewLocation}</p>
+      <p class="text-md text-gray-600 mb-2">일시: ${selectedDate?.slice(0, 10)?.replaceAll('-', '.')} ${selectedDate?.slice(11, 16)}</p>
+      <p class="text-sm text-gray-600">면접 방식: ${offer.interviewTypeCd === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접'}</p>
+      <p class="text-sm text-gray-600 mb-4">장소/링크: ${offer.interviewInfo}</p>
       <p class="text-sm text-blue-600">확인 시 기업 담당자에게 알림과 메일이 발송됩니다.</p>
     </div>`,
     acceptLabel: '수락',
     rejectLabel: '취소',
-    onCloseYes: () => {
-      offer.interviewConfirmed = true;
-      offer.interviewInfo = false;
-      offer.interviewDate = selectedDate.date;
-      offer.interviewTime = selectedDate.time;
-      offer.interviewConfirmedAt = new Date().toISOString();
-      selectedDateIndices.value[offer.id] = undefined;
+    onCloseYes: async () => {
+      const body = {
+        ...offer,
+        interviewTime: selectedDate
+      };
 
-      toast.add({
-        severity: 'success',
-        summary: '면접 일정 확정',
-        detail: `${selectedDate.date} ${selectedDate.time}에 면접이 확정되었습니다.`,
-        life: 3000
-      });
+      const response = await answerOffer(body);
+
+      if (response && response.success == undefined) {
+        selectedDateIndices.value[offer.id] = undefined;
+
+        messagePop.toast('면접이 확정되었습니다.', 'success');
+
+        getOfferList();
+      } else {
+        messagePop.toast('시스템 오류입니다.', 'error');
+      }
     }
   });
 };
@@ -332,40 +312,6 @@ const calculatePeriod = (period) => {
   } else {
     return `${years}년 ${remainingMonths}개월`;
   }
-};
-
-// 총 경력 계산 함수
-const calculateTotalCareer = (careers) => {
-  if (!careers || careers.length === 0) return '경력 없음';
-
-  let totalMonths = 0;
-  careers.forEach((career) => {
-    const [start, end] = career.period.split(' - ');
-    const startDate = new Date(start.replace(/\./g, '-'));
-    const endDate = end === '재직중' ? new Date() : new Date(end.replace(/\./g, '-'));
-
-    const months = (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth());
-    totalMonths += months;
-  });
-
-  const years = Math.floor(totalMonths / 12);
-  const remainingMonths = totalMonths % 12;
-
-  if (years === 0) {
-    return `${remainingMonths}개월`;
-  } else if (remainingMonths === 0) {
-    return `${years}년`;
-  } else {
-    return `${years}년 ${remainingMonths}개월`;
-  }
-};
-
-// 최종학력 정보 가져오기
-const getLatestEducation = (educations) => {
-  if (!educations || educations.length === 0) return '학력 정보 없음';
-
-  const latest = educations[0]; // 이미 정렬되어 있다고 가정
-  return `${latest.schoolName} ${latest.educationType.name} ${latest.isGraduated ? '졸업' : '재학중'}`;
 };
 </script>
 
@@ -421,7 +367,12 @@ const getLatestEducation = (educations) => {
                 <span :class="getStatusClass(offer?.statusCd)" class="px-2 py-1 text-xs rounded">
                   {{ offer?.status?.name }}
                 </span>
-                <span v-if="!offer?.isRead" class="bg-red-500 text-white px-2 py-1 rounded text-xs">New</span>
+                <span
+                  v-if="new Date(offer?.createdAt).toDateString() === new Date().toDateString()"
+                  class="bg-red-500 text-white px-2 py-1 rounded text-xs"
+                >
+                  New
+                </span>
               </div>
               <!-- 회신기한을 상단으로 이동 -->
               <div v-if="offer.statusCd === 'JO_ST_1'" class="text-right">
@@ -544,7 +495,10 @@ const getLatestEducation = (educations) => {
                   <div class="grid grid-cols-2 gap-4">
                     <div class="flex items-center gap-2">
                       <i class="pi pi-calendar text-green-600"></i>
-                      <span class="text-gray-700">{{ offer?.interviewTime }}</span>
+                      <span class="text-gray-700">
+                        {{ offer?.interviewTime.slice(0, 10).replaceAll('-', '.') }} &nbsp;
+                        {{ offer?.interviewTime.slice(11, 16) }}
+                      </span>
                     </div>
                     <!-- <div class="flex items-center gap-2">
                       <i class="pi pi-clock text-green-600"></i>
@@ -591,7 +545,7 @@ const getLatestEducation = (educations) => {
                           @click.stop
                         />
                         <div>
-                          <div class="font-medium">{{ dateSlot.slice(0, 10) }}</div>
+                          <div class="font-medium">{{ dateSlot.slice(0, 10).replaceAll('-', '.') }}</div>
                           <div class="text-sm text-gray-600">{{ dateSlot.slice(11, 16) }}</div>
                         </div>
                       </div>
@@ -815,7 +769,9 @@ const getLatestEducation = (educations) => {
                 </p>
                 <div class="space-y-4 mb-4">
                   <div
-                    v-for="(dateSlot, index) in selectedOffer.proposedDates"
+                    v-for="(dateSlot, index) in ['reserveTime1', 'reserveTime2', 'reserveTime3']
+                      .map((key) => selectedOffer[key])
+                      .filter((time) => time)"
                     :key="index"
                     class="flex items-center gap-4 p-3 bg-white rounded-lg"
                   >
@@ -827,8 +783,8 @@ const getLatestEducation = (educations) => {
                       @click.stop
                     />
                     <div>
-                      <div class="font-medium">{{ dateSlot.date }}</div>
-                      <div class="text-sm text-gray-600">{{ dateSlot.time }}</div>
+                      <div class="font-medium">{{ dateSlot?.slice(0, 10) }}</div>
+                      <div class="text-sm text-gray-600">{{ dateSlot?.slice(11, 16) }}</div>
                     </div>
                   </div>
                 </div>
@@ -838,8 +794,8 @@ const getLatestEducation = (educations) => {
                 <Button
                   label="일정 수락"
                   severity="success"
-                  @click="acceptInterviewSchedule(selectedOffer)"
                   :disabled="selectedDateIndices[selectedOffer.id] === undefined"
+                  @click="acceptInterviewSchedule(selectedOffer)"
                 />
                 <Button label="면접 거절" severity="danger" @click="rejectInterviewSchedule(selectedOffer)" />
               </div>
@@ -909,8 +865,7 @@ const getLatestEducation = (educations) => {
               <!-- 가운데 컬럼 -->
               <div class="grid grid-cols-[100px_auto] gap-y-2 text-sm text-gray-600">
                 <span class="text-gray-600">범죄경력</span>
-                <span class="flex items-center gap-2">
-                  <i class="pi pi-file-pdf text-red-500"></i>
+                <span>
                   {{ selectedOffer?.resumeSnapshot?.user?.hasCriminalRecord ? '있음' : '없음' }}
                 </span>
                 <span class="text-gray-600">한국어 능력</span>
