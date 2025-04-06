@@ -516,7 +516,7 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
 
               <!-- 면접 완료 -->
               <div v-if="!offer?.resultCd" class="mt-4">
-                <Button @click="completeInterview" class="bg-[#8B8BF5] text-white"> 면접 완료 </Button>
+                <Button @click="completeInterview" style="border-color: none"> 면접 완료 </Button>
               </div>
               <!-- 면접 완료된 경우 표시 -->
               <div v-else class="mt-4">
