@@ -402,7 +402,7 @@ const interviewTypes = [
 ];
 
 // 직무 필터 상태 추가
-const selectedJobFilter = ref('all');
+const selectedJobFilter = ref({ name: '전체', code: 'all' });
 
 const koreanLevelOptions = ref([]);
 const educationLevelOptions = ref([]);
@@ -416,7 +416,7 @@ const filteredOffers = computed(() => {
     const statusMatch = selectedFilter.value === 'all' || offer.statusCd === selectedFilter.value;
 
     // 직무 필터
-    const jobMatch = selectedJobFilter.value === 'all' || offer.jobCategoryCd === selectedJobFilter.value.code;
+    const jobMatch = selectedJobFilter.value.code === 'all' || offer.jobCategoryCd === selectedJobFilter.value.code;
 
     return statusMatch && jobMatch;
   });
