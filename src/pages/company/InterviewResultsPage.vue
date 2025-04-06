@@ -577,8 +577,15 @@ const openDetailModal = (interview) => {
         </div>
 
         <div>
-          <label class="block font-medium mb-2">피드백</label>
-          <Textarea v-model="editFeedback" rows="4" class="w-full" placeholder="면접 피드백을 입력해주세요" />
+          <label class="block font-medium mb-2">{{ editResult === 'INTERVIEW_RESULT_2' ? '피드백' : '메세지' }}</label>
+          <Textarea
+            v-model="editFeedback"
+            rows="4"
+            class="w-full"
+            :placeholder="
+              editResult === 'INTERVIEW_RESULT_2' ? '면접 피드백을 입력해주세요' : '전달 메세지를 입력해주세요'
+            "
+          />
         </div>
       </div>
 
