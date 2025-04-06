@@ -20,7 +20,6 @@ const { offerUserResume } = storeToRefs(companyStore);
 
 // 직무 카테고리 데이터
 const jobCategoryOptions = ref([]);
-const koreanLevelOptions = ref([]);
 
 const jobOffer = ref({
   jobCategoryCd: null,
@@ -32,7 +31,6 @@ const jobOffer = ref({
 const candidate = ref();
 
 onMounted(() => {
-  getKoreanLevelCode();
   getJobCategoryCode();
 
   candidate.value = offerUserResume.value;
@@ -42,15 +40,6 @@ onMounted(() => {
     profileImage: `${import.meta.env.VITE_UPLOAD_PATH}/${candidate.value?.user?.imageFile?.fileName}`
   };
 });
-
-// 한국어 실력 코드 조회
-const getKoreanLevelCode = async () => {
-  const response = await getCodeList(`KOREAN_LV`);
-
-  response.map((item) => {
-    koreanLevelOptions.value.push({ name: item.name, code: item.code });
-  });
-};
 
 // 직무 코드 조회
 const getJobCategoryCode = async () => {
@@ -62,21 +51,6 @@ const getJobCategoryCode = async () => {
       code: item.code
     });
   });
-};
-
-// 한국어 실력 코드 변환
-const convertCode = (code) => {
-  if (!code) return null;
-
-  let name = '';
-
-  koreanLevelOptions.value.filter((item) => {
-    if (item.code === code) {
-      name = item.name;
-    }
-  });
-
-  return name;
 };
 
 // 만 나이 계산 함수
@@ -217,7 +191,7 @@ const submitOffer = () => {
                 v-if="!isNull(candidate?.user?.koreanProficiencyCd)"
                 class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-md"
               >
-                {{ convertCode(candidate?.user?.koreanProficiencyCd) }}
+                {{ candidate?.user?.koreanProficiency?.name }}
               </span>
               <span v-else class="bg-[#e97844] bg-opacity-10 text-[#e97844] px-3 py-1 rounded-full text-md">
                 미입력
