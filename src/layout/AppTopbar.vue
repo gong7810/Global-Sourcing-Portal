@@ -103,7 +103,7 @@ const jobSeekerNotifications = ref([
 const notifications = ref([]);
 
 const unreadCount = computed(() => {
-  return notifications.value.filter((notif) => !notif.isRead).length;
+  return notifications.value?.filter((notif) => !notif.isRead).length;
 });
 
 const overlayPanel = ref();
@@ -115,7 +115,7 @@ const toggleNotificationPanel = (event) => {
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
 
-  getNotiByUser();
+  if (loginFlag.value) getNotiByUser();
 });
 
 const toggleMenu = () => {
@@ -134,7 +134,7 @@ const getNotiByUser = async () => {
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  notifications.value = response.data.filter((noti) => {
+  notifications.value = response?.data.filter((noti) => {
     const notificationDate = new Date(noti.createdAt);
     return notificationDate >= thirtyDaysAgo;
   });
@@ -147,11 +147,16 @@ const getLogout = () => {
     message: '로그아웃 하시겠습니까?',
     onCloseYes: async () => {
       // 구조적인 이슈로 logout api는 Topbar에서 직접 호출
-      await api.get('/auth/logout');
+      try {
+        const response = await api.get('/auth/logout');
+        if (response.status === 400) throw new Error('400 Error');
 
-      authStore.reset();
+        authStore.reset();
 
-      window.location.reload();
+        window.location.reload();
+      } catch (error) {
+        console.error(error);
+      }
     }
   });
   // messagePop.alert('test', 'info');
@@ -172,6 +177,8 @@ const markAsRead = async (noti) => {
     const response = await api.post(`/notification/read/${noti.id}`);
 
     if (response && response.success === undefined) {
+      if (response.status === 400) throw new Error('400 Error');
+
       overlayPanel.value.hide(); // 알림 패널 닫기
 
       // 알림 타입에 따라 페이지 이동
@@ -386,7 +393,7 @@ const markAllAsRead = async () => {
                   class="w-8 h-8 inline-flex items-center justify-center bg-[#8FA1FF] text-white rounded-full hover:bg-[#7C8EFF] transition-colors notranslate"
                   title="clear"
                 >
-                  <i class="pi pi-trash pr-[1px]"></i>
+                  <i class="pi pi-trash"></i>
                 </button>
               </div>
               <div v-if="notifications.length === 0" class="text-gray-500 text-center py-4">

@@ -4,33 +4,39 @@ import { storeToRefs } from 'pinia';
 import { useMessagePop } from '@/plugins/commonutils';
 
 export function useApi() {
-  const authStore = useAuthStore();
-  const { tokenInfo } = storeToRefs(authStore);
-  const messagePop = useMessagePop();
-
-  // Axios 인스턴스 생성
-  const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: tokenInfo.value?.accessToken ? `Bearer ${tokenInfo.value.accessToken}` : ''
-    },
-    timeout: 1800000 // 30분 타임아웃
-  });
-
   // API 호출 함수 (공통 함수)
   const request = async (method, url, data = null, config = {}) => {
-    try {
-      const headers = {
-        ...config.headers,
+    const authStore = useAuthStore();
+    const { tokenInfo } = storeToRefs(authStore);
+    const messagePop = useMessagePop();
+
+    // Axios 인스턴스 생성
+    const api = axios.create({
+      baseURL: import.meta.env.VITE_BASE_URL,
+      headers: {
+        'Content-Type': 'application/json',
         Authorization: tokenInfo.value?.accessToken ? `Bearer ${tokenInfo.value.accessToken}` : ''
-      };
+      },
+      timeout: 1800000 // 30분 타임아웃
+    });
 
-      // 이미지를 보내는 FormData인 경우 Content-Type 수정 필요
-      if (data instanceof FormData) {
-        headers['Content-Type'] = 'multipart/form-data';
-      }
+    // 헤더 및 context-type 설정
+    api.interceptors.request.use(
+      (config) => config,
+      (error) => Promise.reject(error)
+    );
 
+    const headers = {
+      ...config.headers,
+      Authorization: tokenInfo.value?.accessToken ? `Bearer ${tokenInfo.value.accessToken}` : ''
+    };
+
+    // 이미지를 보내는 FormData인 경우 Content-Type 수정 필요
+    if (data instanceof FormData) {
+      headers['Content-Type'] = 'multipart/form-data';
+    }
+
+    try {
       const response =
         method === 'GET'
           ? await api.get(url, { params: data, headers, ...config })
