@@ -63,7 +63,6 @@ $bt_txt_sub-color: #8b8e9b;
   padding: 8px 16px;
   border: 0;
   border-radius: 6px;
-  font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
   color: #24252a !important;
@@ -121,8 +120,8 @@ $bt_txt_sub-color: #8b8e9b;
     }
   }
   &.secondary {
-    background-color: white;
-    border-color: #e5e7eb;
+    background-color: #ffffff;
+    border: #a6a8aa solid 1px;
     color: #374151;
   }
   &.secondary:hover {
