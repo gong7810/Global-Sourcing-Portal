@@ -393,7 +393,7 @@ const markAllAsRead = async () => {
                   class="w-8 h-8 inline-flex items-center justify-center bg-[#8FA1FF] text-white rounded-full hover:bg-[#7C8EFF] transition-colors notranslate"
                   title="clear"
                 >
-                  <i class="pi pi-trash"></i>
+                  <i class="pi pi-trash pl-[0.5px]"></i>
                 </button>
               </div>
               <div v-if="notifications.length === 0" class="text-gray-500 text-center py-4">
