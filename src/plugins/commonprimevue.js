@@ -76,6 +76,7 @@ import SelectButton from 'primevue/selectbutton';
 import ScrollPanel from 'primevue/scrollpanel';
 import ScrollTop from 'primevue/scrolltop';
 import Skeleton from 'primevue/skeleton';
+import Select from 'primevue/select';
 import Slider from 'primevue/slider';
 import Sidebar from 'primevue/sidebar';
 import SpeedDial from 'primevue/speeddial';
@@ -202,6 +203,7 @@ export default {
     app.component('SelectButton', SelectButton);
     app.component('ScrollPanel', ScrollPanel);
     app.component('ScrollTop', ScrollTop);
+    app.component('Select', Select);
     app.component('Slider', Slider);
     app.component('Sidebar', Sidebar);
     app.component('Skeleton', Skeleton);

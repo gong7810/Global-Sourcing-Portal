@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import AdminHeader from '@/components/admin/AdminHeader.vue';
@@ -377,13 +377,14 @@ const getGenderLabel = (gender) => {
           <div class="search-area">
             <div class="search-fields">
               <div class="search-field">
-                <Dropdown
+                <Select
                   v-model="filters.role"
                   :options="roleOptions"
                   placeholder="권한"
                   class="w-full"
                   optionLabel="label"
                   optionValue="value"
+                  checkmark
                   @change="handleFilterChange"
                 />
               </div>

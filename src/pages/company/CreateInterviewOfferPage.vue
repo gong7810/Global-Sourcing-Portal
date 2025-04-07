@@ -220,11 +220,12 @@ const submitOffer = () => {
         <label class="block text-sm font-medium text-gray-700 mb-2"
           >직무 카테고리<span class="text-red-500 ml-1">*</span></label
         >
-        <Dropdown
+        <Select
           v-model="jobOffer.jobCategoryCd"
           :options="jobCategoryOptions"
           optionLabel="name"
           optionValue="code"
+          checkmark
           placeholder="직무 카테고리를 선택해주세요"
           class="w-full"
         />

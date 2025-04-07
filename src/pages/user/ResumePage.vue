@@ -1506,11 +1506,12 @@ const clearCertificationFile = (index) => {
         <!-- 직무 -->
         <div class="space-y-2">
           <label class="block text-sm font-medium text-gray-700"> 직무<span class="text-red-500">*</span> </label>
-          <Dropdown
+          <Select
             v-model="careerInfo.jobCategory"
             :options="jobCategories"
             optionLabel="name"
             placeholder="직무를 선택해주세요"
+            checkmark
             class="w-full"
           />
         </div>

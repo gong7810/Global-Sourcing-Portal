@@ -384,11 +384,12 @@ const savePassportImage = () => {
       <!-- 입력 폼 -->
       <form @submit.prevent="submitForm">
         <div class="space-y-4 mb-6">
-          <Dropdown
+          <Select
             v-model="businessType"
             :options="businessOptions"
             optionLabel="label"
             placeholder="기업형태 선택"
+            checkmark
             class="w-full"
           />
           <div class="mb-2">
