@@ -632,6 +632,8 @@ const setLastEducation = async (education, selectedIndex) => {
   });
 
   await upsertEducation(education);
+
+  messagePop.toast('최종학력이 변경되었습니다.', 'success');
 };
 
 const closeEducationModal = () => {
