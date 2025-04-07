@@ -24,6 +24,17 @@ export const getCodeList = async (code) => {
   }
 };
 
+// 노티 목록 조회 API - 페이지에서 호출
+export const getNotificationList = async () => {
+  try {
+    const response = await api.get(`/notification/list`);
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 // FAQ 목록 조회
 export const getFaqList = async (params = {}) => {
   try {
@@ -74,11 +85,11 @@ export const getInquiries = async (params = {}) => {
 
     // 검색 조건이 있는 경우 추가
     if (params.typeCd) {
-      queryParams.typeCd = params.typeCd;  // 문의유형 필터링
+      queryParams.typeCd = params.typeCd; // 문의유형 필터링
     }
     if (params.keyword) {
       // 키워드 검색은 subject나 content 중 하나만 사용
-      queryParams.keyword = params.keyword;  // 키워드 검색
+      queryParams.keyword = params.keyword; // 키워드 검색
     }
 
     const response = await api.get(`/help/list`, { params: queryParams });
@@ -127,14 +138,14 @@ export const saveReply = async (data) => {
       try {
         // 먼저 현재 문의 정보를 가져옴
         const inquiry = await getInquiryDetail(data.helpId);
-        
+
         // 기존 데이터를 유지하면서 상태만 변경
         const updateData = {
           id: Number(data.helpId),
           userId: inquiry.userId,
           subject: inquiry.subject,
           content: inquiry.content,
-          statusCd: 'HELP_ST_2',  // 답변완료 상태
+          statusCd: 'HELP_ST_2', // 답변완료 상태
           typeCd: inquiry.typeCd,
           email: inquiry.email
         };
@@ -143,7 +154,7 @@ export const saveReply = async (data) => {
       } catch (statusError) {
         console.warn('상태 변경 실패:', statusError);
       }
-      
+
       return response.data;
     } else {
       throw new Error(response.data?.message || '답변 등록에 실패했습니다.');
@@ -178,18 +189,18 @@ export const createInquiry = async (data) => {
   try {
     // 요청 데이터 형식 변환
     const requestData = {
-      typeCd: data.category?.value || '',  // Proxy 객체에서 value 값 추출
+      typeCd: data.category?.value || '', // Proxy 객체에서 value 값 추출
       subject: data.title || '',
       content: data.content || '',
       email: data.email || '',
       status: 'WAIT', // 문의 상태: 대기중
-      useYn: 'Y'      // 사용 여부
+      useYn: 'Y' // 사용 여부
     };
 
     console.log('문의하기 요청 데이터:', requestData);
     const response = await api.post('/help', requestData);
     console.log('문의하기 응답:', response);
-    
+
     if (response.status === 200) {
       return response.data;
     } else {

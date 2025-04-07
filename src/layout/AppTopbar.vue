@@ -1,19 +1,20 @@
 <script setup>
-import { useLayout } from '@/layout/composables/layout';
-import { useRouter } from 'vue-router';
 import { onMounted, ref, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import { storeToRefs } from 'pinia';
+import { useLayout } from '@/layout/composables/layout';
+
+import { useApi } from '@/apis';
 import { useAuthStore } from '@/store/auth/authStore';
 import { useMessagePop } from '@/plugins/commonutils';
-import OverlayPanel from 'primevue/overlaypanel';
-import { storeToRefs } from 'pinia';
-import { useApi } from '@/apis';
 
 const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
 
 const api = useApi();
 const router = useRouter();
-const authStore = useAuthStore();
 const messagePop = useMessagePop();
+
+const authStore = useAuthStore();
 const { userInfo } = storeToRefs(authStore);
 
 const isMenuOpen = ref(false); // 메뉴 열림 상태
@@ -98,10 +99,8 @@ const jobSeekerNotifications = ref([
   }
 ]);
 
-// 사용자 타입에 따라 알림 데이터 선택
-const notifications = computed(() => {
-  return userInfo.value?.isCompany ? companyNotifications.value : jobSeekerNotifications.value;
-});
+// 노티 리스트
+const notifications = ref([]);
 
 const unreadCount = computed(() => {
   return notifications.value.filter((notif) => !notif.isRead).length;
@@ -113,67 +112,10 @@ const toggleNotificationPanel = (event) => {
   overlayPanel.value.toggle(event);
 };
 
-const markAsRead = (notification) => {
-  notification.isRead = true;
-  overlayPanel.value.hide(); // 알림 패널 닫기
-
-  // 알림 타입에 따라 페이지 이동
-  switch (notification.type) {
-    // 구직자용 알림 라우팅
-    case 'interview_offer':
-      router.push('/user/jobOffers'); // 면접제안 페이지로 이동
-      break;
-    case 'interview_schedule':
-      router.push('/user/jobOffers'); // 면접제안 페이지로 이동
-      break;
-    case 'result':
-      router.push('/user/jobSeekerInterviews'); // 면접결과 페이지로 이동
-      break;
-
-    // 기업용 알림 라우팅
-    case 'interview_accepted':
-      router.push('/company/InterviewOffers'); // 면접제안 관리 페이지로 이동
-      break;
-    case 'schedule_selected':
-      router.push('/company/InterviewOffers'); // 면접제안 관리 페이지로 이동
-      break;
-    case 'interview_declined':
-      router.push('/company/InterviewOffers'); // 면접제안 관리 페이지로 이동
-      break;
-  }
-};
-
-// 알림 아이콘 및 색상 매핑
-const getNotificationIcon = (type) => {
-  const iconMap = {
-    // 구직자용 알림 아이콘
-    interview_offer: 'pi-envelope',
-    interview_schedule: 'pi-calendar',
-    result: 'pi-check-circle',
-    // 기업용 알림 아이콘
-    interview_accepted: 'pi-check',
-    schedule_selected: 'pi-calendar-plus',
-    interview_declined: 'pi-times-circle'
-  };
-  return iconMap[type] || 'pi-bell';
-};
-
-const getNotificationColor = (type) => {
-  const colorMap = {
-    // 구직자용 알림 색상
-    interview_offer: 'text-blue-500',
-    interview_schedule: 'text-green-500',
-    result: 'text-purple-500',
-    // 기업용 알림 색상
-    interview_accepted: 'text-green-500',
-    schedule_selected: 'text-blue-500',
-    interview_declined: 'text-red-500'
-  };
-  return colorMap[type] || 'text-gray-500';
-};
-
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
+
+  getNotiByUser();
 });
 
 const toggleMenu = () => {
@@ -184,6 +126,21 @@ const closeMenu = () => {
   isMenuOpen.value = false;
 };
 
+// 회원 알림 체크
+const getNotiByUser = async () => {
+  const response = await api.get(`/notification/list`);
+
+  // 30일 이내의 알림만 필터링
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  notifications.value = response.data.filter((noti) => {
+    const notificationDate = new Date(noti.createdAt);
+    return notificationDate >= thirtyDaysAgo;
+  });
+};
+
+// 로그아웃 API 호출
 const getLogout = () => {
   messagePop.confirm({
     icon: 'info',
@@ -207,6 +164,106 @@ const handleClickOutside = (event) => {
   }
 };
 
+// 패널 클릭
+const markAsRead = async (noti) => {
+  noti.isRead = true;
+
+  try {
+    const response = await api.post(`/notification/read/${noti.id}`);
+
+    if (response && response.success === undefined) {
+      overlayPanel.value.hide(); // 알림 패널 닫기
+
+      // 알림 타입에 따라 페이지 이동
+      switch (noti.typeCd) {
+        // 구직자용
+        case 'NOTI_1"': // 면접제안
+          router.push('/user/jobOffers');
+          break;
+        case 'NOTI_2': // 면접일정조율
+          router.push('/user/jobOffers');
+          break;
+        case 'NOTI_3': // 면접결과
+          router.push('/user/jobSeekerInterviews');
+          break;
+
+        // 기업용
+        case 'NOTI_4': // 면접제안 답변
+          router.push('/company/InterviewOffers');
+          break;
+        case 'NOTI_5': // 면접일정 확정
+          router.push('/company/InterviewOffers');
+          break;
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    messagePop.toast('시스템 오류입니다.', 'error');
+  }
+};
+
+// 알림 아이콘 및 색상 매핑
+const getNotificationIcon = (typeCd) => {
+  const iconMap = {
+    // 구직자용
+    NOTI_1: 'pi-envelope',
+    NOTI_2: 'pi-calendar',
+    NOTI_3: 'pi-check-circle',
+    // 기업용
+    NOTI_4: 'pi-check',
+    NOTI_5: 'pi-calendar-plus'
+    // interview_declined: 'pi-times-circle'
+  };
+  return iconMap[typeCd] || 'pi-bell';
+};
+
+const getNotificationColor = (typeCd) => {
+  const colorMap = {
+    // 구직자용
+    NOTI_1: 'text-blue-500',
+    NOTI_2: 'text-green-500',
+    NOTI_3: 'text-purple-500',
+    // 기업용
+    NOTI_4: 'text-green-500',
+    NOTI_5: 'text-blue-500'
+    // interview_declined: 'text-red-500'
+  };
+  return colorMap[typeCd] || 'text-gray-500';
+};
+
+// 노티 타입별 타이틀
+const getNotiTypeTitle = (typeCd) => {
+  switch (typeCd) {
+    case 'NOTI_1':
+      return '새로운 면접 제안';
+    case 'NOTI_2':
+      return '면접 일정 조율';
+    case 'NOTI_3':
+      return '면접 결과';
+    case 'NOTI_4':
+      return '면접 제안 답변';
+    case 'NOTI_5':
+      return '면접 일정 확정';
+  }
+};
+
+// 노티 타입별 내용
+const getNotiTypeContent = (noti) => {
+  switch (noti?.typeCd) {
+    case 'NOTI_1':
+      return '해당 포지션 면접제안이 도착했습니다.';
+    case 'NOTI_2':
+      return '해당 포지션 면접일정이 도착했습니다.';
+    case 'NOTI_3':
+      return '해당 포지션 면접결과가 도착했습니다.';
+    case 'NOTI_4':
+      return '면접 제안에 대한 답변이 도착했습니다.';
+    case 'NOTI_5':
+      return '면접 일정이 확정되었습니다.';
+  }
+};
+
+// 다국어 번역
 const changeLanguage = async () => {
   const translateElement = document.getElementById('google_translate_element');
   const selectElement = translateElement?.querySelector('.goog-te-combo');
@@ -260,11 +317,7 @@ const checkTranslation = () => {
   }
 };
 
-const test = () => {
-  console.log(selectedLanguage.value);
-};
-
-// formatDate 함수 추가
+// formatDate 함수
 const formatDate = (dateString) => {
   if (!dateString) return '';
   const date = new Date(dateString);
@@ -273,6 +326,25 @@ const formatDate = (dateString) => {
     month: 'long',
     day: 'numeric'
   });
+};
+
+// 모든 알림 읽음 처리
+const markAllAsRead = async () => {
+  try {
+    // 읽지 않은 알림만 필터링
+    const unreadNotifications = notifications.value.filter((noti) => !noti.isRead);
+
+    // 각 알림에 대해 읽음 처리
+    for (const noti of unreadNotifications) {
+      noti.isRead = true;
+      await api.post(`/notification/read/${noti.id}/`);
+    }
+
+    getNotiByUser();
+  } catch (error) {
+    console.error('알림 읽음 처리 실패:', error);
+    messagePop.toast('시스템 오류입니다.', 'error');
+  }
 };
 </script>
 
@@ -304,37 +376,48 @@ const formatDate = (dateString) => {
           </button>
 
           <!-- 알림 패널 -->
-          <OverlayPanel ref="overlayPanel" :showCloseIcon="true" class="w-96">
+          <OverlayPanel ref="overlayPanel" class="w-96">
             <div class="p-3">
-              <h3 class="text-lg font-bold mb-4">알림</h3>
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold">알림</h3>
+                <button
+                  v-if="unreadCount > 0"
+                  @click="markAllAsRead"
+                  class="w-8 h-8 inline-flex items-center justify-center bg-[#8FA1FF] text-white rounded-full hover:bg-[#7C8EFF] transition-colors notranslate"
+                  title="clear"
+                >
+                  <i class="pi pi-trash pr-[1px]"></i>
+                </button>
+              </div>
               <div v-if="notifications.length === 0" class="text-gray-500 text-center py-4">
                 새로운 알림이 없습니다.
               </div>
-              <div v-else class="space-y-3">
+              <div v-else class="space-y-3 max-h-[75vh] overflow-y-auto scroll-thin">
                 <div
                   v-for="notification in notifications"
-                  :key="notification.id"
+                  :key="notification?.id"
                   class="p-3 rounded-lg hover:bg-gray-50 cursor-pointer"
-                  :class="{ 'bg-blue-50': !notification.isRead }"
+                  :class="{ 'bg-blue-50': !notification?.isRead }"
                   @click="markAsRead(notification)"
                 >
                   <div class="flex items-start gap-3">
                     <i
                       class="pi"
-                      :class="[getNotificationIcon(notification.type), getNotificationColor(notification.type)]"
+                      :class="[getNotificationIcon(notification?.typeCd), getNotificationColor(notification?.typeCd)]"
                     ></i>
                     <div class="flex-1">
-                      <div class="font-semibold text-gray-900">{{ notification.title }}</div>
+                      <div class="font-semibold text-gray-900">{{ getNotiTypeTitle(notification?.typeCd) }}</div>
                       <!-- 구직자용 알림일 경우 -->
                       <div v-if="!userInfo?.isCompany" class="text-sm text-gray-600 mb-1">
-                        {{ notification.companyName }} | {{ notification.position }}
+                        {{ notification?.companyName || 'LIG넥스원' }} |
+                        {{ notification?.position || '시스템 엔지니어' }}
                       </div>
                       <!-- 기업용 알림일 경우 -->
                       <div v-else class="text-sm text-gray-600 mb-1">
-                        {{ notification.userName }} | {{ notification.position }}
+                        {{ notification?.userName || '한겨울' }} | {{ notification?.position || '프론트엔드 개발자' }}
                       </div>
-                      <div class="text-sm text-gray-700">{{ notification.message }}</div>
-                      <div class="text-xs text-gray-500 mt-1">{{ formatDate(notification.createdAt) }}</div>
+                      <div class="text-sm text-gray-700" v-html="getNotiTypeContent(notification)"></div>
+                      <div class="text-xs text-gray-500 mt-1">{{ formatDate(notification?.createdAt) }}</div>
                     </div>
                   </div>
                 </div>
