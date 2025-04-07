@@ -552,6 +552,13 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
             <i class="pi pi-times-circle mr-2"></i>
             {{ offer?.updatedAt?.slice(0, 10).replaceAll('-', '.') }}에 거절되었습니다
           </p>
+          <!-- 거절 사유 표시 추가 -->
+          <div v-if="offer?.resultMemo" class="bg-red-50 p-4 rounded-lg mt-2">
+            <p class="text-red-700">
+              <span class="font-medium">거절 사유:</span><br />
+              {{ offer?.resultMemo }}
+            </p>
+          </div>
         </div>
 
         <div class="mt-4">
