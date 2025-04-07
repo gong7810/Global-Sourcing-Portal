@@ -1,7 +1,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import Button from 'primevue/button';
 import { getCodeList } from '@/apis/common/commonApis';
 import { getOfferListByUser } from '@/apis/user/userApis';
 
@@ -16,6 +15,7 @@ const selectedFilter = ref('all'); // 'all', 'passed', 'failed'
 // 전체 직무 카테고리 옵션
 const jobCategoryOptions = ref([]);
 
+// TODO: 인터뷰 결과 코드 API 연동
 // 필터 옵션
 const filterOptions = [
   { name: '전체', code: 'all' },

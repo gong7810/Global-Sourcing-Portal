@@ -1,8 +1,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useMessagePop } from '@/plugins/commonutils';
 import { isNull } from 'es-toolkit';
+
+import { useMessagePop } from '@/plugins/commonutils';
 import { getOfferList, setOfferResult } from '@/apis/company/companyApis';
 import { getCodeList } from '@/apis/common/commonApis';
 
@@ -21,6 +22,7 @@ const selectedFilter = ref('all');
 // 전체 직무 카테고리 옵션
 const jobCategoryOptions = ref([]);
 
+// TODO: 인터뷰 결과 코드 API 연동
 // 필터 옵션
 const filterOptions = [
   { name: '전체', code: 'all' },
@@ -38,190 +40,7 @@ const resultOptions = [
 ];
 
 // 면접 완료된 후보자 목록
-const interviewResults = ref([
-  {
-    id: 1,
-    candidate: {
-      name: '최예지',
-      nationality: '베트남',
-      career: '5년',
-      birth: '1996.09.01',
-      gender: '여성',
-      phone: '010-1234-7496',
-      email: 'yeji@naver.com',
-      address: '홍스타워 505호',
-      passportName: 'CHOI YEJI',
-      visaInfo: {
-        type: 'M1234****',
-        country: '대한민국',
-        expiryDate: '2030-01-01'
-      },
-      careerHistory: [
-        {
-          company: '(주)비티로봇',
-          period: '2023.03 - 2024.03',
-          position: '프론트엔드 개발자/개발팀',
-          description: '웹 서비스 프론트엔드 개발',
-          file: {
-            name: '비티로봇_경력증명서.pdf',
-            size: '1.2MB',
-            exists: true
-          }
-        },
-        {
-          company: '(주)테크솔루션',
-          period: '2021.01 - 2023.02',
-          position: '웹 개발자/프론트엔드팀',
-          description: 'React 기반 웹 서비스 개발',
-          file: {
-            name: '테크솔루션_경력증명서.pdf',
-            size: '1.1MB',
-            exists: false
-          }
-        }
-      ],
-      education: [
-        {
-          school: '한국대학교',
-          degree: '대학교(4년)',
-          major: '컴퓨터공학과',
-          period: '2015.03 - 2019.02',
-          description: '컴퓨터공학과 활동',
-          isGraduated: true,
-          file: {
-            name: '한국대학교_졸업증명서.pdf',
-            size: '1.5MB',
-            exists: true
-          }
-        },
-        {
-          school: '서울고등학교',
-          degree: '고등학교',
-          major: '이과',
-          period: '2012.03 - 2015.02',
-          description: '',
-          isGraduated: true,
-          file: {
-            name: '서울고_졸업증명서.pdf',
-            size: '1.3MB',
-            exists: true
-          }
-        }
-      ],
-      criminalRecordFile: {
-        name: '범죄경력확인서.pdf',
-        size: 1024 * 1024,
-        type: 'application/pdf'
-      },
-      koreanProficiency: '고급',
-      koreanStudyDuration: '2년',
-      koreanVisitExperience: '없음',
-      maritalStatus: '미혼',
-      certificates: [
-        {
-          name: 'TOPIK 6급',
-          issuedDate: '2023-05-15',
-          file: {
-            name: 'TOPIK_6급_자격증.pdf',
-            size: '1.1MB',
-            exists: true
-          }
-        },
-        {
-          name: 'AWS Solutions Architect Associate',
-          issuedDate: '2023-08-20',
-          file: {
-            name: 'AWS_SAA_Certificate.pdf',
-            size: '800KB',
-            exists: false // 첨부파일 없는 경우
-          }
-        }
-      ]
-    },
-    jobCategory: { label: 'IT개발·데이터', value: 'it' },
-    position: 'Frontend Developer',
-    interviewDate: '2024-03-22',
-    interviewType: 'online',
-    result: null,
-    feedback: '',
-    interviewCompletedDate: '2024-03-22',
-    updatedAt: null
-  },
-  {
-    id: 2,
-    candidate: {
-      name: '김철수',
-      nationality: '중국',
-      career: '3년',
-      birth: '1997.05.15',
-      gender: '남성',
-      phone: '010-2345-6789',
-      email: 'kim@example.com',
-      address: '서울시 서초구 서초대로 456',
-      passportName: 'KIM CHEOLSOO',
-      visaInfo: {
-        type: 'M5678****',
-        country: '중국',
-        expiryDate: '2027-05-15'
-      },
-      careerHistory: [
-        {
-          company: '(주)데이터테크',
-          period: '2021.01 - 2024.03',
-          jobCategory: { label: 'IT개발·데이터', value: 'it' },
-          position: '백엔드 개발자 | 서버개발팀',
-          description:
-            '백엔드 서버 개발 및 운영\n- Spring Boot 기반 REST API 개발\n- MSA 아키텍처 설계 및 구현\n- 대용량 데이터 처리 시스템 구축'
-        }
-      ],
-      education: [
-        {
-          school: '베이징대학교',
-          degree: '대학교(4년)',
-          major: '소프트웨어공학',
-          period: '2016.09 - 2020.08',
-          description: '학점 3.8/4.0\n클라우드 컴퓨팅 연구실 인턴\n교내 프로그래밍 대회 2위',
-          isGraduated: true,
-          file: {
-            name: '베이징대_졸업증명서.pdf',
-            size: '1.4MB',
-            exists: true
-          }
-        }
-      ],
-      criminalRecordFile: {
-        name: '범죄경력확인서.pdf',
-        size: 1024 * 1024,
-        type: 'application/pdf'
-      },
-      koreanProficiency: '중급',
-      koreanStudyDuration: '1년',
-      koreanVisitExperience: '없음',
-      maritalStatus: '미혼',
-      certificates: [
-        {
-          name: 'TOPIK 5급',
-          issuedDate: '2023-03-10'
-        },
-        {
-          name: 'SQLD',
-          issuedDate: '2022-12-15'
-        },
-        {
-          name: 'Linux Master 2급',
-          issuedDate: '2022-06-30'
-        }
-      ]
-    },
-    jobCategory: { label: 'IT개발·데이터', value: 'it' },
-    position: 'Backend Developer',
-    interviewDate: '2024-03-21',
-    interviewType: 'offline',
-    result: 'failed',
-    feedback: '기술 스택이 부족하고 의사소통에 어려움이 있음',
-    updatedAt: '2024-03-21'
-  }
-]);
+const interviewResults = ref([]);
 
 onMounted(() => {
   getJobCategoryCode();
@@ -234,8 +53,6 @@ const getFinishedInterviewr = async () => {
   interviewResults.value = response.contents.filter((resume) => {
     return resume.statusCd === 'JO_ST_2' && resume.interviewTime;
   });
-
-  console.log(interviewResults.value);
 };
 
 // 직무 코드 조회

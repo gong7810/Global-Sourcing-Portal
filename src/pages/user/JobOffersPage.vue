@@ -367,7 +367,10 @@ const calculatePeriod = (period) => {
                   {{ offer?.status?.name }}
                 </span>
                 <span
-                  v-if="new Date(offer?.createdAt).toDateString() === new Date().toDateString()"
+                  v-if="
+                    offer?.statusCd === 'JO_ST_1' &&
+                    new Date(offer?.createdAt).toDateString() === new Date().toDateString()
+                  "
                   class="bg-red-500 text-white px-2 py-1 rounded text-xs"
                 >
                   New
