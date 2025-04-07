@@ -349,6 +349,7 @@ const savePassportImage = () => {
                 :options="nationalityOptions"
                 optionLabel="label"
                 optionValue="code"
+                checkmark
                 placeholder="국적"
                 class="w-full"
               />

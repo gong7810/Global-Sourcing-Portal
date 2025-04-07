@@ -532,6 +532,7 @@ const removeCriminalRecord = () => {
                 optionLabel="name"
                 optionValue="code"
                 placeholder="혼인사항 선택"
+                checkmark
                 class="w-full"
               />
             </div>
@@ -548,6 +549,7 @@ const removeCriminalRecord = () => {
                   optionLabel="name"
                   optionValue="code"
                   placeholder="한국어 실력 선택"
+                  checkmark
                   class="w-full"
                 />
               </div>

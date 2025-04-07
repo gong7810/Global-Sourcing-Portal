@@ -366,6 +366,7 @@ const openInterviewOffer = async (talent, isPage) => {
               :options="nationalityOptions"
               optionLabel="name"
               placeholder="--Select--"
+              checkmark
               showClear
               class="w-full"
             />
@@ -380,6 +381,7 @@ const openInterviewOffer = async (talent, isPage) => {
               optionLabel="name"
               optionValue="code"
               placeholder="--Select--"
+              checkmark
               showClear
               class="w-full"
             />
@@ -394,6 +396,7 @@ const openInterviewOffer = async (talent, isPage) => {
               class="w-full"
               optionLabel="name"
               placeholder="--Select--"
+              checkmark
               showClear
             />
           </div>

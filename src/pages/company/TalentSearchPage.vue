@@ -261,6 +261,7 @@ const openInterviewOffer = async (talent, isPage) => {
             optionLabel="name"
             optionValue="code"
             placeholder="--Select--"
+            checkmark
             showClear
           />
         </div>
@@ -275,6 +276,7 @@ const openInterviewOffer = async (talent, isPage) => {
             optionLabel="name"
             optionValue="code"
             placeholder="--Select--"
+            checkmark
             showClear
           />
         </div>
@@ -289,6 +291,7 @@ const openInterviewOffer = async (talent, isPage) => {
             optionLabel="name"
             optionValue="code"
             placeholder="--Select--"
+            checkmark
             showClear
           />
         </div>
@@ -303,6 +306,7 @@ const openInterviewOffer = async (talent, isPage) => {
             optionLabel="name"
             optionValue="code"
             placeholder="--Select--"
+            checkmark
             showClear
           />
         </div>

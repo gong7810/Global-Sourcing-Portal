@@ -314,11 +314,11 @@ const getGenderLabel = (gender) => {
                 <th>권한</th>
                 <td>
                   <template v-if="isEditMode">
-                    <select v-model="editedUser.role" class="w-full p-2 border rounded">
+                    <Select v-model="editedUser.role" checkmark class="w-full p-2 border rounded">
                       <option v-for="option in roleOptions" :key="option.value" :value="option.value">
                         {{ option.label }}
                       </option>
-                    </select>
+                    </Select>
                   </template>
                   <template v-else>{{ getRoleLabel(user?.role) }}</template>
                 </td>
@@ -327,11 +327,11 @@ const getGenderLabel = (gender) => {
                 <th>성별</th>
                 <td>
                   <template v-if="isEditMode">
-                    <select v-model="editedUser.gender" class="w-full p-2 border rounded">
+                    <Select v-model="editedUser.gender" checkmark class="w-full p-2 border rounded">
                       <option v-for="option in genderOptions" :key="option.value" :value="option.value">
                         {{ option.label }}
                       </option>
-                    </select>
+                    </Select>
                   </template>
                   <template v-else>{{ getGenderLabel(user?.gender) }}</template>
                 </td>

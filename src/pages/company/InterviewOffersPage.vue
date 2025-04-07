@@ -379,6 +379,7 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
           :options="[{ name: '전체', code: 'all' }, ...jobCategoryOptions]"
           optionLabel="name"
           placeholder="직무 선택"
+          checkmark
           class="w-[280px]"
         >
           <template #value="slotProps">
@@ -591,7 +592,14 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="block text-sm mb-1">시간</label>
-              <Select v-model="dateSlot.hour" :options="hours" optionLabel="label" placeholder="시" class="w-full" />
+              <Select
+                v-model="dateSlot.hour"
+                :options="hours"
+                optionLabel="label"
+                placeholder="시"
+                checkmark
+                class="w-full"
+              />
             </div>
             <div>
               <label class="block text-sm mb-1">분</label>
@@ -600,6 +608,7 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
                 :options="minutes"
                 optionLabel="label"
                 placeholder="분"
+                checkmark
                 class="w-full"
               />
             </div>
@@ -614,6 +623,7 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
             optionLabel="name"
             optionValue="code"
             placeholder="면접 방식 선택"
+            checkmark
             class="w-full"
           />
         </div>

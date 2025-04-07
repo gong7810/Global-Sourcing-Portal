@@ -168,7 +168,6 @@ const cancelEdit = () => {
               placeholder="기업구분을 선택해주세요"
               class="w-full"
               checkmark
-              highlightOnSelect
             />
           </div>
 

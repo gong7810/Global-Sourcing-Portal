@@ -429,6 +429,7 @@ const formatDate = (dateString) => {
               :options="languages"
               optionLabel="name"
               optionValue="code"
+              checkmark
               @change="changeLanguage"
               placeholder="언어 선택"
             >

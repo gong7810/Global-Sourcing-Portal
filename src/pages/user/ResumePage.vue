@@ -1605,6 +1605,7 @@ const clearCertificationFile = (index) => {
             :options="educationTypes"
             optionLabel="name"
             placeholder="학력 선택"
+            checkmark
             class="w-full"
           />
         </div>
