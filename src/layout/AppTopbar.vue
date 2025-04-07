@@ -159,7 +159,6 @@ const getLogout = () => {
       }
     }
   });
-  // messagePop.alert('test', 'info');
 };
 
 // 외부 클릭 시 메뉴 닫기
@@ -177,7 +176,7 @@ const markAsRead = async (noti) => {
     const response = await api.post(`/notification/read/${noti.id}`);
 
     if (response && response.success === undefined) {
-      if (response.status === 400) throw new Error('400 Error');
+      if (response.status === 400 || response.status === undefined) throw new Error('400 Error');
 
       overlayPanel.value.hide(); // 알림 패널 닫기
 
