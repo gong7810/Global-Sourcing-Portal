@@ -211,8 +211,6 @@ const toggleBookmark = async (talent, isPage) => {
 const openInterviewOffer = async (talent, isPage) => {
   if (talent.isInterviewOffered) return;
 
-  console.log(talent);
-
   let response = {};
   let id = talent.id;
 
@@ -220,7 +218,9 @@ const openInterviewOffer = async (talent, isPage) => {
     response = await getUserResume(talent.id);
 
     companyStore.setOfferUserResume(response);
-    id = talent.resumeId;
+
+    router.push(`/company/interview-offer/create/${response.resumeId}`);
+    talent.isInterviewOffered = true;
   } else {
     companyStore.setOfferUserResume(talent);
   }

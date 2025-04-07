@@ -24,12 +24,23 @@ export const getCodeList = async (code) => {
   }
 };
 
-// 노티 목록 조회 API - 페이지에서 호출
+// 노티 목록 조회 API
 export const getNotificationList = async () => {
   try {
     const response = await api.get(`/notification/list`);
 
     return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// 노티 읽음 처리 API
+export const updateNotification = async (id) => {
+  try {
+    const response = await api.post(`/notification/read/${id}`);
+
+    return response;
   } catch (error) {
     console.error(error);
   }

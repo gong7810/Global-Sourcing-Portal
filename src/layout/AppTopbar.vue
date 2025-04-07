@@ -3,10 +3,12 @@ import { onMounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useLayout } from '@/layout/composables/layout';
+import { useMessagePop } from '@/plugins/commonutils';
 
 import { useApi } from '@/apis';
+import { logout } from '@/apis/auth/authApis';
+import { getNotificationList, updateNotification } from '@/apis/common/commonApis';
 import { useAuthStore } from '@/store/auth/authStore';
-import { useMessagePop } from '@/plugins/commonutils';
 
 const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
 
@@ -128,13 +130,13 @@ const closeMenu = () => {
 
 // 회원 알림 체크
 const getNotiByUser = async () => {
-  const response = await api.get(`/notification/list`);
+  const response = await getNotificationList();
 
   // 30일 이내의 알림만 필터링
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-  notifications.value = response?.data.filter((noti) => {
+  notifications.value = response?.filter((noti) => {
     const notificationDate = new Date(noti.createdAt);
     return notificationDate >= thirtyDaysAgo;
   });
@@ -146,9 +148,8 @@ const getLogout = () => {
     icon: 'info',
     message: '로그아웃 하시겠습니까?',
     onCloseYes: async () => {
-      // 구조적인 이슈로 logout api는 Topbar에서 직접 호출
       try {
-        const response = await api.get('/auth/logout');
+        const response = await logout();
         if (response.status === 400) throw new Error('400 Error');
 
         authStore.reset();
@@ -173,7 +174,7 @@ const markAsRead = async (noti) => {
   noti.isRead = true;
 
   try {
-    const response = await api.post(`/notification/read/${noti.id}`);
+    const response = await updateNotification(noti.id);
 
     if (response && response.success === undefined) {
       if (response.status === 400 || response.status === undefined) throw new Error('400 Error');
@@ -343,7 +344,7 @@ const markAllAsRead = async () => {
     // 각 알림에 대해 읽음 처리
     for (const noti of unreadNotifications) {
       noti.isRead = true;
-      await api.post(`/notification/read/${noti.id}/`);
+      await api.post(`/notification/read/${noti.id}`);
     }
 
     getNotiByUser();
@@ -398,7 +399,7 @@ const markAllAsRead = async () => {
               <div v-if="notifications.length === 0" class="text-gray-500 text-center py-4">
                 새로운 알림이 없습니다.
               </div>
-              <div v-else class="space-y-3 max-h-[75vh] overflow-y-auto scroll-thin">
+              <div v-else class="space-y-3 max-h-[75vh] overflow-y-auto">
                 <div
                   v-for="notification in notifications"
                   :key="notification?.id"
