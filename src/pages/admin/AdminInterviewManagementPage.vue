@@ -541,10 +541,11 @@ const formatDate = (dateString) => {
       width: 2.5rem;
       height: 2.5rem;
       padding: 0;
+      cursor: default;
 
       &:disabled {
         opacity: 0.5;
-        cursor: not-allowed;
+        cursor: default;
       }
     }
   }

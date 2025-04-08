@@ -1008,7 +1008,7 @@ const getGenderLabel = (gender) => {
 
       &:disabled {
         opacity: 0.5;
-        cursor: not-allowed;
+        cursor: default;
       }
     }
   }
