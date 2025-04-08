@@ -359,7 +359,6 @@ const printResume = () => {
     <!DOCTYPE html>
     <html>
       <head>
-        <title>이력서</title>
         ${styles}
       </head>
       <body>
