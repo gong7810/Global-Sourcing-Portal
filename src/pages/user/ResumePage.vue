@@ -1045,6 +1045,10 @@ const clearCertificationFile = (index) => {
           </div>
         </div>
       </div>
+      <!-- 안내 문구 추가 -->
+      <div class="mt-4 text-sm text-gray-600">
+        <p class="flex items-center"><i class="pi pi-info-circle mr-1"></i> 필수 정보가 누락된 경우 전체 공개가 불가능하여 인재 검색이 불가능합니다.</p>
+      </div>
     </div>
 
     <div class="grid gap-4">
