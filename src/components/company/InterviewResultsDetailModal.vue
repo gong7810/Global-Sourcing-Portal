@@ -159,13 +159,20 @@ const printResume = () => {
       @media print {
         @page {
           size: A4;
-          margin: 0;
+          margin: 20mm;
+          counter-increment: page;
         }
         body {
-          margin: 24px;
+          margin: 0;
         }
-        .page-break {
-          page-break-before: always;
+        .creation-date {
+          position: absolute;
+          top: 10mm;
+          right: 10mm;
+          font-size: 12px;
+        }
+        .creation-date:not(:first-of-type) {
+          display: none;
         }
       }
       .resume-container {
@@ -174,6 +181,7 @@ const printResume = () => {
         margin: auto;
         padding: 24px;
         font-size: 11px;
+        position: relative;
       }
       table {
         width: 100%;
@@ -202,9 +210,14 @@ const printResume = () => {
     ? offerUserInfo.value?.resumeSnapshot?.educations
     : [offerUserInfo.value?.resumeSnapshot?.educations].filter(Boolean);
 
+  // 현재 날짜 포맷팅
+  const today = new Date();
+  const formattedDate = `${today.getFullYear()}.${String(today.getMonth() + 1).padStart(2, '0')}.${String(today.getDate()).padStart(2, '0')}`;
+
   // 이력서 내용 생성
   const resumeContent = `
     <div class="resume-container">
+      <div class="creation-date">생성일: ${formattedDate}</div>
       <h1 style="text-align: center; font-size: 16px; font-weight: bold; margin-bottom: 1rem;">이력서</h1>
 
       <!-- 프로필 사진 및 기본 정보 -->
@@ -312,11 +325,6 @@ const printResume = () => {
             .join('') || '<p style="text-align: center; color: #666;">등록된 자격증이 없습니다</p>'
         }
       </section>
-
-      <p style="font-size: 10px; text-align: right; color: #999; margin-top: 1.5rem;">
-        <!-- 출력일: ${new Date().toLocaleDateString()} -->
-        생성일: ${new Date().toLocaleDateString()}
-      </p>
     </div>
   `;
 
@@ -324,7 +332,7 @@ const printResume = () => {
     <!DOCTYPE html>
     <html>
       <head>
-        <title>이력서 출력</title>
+        <title>이력서</title>
         ${styles}
       </head>
       <body>
