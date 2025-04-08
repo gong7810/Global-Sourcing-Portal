@@ -69,13 +69,6 @@ const submitInquiry = async () => {
     }
   } catch (error) {
     console.error('문의하기 등록 실패:', error);
-    toast.add({
-      severity: 'error',
-      summary: '오류',
-      detail: error.message || '문의 등록에 실패했습니다. 다시 시도해주세요.',
-      group: 'apptc',
-      life: 3000
-    });
   } finally {
     loading.value = false;
   }

@@ -15,6 +15,7 @@ import commonutils from '@/plugins/commonutils';
 
 import '@/assets/styles.scss';
 import '@/assets/tailwind.css';
+import { useAuthStore } from './store/auth/authStore';
 
 const app = createApp(App);
 
@@ -51,5 +52,9 @@ app.use(primevue);
 app.use(commonutils);
 app.use(ToastService);
 app.use(ConfirmationService);
+
+// 자동로그인 체크
+const authStore = useAuthStore();
+authStore.checkAutoLogin();
 
 app.mount('#app');

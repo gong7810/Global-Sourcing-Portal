@@ -4,16 +4,19 @@ import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 
 import { useMessagePop } from '@/plugins/commonutils';
+import { useAuthStore } from '@/store/auth/authStore';
 import { useCompanyStore } from '@/store/company/companyStore';
 import { getCodeList } from '@/apis/common/commonApis';
 import { requestOffer } from '@/apis/company/companyApis';
 import { isNull } from 'es-toolkit';
 
 const router = useRouter();
+const authStore = useAuthStore();
 const companyStore = useCompanyStore();
 const messagePop = useMessagePop();
 
-const { companyData, offerUserResume } = storeToRefs(companyStore);
+const { companyData } = storeToRefs(authStore);
+const { offerUserResume } = storeToRefs(companyStore);
 
 // 직무 카테고리 데이터
 const jobCategoryOptions = ref([]);

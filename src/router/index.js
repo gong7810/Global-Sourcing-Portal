@@ -21,12 +21,7 @@ const router = createRouter({
     {
       path: '/',
       component: AppLayout,
-      children: [
-        ...policyRouter,
-        ...commonRouter,
-        ...companyRouter,
-        ...userRouter
-      ]
+      children: [...policyRouter, ...commonRouter, ...companyRouter, ...userRouter]
     },
     {
       path: '/',
@@ -60,8 +55,14 @@ router.beforeEach((to, from, next) => {
   const { userInfo } = storeToRefs(authStore);
   const messagePop = useMessagePop();
 
+  // 인증없이 접근가능 페이지 스킵
   if (AUTH_EXCLUSIONS_ROUTER_NAME.includes(to.name)) {
-    // 인증없이 접근가능 페이지 스킵
+    // 로그인 상태에서 로그인 페이지 접근 불가
+    if (authStore.isLogin() && to.name === 'login') {
+      return next({ path: '/' });
+    }
+
+    // 관리자/기업회원 로그인시 해당 페이지로 이동
     if (userInfo.value?.roleCd === 'ROLE_ADMIN' && to.name === 'dashboard') {
       // 관리자
       return next({ path: '/admin/users' });

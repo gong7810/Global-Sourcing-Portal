@@ -912,7 +912,6 @@ const saveResume = () => {
         }
       } catch (error) {
         console.error('이력서 저장 중 오류:', error);
-        messagePop.toast('이력서 저장 중 오류가 발생했습니다.', 'error');
       }
     }
   });
@@ -1047,7 +1046,10 @@ const clearCertificationFile = (index) => {
       </div>
       <!-- 안내 문구 추가 -->
       <div class="mt-4 text-sm text-gray-600">
-        <p class="flex items-center"><i class="pi pi-info-circle mr-1"></i> 필수 정보가 누락된 경우 전체 공개가 불가능하여 인재 검색이 불가능합니다.</p>
+        <p class="flex items-center">
+          <i class="pi pi-info-circle mr-1"></i> 필수 정보가 누락된 경우 전체 공개가 불가능하여 인재 검색이
+          불가능합니다.
+        </p>
       </div>
     </div>
 

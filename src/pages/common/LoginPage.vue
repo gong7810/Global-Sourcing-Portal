@@ -5,14 +5,15 @@ import { storeToRefs } from 'pinia';
 import { useMessagePop } from '@/plugins/commonutils';
 
 import { useAuthStore } from '@/store/auth/authStore';
-import { useCompanyStore } from '@/store/company/companyStore';
 import { getAccount, login } from '@/apis/auth/authApis';
 import { getCompanyInfo } from '@/apis/company/companyApis';
 
 const messagePop = useMessagePop();
 const authStore = useAuthStore();
-const companyStore = useCompanyStore();
 const activeTab = ref('personal');
+
+// 자동 로그인
+const isRemember = ref(false);
 
 const router = useRouter();
 
@@ -38,7 +39,7 @@ const getLogin = async () => {
   const response = await login(body);
 
   if (response && response.success === undefined) {
-    authStore.setToken(response?.accessToken);
+    authStore.setToken(response?.accessToken, isRemember.value);
 
     getUserInfo();
   } else {
@@ -50,12 +51,12 @@ const getLogin = async () => {
 const getUserInfo = async () => {
   const response = await getAccount();
   // 사용자 정보 저장
-  authStore.setUserInfo(response);
+  authStore.setUserInfo(response, isRemember.value);
 
   if (activeTab.value !== 'personal') {
     const res = await getCompanyInfo();
     // 회사 정보 저장
-    companyStore.setCompanyData(res);
+    authStore.setCompanyData(res, isRemember.value);
   }
 
   // 탭에 따라 다른 경로로 이동
@@ -138,7 +139,7 @@ const loginLine = () => {
           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8FA1FF]"
         />
         <div class="flex items-center">
-          <input type="checkbox" id="remember" class="mr-2" />
+          <input v-model="isRemember" type="checkbox" id="remember" class="mr-2" />
           <label for="remember" class="text-sm text-gray-600">자동 로그인</label>
         </div>
       </div>

@@ -106,12 +106,6 @@ const fetchUsers = async () => {
     }
   } catch (error) {
     console.error('사용자 목록 조회 실패:', error);
-    toast.add({
-      severity: 'error',
-      summary: '오류',
-      detail: '사용자 목록을 불러오는데 실패했습니다.',
-      life: 3000
-    });
   } finally {
     loading.value = false;
   }
@@ -147,12 +141,6 @@ const handleStatusUpdate = async () => {
     closeStatusModal();
   } catch (error) {
     console.error('사용자 상태 변경 실패:', error);
-    toast.add({
-      severity: 'error',
-      summary: '오류',
-      detail: '사용자 상태 변경에 실패했습니다.',
-      life: 3000
-    });
   }
 };
 
@@ -292,12 +280,6 @@ const handleUserUpdate = async (updatedUser) => {
     // 모달 닫기 제거
   } catch (error) {
     console.error('사용자 업데이트 실패:', error);
-    toast.add({
-      severity: 'error',
-      summary: '오류',
-      detail: '사용자 정보 업데이트에 실패했습니다.',
-      life: 3000
-    });
   }
 };
 
@@ -315,12 +297,6 @@ const handleUserDelete = async (userId) => {
     });
   } catch (error) {
     console.error('사용자 삭제 실패:', error);
-    toast.add({
-      severity: 'error',
-      summary: '오류',
-      detail: '사용자 삭제에 실패했습니다.',
-      life: 3000
-    });
   }
 };
 
