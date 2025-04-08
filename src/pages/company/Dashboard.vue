@@ -79,8 +79,6 @@ const getOfferChange = async () => {
   unreadOffers.value = response.contents.filter((com) => {
     return com.statusCd !== 'JO_ST_1' && isNull(com?.resultCd);
   }).length;
-
-  console.log(unreadOffers.value);
 };
 
 // 인재 필터 조회

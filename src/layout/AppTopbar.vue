@@ -1,6 +1,6 @@
 <script setup>
-import { onMounted, ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { onMounted, ref, computed, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useLayout } from '@/layout/composables/layout';
 import { useMessagePop } from '@/plugins/commonutils';
@@ -13,6 +13,7 @@ import { useAuthStore } from '@/store/auth/authStore';
 const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
 
 const api = useApi();
+const route = useRoute();
 const router = useRouter();
 const messagePop = useMessagePop();
 
@@ -119,6 +120,17 @@ onMounted(() => {
 
   if (loginFlag.value) getNotiByUser();
 });
+
+watch(
+  () => route?.matched,
+  () => {
+    // 대시보드 접근시에만 재호출
+    if (['/', '/company/index'].includes(route?.matched[1].path)) {
+      getNotiByUser();
+    }
+  },
+  { deep: true }
+);
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value; // 메뉴 토글
