@@ -184,7 +184,7 @@ const markAsRead = async (noti) => {
       // 알림 타입에 따라 페이지 이동
       switch (noti.typeCd) {
         // 구직자용
-        case 'NOTI_1"': // 면접제안
+        case 'NOTI_1': // 면접제안
           router.push('/user/jobOffers');
           break;
         case 'NOTI_2': // 면접일정조율
