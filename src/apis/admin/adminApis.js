@@ -139,9 +139,51 @@ export const updateUser = async (data) => {
   }
 };
 
+/**
+ * 면접 제안 목록 조회
+ * @param {Object} params - 검색 파라미터
+ * @returns {Promise} - API 응답
+ */
+export const getJobOfferList = async (params = {}) => {
+  try {
+    // 파라미터 정리
+    const queryParams = new URLSearchParams();
+    
+    // 기본 파라미터 추가
+    queryParams.append('page', String(params.page || 1));
+    queryParams.append('perPage', String(params.perPage || 10));
+
+    // API 엔드포인트
+    const endpoint = '/jobOffer/list';
+    
+    const response = await api.get(`${endpoint}?${queryParams.toString()}`);
+    return response.data;
+  } catch (error) {
+    console.error('면접 제안 목록 조회 실패:', error);
+    throw error;
+  }
+};
+
+/**
+ * 면접 제안 철회
+ * @param {number} jobOfferId - 면접 제안 ID
+ * @returns {Promise} - API 응답
+ */
+export const deleteJobOffer = async (jobOfferId) => {
+  try {
+    const response = await api.del(`/jobOffer/${jobOfferId}`);
+    return response.data;
+  } catch (error) {
+    console.error('면접 제안 철회 실패:', error);
+    throw error;
+  }
+};
+
 export default {
   getUserList,
   getUserStatus,
   updateUserStatus,
-  updateUser
+  updateUser,
+  getJobOfferList,
+  deleteJobOffer
 };

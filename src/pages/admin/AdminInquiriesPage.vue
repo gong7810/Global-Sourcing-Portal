@@ -287,12 +287,11 @@ const closeDetailModal = () => {
         </div>
 
         <!-- 문의 목록 테이블 -->
-        <div class="inquiries-table">
-          <div v-if="loading" class="text-center py-4">
+        <div class="table-container">
+          <div v-if="loading" class="loading-overlay">
             <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
-            <p class="mt-2">문의 목록을 불러오는 중...</p>
           </div>
-          <table v-else>
+          <table>
             <thead>
               <tr>
                 <th>등록일시</th>
@@ -305,23 +304,26 @@ const closeDetailModal = () => {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="inquiry in filteredInquiries" :key="inquiry.id">
+              <tr v-for="inquiry in filteredInquiries" :key="inquiry.id" class="hover:bg-gray-50">
                 <td>{{ inquiry.createdAt }}</td>
                 <td>{{ getInquiryTypeLabel(inquiry.typeCd) }}</td>
                 <td>{{ inquiry.userId }}</td>
                 <td>{{ inquiry.subject }}</td>
                 <td>{{ inquiry.email }}</td>
                 <td>
-                  <span :class="['status-badge', getStatusStyle(inquiry.statusCd)]">
-                    {{ getStatusLabel(inquiry.statusCd) }}
-                  </span>
+                  <Tag :value="getStatusLabel(inquiry.statusCd)"
+                       :severity="inquiry.statusCd === 'HELP_ST_1' ? 'warning' : inquiry.statusCd === 'HELP_ST_2' ? 'success' : 'info'" />
                 </td>
                 <td>
-                  <Button icon="pi pi-eye" class="p-button-text" @click="viewDetail(inquiry)" />
+                  <Button 
+                    label="상세"
+                    class="p-button-outlined p-button-secondary p-button-sm"
+                    @click="viewDetail(inquiry)"
+                  />
                 </td>
               </tr>
               <tr v-if="filteredInquiries.length === 0">
-                <td colspan="7" class="text-center py-4">문의 내역이 없습니다.</td>
+                <td colspan="7" class="text-center py-4">데이터가 없습니다.</td>
               </tr>
             </tbody>
           </table>
@@ -460,34 +462,87 @@ const closeDetailModal = () => {
   }
 }
 
-.inquiries-table {
+.table-container {
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: auto;
+  position: relative;
 
   table {
     width: 100%;
     border-collapse: collapse;
+    font-size: 0.875rem;
 
     th,
     td {
-      padding: 1rem;
+      padding: 0.75rem;
       text-align: left;
       border-bottom: 1px solid #e5e7eb;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     th {
       background-color: #f8f9fa;
       font-weight: 600;
       color: #374151;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      font-size: 0.8125rem;
+    }
+
+    // 각 컬럼별 최대 너비 설정
+    td,
+    th {
+      &:nth-child(1) {
+        width: 120px;
+      } // 등록일시
+      &:nth-child(2) {
+        width: 140px;
+      } // 문의유형
+      &:nth-child(3) {
+        width: 100px;
+      } // 문의자
+      &:nth-child(4) {
+        width: 200px;
+      } // 제목
+      &:nth-child(5) {
+        width: 180px;
+      } // 이메일
+      &:nth-child(6) {
+        width: 100px;
+      } // 상태
+      &:nth-child(7) {
+        width: 100px;
+      } // 관리
+    }
+
+    tbody {
+      tr {
+        transition: background-color 0.2s;
+
+        &:hover {
+          background-color: #f8f9fa;
+        }
+      }
     }
   }
 }
 
-.status-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 15px;
-  font-size: 0.875rem;
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
 }
 
 .inquiry-detail {

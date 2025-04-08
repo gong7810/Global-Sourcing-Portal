@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import AdminSidebar from '@/components/admin/AdminSidebar.vue';
 import AdminHeader from '@/components/admin/AdminHeader.vue';
@@ -9,6 +9,7 @@ import {
   getPendingCompanyApplications
 } from '@/apis/company/companyApis';
 import { useMessagePop } from '@/plugins/commonutils';
+import InputText from 'primevue/inputtext';
 
 const router = useRouter();
 const messagePop = useMessagePop();
@@ -16,6 +17,17 @@ const messagePop = useMessagePop();
 // 신청 목록 데이터
 const applications = ref([]);
 const filterStatus = ref('all'); // 'all', 'pending', 'approved', 'rejected'
+
+// 검색어 상태
+const searchQuery = ref('');
+
+// 필터링된 신청 목록
+const filteredApplications = computed(() => {
+  if (!searchQuery.value) return applications.value;
+  return applications.value.filter(app => 
+    app.businessName?.toLowerCase().includes(searchQuery.value.toLowerCase())
+  );
+});
 
 // 신청 목록 로드
 const loadApplications = async () => {
@@ -186,13 +198,28 @@ const goBack = () => {
           </div>
         </div>
 
+        <!-- 검색 영역 -->
+        <div class="search-container">
+          <div class="search-input-wrapper">
+            <InputText 
+              v-model="searchQuery"
+              placeholder="기업명으로 검색"
+              class="search-input"
+            />
+            <i class="pi pi-search search-icon"></i>
+          </div>
+        </div>
+
         <!-- 신청 목록 테이블 -->
-        <div class="applications-table">
+        <div class="table-container">
+          <div v-if="loading" class="loading-overlay">
+            <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
+          </div>
           <table>
             <thead>
               <tr>
                 <th>신청일</th>
-                <th>회사명</th>
+                <th>기업명</th>
                 <th>사업자등록번호</th>
                 <th>대표자명</th>
                 <th>가입자명</th>
@@ -201,20 +228,26 @@ const goBack = () => {
               </tr>
             </thead>
             <tbody>
-              <tr v-for="app in applications" :key="app.id">
+              <tr v-for="app in filteredApplications" :key="app.id" class="hover:bg-gray-50">
                 <td>{{ app.createdAt }}</td>
                 <td>{{ app.businessName }}</td>
                 <td>{{ app.businessRegistrationNo }}</td>
                 <td>{{ app.ownerName }}</td>
                 <td>{{ app.managerName }}</td>
                 <td>
-                  <span :class="['status-badge', getStatusStyle(app.status)]">
-                    {{ app.status === 'PENDING' ? '대기' : app.status === 'APPROVED' ? '승인' : '거절' }}
-                  </span>
+                  <Tag :value="app.status === 'PENDING' ? '대기' : app.status === 'APPROVED' ? '승인' : '거절'"
+                       :severity="app.status === 'PENDING' ? 'warning' : app.status === 'APPROVED' ? 'success' : 'danger'" />
                 </td>
                 <td>
-                  <Button icon="pi pi-eye" class="p-button-text" @click="viewDetail(app)" />
+                  <Button 
+                    label="상세"
+                    class="p-button-outlined p-button-secondary p-button-sm"
+                    @click="viewDetail(app)"
+                  />
                 </td>
+              </tr>
+              <tr v-if="applications.length === 0">
+                <td colspan="7" class="text-center py-4">데이터가 없습니다.</td>
               </tr>
             </tbody>
           </table>
@@ -226,10 +259,10 @@ const goBack = () => {
             <div class="grid grid-cols-2 gap-4">
               <div class="detail-item">
                 <h3>기본 정보</h3>
-                <p><strong>회사명:</strong> {{ selectedApplication.businessName }}</p>
+                <p><strong>기업명:</strong> {{ selectedApplication.businessName }}</p>
                 <p><strong>사업자등록번호:</strong> {{ selectedApplication.businessRegistrationNo }}</p>
                 <p><strong>대표자명:</strong> {{ selectedApplication.ownerName }}</p>
-                <p><strong>회사주소:</strong> {{ selectedApplication.businessAddress }}</p>
+                <p><strong>기업주소:</strong> {{ selectedApplication.businessAddress }}</p>
                 <p><strong>기업형태:</strong> {{ selectedApplication.businessType }}</p>
               </div>
               <div class="detail-item">
@@ -370,37 +403,115 @@ const goBack = () => {
       }
     }
   }
+
+  .search-container {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    .search-input-wrapper {
+      position: relative;
+      width: 300px;
+
+      .search-icon {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #64748b;
+        font-size: 0.9rem;
+      }
+    }
+
+    .search-input {
+      width: 100%;
+      border-radius: 6px;
+    }
+  }
 }
 
-.applications-table {
+.table-container {
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  margin-top: 1rem;
+  overflow: auto;
 
   table {
     width: 100%;
     border-collapse: collapse;
+    font-size: 0.875rem;
 
     th,
     td {
-      padding: 1rem;
+      padding: 0.75rem;
       text-align: left;
       border-bottom: 1px solid #e5e7eb;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     th {
       background-color: #f8f9fa;
       font-weight: 600;
       color: #374151;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      font-size: 0.8125rem;
+    }
+
+    // 각 컬럼별 최대 너비 설정
+    td,
+    th {
+      &:nth-child(1) {
+        width: 120px;
+      } // 신청일
+      &:nth-child(2) {
+        width: 160px;
+      } // 기업명
+      &:nth-child(3) {
+        width: 140px;
+      } // 사업자등록번호
+      &:nth-child(4) {
+        width: 120px;
+      } // 대표자명
+      &:nth-child(5) {
+        width: 120px;
+      } // 가입자명
+      &:nth-child(6) {
+        width: 100px;
+      } // 상태
+      &:nth-child(7) {
+        width: 100px;
+      } // 관리
+    }
+
+    tbody {
+      tr {
+        transition: background-color 0.2s;
+
+        &:hover {
+          background-color: #f8f9fa;
+        }
+      }
     }
   }
 }
 
-.status-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 15px;
-  font-size: 0.875rem;
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
 }
 
 .detail-item {
