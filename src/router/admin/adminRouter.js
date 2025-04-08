@@ -23,6 +23,12 @@ export const adminRouter = [
     meta: { authorization: ['ROLE_ADMIN'] }
   },
   {
+    path: '/admin/interviews',
+    name: 'AdminInterviews',
+    component: () => import('@/pages/admin/AdminInterviewManagementPage.vue'),
+    meta: { authorization: ['ROLE_ADMIN'] }
+  },
+  {
     path: '/admin/inquiries',
     name: 'AdminInquiries',
     component: () => import('@/pages/admin/AdminInquiriesPage.vue'),
