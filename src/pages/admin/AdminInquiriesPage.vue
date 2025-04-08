@@ -67,14 +67,6 @@ const fetchInquiries = async () => {
   } catch (error) {
     console.error('문의 목록 조회 실패:', error);
     inquiries.value = [];
-    if (error.response?.status !== 500) {
-      toast.add({
-        severity: 'error',
-        summary: '오류 발생',
-        detail: '문의 목록을 불러오는 중 문제가 발생했습니다.',
-        life: 3000
-      });
-    }
   } finally {
     loading.value = false;
   }
@@ -154,12 +146,6 @@ const viewDetail = async (inquiry) => {
     showDetailModal.value = true;
   } catch (error) {
     console.error('문의 상세 조회 실패:', error);
-    toast.add({
-      severity: 'error',
-      summary: '오류 발생',
-      detail: '문의 상세 정보를 불러오는 중 문제가 발생했습니다.',
-      life: 3000
-    });
   } finally {
     detailLoading.value = false;
   }
@@ -206,12 +192,6 @@ const submitReply = async () => {
     replyContent.value = ''; // 답변 입력창 초기화
   } catch (error) {
     console.error('답변 처리 중 오류 발생:', error);
-    toast.add({
-      severity: 'error',
-      summary: '오류 발생',
-      detail: error.message || '답변 처리 중 문제가 발생했습니다. 다시 시도해주세요.',
-      life: 3000
-    });
   } finally {
     detailLoading.value = false;
   }

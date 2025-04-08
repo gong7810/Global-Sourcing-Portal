@@ -25,9 +25,9 @@ export const logout = async () => {
 };
 
 // 토큰 갱신 API
-export const getRefreshToken = async (body) => {
+export const getRefreshToken = async () => {
   try {
-    const response = await api.get(`/auth/refresh`, body);
+    const response = await api.get(`/auth/refresh`);
 
     return response.data;
   } catch (error) {

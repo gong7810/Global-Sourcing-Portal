@@ -63,7 +63,6 @@ const loadApplications = async () => {
     }
   } catch (error) {
     console.error('신청 목록 로드 실패:', error);
-    messagePop.toast('신청 목록을 불러오는데 실패했습니다.', 'error');
   }
 };
 
@@ -112,10 +111,10 @@ const approveApplication = async (id) => {
 
       // 목록 새로고침
       await loadApplications();
+
       messagePop.toast('승인되었습니다.', 'success');
     } catch (error) {
       console.error('승인 처리 중 오류 발생:', error);
-      messagePop.toast('승인 처리 중 오류가 발생했습니다.', 'error');
     }
   }
 };
@@ -137,11 +136,12 @@ const rejectApplication = async (id) => {
 
       // 목록 새로고침
       await loadApplications();
+
       messagePop.toast('거절되었습니다.', 'success');
+
       closeDetailModal();
     } catch (error) {
       console.error('거절 처리 중 오류 발생:', error);
-      messagePop.toast('거절 처리 중 오류가 발생했습니다.', 'error');
     }
   }
 };

@@ -38,9 +38,7 @@ export const getNotificationList = async () => {
 // 노티 읽음 처리 API
 export const updateNotification = async (id) => {
   try {
-    const response = await api.post(`/notification/read/${id}`, {});
-
-    return response;
+    await api.post(`/notification/read/${id}`, {});
   } catch (error) {
     console.error(error);
   }

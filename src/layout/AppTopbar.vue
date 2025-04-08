@@ -34,74 +34,6 @@ const languages = ref([
   { name: 'Tiếng Việt', code: 'vi' }
 ]);
 
-// 기업용 알림 데이터
-const companyNotifications = ref([
-  {
-    id: 1,
-    type: 'interview_accepted',
-    title: '면접 제안 수락',
-    userName: '김지원',
-    position: '시스템 엔지니어',
-    message: '면접 제안을 수락했습니다.',
-    createdAt: '2024-03-20',
-    isRead: false
-  },
-  {
-    id: 2,
-    type: 'schedule_selected',
-    title: '면접 일정 선택됨',
-    userName: '이둘리',
-    position: '시스템 엔지니어',
-    message: '3월 25일 오후 2시 면접 일정이 선택되었습니다.',
-    createdAt: '2024-03-19',
-    isRead: false
-  },
-  {
-    id: 3,
-    type: 'interview_declined',
-    title: '면접 제안 거절',
-    userName: '박항공',
-    position: '항공정비사',
-    message: '면접 제안을 거절했습니다.',
-    createdAt: '2024-03-18',
-    isRead: true
-  }
-]);
-
-// 구직자용 알림 데이터
-const jobSeekerNotifications = ref([
-  {
-    id: 1,
-    type: 'interview_offer',
-    title: '새로운 면접 제안',
-    companyName: '한국항공우주산업(주)',
-    position: '항공기계설계',
-    message: '항공기계설계 포지션에 대한 면접 제안이 도착했습니다.',
-    createdAt: '2024-03-20',
-    isRead: false
-  },
-  {
-    id: 2,
-    type: 'interview_schedule',
-    title: '면접 일정 확정',
-    companyName: 'LIG넥스원',
-    position: '시스템 엔지니어',
-    message: '3월 25일 오후 2시 화상면접이 확정되었습니다.',
-    createdAt: '2024-03-19',
-    isRead: false
-  },
-  {
-    id: 3,
-    type: 'result',
-    title: '면접 결과',
-    companyName: '대한항공',
-    position: '항공정비사',
-    message: '항공정비사 포지션 합격입니다.',
-    createdAt: '2024-03-18',
-    isRead: true
-  }
-]);
-
 // 노티 리스트
 const notifications = ref([]);
 
@@ -186,38 +118,60 @@ const markAsRead = async (noti) => {
   noti.isRead = true;
 
   try {
-    const response = await updateNotification(noti.id);
+    await updateNotification(noti.id);
 
-    if (response.status === 400 || response.status === undefined) throw new Error('400 Error');
+    overlayPanel.value.hide(); // 알림 패널 닫기
 
-    if (response.data && response.data.success === undefined) {
-      overlayPanel.value.hide(); // 알림 패널 닫기
+    // 알림 타입에 따라 페이지 이동
+    switch (noti.typeCd) {
+      // 구직자용
+      case 'NOTI_1': // 면접제안
+        router.push('/user/jobOffers');
+        break;
+      case 'NOTI_2': // 면접일정조율
+        router.push('/user/jobOffers');
+        break;
+      case 'NOTI_3': // 면접결과
+        router.push('/user/jobSeekerInterviews');
+        break;
 
-      // 알림 타입에 따라 페이지 이동
-      switch (noti.typeCd) {
-        // 구직자용
-        case 'NOTI_1': // 면접제안
-          router.push('/user/jobOffers');
-          break;
-        case 'NOTI_2': // 면접일정조율
-          router.push('/user/jobOffers');
-          break;
-        case 'NOTI_3': // 면접결과
-          router.push('/user/jobSeekerInterviews');
-          break;
-
-        // 기업용
-        case 'NOTI_4': // 면접제안 답변
-          router.push('/company/InterviewOffers');
-          break;
-        case 'NOTI_5': // 면접일정 확정
-          router.push('/company/InterviewOffers');
-          break;
-      }
+      // 기업용
+      case 'NOTI_4': // 면접제안 답변
+        router.push('/company/InterviewOffers');
+        break;
+      case 'NOTI_5': // 면접일정 확정
+        router.push('/company/InterviewOffers');
+        break;
     }
+
+    // FIXME: 사용자경험을 위해 페이지 이동을 우선시
+    // if (response?.data && response?.data?.success === undefined) {
+    //   overlayPanel.value.hide(); // 알림 패널 닫기
+
+    //   // 알림 타입에 따라 페이지 이동
+    //   switch (noti.typeCd) {
+    //     // 구직자용
+    //     case 'NOTI_1': // 면접제안
+    //       router.push('/user/jobOffers');
+    //       break;
+    //     case 'NOTI_2': // 면접일정조율
+    //       router.push('/user/jobOffers');
+    //       break;
+    //     case 'NOTI_3': // 면접결과
+    //       router.push('/user/jobSeekerInterviews');
+    //       break;
+
+    //     // 기업용
+    //     case 'NOTI_4': // 면접제안 답변
+    //       router.push('/company/InterviewOffers');
+    //       break;
+    //     case 'NOTI_5': // 면접일정 확정
+    //       router.push('/company/InterviewOffers');
+    //       break;
+    //   }
+    // }
   } catch (error) {
     console.error(error);
-    messagePop.toast('시스템 오류입니다.', 'error');
   }
 };
 
@@ -362,7 +316,6 @@ const markAllAsRead = async () => {
     getNotiByUser();
   } catch (error) {
     console.error('알림 읽음 처리 실패:', error);
-    messagePop.toast('시스템 오류입니다.', 'error');
   }
 };
 </script>
@@ -411,7 +364,7 @@ const markAllAsRead = async () => {
               <div v-if="notifications.length === 0" class="text-gray-500 text-center py-4">
                 새로운 알림이 없습니다.
               </div>
-              <div v-else class="space-y-3 max-h-[75vh] overflow-y-auto">
+              <div v-else class="space-y-3 max-h-[400px] overflow-y-auto">
                 <div
                   v-for="notification in notifications"
                   :key="notification?.id"

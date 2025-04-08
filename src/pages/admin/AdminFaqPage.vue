@@ -67,7 +67,6 @@ const fetchFaqs = async () => {
     }
   } catch (error) {
     console.error('FAQ 목록 조회 실패:', error);
-    messagePop.toast('FAQ 목록을 불러오는데 실패했습니다.', 'error');
   } finally {
     loading.value = false;
   }
@@ -118,7 +117,6 @@ const addFaq = async () => {
     await fetchFaqs();
   } catch (error) {
     console.error('FAQ 저장 실패:', error);
-    messagePop.toast('FAQ 저장에 실패했습니다.', 'error');
   }
 };
 
@@ -126,11 +124,11 @@ const deleteFaq = async (id) => {
   if (confirm('이 FAQ를 삭제하시겠습니까?')) {
     try {
       await deleteFaqApi(id);
+
       messagePop.toast('FAQ가 삭제되었습니다.', 'success');
       await fetchFaqs(); // 목록 새로고침
     } catch (error) {
       console.error('FAQ 삭제 실패:', error);
-      messagePop.toast('FAQ 삭제에 실패했습니다.', 'error');
     }
   }
 };

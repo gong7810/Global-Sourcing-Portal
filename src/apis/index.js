@@ -51,12 +51,22 @@ export function useApi() {
       };
     } catch (err) {
       // 로그인 여부 체크
-      if (err.response?.status === 401) {
-        messagePop.toast('인증 정보가 유효하지 않습니다. \n 로그인 페이지로 이동합니다.', 'error');
+      if (err.response?.status === 400) {
+        messagePop.toast('시스템 오류입니다. \n관리자에게 문의바랍니다.', 'error');
+
+        // setTimeout(() => {
+        //   authStore.login();
+        // }, 1000);
+
+        return;
+      } else if (err.response?.status === 401) {
+        messagePop.toast('인증 정보가 유효하지 않습니다.', 'warn');
+
+        await authStore.getTokenRefresh();
 
         setTimeout(() => {
-          authStore.login();
-        }, 1000);
+          window.location.reload();
+        }, 1500);
 
         return;
       } else if (err.response?.status === 500) {

@@ -207,7 +207,6 @@ const openResumeModal = async (talent) => {
     };
   } catch (error) {
     console.error('이력서 정보를 불러오는 중 오류가 발생했습니다:', error);
-    messagePop.toast('이력서 정보를 불러오는데 실패했습니다.', 'error');
   } finally {
     isResumeLoading.value = false;
   }

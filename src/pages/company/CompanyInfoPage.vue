@@ -6,14 +6,11 @@ import { useMessagePop } from '@/plugins/commonutils';
 
 import { getCompanyInfo, updateCompanyInfo } from '@/apis/company/companyApis';
 import { getCodeList } from '@/apis/common/commonApis';
-import { useCompanyStore } from '@/store/company/companyStore';
-import { storeToRefs } from 'pinia';
+import { useAuthStore } from '@/store/auth/authStore';
 
 const router = useRouter();
 const messagePop = useMessagePop();
-const companyStore = useCompanyStore();
-
-const { companyData } = storeToRefs(companyStore);
+const authStore = useAuthStore();
 
 // 수정 모드 상태
 const isEditing = ref(false);
@@ -24,20 +21,6 @@ const companyInfo = ref({});
 
 // 기업 구분 옵션
 const companyTypes = ref([]);
-
-// {
-//   name: '(주)비티포탈',
-//   businessNumber: '123-45-67890',
-//   companyType: 'corporation',
-//   ceoName: '김관리',
-//   phone: '010-1234-5678',
-//   email: 'manager@btportal.com',
-//   mainBusiness: '',
-//   address: '' // 회사주소
-//   // zipCode: '',        // 우편번호
-//   // address: '',        // 기본주소
-//   // addressDetail: ''   // 상세주소
-// }
 
 const goBack = () => {
   router.back();
@@ -71,7 +54,7 @@ const setCompanyInfo = async () => {
     companyType: { name: response.companyType.name, code: response.companyType.code }
   };
 
-  companyStore.setCompanyData(companyInfo.value);
+  authStore.setCompanyData(companyInfo.value);
 
   initCompanyInfo = cloneDeep(companyInfo.value);
 };
@@ -93,7 +76,7 @@ const toggleEdit = () => {
         const response = await updateCompanyInfo(body);
 
         if (response && response.success === undefined) {
-          companyStore.setCompanyData(body);
+          authStore.setCompanyData(body);
           router.back();
         } else {
           messagePop.toast('시스템 오류입니다.', 'error');
