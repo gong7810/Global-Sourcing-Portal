@@ -176,9 +176,9 @@ const markAsRead = async (noti) => {
   try {
     const response = await updateNotification(noti.id);
 
-    if (response && response.success === undefined) {
-      if (response.status === 400 || response.status === undefined) throw new Error('400 Error');
+    if (response.status === 400 || response.status === undefined) throw new Error('400 Error');
 
+    if (response.data && response.data.success === undefined) {
       overlayPanel.value.hide(); // 알림 패널 닫기
 
       // 알림 타입에 따라 페이지 이동
