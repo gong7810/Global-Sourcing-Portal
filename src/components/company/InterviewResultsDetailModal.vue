@@ -164,6 +164,7 @@ const printResume = () => {
         }
         body {
           margin: 0;
+          position: relative;
         }
         .creation-date {
           position: absolute;
@@ -173,6 +174,24 @@ const printResume = () => {
         }
         .creation-date:not(:first-of-type) {
           display: none;
+        }
+        /* 워터마크 스타일 추가 */
+        .resume-container::before {
+          content: "ONOP";
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          font-size: 160px;
+          font-weight: bold;
+          color: rgba(139, 139, 245, 0.1); /* #8B8BF5 색상의 투명도 10% */
+          pointer-events: none;
+          z-index: 1000;
+          white-space: nowrap;
+        }
+        th {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
         }
       }
       .resume-container {
@@ -196,8 +215,16 @@ const printResume = () => {
         font-size: 11px;
       }
       th {
-        background-color: #f0f0f0;
-        width: 20%;
+        background-color: #f5f5f5 !important;
+        width: auto;
+      }
+      th[colspan="4"] {
+        background-color: #e5e5e5 !important;
+        text-align: center;
+        font-weight: bold;
+      }
+      td {
+        background-color: #ffffff !important;
       }
       .mb-4 { margin-bottom: 1rem; }
       .mb-2 { margin-bottom: 0.5rem; }
