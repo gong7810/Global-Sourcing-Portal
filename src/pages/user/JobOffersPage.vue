@@ -546,9 +546,8 @@ const calculatePeriod = (period) => {
                           v-model="selectedDateIndices[offer.id]"
                           @click.stop
                         />
-                        <div>
-                          <div class="font-medium">{{ dateSlot.slice(0, 10).replaceAll('-', '.') }}</div>
-                          <div class="text-sm text-gray-600">{{ dateSlot.slice(11, 16) }}</div>
+                        <div class="font-medium">
+                          {{ dateSlot.slice(0, 10).replaceAll('-', '.') }} {{ dateSlot.slice(11, 16) }}
                         </div>
                       </div>
                     </div>
@@ -784,9 +783,8 @@ const calculatePeriod = (period) => {
                       v-model="selectedDateIndices[selectedOffer.id]"
                       @click.stop
                     />
-                    <div>
-                      <div class="font-medium">{{ dateSlot?.slice(0, 10) }}</div>
-                      <div class="text-sm text-gray-600">{{ dateSlot?.slice(11, 16) }}</div>
+                    <div class="font-medium">
+                      {{ dateSlot.slice(0, 10).replaceAll('-', '.') }} {{ dateSlot.slice(11, 16) }}
                     </div>
                   </div>
                 </div>
