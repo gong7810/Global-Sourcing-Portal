@@ -1,5 +1,9 @@
 <script setup>
 import { ref, watch } from 'vue';
+import Dropdown from 'primevue/dropdown';
+import Button from 'primevue/button';
+import InputText from 'primevue/inputtext';
+import InputSwitch from 'primevue/inputswitch';
 
 const props = defineProps({
   isOpen: Boolean,
@@ -314,11 +318,15 @@ const getGenderLabel = (gender) => {
                 <th>권한</th>
                 <td>
                   <template v-if="isEditMode">
-                    <Select v-model="editedUser.role" checkmark class="w-full p-2 border rounded">
-                      <option v-for="option in roleOptions" :key="option.value" :value="option.value">
-                        {{ option.label }}
-                      </option>
-                    </Select>
+                    <Dropdown 
+                      v-model="editedUser.role" 
+                      :options="roleOptions" 
+                      optionLabel="label" 
+                      optionValue="value" 
+                      class="w-full"
+                      appendTo="body"
+                      :baseZIndex="10000"
+                    />
                   </template>
                   <template v-else>{{ getRoleLabel(user?.role) }}</template>
                 </td>
@@ -327,11 +335,15 @@ const getGenderLabel = (gender) => {
                 <th>성별</th>
                 <td>
                   <template v-if="isEditMode">
-                    <Select v-model="editedUser.gender" checkmark class="w-full p-2 border rounded">
-                      <option v-for="option in genderOptions" :key="option.value" :value="option.value">
-                        {{ option.label }}
-                      </option>
-                    </Select>
+                    <Dropdown 
+                      v-model="editedUser.gender" 
+                      :options="genderOptions" 
+                      optionLabel="label" 
+                      optionValue="value" 
+                      class="w-full"
+                      appendTo="body"
+                      :baseZIndex="9999"
+                    />
                   </template>
                   <template v-else>{{ getGenderLabel(user?.gender) }}</template>
                 </td>
@@ -444,7 +456,7 @@ const getGenderLabel = (gender) => {
   justify-content: center;
   align-items: center;
   padding: 1rem;
-  z-index: 1100;
+  z-index: 9000;
 }
 
 .modal-content {
@@ -455,6 +467,8 @@ const getGenderLabel = (gender) => {
   max-height: 90vh;
   display: flex;
   flex-direction: column;
+  position: relative;
+  z-index: 9001;
 }
 
 .modal-header {
@@ -533,29 +547,16 @@ const getGenderLabel = (gender) => {
     :deep(.p-dropdown) {
       width: 100%;
       min-height: 2.5rem;
+      position: relative;
 
       .p-dropdown-label {
         padding: 0.5rem;
       }
-
-      .p-dropdown-panel {
-        z-index: 1200;
-      }
-
-      &.p-dropdown-clearable .p-dropdown-label {
-        padding-right: 2rem;
-      }
-
-      .p-dropdown-trigger {
-        width: 2.5rem;
-      }
     }
 
     :deep(.p-dropdown-panel) {
-      background: #ffffff;
-      border: 1px solid #ced4da;
-      border-radius: 4px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      position: fixed !important;
+      z-index: 9999 !important;
     }
 
     :deep(.p-dropdown-items) {
@@ -663,10 +664,12 @@ const getGenderLabel = (gender) => {
 }
 
 :deep(.p-dropdown-panel) {
-  z-index: 1200 !important;
+  z-index: 10000 !important; // 모달보다 높게
+  position: absolute !important;
 }
 
 :deep(.p-select-panel) {
-  z-index: 1200 !important;
+  position: fixed !important;
+  z-index: 9999 !important;
 }
 </style>
