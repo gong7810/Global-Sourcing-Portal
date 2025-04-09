@@ -332,7 +332,7 @@ const openDetailModal = (interview) => {
         <div class="border-t pt-4">
           <div class="mb-4">
             <h4 class="text-base font-bold text-gray-900 mb-2">직무 · 제안 포지션</h4>
-            <p class="text-gray-600">{{ convertJobCode(interview?.jobCategoryCd) }} | {{ interview?.position }}</p>
+            <p class="text-gray-600">{{ interview?.jobCategoryCd === 'JOB_22' ? `기타(${interview?.customJobCategory})` : convertJobCode(interview?.jobCategoryCd) }} | {{ interview?.position }}</p>
           </div>
 
           <div class="mb-4">

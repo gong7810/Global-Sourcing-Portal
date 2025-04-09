@@ -487,7 +487,7 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
         <div class="border-t pt-4">
           <div class="mb-4">
             <h4 class="text-base font-bold text-gray-900 mb-2">직무 · 제안 포지션</h4>
-            <p class="text-gray-600">{{ convertJobCode(offer?.jobCategoryCd) }} | {{ offer?.position }}</p>
+            <p class="text-gray-600">{{ offer?.jobCategoryCd === 'JOB_22' ? `기타(${offer?.customJobCategory})` : convertJobCode(offer?.jobCategoryCd) }} | {{ offer?.position }}</p>
           </div>
 
           <div class="mb-4">

@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 
@@ -20,6 +20,11 @@ const { offerUserResume } = storeToRefs(companyStore);
 
 // 직무 카테고리 데이터
 const jobCategoryOptions = ref([]);
+const customJobCategory = ref(''); // 기타 직무 입력을 위한 변수
+
+const isOtherJobCategory = computed(() => {
+  return jobOffer.value.jobCategoryCd === 'JOB_22'; // 기타 직무 코드
+});
 
 const jobOffer = ref({
   jobCategoryCd: null,
@@ -86,6 +91,11 @@ const submitOffer = () => {
     return;
   }
 
+  if (isOtherJobCategory.value && !customJobCategory.value) {
+    alert('기타 직무명을 입력해주세요.');
+    return;
+  }
+
   // 확인 팝업 표시
   messagePop.confirm({
     icon: 'info',
@@ -96,7 +106,8 @@ const submitOffer = () => {
         resumeId: candidate.value.id,
         statusCd: 'JO_ST_1',
         result: true,
-        ...jobOffer.value
+        ...jobOffer.value,
+        customJobCategory: isOtherJobCategory.value ? customJobCategory.value : null
       };
 
       const response = await requestOffer(body);
@@ -231,6 +242,14 @@ const submitOffer = () => {
           checkmark
           placeholder="직무 카테고리를 선택해주세요"
           class="w-full"
+        />
+        <!-- 기타 직무 입력 필드 -->
+        <input
+          v-if="isOtherJobCategory"
+          v-model="customJobCategory"
+          type="text"
+          class="w-full p-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8B8BF5]"
+          placeholder="기타 직무명을 입력해주세요"
         />
       </div>
 
