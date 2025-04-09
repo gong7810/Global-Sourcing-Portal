@@ -1,19 +1,15 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { useToast } from 'primevue/usetoast';
 import { isNull } from 'es-toolkit';
 
-import { useUserStore } from '@/store/user/userStore';
+import { useDateFormatter } from '@/plugins/commonutils';
 import { useMessagePop } from '@/plugins/commonutils';
 import { answerOffer, getOfferListByUser } from '@/apis/user/userApis';
 import { getCodeList } from '@/apis/common/commonApis';
 
 const router = useRouter();
-const userStore = useUserStore();
-// const { jobOfferList } = storeToRefs(userStore); api 연동할 때 사용하기
-
-const toast = useToast();
+const dateFormatter = useDateFormatter();
 const messagePop = useMessagePop();
 
 // 전체 직무 카테고리 옵션
@@ -31,7 +27,10 @@ const filterOptions = [
   { name: '전체', code: 'all' },
   { name: '대기중', code: 'JO_ST_1' },
   { name: '수락', code: 'JO_ST_2' },
-  { name: '거절', code: 'JO_ST_3' }
+  { name: '거절', code: 'JO_ST_3' },
+  { name: '일정 조율', code: 'JO_ST_4' },
+  { name: '일정 확정', code: 'JO_ST_5' },
+  { name: '완료', code: 'JO_ST_6' }
 ];
 
 // 면접 일정 선택을 위한 상태
@@ -198,12 +197,20 @@ const confirmReject = () => {
 // 제안 상태에 따른 스타일 클래스
 const getStatusClass = (statusCd) => {
   switch (statusCd) {
+    case 'JO_ST_1':
+      return 'bg-yellow-100 text-yellow-700';
     case 'JO_ST_2':
       return 'bg-green-100 text-green-700';
     case 'JO_ST_3':
       return 'bg-red-100 text-red-700';
-    default:
+    case 'JO_ST_4':
       return 'bg-yellow-100 text-yellow-700';
+    case 'JO_ST_5':
+      return 'bg-green-100 text-green-700';
+    case 'JO_ST_6':
+      return 'bg-blue-100 text-blue-700';
+    default:
+      return 'bg-gray-100 text-gray-700';
   }
 };
 
@@ -238,16 +245,17 @@ const calculateAge = (birthDate) => {
 
 // 면접 일정 수락
 const acceptInterviewSchedule = (offer) => {
+  // TODO: 필드명 reserve로 통일 필요
   const selectedIndex = selectedDateIndices.value[offer.id];
   const selectedDate = offer[`reserveTime${selectedIndex + 1}`];
-  const selectedType = offer[`interviewType${selectedIndex + 1}`];
+  const selectedType = offer[`interviewTypeCd${selectedIndex + 1}`];
   const selectedInfo = offer[`interviewPlace${selectedIndex + 1}`];
 
   messagePop.confirm({
     icon: 'info',
     message: `<div class="text-center">
       <p class="text-xl mb-2">면접 일정을 수락하시겠습니까?</p>
-      <p class="text-md text-gray-600 mb-2">일시: ${selectedDate?.slice(0, 10)?.replaceAll('-', '.')} ${selectedDate?.slice(11, 16)}</p>
+      <p class="text-md text-gray-600 mb-2">일시: ${selectedDate?.slice(0, 10)?.replaceAll('-', '.')} | ${selectedDate?.slice(11, 16)}</p>
       <p class="text-sm text-gray-600">면접 방식: ${selectedType === 'INTERVIEW_TY_1' ? '화상면접' : '대면면접'}</p>
       <p class="text-sm text-gray-600 mb-4">
         ${selectedType === 'INTERVIEW_TY_1' ? '링크' : '장소'}: ${selectedInfo}
@@ -259,7 +267,10 @@ const acceptInterviewSchedule = (offer) => {
     onCloseYes: async () => {
       const body = {
         ...offer,
-        interviewTime: selectedDate
+        interviewTime: selectedDate,
+        interviewTypeCd: selectedType,
+        interviewInfo: selectedInfo,
+        statusCd: 'JO_ST_5'
       };
 
       const response = await answerOffer(body);
@@ -282,19 +293,6 @@ const rejectInterviewSchedule = (offer) => {
   offerToReject.value = offer;
   rejectReason.value = ''; // 거절 사유 초기화
   showRejectReasonModal.value = true;
-};
-
-// 날짜 포맷팅 함수 추가
-const formatDate = (dateString) => {
-  if (!dateString) return '';
-  const date = new Date(dateString);
-  return date.toLocaleDateString('ko-KR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
 };
 
 // 경력 기간 계산 함수 추가
@@ -326,7 +324,7 @@ const calculatePeriod = (period) => {
         class="pi pi-angle-left text-4xl text-gray-600 cursor-pointer transition-colors hover:text-[#8FA1FF]"
         @click="router.back()"
       ></i>
-      <h1 class="text-3xl font-bold">면접제안</h1>
+      <h1 class="text-3xl font-bold">면접 제안</h1>
     </div>
 
     <!-- 필터 버튼 그룹 추가 -->
@@ -460,14 +458,13 @@ const calculatePeriod = (period) => {
                 </div>
               </div>
             </div>
-
             <!-- 상태별 다른 내용 표시 -->
             <div class="mt-4 border-t pt-4">
               <!-- 대기중인 경우 -->
               <div v-if="offer?.statusCd === 'JO_ST_1'" class="space-y-4">
                 <p class="text-gray-600">
                   <i class="pi pi-clock mr-2"></i>
-                  제안받은 날짜: {{ offer?.createdAt?.slice(0, 10)?.replaceAll('-', '.') }}
+                  제안받은 날짜: {{ dateFormatter.halfDate(offer?.createdAt) }}
                 </p>
                 <div class="bg-blue-50 p-4 rounded-lg">
                   <p class="text-blue-700">
@@ -487,16 +484,16 @@ const calculatePeriod = (period) => {
                 </div>
               </div>
 
-              <!-- 수락된 경우 -->
-              <div v-else-if="offer?.statusCd === 'JO_ST_2'" class="space-y-4">
+              <!-- 수락에서 이어진 경우 -->
+              <div v-else-if="['JO_ST_2', 'JO_ST_4', 'JO_ST_5'].includes(offer?.statusCd)" class="space-y-4">
                 <div class="space-y-2">
                   <p class="text-gray-600">
                     <i class="pi pi-clock mr-2"></i>
-                    제안받은 날짜: {{ formatDate(offer.createdAt) }}
+                    제안받은 날짜: {{ dateFormatter.fullDate(offer?.createdAt) }}
                   </p>
                   <p class="text-green-600">
                     <i class="pi pi-check-circle mr-2"></i>
-                    수락 날짜: {{ formatDate(offer.updatedAt) }}
+                    수락 날짜: {{ dateFormatter.fullDate(offer?.updatedAt) }}
                   </p>
                 </div>
 
@@ -520,12 +517,12 @@ const calculatePeriod = (period) => {
                         {{ offer?.interviewType?.name }}
                       </span>
                     </div>
-                    <div class="flex items-center gap-2 text-sm text-gray-600">
+                    <div class="flex items-center gap-2 text-md text-gray-600">
                       <i class="pi pi-map-marker text-green-600"></i>
                       <span class="text-gray-700">
-                        {{ offer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '장소: ' : '링크: ' }}
+                        {{ offer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '링크: ' : '장소: ' }}
                         <a
-                          v-if="offer?.interviewTypeCd !== 'INTERVIEW_TY_1'"
+                          v-if="offer?.interviewTypeCd === 'INTERVIEW_TY_1'"
                           :href="offer?.interviewInfo"
                           target="_blank"
                           class="text-blue-600 hover:underline"
@@ -538,7 +535,7 @@ const calculatePeriod = (period) => {
                   </div>
                   <p class="mt-4 text-green-600 flex items-center gap-2">
                     <i class="pi pi-check-circle"></i>
-                    <span>{{ formatDate(offer?.interviewTime) }}으로 면접 일정이 확정되었습니다</span>
+                    <span>{{ dateFormatter.fullDate(offer?.interviewTime) }}으로 면접 일정이 확정되었습니다</span>
                   </p>
                 </div>
                 <div v-else-if="offer?.interviewInfo" class="space-y-4">
@@ -630,11 +627,11 @@ const calculatePeriod = (period) => {
                 <div class="space-y-2">
                   <p class="text-gray-600">
                     <i class="pi pi-clock mr-2"></i>
-                    제안받은 날짜: {{ formatDate(offer?.createdAt) }}
+                    제안받은 날짜: {{ dateFormatter.fullDate(offer?.createdAt) }}
                   </p>
                   <p class="text-red-600">
                     <i class="pi pi-times-circle mr-2"></i>
-                    {{ formatDate(offer?.updatedAt) }}에 거절되었습니다
+                    {{ dateFormatter.fullDate(offer?.updatedAt) }} 에 거절되었습니다
                   </p>
                   <!-- 거절 사유 표시 추가 -->
                   <div v-if="offer?.resultMemo" class="bg-red-50 p-4 rounded-lg mt-2">
@@ -750,7 +747,7 @@ const calculatePeriod = (period) => {
           <div v-if="selectedOffer.statusCd === 'JO_ST_1'" class="space-y-4">
             <p class="text-gray-600">
               <i class="pi pi-clock mr-2"></i>
-              제안받은 날짜: {{ formatDate(selectedOffer?.createdAt) }}
+              제안받은 날짜: {{ dateFormatter.fullDate(selectedOffer?.createdAt) }}
             </p>
             <div class="bg-blue-50 p-4 rounded-lg">
               <p class="text-blue-700">
@@ -775,11 +772,11 @@ const calculatePeriod = (period) => {
             <div class="space-y-2">
               <p class="text-gray-600">
                 <i class="pi pi-clock mr-2"></i>
-                제안받은 날짜: {{ formatDate(selectedOffer?.createdAt) }}
+                제안받은 날짜: {{ dateFormatter.fullDate(selectedOffer?.createdAt) }}
               </p>
               <p class="text-green-600">
                 <i class="pi pi-check-circle mr-2"></i>
-                수락 날짜: {{ formatDate(selectedOffer?.updatedAt) }}
+                수락 날짜: {{ dateFormatter.fullDate(selectedOffer?.updatedAt) }}
               </p>
             </div>
 
@@ -827,7 +824,7 @@ const calculatePeriod = (period) => {
               </div>
               <p class="mt-4 text-green-600 flex items-center gap-2">
                 <i class="pi pi-check-circle"></i>
-                <span>{{ formatDate(selectedOffer?.updatedAt) }}에 면접 일정이 확정되었습니다</span>
+                <span>{{ dateFormatter.fullDate(selectedOffer?.updatedAt) }}에 면접 일정이 확정되었습니다</span>
               </p>
             </div>
 
@@ -911,11 +908,11 @@ const calculatePeriod = (period) => {
             <div class="space-y-2">
               <p class="text-gray-600">
                 <i class="pi pi-clock mr-2"></i>
-                제안받은 날짜: {{ formatDate(selectedOffer?.createdAt) }}
+                제안받은 날짜: {{ dateFormatter.fullDate(selectedOffer?.createdAt) }}
               </p>
               <p class="text-red-600">
                 <i class="pi pi-times-circle mr-2"></i>
-                {{ formatDate(selectedOffer?.updatedAt) }}에 거절되었습니다
+                {{ dateFormatter.fullDate(selectedOffer?.updatedAt) }} 에 거절되었습니다
               </p>
               <!-- 거절 사유 표시 추가 -->
               <div v-if="selectedOffer?.resultMemo" class="bg-red-50 p-4 rounded-lg mt-2">
@@ -934,7 +931,7 @@ const calculatePeriod = (period) => {
             <h4 class="font-medium text-gray-900">제안 당시 이력서 정보</h4>
             <div class="text-sm text-gray-500">
               <i class="pi pi-clock mr-1"></i>
-              {{ formatDate(selectedOffer?.createdAt) }} 기준
+              {{ dateFormatter.fullDate(selectedOffer?.createdAt) }} 기준
             </div>
           </div>
 
@@ -1168,7 +1165,6 @@ const calculatePeriod = (period) => {
     </Dialog>
 
     <!-- 토스트 메시지 -->
-    <Toast />
   </div>
 </template>
 

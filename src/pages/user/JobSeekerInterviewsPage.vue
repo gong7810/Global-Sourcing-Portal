@@ -1,10 +1,13 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+
+import { useDateFormatter } from '@/plugins/commonutils';
 import { getCodeList } from '@/apis/common/commonApis';
 import { getOfferListByUser } from '@/apis/user/userApis';
 
 const router = useRouter();
+const dateFormatter = useDateFormatter();
 
 // 면접 목록 데이터
 const offerCompanies = ref([]);
@@ -78,12 +81,12 @@ const getResultInfo = (resultCd) => {
     case 'INTERVIEW_RESULT_1':
       return {
         text: '합격',
-        class: 'bg-green-50 text-green-600'
+        class: 'bg-green-100 text-green-600'
       };
     case 'INTERVIEW_RESULT_2':
       return {
         text: '불합격',
-        class: 'bg-red-50 text-red-600'
+        class: 'bg-red-100 text-red-600'
       };
     case 'INTERVIEW_RESULT_3':
       return null; // 보류는 구직자에게 표시하지 않음
@@ -153,9 +156,7 @@ const isInterviewCompleted = (interview) => {
                 {{ getResultInfo(interview?.resultCd).text }}
               </span>
             </div>
-            <div class="text-sm text-gray-500">
-              결과 발표일: {{ interview?.updatedAt?.slice(0, 10).replaceAll('-', '.') }}
-            </div>
+            <div class="text-sm text-gray-500">결과 발표일: {{ dateFormatter.halfDate(interview?.updatedAt) }}</div>
           </div>
         </div>
 
@@ -163,13 +164,20 @@ const isInterviewCompleted = (interview) => {
         <div class="border-t pt-4">
           <div class="mb-4">
             <h4 class="text-base font-bold text-gray-900 mb-2">직무 · 제안 포지션</h4>
-            <p class="text-gray-600">{{ interview?.jobCategoryCd === 'JOB_22' ? `기타(${interview?.customJobCategory})` : convertJobCode(interview?.jobCategoryCd) }} | {{ interview?.position }}</p>
+            <p class="text-gray-600">
+              {{
+                interview?.jobCategoryCd === 'JOB_22'
+                  ? `기타(${interview?.customJobCategory})`
+                  : convertJobCode(interview?.jobCategoryCd)
+              }}
+              | {{ interview?.position }}
+            </p>
           </div>
 
           <div class="mb-4">
             <h4 class="text-base font-bold text-gray-900 mb-2">면접 일시</h4>
             <p class="text-gray-600">
-              {{ interview?.interviewTime?.slice(0, 10).replaceAll('-', '.') }} &nbsp;
+              {{ interview?.interviewTime?.slice(0, 10).replaceAll('-', '.') }} |
               {{ interview?.interviewTime?.slice(11, 16) }}
             </p>
           </div>

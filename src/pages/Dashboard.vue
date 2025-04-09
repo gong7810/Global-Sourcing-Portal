@@ -4,15 +4,14 @@ import { useRouter } from 'vue-router';
 import { isNil, isNull } from 'es-toolkit/compat';
 import { storeToRefs } from 'pinia';
 
+import { useDateFormatter } from '@/plugins/commonutils';
 import { useAuthStore } from '@/store/auth/authStore';
-import { useUserStore } from '@/store/user/userStore';
 import { getOfferListByUser } from '@/apis/user/userApis';
 
 const router = useRouter();
+const dateFormatter = useDateFormatter();
 const authStore = useAuthStore();
-const userStore = useUserStore();
 const { userInfo } = storeToRefs(authStore);
-// const { proposalCount } = storeToRefs(userStore);
 
 const bookmarkFlag = ref(true);
 const proposalFlag = ref(false);
@@ -41,14 +40,14 @@ onMounted(() => {
 const getJobOfferList = async () => {
   const response = await getOfferListByUser();
 
-  // 답변 대기중인 면접 제안
+  // 답변 대기중 / 일정 조율 중인 면접 제안
   unreadOffers.value = response.contents.filter((com) => {
-    return com.statusCd === 'JO_ST_1';
+    return ['JO_ST_1', 'JO_ST_4'].includes(com.statusCd);
   }).length;
 
-  //진행중인 면접 : 면접 대기중, 수락 / 면접 결과 미입력
+  //진행중인 면접 : 면접 대기중 / 수락 / 일정 조율 / 일정 확정 / 면접 결과 미입력
   offerCompanies.value = response.contents.filter((com) => {
-    return com.statusCd !== 'JO_ST_3' && isNull(com?.resultCd);
+    return ['JO_ST_3', 'JO_ST_6'].includes(com.statusCd) && isNull(com?.resultCd);
   });
 
   //완료된 면접 : 면접 거절 / 면접 결과 합격 불합격
@@ -59,6 +58,7 @@ const getJobOfferList = async () => {
 
 // 상태에 따른 텍스트 색상 반환
 const getStatusColor = (statusCd, result = null) => {
+  console.log(statusCd, result);
   switch (statusCd) {
     case 'JO_ST_1':
       return 'text-yellow-600';
@@ -69,6 +69,12 @@ const getStatusColor = (statusCd, result = null) => {
       return 'text-green-600';
     case 'JO_ST_3':
       return 'text-red-600';
+    case 'JO_ST_4':
+      return 'text-yellow-600';
+    case 'JO_ST_5':
+      return 'text-green-600';
+    case 'JO_ST_6':
+      return 'text-blue-600';
     default:
       return 'text-gray-600';
   }
@@ -353,7 +359,7 @@ const getStatusColor = (statusCd, result = null) => {
                     <div>
                       <h3 class="font-bold text-lg">{{ company?.company?.name }}</h3>
                       <p class="text-gray-600">{{ company?.position }}</p>
-                      <p class="text-sm text-gray-500">{{ company?.createdAt?.slice(0, 10)?.replaceAll('-', '.') }}</p>
+                      <p class="text-sm text-gray-500">{{ dateFormatter.halfDate(company?.createdAt) }}</p>
                     </div>
                     <span :class="[getStatusColor(company?.statusCd), 'font-medium']">
                       {{ company?.status?.name }}
@@ -393,10 +399,7 @@ const getStatusColor = (statusCd, result = null) => {
                       <h3 class="font-bold text-lg">{{ company?.company?.name }}</h3>
                       <p class="text-gray-600">{{ company?.position }}</p>
                       <p class="text-sm text-gray-500">
-                        {{
-                          company?.updatedAt?.slice(0, 10)?.replaceAll('-', '.') ||
-                          company?.createdAt?.slice(0, 10)?.replaceAll('-', '.')
-                        }}
+                        {{ dateFormatter.halfDate(company?.updatedAt) || dateFormatter.halfDate(company?.createdAt) }}
                       </p>
                     </div>
                     <span :class="[getStatusColor(company?.statusCd, company?.result), 'font-medium']">

@@ -2,11 +2,14 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
+import { useDateFormatter } from '@/plugins/commonutils';
 import { useMessagePop } from '@/plugins/commonutils';
 import { getCodeList } from '@/apis/common/commonApis';
 import { getOfferList, requestOffer } from '@/apis/company/companyApis';
+import { isNull } from 'es-toolkit';
 
 const router = useRouter();
+const dateFormatter = useDateFormatter();
 const messagePop = useMessagePop();
 
 const showDetailModal = ref(false);
@@ -143,18 +146,33 @@ const getStatusInfo = (status) => {
       };
     case 'JO_ST_2':
       return {
-        text: '수락됨',
+        text: '수락',
         class: 'bg-green-50 text-green-600'
       };
     case 'JO_ST_3':
       return {
-        text: '거절됨',
+        text: '거절',
         class: 'bg-red-50 text-red-600'
+      };
+    case 'JO_ST_4':
+      return {
+        text: '일정 조율',
+        class: 'bg-yellow-50 text-yellow-600'
+      };
+    case 'JO_ST_5':
+      return {
+        text: '일정 확정',
+        class: 'bg-green-50 text-green-600'
+      };
+    case 'JO_ST_6':
+      return {
+        text: '완료',
+        class: 'bg-blue-50 text-blue-600'
       };
     default:
       return {
-        text: '대기중',
-        class: 'bg-yellow-50 text-yellow-600'
+        text: '오류',
+        class: 'bg-gray-50 text-gray-600'
       };
   }
 };
@@ -189,6 +207,7 @@ const formatTime = (hour, minute) => {
   return `${hourValue.toString().padStart(2, '0')}:${minuteValue.toString().padStart(2, '0')}`;
 };
 
+// 면접 일정 제안 모달
 const openScheduleModal = (offer) => {
   selectedOffer.value = offer;
   showScheduleModal.value = true;
@@ -282,6 +301,7 @@ const scheduleInterview = async () => {
         .filter((info) => info);
       selectedOffer.value.interviewTypeCd = selectedOffer.value.interviewTypeCd1;
       selectedOffer.value.interviewInfo = selectedOffer.value.interviewPlace1;
+      selectedOffer.value.statusCd = 'JO_ST_4';
 
       const response = await requestOffer(selectedOffer.value);
 
@@ -318,8 +338,17 @@ const scheduleInterview = async () => {
 };
 
 // 면접 완료 처리
-const completeInterview = () => {
-  router.push('/company/InterviewResults');
+const completeInterview = async (offer) => {
+  const body = {
+    ...offer,
+    statusCd: 'JO_ST_6'
+  };
+
+  const response = await requestOffer(body);
+
+  if (response && response.success === undefined) {
+    router.push('/company/InterviewResults');
+  }
 };
 
 // 샘플 파일 정보 수정 (일부는 파일이 없는 상태로)
@@ -473,7 +502,7 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
               {{ getStatusInfo(offer?.statusCd)?.text }}
             </span>
           </div>
-          <div class="text-sm text-gray-500">제안일: {{ offer?.createdAt.slice(0, 10).replaceAll('-', '.') }}</div>
+          <div class="text-sm text-gray-500">제안일: {{ dateFormatter.halfDate(offer?.createdAt) }}</div>
         </div>
 
         <div v-if="offer?.resumeSnapshot?.finalEducation" class="mb-4">
@@ -508,14 +537,15 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
           </div>
         </div>
 
-        <div v-if="offer?.statusCd === 'JO_ST_2'" class="mt-4 border-t pt-4">
+        <!-- 수락에서 이어진 경우 -->
+        <div v-if="['JO_ST_2', 'JO_ST_4', 'JO_ST_5'].includes(offer?.statusCd)" class="mt-4 border-t pt-4">
           <p class="text-green-600">
             <i class="pi pi-check-circle mr-2"></i>
-            {{ offer?.updatedAt?.slice(0, 10).replaceAll('-', '.') }}에 수락되었습니다
+            {{ dateFormatter.fullDate(offer?.updatedAt) }} 에 수락되었습니다
           </p>
 
           <!-- 면접 일정이 잡히지 않은 경우에만 버튼 표시 -->
-          <div v-if="!offer?.interviewTime && !offer?.interviewInfo" class="mt-3">
+          <div v-if="['JO_ST_2'].includes(offer?.statusCd)" class="mt-3">
             <button
               @click="openScheduleModal(offer)"
               class="px-4 py-2 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7A7AE6]"
@@ -524,39 +554,11 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
             </button>
           </div>
 
-          <!-- 면접 일정이 이미 잡힌 경우 일정 정보 표시 -->
+          <!-- 면접 일정 조율중인 경우 일정 정보 표시 -->
           <div v-else class="mt-3">
-            <h4 class="font-medium text-gray-900 mb-2">면접 일정</h4>
-
-            <!-- 확정된 면접 일정이 있는 경우 -->
-            <div v-if="offer?.interviewTime" class="p-4 bg-green-50 rounded-lg">
-              <p class="text-green-600 font-medium mb-3">확정된 면접 일정</p>
-              <div class="space-y-2 ml-4">
-                <p class="text-gray-600">
-                  날짜·시간: {{ offer?.interviewTime.slice(0, 10).replaceAll('-', '.') }} &nbsp;
-                  {{ offer?.interviewTime.slice(11, 16) }}
-                </p>
-                <p class="text-gray-600">
-                  방식: {{ offer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접' }}
-                </p>
-                <p class="text-gray-600">장소: {{ offer?.interviewInfo }}</p>
-              </div>
-
-              <!-- 면접 완료 -->
-              <div v-if="!offer?.resultCd" class="mt-4">
-                <Button @click="completeInterview" style="border-color: none"> 면접 완료 </Button>
-              </div>
-              <!-- 면접 완료된 경우 표시 -->
-              <div v-else class="mt-4">
-                <p class="text-blue-600">
-                  <i class="pi pi-check-circle mr-2"></i>
-                  면접 완료
-                </p>
-              </div>
-            </div>
-
-            <!-- 아직 확정되지 않은 경우 제안된 일정들 표시 -->
-            <div v-else class="space-y-4">
+            <!-- JO_ST_4 -->
+            <!-- 일정이 아직 확정되지 않은 경우 제안된 일정들 표시 -->
+            <div v-if="['JO_ST_4'].includes(offer?.statusCd)" class="space-y-4">
               <div
                 v-for="(dateSlot, index) in ['reserveTime1', 'reserveTime2', 'reserveTime3']
                   .map((key, i) => ({
@@ -576,9 +578,65 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
                 <p class="text-gray-600">장소: {{ dateSlot.info }}</p>
               </div>
             </div>
+
+            <!-- JO_ST_5 -->
+            <!-- 면접 일정이 확정된 경우 -->
+            <div v-else class="p-4 bg-green-50 rounded-lg">
+              <!-- <p class="text-green-600 font-medium mb-3">확정된 면접 일정</p>
+              <div class="space-y-2 ml-4">
+                <p class="text-gray-600">
+                  날짜·시간: {{ offer?.interviewTime.slice(0, 10).replaceAll('-', '.') }} &nbsp;
+                  {{ offer?.interviewTime.slice(11, 16) }}
+                </p>
+                <p class="text-gray-600">
+                  방식: {{ offer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접' }}
+                </p>
+                <p class="text-gray-600">장소: {{ offer?.interviewInfo }}</p>
+              </div> -->
+              <h4 class="font-medium text-gray-900 mb-2">확정된 면접 일정</h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-calendar text-green-600"></i>
+                  <div class="space-y-2">
+                    <div class="font-medium flex items-center gap-2">
+                      {{ offer?.interviewTime.slice(0, 10).replaceAll('-', '.') }}
+                      <span class="text-gray-400">|</span>
+                      {{ offer?.interviewTime.slice(11, 16) }}
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-video text-green-600"></i>
+                  <span class="text-gray-700">
+                    {{ offer?.interviewType?.name }}
+                  </span>
+                </div>
+                <div class="flex items-center gap-2 text-md text-gray-600">
+                  <i class="pi pi-map-marker text-green-600"></i>
+                  <span class="text-gray-700">
+                    {{ offer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '링크: ' : '장소: ' }}
+                    <a
+                      v-if="offer?.interviewTypeCd === 'INTERVIEW_TY_1'"
+                      :href="offer?.interviewInfo"
+                      target="_blank"
+                      class="text-blue-600 hover:underline"
+                    >
+                      {{ offer?.interviewInfo }}
+                    </a>
+                    <span v-else>{{ offer?.interviewInfo }}</span>
+                  </span>
+                </div>
+              </div>
+
+              <!-- JO_ST_5 -->
+              <div v-if="!offer?.resultCd" class="mt-4">
+                <Button @click="completeInterview(offer)" style="border-color: none"> 면접 완료 </Button>
+              </div>
+            </div>
           </div>
         </div>
 
+        <!-- 면접 거절된 경우 -->
         <div v-if="offer?.statusCd === 'JO_ST_3'" class="mt-4 border-t pt-4">
           <p class="text-red-600">
             <i class="pi pi-times-circle mr-2"></i>
@@ -593,14 +651,48 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
           </div>
         </div>
 
-        <div class="mt-4">
-          <button
-            class="text-[#8B8BF5] hover:text-[#7A7AE6] flex items-center gap-1"
-            @click.stop="openDetailModal(offer)"
-          >
-            <span>상세 정보 보기</span>
-            <i class="pi pi-arrow-right text-sm"></i>
-          </button>
+        <!-- JO_ST_6 -->
+        <!-- 면접 완료된 경우 표시 -->
+        <div v-if="offer?.statusCd === 'JO_ST_6'" class="flex mt-4">
+          <div class="grid grid-cols-1 gap-4">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-calendar text-blue-600"></i>
+              <div class="space-y-2">
+                <div class="font-medium flex items-center gap-2">
+                  {{ offer?.interviewTime.slice(0, 10).replaceAll('-', '.') }}
+                  <span class="text-gray-400">|</span>
+                  {{ offer?.interviewTime.slice(11, 16) }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p class="text-blue-600 ml-14">
+            <i class="pi pi-check-circle mr-2"></i>
+            면접 완료
+          </p>
+        </div>
+
+        <div class="flex justify-between">
+          <div class="mt-4">
+            <button
+              class="text-[#8B8BF5] hover:text-[#7A7AE6] flex items-center gap-1"
+              @click.stop="openDetailModal(offer)"
+            >
+              <span>상세 정보 보기</span>
+              <i class="pi pi-arrow-right text-sm"></i>
+            </button>
+          </div>
+
+          <!-- 면접 결과 입력 안됐을때 표시 -->
+          <div v-if="['JO_ST_6'].includes(offer?.statusCd) && isNull(offer?.resultCd)" class="mt-3">
+            <button
+              @click="router.push('/company/InterviewResults')"
+              class="px-4 py-2 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7A7AE6]"
+            >
+              결과 입력
+            </button>
+          </div>
         </div>
       </div>
     </div>

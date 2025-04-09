@@ -79,7 +79,7 @@ export const getFavoriteResumeList = async (query) => {
   }
 };
 
-// 면접 제안 등록 API
+// 면접 제안 / 일정 조율 / 면접 완료 등록 API
 export const requestOffer = async (body) => {
   try {
     const response = await api.post(`/jobOffer`, body);

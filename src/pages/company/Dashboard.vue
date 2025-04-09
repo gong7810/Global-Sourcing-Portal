@@ -1,14 +1,16 @@
 <script setup>
 import { onMounted, ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { isNull } from 'es-toolkit';
 
+import { useDateFormatter } from '@/plugins/commonutils';
 import { useMessagePop } from '@/plugins/commonutils';
 import { useCompanyStore } from '@/store/company/companyStore';
 import { getCodeList } from '@/apis/common/commonApis';
 import { deleteFavoriteResume, getFavoriteResumeList, getOfferList, getUserResume } from '@/apis/company/companyApis';
-import { isNull } from 'es-toolkit';
 
 const router = useRouter();
+const dateFormatter = useDateFormatter();
 const messagePop = useMessagePop();
 const companyStore = useCompanyStore();
 
@@ -16,6 +18,7 @@ const isLoading = ref(false);
 const isResumeLoading = ref(false);
 
 const unreadOffers = ref(0);
+const unwriteResults = ref(0);
 
 // 이력서 모달 관련 상태 추가
 const showResumeModal = ref(false);
@@ -77,8 +80,30 @@ const getOfferChange = async () => {
   const response = await getOfferList();
 
   unreadOffers.value = response.contents.filter((com) => {
-    return com.statusCd !== 'JO_ST_1' && isNull(com?.resultCd);
+    return (
+      !['JO_ST_1', 'JO_ST_6'].includes(com?.statusCd) &&
+      isNull(com?.resultCd) &&
+      isToday(dateFormatter.halfDate(com?.updatedAt))
+    );
   }).length;
+
+  unwriteResults.value = response.contents.filter((com) => {
+    return ['JO_ST_6'].includes(com.statusCd) && isNull(com?.resultCd);
+  }).length;
+};
+
+// 오늘인지 체크
+const isToday = (dateString) => {
+  // 문자열을 Date 객체로 변환
+  const date = new Date(dateString.replace(/\./g, '-')); // '.'을 '-'로 변환하여 ISO 형식으로 변환
+  const today = new Date();
+
+  // 오늘 날짜와 비교
+  return (
+    date.getFullYear() === today.getFullYear() &&
+    date.getMonth() === today.getMonth() &&
+    date.getDate() === today.getDate()
+  );
 };
 
 // 인재 필터 조회
@@ -296,7 +321,7 @@ const openInterviewOffer = async (talent, isPage) => {
         <!-- 면접 결과 내역 -->
         <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/company/InterviewResults')">
           <div
-            class="w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
+            class="relative w-[84px] h-[84px] flex items-center justify-center rounded-[16px] border-2 border-[#8B8BF5] bg-white mb-2 transition-all duration-200 group-hover:bg-[#8B8BF5] group-hover:shadow-lg"
           >
             <svg
               width="32"
@@ -310,6 +335,13 @@ const openInterviewOffer = async (talent, isPage) => {
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
               <polyline points="22 4 12 14.01 9 11.01"></polyline>
             </svg>
+            <!-- 결과를 입력하지 않은 면접이 있을 경우 표시되는 배지 -->
+            <div
+              v-if="unwriteResults"
+              class="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center bg-red-500 text-white text-xs rounded-full"
+            >
+              {{ unwriteResults }}
+            </div>
           </div>
           <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]"
             >면접 결과 내역</span

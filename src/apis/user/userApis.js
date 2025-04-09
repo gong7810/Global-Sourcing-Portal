@@ -101,7 +101,7 @@ export const getOfferListByUser = async () => {
   }
 };
 
-// 면접 제안, 일정 답변 API
+// 면접 제안 / 일정 답변 API
 export const answerOffer = async (body) => {
   try {
     const response = await api.post(`/jobOffer`, body);
