@@ -2,6 +2,10 @@ import axios from 'axios';
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
 import { useMessagePop } from '@/plugins/commonutils';
+import { logout } from '@/apis/auth/authApis';
+
+// 토큰 재발급 중복 방지를 위한 플래그
+let isTokenRefreshing = false;
 
 export function useApi() {
   // API 호출 함수 (공통 함수)
@@ -59,13 +63,29 @@ export function useApi() {
         // }, 1000);
 
         return;
+      } else if (err.response?.status === 401 && err.response?.data.error === 'TokenExpiredError') {
+        // 이미 토큰 갱신 중이면 추가 처리하지 않음 (중복 처리 방지)
+        if (!isTokenRefreshing) {
+          isTokenRefreshing = true;
+          messagePop.toast('인증이 만료되었습니다.', 'warn');
+
+          await authStore.getTokenRefresh();
+
+          setTimeout(() => {
+            isTokenRefreshing = false; // 페이지 새로고침 전에 플래그 초기화
+            window.location.reload();
+          }, 1500);
+        }
+
+        return;
       } else if (err.response?.status === 401) {
         messagePop.toast('인증 정보가 유효하지 않습니다.', 'warn');
 
-        await authStore.getTokenRefresh();
+        await logout();
+        authStore.reset();
 
         setTimeout(() => {
-          window.location.reload();
+          authStore.login();
         }, 1500);
 
         return;

@@ -28,6 +28,7 @@ const filters = ref({
 // 문의 목록 상태
 const inquiries = ref([]);
 const loading = ref(false);
+const first = ref(0);
 const pagination = ref({
   page: 1,
   totalCount: 0
@@ -203,9 +204,10 @@ const handleFilterChange = () => {
   fetchInquiries();
 };
 
-// 페이지 변경
-const handlePageChange = (page) => {
-  pagination.value.page = page;
+// 페이지 변경 핸들러
+const onPage = (event) => {
+  first.value = event.first;
+  pagination.value.page = event.page + 1;
   fetchInquiries();
 };
 
@@ -234,14 +236,14 @@ const closeDetailModal = () => {
       <div class="admin-inquiries-page">
         <div class="page-header">
           <div class="header-content">
-            <Button icon="pi pi-arrow-left" class="p-button-text p-button-plain" @click="goBack" />
+            <Button icon="pi pi-arrow-left" class="p-button-text p-button-rounded" @click="goBack" />
             <h1>문의하기 관리</h1>
           </div>
         </div>
 
-        <!-- 필터 영역 추가 -->
-        <div class="filter-section">
-          <div class="flex items-center gap-4 mb-4">
+        <!-- 필터 영역 -->
+        <div class="search-container">
+          <div class="search-input-wrapper">
             <Select
               v-model="filters.type"
               :options="inquiryTypes"
@@ -266,61 +268,73 @@ const closeDetailModal = () => {
           </div>
         </div>
 
-        <!-- 문의 목록 테이블 -->
+        <!-- 데이터 테이블 -->
         <div class="table-container">
-          <div v-if="loading" class="loading-overlay">
-            <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th>등록일시</th>
-                <th>문의유형</th>
-                <th>문의자</th>
-                <th>제목</th>
-                <th>이메일</th>
-                <th>상태</th>
-                <th>관리</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="inquiry in filteredInquiries" :key="inquiry.id" class="hover:bg-gray-50">
-                <td>{{ inquiry.createdAt }}</td>
-                <td>{{ getInquiryTypeLabel(inquiry.typeCd) }}</td>
-                <td>{{ inquiry.userId }}</td>
-                <td>{{ inquiry.subject }}</td>
-                <td>{{ inquiry.email }}</td>
-                <td>
-                  <Tag :value="getStatusLabel(inquiry.statusCd)"
-                       :severity="inquiry.statusCd === 'HELP_ST_1' ? 'warning' : inquiry.statusCd === 'HELP_ST_2' ? 'success' : 'info'" />
-                </td>
-                <td>
-                  <Button 
-                    label="상세"
-                    class="p-button-outlined p-button-secondary p-button-sm"
-                    @click="viewDetail(inquiry)"
-                  />
-                </td>
-              </tr>
-              <tr v-if="filteredInquiries.length === 0">
-                <td colspan="7" class="text-center py-4">데이터가 없습니다.</td>
-              </tr>
-            </tbody>
-          </table>
-
-          <!-- 페이지네이션 -->
-          <div v-if="pagination.totalCount > 0" class="pagination-container">
-            <div class="flex justify-center mt-4">
-              <Button
-                v-for="page in Math.ceil(pagination.totalCount / 10)"
-                :key="page"
-                :class="['mx-1', pagination.page === page ? 'p-button-primary' : 'p-button-text']"
-                @click="handlePageChange(page)"
-              >
-                {{ page }}
-              </Button>
-            </div>
-          </div>
+          <DataTable
+            :value="filteredInquiries"
+            :loading="loading"
+            :scrollable="true"
+            scrollHeight="flex"
+            class="p-datatable-sm"
+            :paginator="true"
+            :rows="10"
+            :totalRecords="pagination.totalCount"
+            v-model:first="first"
+            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+            :rowsPerPageOptions="[10, 20, 50]"
+            @page="onPage"
+          >
+            <Column field="index" header="순번" style="width: 80px">
+              <template #body="{ index }">
+                {{ pagination.totalCount - (first + index) }}
+              </template>
+            </Column>
+            <Column field="createdAt" header="등록일시" style="width: 120px" :sortable="true">
+              <template #body="{ data }">
+                {{ data.createdAt || '-' }}
+              </template>
+            </Column>
+            <Column field="typeCd" header="문의유형" style="width: 140px" :sortable="true">
+              <template #body="{ data }">
+                {{ getInquiryTypeLabel(data.typeCd) || '-' }}
+              </template>
+            </Column>
+            <Column field="userId" header="문의자" style="width: 100px" :sortable="true">
+              <template #body="{ data }">
+                {{ data.userId || '-' }}
+              </template>
+            </Column>
+            <Column field="subject" header="제목" style="width: 200px" :sortable="true">
+              <template #body="{ data }">
+                {{ data.subject || '-' }}
+              </template>
+            </Column>
+            <Column field="email" header="이메일" style="width: 180px" :sortable="true">
+              <template #body="{ data }">
+                {{ data.email || '-' }}
+              </template>
+            </Column>
+            <Column field="statusCd" header="상태" style="width: 100px" :sortable="true">
+              <template #body="{ data }">
+                <Tag 
+                  :value="getStatusLabel(data.statusCd)" 
+                  :severity="data.statusCd === 'HELP_ST_1' ? 'warning' : data.statusCd === 'HELP_ST_2' ? 'success' : 'info'"
+                />
+              </template>
+            </Column>
+            <Column header="관리" style="width: 100px">
+              <template #body="{ data }">
+                <Button 
+                  label="상세"
+                  class="p-button-outlined p-button-secondary p-button-sm"
+                  @click="viewDetail(data)"
+                />
+              </template>
+            </Column>
+            <template #empty>
+              <div class="text-center py-4">데이터가 없습니다.</div>
+            </template>
+          </DataTable>
         </div>
 
         <!-- 상세 보기 모달 -->
@@ -442,29 +456,82 @@ const closeDetailModal = () => {
   }
 }
 
+.search-container {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  .search-input-wrapper {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+
+    :deep(.p-dropdown) {
+      height: 38px;
+      width: 180px;
+
+      .p-dropdown-label {
+        padding: 0.5rem 0.75rem;
+        line-height: 22px;
+      }
+    }
+
+    :deep(.p-inputtext) {
+      height: 38px;
+      padding: 0.5rem 2rem 0.5rem 0.75rem;
+      line-height: 22px;
+      border-radius: 6px;
+      width: 300px;
+
+      &::placeholder {
+        color: #9ca3af;
+      }
+
+      &:focus {
+        border-color: #8b8bf5;
+        box-shadow: 0 0 0 2px rgba(139, 139, 245, 0.1);
+      }
+    }
+
+    :deep(.p-input-icon-right) {
+      position: relative;
+
+      > i {
+        position: absolute;
+        right: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6b7280;
+        cursor: pointer;
+        font-size: 0.9rem;
+        padding: 4px;
+        border-radius: 4px;
+        transition: all 0.2s;
+
+        &:hover {
+          color: #374151;
+        }
+      }
+    }
+  }
+}
+
 .table-container {
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: auto;
-  position: relative;
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.875rem;
-
-    th,
-    td {
-      padding: 0.75rem;
-      text-align: left;
+  :deep(.p-datatable) {
+    .p-datatable-header {
+      padding: 1rem;
+      background-color: #f8f9fa;
       border-bottom: 1px solid #e5e7eb;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
     }
 
-    th {
+    .p-datatable-thead > tr > th {
       background-color: #f8f9fa;
       font-weight: 600;
       color: #374151;
@@ -472,57 +539,22 @@ const closeDetailModal = () => {
       top: 0;
       z-index: 1;
       font-size: 0.8125rem;
+      padding: 0.75rem;
+      text-align: left;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    // 각 컬럼별 최대 너비 설정
-    td,
-    th {
-      &:nth-child(1) {
-        width: 120px;
-      } // 등록일시
-      &:nth-child(2) {
-        width: 140px;
-      } // 문의유형
-      &:nth-child(3) {
-        width: 100px;
-      } // 문의자
-      &:nth-child(4) {
-        width: 200px;
-      } // 제목
-      &:nth-child(5) {
-        width: 180px;
-      } // 이메일
-      &:nth-child(6) {
-        width: 100px;
-      } // 상태
-      &:nth-child(7) {
-        width: 100px;
-      } // 관리
-    }
-
-    tbody {
-      tr {
-        transition: background-color 0.2s;
-
-        &:hover {
-          background-color: #f8f9fa;
-        }
-      }
+    .p-datatable-tbody > tr > td {
+      padding: 0.75rem;
+      text-align: left;
+      font-size: 0.875rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
-}
-
-.loading-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(255, 255, 255, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1;
 }
 
 .inquiry-detail {
@@ -555,69 +587,5 @@ const closeDetailModal = () => {
       }
     }
   }
-}
-
-.filter-section {
-  background-color: white;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-
-  :deep(.p-dropdown) {
-    height: 38px;
-
-    .p-dropdown-label {
-      padding: 0.5rem 0.75rem;
-      line-height: 22px;
-    }
-
-    .p-dropdown-trigger {
-      width: 38px;
-    }
-  }
-
-  :deep(.p-inputtext) {
-    height: 38px;
-    padding: 0.5rem 2rem 0.5rem 0.75rem;
-    line-height: 22px;
-    border-radius: 6px;
-
-    &::placeholder {
-      color: #9ca3af;
-    }
-
-    &:focus {
-      border-color: #8b8bf5;
-      box-shadow: 0 0 0 2px rgba(139, 139, 245, 0.1);
-    }
-  }
-
-  :deep(.p-input-icon-right) {
-    width: 100%;
-    position: relative;
-
-    > i {
-      position: absolute;
-      right: 0.75rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #6b7280;
-      cursor: pointer;
-      font-size: 0.9rem;
-      padding: 4px;
-      border-radius: 4px;
-      transition: all 0.2s;
-
-      &:hover {
-        color: #374151;
-      }
-    }
-  }
-}
-
-.pagination-container {
-  padding: 1rem;
-  border-top: 1px solid #e5e7eb;
 }
 </style>

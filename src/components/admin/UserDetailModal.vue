@@ -1,5 +1,10 @@
 <script setup>
 import { ref, watch } from 'vue';
+import Dropdown from 'primevue/dropdown';
+import Button from 'primevue/button';
+import InputText from 'primevue/inputtext';
+import InputSwitch from 'primevue/inputswitch';
+import Dialog from 'primevue/dialog';
 
 const props = defineProps({
   isOpen: Boolean,
@@ -10,6 +15,26 @@ const emit = defineEmits(['close', 'update', 'delete']);
 
 const isEditMode = ref(false);
 const editedUser = ref({});
+const dialogVisible = ref(false);
+
+// isOpen prop이 변경될 때 dialogVisible 동기화
+watch(
+  () => props.isOpen,
+  (newValue) => {
+    dialogVisible.value = newValue;
+  },
+  { immediate: true }
+);
+
+// dialogVisible이 변경될 때 isOpen prop 업데이트
+watch(
+  () => dialogVisible.value,
+  (newValue) => {
+    if (!newValue) {
+      emit('close');
+    }
+  }
+);
 
 // 권한 옵션 수정
 const roleOptions = [
@@ -63,8 +88,6 @@ watch(
   () => props.user,
   (newUser) => {
     if (newUser) {
-      // console.log('New User:', newUser); // 디버깅용
-
       // 권한과 성별 데이터 추출
       let roleValue = '';
       let genderValue = '';
@@ -98,9 +121,9 @@ watch(
         mobile: newUser.mobile || '',
         email: newUser.email || '',
         name: newUser.name || '',
-        loginId: newUser.loginId || ''
+        loginId: newUser.loginId || '',
+        password: newUser.password || ''
       };
-      // console.log('Initialized editedUser:', editedUser.value); // 디버깅용
 
       // 이미지 설정
       imagePreview.value = newUser?.imageFile
@@ -109,16 +132,6 @@ watch(
     }
   },
   { immediate: true }
-);
-
-// 모달이 닫힐 때 편집 모드 초기화
-watch(
-  () => props.isOpen,
-  (newValue) => {
-    if (!newValue) {
-      isEditMode.value = false;
-    }
-  }
 );
 
 const toggleEditMode = () => {
@@ -136,12 +149,11 @@ const toggleEditMode = () => {
       gender: editedUser.value.gender,
       isCompany: editedUser.value.employer,
       enabled: editedUser.value.active,
-      profileImage: imagePreview.value
+      profileImage: imagePreview.value,
+      password: editedUser.value.password
     };
-    // console.log('Updated Data:', updatedData); // 디버깅용
-    // console.log('Original editedUser:', editedUser.value); // 디버깅용
     emit('update', updatedData);
-    isEditMode.value = false; // 편집 모드만 종료
+    isEditMode.value = false;
   } else {
     isEditMode.value = true;
   }
@@ -183,13 +195,14 @@ const cancelEdit = () => {
     mobile: props.user.mobile || '',
     email: props.user.email || '',
     name: props.user.name || '',
-    loginId: props.user.loginId || ''
+    loginId: props.user.loginId || '',
+    password: props.user.password || ''
   };
 };
 
 const closeModal = () => {
   isEditMode.value = false;
-  emit('close');
+  dialogVisible.value = false;
 };
 
 const handleDelete = () => {
@@ -234,276 +247,210 @@ const getGenderLabel = (gender) => {
 </script>
 
 <template>
-  <div v-if="isOpen" class="modal-overlay">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>사용자 정보</h2>
-        <Button icon="pi pi-times" class="p-button-text p-button-rounded" @click="closeModal" />
-      </div>
-      <div class="modal-body">
-        <div class="user-info">
-          <table class="info-table">
-            <tbody>
-              <tr>
-                <th colspan="2" class="section-header">프로필 이미지</th>
-              </tr>
-              <tr>
-                <td colspan="2" class="profile-cell">
-                  <div class="profile-image-container">
-                    <img v-if="imagePreview" :src="imagePreview" class="profile-image" alt="프로필 이미지" />
-                    <div v-else class="profile-placeholder">
-                      <i class="pi pi-user"></i>
-                    </div>
+  <Dialog
+    v-model:visible="dialogVisible"
+    :style="{ width: '600px' }"
+    :modal="true"
+    :closable="false"
+    :draggable="false"
+    :resizable="false"
+    header="사용자 정보"
+    class="user-detail-dialog"
+  >
+    <div class="user-info">
+      <table class="info-table">
+        <tbody>
+          <tr>
+            <th colspan="2" class="section-header">프로필 이미지</th>
+          </tr>
+          <tr>
+            <td colspan="2" class="profile-cell">
+              <div class="profile-image-container">
+                <img v-if="imagePreview" :src="imagePreview" class="profile-image" alt="프로필 이미지" />
+                <div v-else class="profile-placeholder">
+                  <i class="pi pi-user"></i>
+                </div>
 
-                    <div v-if="isEditMode" class="image-actions">
-                      <label class="upload-button">
-                        <input type="file" accept="image/*" @change="handleFileSelect" class="hidden" />
-                        <span>이미지 {{ imagePreview ? '변경' : '업로드' }}</span>
-                      </label>
-                      <Button
-                        v-if="imagePreview"
-                        icon="pi pi-trash"
-                        class="p-button-danger p-button-text"
-                        @click="removeImage"
-                      />
-                    </div>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <th>로그인 ID</th>
-                <td>{{ user?.loginId }}</td>
-              </tr>
-              <tr>
-                <th>이름</th>
-                <td>
-                  <template v-if="isEditMode">
-                    <InputText v-model="editedUser.name" class="w-full" />
-                  </template>
-                  <template v-else>{{ user?.name }}</template>
-                </td>
-              </tr>
-              <tr>
-                <th>생년월일</th>
-                <td>
-                  <template v-if="isEditMode">
-                    <InputText v-model="editedUser.birth" class="w-full" />
-                  </template>
-                  <template v-else>{{ user?.birth }}</template>
-                </td>
-              </tr>
-              <tr>
-                <th>모바일</th>
-                <td>
-                  <template v-if="isEditMode">
-                    <InputText v-model="editedUser.mobile" class="w-full" />
-                  </template>
-                  <template v-else>{{ user?.mobile }}</template>
-                </td>
-              </tr>
-              <tr>
-                <th>이메일</th>
-                <td>
-                  <template v-if="isEditMode">
-                    <InputText v-model="editedUser.email" class="w-full" />
-                  </template>
-                  <template v-else>{{ user?.email }}</template>
-                </td>
-              </tr>
-              <tr>
-                <th>권한</th>
-                <td>
-                  <template v-if="isEditMode">
-                    <Select v-model="editedUser.role" checkmark class="w-full p-2 border rounded">
-                      <option v-for="option in roleOptions" :key="option.value" :value="option.value">
-                        {{ option.label }}
-                      </option>
-                    </Select>
-                  </template>
-                  <template v-else>{{ getRoleLabel(user?.role) }}</template>
-                </td>
-              </tr>
-              <tr>
-                <th>성별</th>
-                <td>
-                  <template v-if="isEditMode">
-                    <Select v-model="editedUser.gender" checkmark class="w-full p-2 border rounded">
-                      <option v-for="option in genderOptions" :key="option.value" :value="option.value">
-                        {{ option.label }}
-                      </option>
-                    </Select>
-                  </template>
-                  <template v-else>{{ getGenderLabel(user?.gender) }}</template>
-                </td>
-              </tr>
-              <tr>
-                <th>고용주 여부</th>
-                <td>
-                  <template v-if="isEditMode">
-                    <InputSwitch v-model="editedUser.employer" class="custom-switch" />
-                  </template>
-                  <template v-else>
-                    {{ user?.isCompany ? '예' : '아니오' }}
-                  </template>
-                </td>
-              </tr>
-              <tr>
-                <th>활성여부</th>
-                <td>
-                  <template v-if="isEditMode">
-                    <InputSwitch v-model="editedUser.active" class="custom-switch" />
-                  </template>
-                  <template v-else>
-                    {{ user?.enabled ? '활성' : '비활성' }}
-                  </template>
-                </td>
-              </tr>
-              <tr>
-                <th>최근 로그인</th>
-                <td>{{ user?.lastLoginAt || '-' }}</td>
-              </tr>
-              <tr>
-                <th>생성일시</th>
-                <td>{{ user?.createdAt }}</td>
-              </tr>
-              <tr>
-                <th>수정일시</th>
-                <td>{{ user?.updatedAt || '-' }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <template v-if="isEditMode">
-          <Button
-            label="취소"
-            class="p-button-text"
-            @click="
-              () => {
-                // console.log('취소 버튼 클릭');
-                cancelEdit();
-              }
-            "
-          />
-          <Button
-            label="저장"
-            class="p-button-primary"
-            @click="
-              () => {
-                // console.log('저장 버튼 클릭');
-                toggleEditMode();
-              }
-            "
-          />
-        </template>
-        <template v-else>
-          <Button
-            label="닫기"
-            class="p-button-text"
-            @click="
-              () => {
-                // console.log('닫기 버튼 클릭');
-                closeModal();
-              }
-            "
-          />
-          <Button
-            label="편집"
-            class="p-button-primary"
-            @click="
-              () => {
-                toggleEditMode();
-              }
-            "
-          />
-          <Button
-            label="삭제"
-            class="p-button-danger"
-            @click="
-              () => {
-                handleDelete();
-              }
-            "
-          />
-        </template>
-      </div>
+                <div v-if="isEditMode" class="image-actions">
+                  <label class="upload-button">
+                    <input type="file" accept="image/*" @change="handleFileSelect" class="hidden" />
+                    <span>이미지 {{ imagePreview ? '변경' : '업로드' }}</span>
+                  </label>
+                  <Button
+                    v-if="imagePreview"
+                    icon="pi pi-trash"
+                    class="p-button-danger p-button-text"
+                    @click="removeImage"
+                  />
+                </div>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <th>로그인 ID</th>
+            <td>{{ user?.loginId }}</td>
+          </tr>
+          <tr>
+            <th>이름</th>
+            <td>
+              <template v-if="isEditMode">
+                <InputText v-model="editedUser.name" class="w-full" />
+              </template>
+              <template v-else>{{ user?.name }}</template>
+            </td>
+          </tr>
+          <tr v-if="isEditMode">
+            <th>비밀번호</th>
+            <td>
+              <InputText v-model="editedUser.password" type="password" class="w-full" />
+            </td>
+          </tr>
+          <tr>
+            <th>생년월일</th>
+            <td>
+              <template v-if="isEditMode">
+                <InputText v-model="editedUser.birth" class="w-full" />
+              </template>
+              <template v-else>{{ user?.birth }}</template>
+            </td>
+          </tr>
+          <tr>
+            <th>모바일</th>
+            <td>
+              <template v-if="isEditMode">
+                <InputText v-model="editedUser.mobile" class="w-full" />
+              </template>
+              <template v-else>{{ user?.mobile }}</template>
+            </td>
+          </tr>
+          <tr>
+            <th>이메일</th>
+            <td>
+              <template v-if="isEditMode">
+                <InputText v-model="editedUser.email" class="w-full" />
+              </template>
+              <template v-else>{{ user?.email }}</template>
+            </td>
+          </tr>
+          <tr>
+            <th>권한</th>
+            <td>
+              <template v-if="isEditMode">
+                <Dropdown 
+                  v-model="editedUser.role" 
+                  :options="roleOptions" 
+                  optionLabel="label" 
+                  optionValue="value" 
+                  class="w-full"
+                />
+              </template>
+              <template v-else>{{ getRoleLabel(user?.role) }}</template>
+            </td>
+          </tr>
+          <tr>
+            <th>성별</th>
+            <td>
+              <template v-if="isEditMode">
+                <Dropdown 
+                  v-model="editedUser.gender" 
+                  :options="genderOptions" 
+                  optionLabel="label" 
+                  optionValue="value" 
+                  class="w-full"
+                />
+              </template>
+              <template v-else>{{ getGenderLabel(user?.gender) }}</template>
+            </td>
+          </tr>
+          <tr>
+            <th>고용주 여부</th>
+            <td>
+              <template v-if="isEditMode">
+                <InputSwitch v-model="editedUser.employer" class="custom-switch" />
+              </template>
+              <template v-else>
+                {{ user?.isCompany ? '예' : '아니오' }}
+              </template>
+            </td>
+          </tr>
+          <tr>
+            <th>활성여부</th>
+            <td>
+              <template v-if="isEditMode">
+                <InputSwitch v-model="editedUser.active" class="custom-switch" />
+              </template>
+              <template v-else>
+                {{ user?.enabled ? '활성' : '비활성' }}
+              </template>
+            </td>
+          </tr>
+          <tr>
+            <th>최근 로그인</th>
+            <td>{{ user?.lastLoginAt || '-' }}</td>
+          </tr>
+          <tr>
+            <th>생성일시</th>
+            <td>{{ user?.createdAt }}</td>
+          </tr>
+          <tr>
+            <th>수정일시</th>
+            <td>{{ user?.updatedAt || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-  </div>
+    <template #footer>
+      <template v-if="isEditMode">
+        <Button
+          label="취소"
+          class="p-button-text"
+          @click="cancelEdit"
+        />
+        <Button
+          label="저장"
+          class="p-button-primary"
+          @click="toggleEditMode"
+        />
+      </template>
+      <template v-else>
+        <Button
+          label="닫기"
+          class="p-button-text"
+          @click="closeModal"
+        />
+        <Button
+          label="편집"
+          class="p-button-primary"
+          @click="toggleEditMode"
+        />
+        <Button
+          label="삭제"
+          class="p-button-danger"
+          @click="handleDelete"
+        />
+      </template>
+    </template>
+  </Dialog>
 </template>
 
 <style lang="scss" scoped>
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 1rem;
-  z-index: 1100;
-}
+.user-detail-dialog {
+  :deep(.p-dialog-content) {
+    padding: 1.5rem;
+    overflow-y: auto;
+  }
 
-.modal-content {
-  background-color: white;
-  border-radius: 8px;
-  width: 100%;
-  max-width: 600px;
-  max-height: 90vh;
-  display: flex;
-  flex-direction: column;
-}
+  :deep(.p-dialog-header) {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
 
-.modal-header {
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.modal-body {
-  padding: 1.5rem;
-  overflow-y: auto;
-  flex: 1;
-}
-
-.modal-footer {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid #e5e7eb;
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  background-color: white;
-
-  :deep(.p-button) {
-    &.p-button-text {
-      color: #6b7280;
-
-      &:hover {
-        background-color: #f3f4f6;
-      }
-    }
-
-    &.p-button-primary {
-      background-color: #8b8bf5;
-      border-color: #8b8bf5;
-
-      &:hover {
-        background-color: #7070f4;
-        border-color: #7070f4;
-      }
-    }
-
-    &.p-button-danger {
-      &:hover {
-        background-color: #b91c1c;
-        border-color: #b91c1c;
-      }
-    }
+  :deep(.p-dialog-footer) {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
   }
 }
 
@@ -533,51 +480,6 @@ const getGenderLabel = (gender) => {
     :deep(.p-dropdown) {
       width: 100%;
       min-height: 2.5rem;
-
-      .p-dropdown-label {
-        padding: 0.5rem;
-      }
-
-      .p-dropdown-panel {
-        z-index: 1200;
-      }
-
-      &.p-dropdown-clearable .p-dropdown-label {
-        padding-right: 2rem;
-      }
-
-      .p-dropdown-trigger {
-        width: 2.5rem;
-      }
-    }
-
-    :deep(.p-dropdown-panel) {
-      background: #ffffff;
-      border: 1px solid #ced4da;
-      border-radius: 4px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    :deep(.p-dropdown-items) {
-      padding: 0.5rem 0;
-    }
-
-    :deep(.p-dropdown-item) {
-      padding: 0.5rem 1rem;
-      margin: 0;
-      cursor: pointer;
-
-      &:hover {
-        background-color: #f3f4f6;
-      }
-    }
-
-    :deep(.p-select) {
-      width: 100%;
-
-      .p-select-label {
-        padding: 0.5rem;
-      }
     }
 
     :deep(.custom-switch) {
@@ -610,18 +512,18 @@ const getGenderLabel = (gender) => {
       gap: 1rem;
 
       .profile-image {
-        width: 120px; // 증명사진 비율 (3:4)
+        width: 120px;
         height: 160px;
-        border-radius: 0; // 둥근 모서리 제거
+        border-radius: 0;
         object-fit: cover;
-        border: 1px solid #e5e7eb; // 테두리 스타일 변경
+        border: 1px solid #e5e7eb;
         background-color: white;
       }
 
       .profile-placeholder {
         width: 120px;
         height: 160px;
-        border-radius: 0; // 둥근 모서리 제거
+        border-radius: 0;
         background-color: #f3f4f6;
         border: 1px solid #e5e7eb;
         display: flex;
@@ -662,11 +564,30 @@ const getGenderLabel = (gender) => {
   }
 }
 
-:deep(.p-dropdown-panel) {
-  z-index: 1200 !important;
-}
+:deep(.p-button) {
+  &.p-button-text {
+    color: #6b7280;
 
-:deep(.p-select-panel) {
-  z-index: 1200 !important;
+    &:hover {
+      background-color: #f3f4f6;
+    }
+  }
+
+  &.p-button-primary {
+    background-color: #8b8bf5;
+    border-color: #8b8bf5;
+
+    &:hover {
+      background-color: #7070f4;
+      border-color: #7070f4;
+    }
+  }
+
+  &.p-button-danger {
+    &:hover {
+      background-color: #b91c1c;
+      border-color: #b91c1c;
+    }
+  }
 }
 </style>

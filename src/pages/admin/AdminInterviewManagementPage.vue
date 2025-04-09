@@ -14,10 +14,9 @@ const confirm = useConfirm();
 // API 관련 상태 및 함수
 const loading = ref(false);
 const interviews = ref([]);
-const pagination = ref({
-  page: 1,
-  totalCount: 0
-});
+const first = ref(0);
+const rows = ref(10);
+const totalRecords = ref(0);
 
 // 모달 관련 상태
 const showCancelModal = ref(false);
@@ -101,8 +100,8 @@ const fetchInterviews = async () => {
 
     // API 호출로 면접 목록 조회
     const response = await getJobOfferList({
-      page: pagination.value.page,
-      perPage: 10
+      page: Math.floor(first.value / rows.value) + 1,
+      perPage: rows.value
     });
 
     // 응답 데이터 처리
@@ -121,16 +120,10 @@ const fetchInterviews = async () => {
         }
       });
 
-      pagination.value = {
-        page: response.pagination.page,
-        totalCount: response.pagination.totalCount
-      };
+      totalRecords.value = response.pagination.totalCount;
     } else {
       interviews.value = [];
-      pagination.value = {
-        page: 1,
-        totalCount: 0
-      };
+      totalRecords.value = 0;
     }
   } catch (error) {
     console.error('면접 목록 조회 중 오류 발생:', error);
@@ -143,13 +136,21 @@ const fetchInterviews = async () => {
     });
 
     interviews.value = [];
-    pagination.value = {
-      page: 1,
-      totalCount: 0
-    };
+    totalRecords.value = 0;
   } finally {
     loading.value = false;
   }
+};
+
+// 페이지 변경 핸들러
+const onPage = (event) => {
+  pagination.value = {
+    ...pagination.value,
+    page: event.page + 1,
+    first: event.first,
+    rows: event.rows
+  };
+  fetchInterviews();
 };
 
 // 페이지 로드 시 면접 목록 조회
@@ -199,94 +200,65 @@ const formatDate = (dateString) => {
             </div>
           </div>
 
-          <!-- 테이블 -->
+          <!-- 데이터 테이블 -->
           <div class="table-container">
-            <div v-if="loading" class="loading-overlay">
-              <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
-            </div>
-            <table>
-              <thead>
-                <tr>
-                  <th>순번</th>
-                  <th>기업명</th>
-                  <th>직무</th>
-                  <th>구직자</th>
-                  <th>면접 제안일자</th>
-                  <th>상태</th>
-                  <th>관리</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(interview, index) in filteredInterviews" :key="interview.id" class="hover:bg-gray-50">
-                  <td>{{ (pagination.page - 1) * 10 + index + 1 }}</td>
-                  <td>{{ interview.company?.name || '-' }}</td>
-                  <td>{{ interview.position || '-' }}</td>
-                  <td>{{ interview.resume?.user?.name || interview.resume?.userId || '-' }}</td>
-                  <td>{{ formatDate(interview.createdAt) || '-' }}</td>
-                  <td>
-                    <Tag :value="interview.status?.name || '-'" :severity="getStatusSeverity(interview.statusCd)" />
-                  </td>
-                  <td>
-                    <Button
-                      label="철회"
-                      class="p-button-outlined p-button-secondary p-button-sm"
-                      @click="openCancelModal(interview)"
-                    />
-                  </td>
-                </tr>
-                <tr v-if="filteredInterviews.length === 0">
-                  <td colspan="7" class="text-center py-4">검색 결과가 없습니다.</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <!-- 페이지네이션 -->
-          <div class="pagination-container">
-            <div class="pagination-info">
-              총 {{ pagination.totalCount }}건 중 {{ (pagination.page - 1) * 10 + 1 }}-{{
-                Math.min(pagination.page * 10, pagination.totalCount)
-              }}건
-            </div>
-            <div class="pagination-controls">
-              <Button
-                icon="pi pi-angle-double-left"
-                class="p-button-text"
-                :disabled="pagination.page === 1"
-                @click="
-                  pagination.page = 1;
-                  fetchInterviews();
-                "
-              />
-              <Button
-                icon="pi pi-angle-left"
-                class="p-button-text"
-                :disabled="pagination.page === 1"
-                @click="
-                  pagination.page--;
-                  fetchInterviews();
-                "
-              />
-              <span class="mx-2">{{ pagination.page }}</span>
-              <Button
-                icon="pi pi-angle-right"
-                class="p-button-text"
-                :disabled="pagination.page * 10 >= pagination.totalCount"
-                @click="
-                  pagination.page++;
-                  fetchInterviews();
-                "
-              />
-              <Button
-                icon="pi pi-angle-double-right"
-                class="p-button-text"
-                :disabled="pagination.page * 10 >= pagination.totalCount"
-                @click="
-                  pagination.page = Math.ceil(pagination.totalCount / 10);
-                  fetchInterviews();
-                "
-              />
-            </div>
+            <DataTable
+              :value="filteredInterviews"
+              :loading="loading"
+              :scrollable="true"
+              scrollHeight="flex"
+              class="p-datatable-sm"
+              :paginator="true"
+              :rows="rows"
+              :totalRecords="totalRecords"
+              v-model:first="first"
+              paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+              :rowsPerPageOptions="[10, 20, 50]"
+              @page="fetchInterviews"
+            >
+              <Column field="index" header="순번" style="width: 80px">
+                <template #body="{ index }">
+                  {{ (Math.floor(first / rows) + 1) * rows + index + 1 }}
+                </template>
+              </Column>
+              <Column field="company.name" header="기업명" style="width: 160px" :sortable="true">
+                <template #body="{ data }">
+                  {{ data.company?.name || '-' }}
+                </template>
+              </Column>
+              <Column field="position" header="직무" style="width: 160px" :sortable="true">
+                <template #body="{ data }">
+                  {{ data.position || '-' }}
+                </template>
+              </Column>
+              <Column field="resume.user.name" header="구직자" style="width: 120px" :sortable="true">
+                <template #body="{ data }">
+                  {{ data.resume?.user?.name || data.resume?.userId || '-' }}
+                </template>
+              </Column>
+              <Column field="createdAt" header="면접 제안일자" style="width: 120px" :sortable="true">
+                <template #body="{ data }">
+                  {{ formatDate(data.createdAt) || '-' }}
+                </template>
+              </Column>
+              <Column field="status.name" header="상태" style="width: 100px" :sortable="true">
+                <template #body="{ data }">
+                  <Tag :value="data.status?.name || '-'" :severity="getStatusSeverity(data.statusCd)" />
+                </template>
+              </Column>
+              <Column header="관리" style="width: 100px">
+                <template #body="{ data }">
+                  <Button
+                    label="철회"
+                    class="p-button-outlined p-button-secondary p-button-sm"
+                    @click="openCancelModal(data)"
+                  />
+                </template>
+              </Column>
+              <template #empty>
+                <div class="text-center py-4">데이터가 없습니다.</div>
+              </template>
+            </DataTable>
           </div>
         </div>
       </div>
@@ -408,68 +380,38 @@ const formatDate = (dateString) => {
     .table-container {
       background-color: white;
       border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       overflow: auto;
 
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 0.875rem;
+      :deep(.p-datatable) {
+        .p-datatable-header {
+          padding: 1rem;
+          background-color: #f8f9fa;
+          border-bottom: 1px solid #e5e7eb;
+        }
 
-        th,
-        td {
+        .p-datatable-thead > tr > th {
+          background-color: #f8f9fa;
+          font-weight: 600;
+          color: #374151;
+          position: sticky;
+          top: 0;
+          z-index: 1;
+          font-size: 0.8125rem;
           padding: 0.75rem;
-          text-align: center;
-          border-bottom: 1px solid #e9ecef;
+          text-align: left;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
         }
 
-        th {
-          background-color: #f8f9fa;
-          font-weight: 600;
-          color: #495057;
-          position: sticky;
-          top: 0;
-          z-index: 1;
-          font-size: 0.8125rem;
-        }
-
-        // 각 컬럼별 최대 너비 설정
-        td,
-        th {
-          &:nth-child(1) {
-            width: 80px;
-          } // 순번
-          &:nth-child(2) {
-            width: 160px;
-          } // 기업명
-          &:nth-child(3) {
-            width: 160px;
-          } // 직무
-          &:nth-child(4) {
-            width: 120px;
-          } // 구직자
-          &:nth-child(5) {
-            width: 120px;
-          } // 면접 제안일자
-          &:nth-child(6) {
-            width: 100px;
-          } // 상태
-          &:nth-child(7) {
-            width: 100px;
-          } // 관리
-        }
-
-        tbody {
-          tr {
-            transition: background-color 0.2s;
-
-            &:hover {
-              background-color: #f8f9fa;
-            }
-          }
+        .p-datatable-tbody > tr > td {
+          padding: 0.75rem;
+          text-align: left;
+          font-size: 0.875rem;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
       }
     }
@@ -530,10 +472,11 @@ const formatDate = (dateString) => {
       width: 2.5rem;
       height: 2.5rem;
       padding: 0;
+      cursor: default;
 
       &:disabled {
         opacity: 0.5;
-        cursor: not-allowed;
+        cursor: default;
       }
     }
   }

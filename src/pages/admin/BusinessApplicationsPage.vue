@@ -10,13 +10,23 @@ import {
 } from '@/apis/company/companyApis';
 import { useMessagePop } from '@/plugins/commonutils';
 import InputText from 'primevue/inputtext';
+import DataTable from 'primevue/datatable';
+import Tag from 'primevue/tag';
 
 const router = useRouter();
 const messagePop = useMessagePop();
 
+// 로딩 상태 추가
+const loading = ref(true);
+
 // 신청 목록 데이터
 const applications = ref([]);
 const filterStatus = ref('all'); // 'all', 'pending', 'approved', 'rejected'
+
+// 페이지네이션 관련 상태 추가
+const first = ref(0);
+const rows = ref(10);
+const totalRecords = ref(0);
 
 // 검색어 상태
 const searchQuery = ref('');
@@ -73,8 +83,13 @@ const loadApplications = async () => {
     if (filterStatus.value !== 'all') {
       applications.value = applications.value.filter((app) => app.status === filterStatus.value.toUpperCase());
     }
+
+    // 전체 레코드 수 설정
+    totalRecords.value = applications.value.length;
   } catch (error) {
     console.error('신청 목록 로드 실패:', error);
+  } finally {
+    loading.value = false;
   }
 };
 
@@ -84,8 +99,8 @@ const handleFilterChange = () => {
 };
 
 // 페이지 로드 시 신청 목록 가져오기
-onMounted(() => {
-  loadApplications();
+onMounted(async () => {
+  await loadApplications();
 });
 
 const selectedApplication = ref(null);
@@ -212,45 +227,45 @@ const goBack = () => {
 
         <!-- 신청 목록 테이블 -->
         <div class="table-container">
-          <div v-if="loading" class="loading-overlay">
-            <i class="pi pi-spin pi-spinner" style="font-size: 2rem"></i>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th>신청일</th>
-                <th>기업명</th>
-                <th>사업자등록번호</th>
-                <th>대표자명</th>
-                <th>가입자명</th>
-                <th>상태</th>
-                <th>관리</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="app in filteredApplications" :key="app.id" class="hover:bg-gray-50">
-                <td>{{ app.createdAt }}</td>
-                <td>{{ app.businessName }}</td>
-                <td>{{ app.businessRegistrationNo }}</td>
-                <td>{{ app.ownerName }}</td>
-                <td>{{ app.managerName }}</td>
-                <td>
-                  <Tag :value="app.status === 'PENDING' ? '대기' : app.status === 'APPROVED' ? '승인' : '거절'"
-                       :severity="app.status === 'PENDING' ? 'warning' : app.status === 'APPROVED' ? 'success' : 'danger'" />
-                </td>
-                <td>
-                  <Button 
-                    label="상세"
-                    class="p-button-outlined p-button-secondary p-button-sm"
-                    @click="viewDetail(app)"
-                  />
-                </td>
-              </tr>
-              <tr v-if="applications.length === 0">
-                <td colspan="7" class="text-center py-4">데이터가 없습니다.</td>
-              </tr>
-            </tbody>
-          </table>
+          <DataTable
+            :value="filteredApplications"
+            :loading="loading"
+            :scrollable="true"
+            scrollHeight="flex"
+            class="p-datatable-sm"
+            :paginator="true"
+            :rows="rows"
+            :totalRecords="totalRecords"
+            v-model:first="first"
+            paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+            :rowsPerPageOptions="[10, 20, 50]"
+          >
+            <Column field="createdAt" header="신청일" :sortable="true"></Column>
+            <Column field="businessName" header="기업명" :sortable="true"></Column>
+            <Column field="businessRegistrationNo" header="사업자등록번호" :sortable="true"></Column>
+            <Column field="ownerName" header="대표자명" :sortable="true"></Column>
+            <Column field="managerName" header="가입자명" :sortable="true"></Column>
+            <Column field="status" header="상태" :sortable="true">
+              <template #body="{ data }">
+                <Tag 
+                  :value="data.status === 'PENDING' ? '대기' : data.status === 'APPROVED' ? '승인' : '거절'"
+                  :severity="data.status === 'PENDING' ? 'warning' : data.status === 'APPROVED' ? 'success' : 'danger'" 
+                />
+              </template>
+            </Column>
+            <Column header="관리" :style="{ width: '100px' }">
+              <template #body="{ data }">
+                <Button 
+                  label="상세"
+                  class="p-button-outlined p-button-secondary p-button-sm"
+                  @click="viewDetail(data)"
+                />
+              </template>
+            </Column>
+            <template #empty>
+              <div v-if="!loading" class="text-center py-4">데이터가 없습니다.</div>
+            </template>
+          </DataTable>
         </div>
 
         <!-- 상세 정보 모달 -->
@@ -438,22 +453,26 @@ const goBack = () => {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: auto;
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.875rem;
-
-    th,
-    td {
-      padding: 0.75rem;
-      text-align: left;
-      border-bottom: 1px solid #e5e7eb;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+  :deep(.p-datatable) {
+    .p-datatable-loading-overlay {
+      display: none !important;
     }
 
-    th {
+    .p-datatable-loading-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+    }
+
+    .p-datatable-header {
+      padding: 1rem;
+      background-color: #f8f9fa;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .p-datatable-thead > tr > th {
       background-color: #f8f9fa;
       font-weight: 600;
       color: #374151;
@@ -461,57 +480,22 @@ const goBack = () => {
       top: 0;
       z-index: 1;
       font-size: 0.8125rem;
+      padding: 0.75rem;
+      text-align: left;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    // 각 컬럼별 최대 너비 설정
-    td,
-    th {
-      &:nth-child(1) {
-        width: 120px;
-      } // 신청일
-      &:nth-child(2) {
-        width: 160px;
-      } // 기업명
-      &:nth-child(3) {
-        width: 140px;
-      } // 사업자등록번호
-      &:nth-child(4) {
-        width: 120px;
-      } // 대표자명
-      &:nth-child(5) {
-        width: 120px;
-      } // 가입자명
-      &:nth-child(6) {
-        width: 100px;
-      } // 상태
-      &:nth-child(7) {
-        width: 100px;
-      } // 관리
-    }
-
-    tbody {
-      tr {
-        transition: background-color 0.2s;
-
-        &:hover {
-          background-color: #f8f9fa;
-        }
-      }
+    .p-datatable-tbody > tr > td {
+      padding: 0.75rem;
+      text-align: left;
+      font-size: 0.875rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
-}
-
-.loading-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(255, 255, 255, 0.7);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1;
 }
 
 .detail-item {

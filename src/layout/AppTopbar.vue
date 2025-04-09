@@ -5,14 +5,12 @@ import { storeToRefs } from 'pinia';
 import { useLayout } from '@/layout/composables/layout';
 import { useMessagePop } from '@/plugins/commonutils';
 
-import { useApi } from '@/apis';
 import { logout } from '@/apis/auth/authApis';
-import { getNotificationList, updateNotification } from '@/apis/common/commonApis';
+import { delNotification, getNotificationList, updateNotification } from '@/apis/common/commonApis';
 import { useAuthStore } from '@/store/auth/authStore';
 
 const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
 
-const api = useApi();
 const route = useRoute();
 const router = useRouter();
 const messagePop = useMessagePop();
@@ -76,14 +74,7 @@ const closeMenu = () => {
 const getNotiByUser = async () => {
   const response = await getNotificationList();
 
-  // 30일 이내의 알림만 필터링
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-  notifications.value = response?.filter((noti) => {
-    const notificationDate = new Date(noti.createdAt);
-    return notificationDate >= thirtyDaysAgo;
-  });
+  notifications.value = response;
 };
 
 // 로그아웃 API 호출
@@ -301,16 +292,12 @@ const formatDate = (dateString) => {
   });
 };
 
-// 모든 알림 읽음 처리
+// 모든 알림 삭제 처리
 const markAllAsRead = async () => {
   try {
-    // 읽지 않은 알림만 필터링
-    const unreadNotifications = notifications.value.filter((noti) => !noti.isRead);
-
-    // 각 알림에 대해 읽음 처리
-    for (const noti of unreadNotifications) {
+    for (const noti of notifications.value) {
       noti.isRead = true;
-      await api.post(`/notification/read/${noti.id}`);
+      await delNotification(noti.id);
     }
 
     getNotiByUser();
@@ -358,7 +345,7 @@ const markAllAsRead = async () => {
                   class="w-8 h-8 inline-flex items-center justify-center bg-[#8FA1FF] text-white rounded-full hover:bg-[#7C8EFF] transition-colors notranslate"
                   title="clear"
                 >
-                  <i class="pi pi-trash pl-[0.5px]"></i>
+                  <i class="pi pi-trash pr-[0.5px]"></i>
                 </button>
               </div>
               <div v-if="notifications.length === 0" class="text-gray-500 text-center py-4">
@@ -378,15 +365,15 @@ const markAllAsRead = async () => {
                       :class="[getNotificationIcon(notification?.typeCd), getNotificationColor(notification?.typeCd)]"
                     ></i>
                     <div class="flex-1">
-                      <div class="font-semibold text-gray-900">{{ getNotiTypeTitle(notification?.typeCd) }}</div>
+                      <!-- <div class="font-semibold text-gray-900">{{ getNotiTypeTitle(notification?.typeCd) }}</div> -->
+                      <div class="font-semibold text-gray-900">{{ notification?.type?.name }}</div>
                       <!-- 구직자용 알림일 경우 -->
                       <div v-if="!userInfo?.isCompany" class="text-sm text-gray-600 mb-1">
-                        {{ notification?.companyName || 'LIG넥스원' }} |
-                        {{ notification?.position || '시스템 엔지니어' }}
+                        {{ notification?.subData?.companyName }} | {{ notification?.subData?.position }}
                       </div>
                       <!-- 기업용 알림일 경우 -->
                       <div v-else class="text-sm text-gray-600 mb-1">
-                        {{ notification?.userName || '한겨울' }} | {{ notification?.position || '프론트엔드 개발자' }}
+                        {{ notification?.subData?.userName }} | {{ notification?.subData?.position }}
                       </div>
                       <div class="text-sm text-gray-700" v-html="getNotiTypeContent(notification)"></div>
                       <div class="text-xs text-gray-500 mt-1">{{ formatDate(notification?.createdAt) }}</div>

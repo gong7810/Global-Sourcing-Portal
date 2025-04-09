@@ -8,7 +8,6 @@ export const useAuthStore = defineStore(
   () => {
     const router = useRouter();
 
-    const sessionCount = ref(0);
     const tokenInfo = ref({});
     const userInfo = ref(null); // 사용자정보
     const companyData = ref(null); // 기업정보
@@ -78,16 +77,15 @@ export const useAuthStore = defineStore(
 
     /* 토큰 재발급 요청 */
     const getTokenRefresh = async () => {
-      // 무한루프 대응
-      if (sessionCount.value < 2) {
-        sessionCount.value += 1;
-        const response = await getRefreshToken();
+      const response = await getRefreshToken();
 
-        if (response?.accessToken) {
-          setToken(response?.accessToken, false);
-        } else {
-          return;
-        }
+      if (response?.accessToken) {
+        // 자동 로그인 중인 세션인지 체크
+        const isAutoLogin = localStorage.getItem('accessToken') !== null;
+
+        setToken(response?.accessToken, isAutoLogin);
+      } else {
+        return;
       }
     };
 

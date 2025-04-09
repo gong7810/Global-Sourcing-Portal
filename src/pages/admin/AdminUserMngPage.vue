@@ -5,7 +5,8 @@ import { useToast } from 'primevue/usetoast';
 import AdminHeader from '@/components/admin/AdminHeader.vue';
 import AdminSidebar from '@/components/admin/AdminSidebar.vue'; // 사이드바 컴포넌트 임포트
 import UserDetailModal from '@/components/admin/UserDetailModal.vue';
-import { getUserList, getUserStatus, updateUserStatus, updateUser } from '@/apis/admin/adminApis';
+import UserCreateModal from '@/components/admin/UserCreateModal.vue';
+import { getUserList, getUserStatus, updateUserStatus, updateUser, deleteUsers, createUser } from '@/apis/admin/adminApis';
 
 const router = useRouter();
 const toast = useToast();
@@ -45,6 +46,32 @@ const roleOptions = [
 // 공통으로 사용할 상태
 const selectedUser = ref(null);
 const showDetailModal = ref(false);
+
+// 사용자 추가 관련 상태
+const showCreateModal = ref(false);
+const newUser = ref({
+  loginId: '',
+  name: '',
+  mobile: '',
+  email: '',
+  password: '',
+  birthDate: '',
+  role: 'ROLE_USER',
+  gender: '',
+  isCompany: false,
+  enabled: true,
+  profileImage: null
+});
+
+// 이미지 업로드 관련 상태
+const uploadedFile = ref(null);
+const imagePreview = ref(null);
+
+// 성별 옵션 추가
+const genderOptions = [
+  { label: '남성', value: 'MALE' },
+  { label: '여성', value: 'FEMALE' }
+];
 
 // API 호출 함수들
 const fetchUsers = async () => {
@@ -331,6 +358,106 @@ const getGenderLabel = (gender) => {
   }
   return gender;
 };
+
+// 선택된 사용자 삭제 함수 추가
+const handleDeleteSelected = async () => {
+  if (selectedUsers.value.length === 0) {
+    toast.add({
+      severity: 'warn',
+      summary: '경고',
+      detail: '삭제할 사용자를 선택해주세요.',
+      life: 3000
+    });
+    return;
+  }
+
+  try {
+    await deleteUsers(selectedUsers.value);
+    await fetchUsers(); // 목록 새로고침
+    selectedUsers.value = []; // 선택 초기화
+    selectAll.value = false; // 전체 선택 초기화
+    
+    toast.add({
+      severity: 'success',
+      summary: '성공',
+      detail: '선택된 사용자가 삭제되었습니다.',
+      life: 3000
+    });
+  } catch (error) {
+    console.error('사용자 삭제 실패:', error);
+    toast.add({
+      severity: 'error',
+      summary: '실패',
+      detail: '사용자 삭제 중 오류가 발생했습니다.',
+      life: 3000
+    });
+  }
+};
+
+// 사용자 추가 함수
+const handleCreateUser = async () => {
+  try {
+    await createUser(newUser.value);
+    await fetchUsers(); // 목록 새로고침
+    showCreateModal.value = false;
+    toast.add({
+      severity: 'success',
+      summary: '성공',
+      detail: '사용자가 추가되었습니다.',
+      life: 3000
+    });
+    // 입력 필드 초기화
+    newUser.value = {
+      loginId: '',
+      name: '',
+      mobile: '',
+      email: '',
+      password: '',
+      birthDate: '',
+      role: 'ROLE_USER',
+      gender: '',
+      isCompany: false,
+      enabled: true,
+      profileImage: null
+    };
+  } catch (error) {
+    console.error('사용자 추가 실패:', error);
+    toast.add({
+      severity: 'error',
+      summary: '실패',
+      detail: '사용자 추가 중 오류가 발생했습니다.',
+      life: 3000
+    });
+  }
+};
+
+// 이미지 업로드 핸들러
+const handleImageUpload = (event) => {
+  const file = event.files[0];
+  if (file) {
+    uploadedFile.value = file;
+    newUser.value.profileImage = file;
+    
+    // 이미지 미리보기
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      imagePreview.value = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+// 이미지 삭제 핸들러
+const handleImageDelete = () => {
+  uploadedFile.value = null;
+  imagePreview.value = null;
+  newUser.value.profileImage = null;
+};
+
+// 사용자 추가 후 목록 새로고침
+const handleUserCreated = () => {
+  fetchUsers();
+};
 </script>
 
 <template>
@@ -352,7 +479,7 @@ const getGenderLabel = (gender) => {
           <!-- 검색 영역 추가 -->
           <div class="search-area">
             <div class="search-fields">
-              <div class="search-field">
+              <div class="search-field role-field">
                 <Select
                   v-model="filters.role"
                   :options="roleOptions"
@@ -398,6 +525,21 @@ const getGenderLabel = (gender) => {
                   placeholder="이메일"
                   class="w-full"
                   @input="handleFilterChange"
+                />
+              </div>
+              <div class="action-buttons">
+                <Button 
+                  label="사용자 추가" 
+                  icon="pi pi-plus" 
+                  class="p-button-success mr-2" 
+                  @click="showCreateModal = true"
+                />
+                <Button 
+                  label="선택 삭제" 
+                  icon="pi pi-trash" 
+                  class="p-button-danger" 
+                  :disabled="selectedUsers.length === 0"
+                  @click="handleDeleteSelected"
                 />
               </div>
             </div>
@@ -592,6 +734,13 @@ const getGenderLabel = (gender) => {
           @update="handleUserUpdate"
           @delete="handleUserDelete"
         />
+
+        <!-- 사용자 추가 모달 -->
+        <UserCreateModal
+          :is-open="showCreateModal"
+          @close="showCreateModal = false"
+          @created="handleUserCreated"
+        />
       </div>
     </div>
   </div>
@@ -676,6 +825,11 @@ const getGenderLabel = (gender) => {
           flex: 1;
           min-width: 150px;
 
+          &.role-field {
+            min-width: 200px;
+            max-width: 200px;
+          }
+
           :deep(.p-inputtext),
           :deep(.p-dropdown) {
             width: 100%;
@@ -689,6 +843,13 @@ const getGenderLabel = (gender) => {
             }
           }
         }
+
+        .action-buttons {
+          margin-left: auto;
+          min-width: 120px;
+          display: flex;
+          gap: 0.5rem;
+        }
       }
     }
 
@@ -696,7 +857,6 @@ const getGenderLabel = (gender) => {
       background-color: white;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      overflow: auto;
 
       table {
         width: 100%;
@@ -1008,17 +1168,235 @@ const getGenderLabel = (gender) => {
 
       &:disabled {
         opacity: 0.5;
-        cursor: not-allowed;
+        cursor: default;
       }
     }
   }
 }
 
-// 테이블 스크롤을 위한 컨테이너 설정
+// 테이블 스크롤을 위한 컨테이너 설정 제거
 .user-list {
   .table-container {
-    max-height: calc(100vh - 300px); // 적절한 높이로 조정
-    overflow: auto;
+    // max-height: calc(100vh - 300px); 제거
+    // overflow: auto; 제거
+  }
+}
+
+.field {
+  margin-bottom: 1rem;
+}
+
+.field-checkbox {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  
+  label {
+    margin-left: 0.5rem;
+  }
+}
+
+.image-upload-container {
+  .image-preview {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .delete-image {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      padding: 0.25rem;
+    }
+  }
+}
+
+.field {
+  margin-bottom: 1rem;
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #374151;
+  }
+}
+
+.field-checkbox {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  
+  label {
+    margin-left: 0.5rem;
+    color: #374151;
+  }
+}
+
+.user-detail-dialog {
+  :deep(.p-dialog-content) {
+    padding: 1.5rem;
+    overflow-y: auto;
+  }
+
+  :deep(.p-dialog-header) {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  :deep(.p-dialog-footer) {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+}
+
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  th {
+    width: 120px;
+    background-color: #f8f9fa;
+    font-weight: 500;
+  }
+
+  td {
+    :deep(.p-inputtext),
+    :deep(.p-dropdown) {
+      width: 100%;
+      height: 2.5rem;
+    }
+
+    :deep(.p-dropdown) {
+      width: 100%;
+      min-height: 2.5rem;
+    }
+
+    :deep(.custom-switch) {
+      .p-inputswitch-slider {
+        background-color: #e5e7eb;
+      }
+
+      &.p-inputswitch-checked {
+        .p-inputswitch-slider {
+          background-color: #8b8bf5;
+        }
+      }
+    }
+  }
+
+  .section-header {
+    background-color: #f3f4f6;
+    font-weight: 600;
+  }
+
+  .profile-cell {
+    padding: 1.5rem;
+    text-align: center;
+    background-color: #f8f9fa;
+
+    .profile-image-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+
+      .profile-image {
+        width: 120px;
+        height: 160px;
+        border-radius: 0;
+        object-fit: cover;
+        border: 1px solid #e5e7eb;
+        background-color: white;
+      }
+
+      .profile-placeholder {
+        width: 120px;
+        height: 160px;
+        border-radius: 0;
+        background-color: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        i {
+          font-size: 3rem;
+          color: #9ca3af;
+        }
+      }
+
+      .image-actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        margin-top: 0.5rem;
+
+        .upload-button {
+          background-color: #8b8bf5;
+          color: white;
+          padding: 0.5rem 1rem;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 0.875rem;
+          transition: background-color 0.2s;
+
+          &:hover {
+            background-color: #7070f4;
+          }
+
+          input[type='file'] {
+            display: none;
+          }
+        }
+      }
+    }
+  }
+}
+
+:deep(.p-button) {
+  &.p-button-text {
+    color: #6b7280;
+
+    &:hover {
+      background-color: #f3f4f6;
+    }
+  }
+
+  &.p-button-primary {
+    background-color: #8b8bf5;
+    border-color: #8b8bf5;
+
+    &:hover {
+      background-color: #7070f4;
+      border-color: #7070f4;
+    }
+  }
+
+  &.p-button-danger {
+    &:hover {
+      background-color: #b91c1c;
+      border-color: #b91c1c;
+    }
   }
 }
 </style>

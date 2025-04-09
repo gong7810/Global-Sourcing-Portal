@@ -240,14 +240,18 @@ const calculateAge = (birthDate) => {
 const acceptInterviewSchedule = (offer) => {
   const selectedIndex = selectedDateIndices.value[offer.id];
   const selectedDate = offer[`reserveTime${selectedIndex + 1}`];
+  const selectedType = offer[`interviewType${selectedIndex + 1}`];
+  const selectedInfo = offer[`interviewPlace${selectedIndex + 1}`];
 
   messagePop.confirm({
     icon: 'info',
     message: `<div class="text-center">
       <p class="text-xl mb-2">면접 일정을 수락하시겠습니까?</p>
       <p class="text-md text-gray-600 mb-2">일시: ${selectedDate?.slice(0, 10)?.replaceAll('-', '.')} ${selectedDate?.slice(11, 16)}</p>
-      <p class="text-sm text-gray-600">면접 방식: ${offer?.interviewType?.name}</p>
-      <p class="text-sm text-gray-600 mb-4">장소/링크: ${offer.interviewInfo}</p>
+      <p class="text-sm text-gray-600">면접 방식: ${selectedType === 'INTERVIEW_TY_1' ? '화상면접' : '대면면접'}</p>
+      <p class="text-sm text-gray-600 mb-4">
+        ${selectedType === 'INTERVIEW_TY_1' ? '링크' : '장소'}: ${selectedInfo}
+      </p>
       <p class="text-sm text-blue-600">확인 시 기업 담당자에게 알림과 메일이 발송됩니다.</p>
     </div>`,
     acceptLabel: '수락',
@@ -408,23 +412,28 @@ const calculatePeriod = (period) => {
               </p>
             </div>
 
+            <!-- 직무·제안 포지션 -->
+            <div>
+              <h4 class="font-medium text-gray-900 mb-2">
+                <span class="flex items-center gap-2">
+                  <i class="pi pi-briefcase text-[#8B8BF5]"></i>
+                  직무·제안 포지션
+                </span>
+              </h4>
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <p class="text-base text-gray-700">
+                  {{
+                    offer?.jobCategoryCd === 'JOB_22'
+                      ? `기타(${offer?.customJobCategory})`
+                      : convertJobCode(offer?.jobCategoryCd)
+                  }}
+                  | {{ offer?.position }}
+                </p>
+              </div>
+            </div>
+
             <!-- 제안 내용 섹션 -->
             <div class="space-y-4">
-              <!-- 직무·제안 포지션 -->
-              <div>
-                <h4 class="font-medium text-gray-900 mb-2">
-                  <span class="flex items-center gap-2">
-                    <i class="pi pi-briefcase text-[#8B8BF5]"></i>
-                    직무·제안 포지션
-                  </span>
-                </h4>
-                <div class="bg-gray-50 p-4 rounded-lg">
-                  <p class="text-base text-gray-700">
-                    {{ convertJobCode(offer?.jobCategoryCd) }} | {{ offer?.position }}
-                  </p>
-                </div>
-              </div>
-
               <!-- 상세 업무 -->
               <div>
                 <h4 class="font-medium text-gray-900 mb-2">
@@ -497,29 +506,39 @@ const calculatePeriod = (period) => {
                   <div class="grid grid-cols-2 gap-4">
                     <div class="flex items-center gap-2">
                       <i class="pi pi-calendar text-green-600"></i>
-                      <span class="text-gray-700">
-                        {{ offer?.interviewTime.slice(0, 10).replaceAll('-', '.') }} &nbsp;
-                        {{ offer?.interviewTime.slice(11, 16) }}
-                      </span>
+                      <div class="space-y-2">
+                        <div class="font-medium flex items-center gap-2">
+                          {{ offer?.interviewTime.slice(0, 10).replaceAll('-', '.') }}
+                          <span class="text-gray-400">|</span>
+                          {{ offer?.interviewTime.slice(11, 16) }}
+                        </div>
+                      </div>
                     </div>
-                    <!-- <div class="flex items-center gap-2">
-                      <i class="pi pi-clock text-green-600"></i>
-                      <span class="text-gray-700">{{ offer.interviewTime }}</span>
-                    </div> -->
                     <div class="flex items-center gap-2">
                       <i class="pi pi-video text-green-600"></i>
                       <span class="text-gray-700">
                         {{ offer?.interviewType?.name }}
                       </span>
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 text-sm text-gray-600">
                       <i class="pi pi-map-marker text-green-600"></i>
-                      <span class="text-gray-700">{{ offer?.interviewInfo }}</span>
+                      <span class="text-gray-700">
+                        {{ offer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '장소: ' : '링크: ' }}
+                        <a
+                          v-if="offer?.interviewTypeCd !== 'INTERVIEW_TY_1'"
+                          :href="offer?.interviewInfo"
+                          target="_blank"
+                          class="text-blue-600 hover:underline"
+                        >
+                          {{ offer?.interviewInfo }}
+                        </a>
+                        <span v-else>{{ offer?.interviewInfo }}</span>
+                      </span>
                     </div>
                   </div>
                   <p class="mt-4 text-green-600 flex items-center gap-2">
                     <i class="pi pi-check-circle"></i>
-                    <span>{{ formatDate(offer?.interviewTime) }}에 면접 일정이 확정되었습니다</span>
+                    <span>{{ formatDate(offer?.interviewTime) }}으로 면접 일정이 확정되었습니다</span>
                   </p>
                 </div>
                 <div v-else-if="offer?.interviewInfo" class="space-y-4">
@@ -534,20 +553,48 @@ const calculatePeriod = (period) => {
                     <div class="space-y-4 mb-4">
                       <div
                         v-for="(dateSlot, index) in ['reserveTime1', 'reserveTime2', 'reserveTime3']
-                          .map((key) => offer[key])
-                          .filter((time) => time)"
+                          .map((key, i) => ({
+                            time: offer[key],
+                            type: offer[`interviewTypeCd${i + 1}`],
+                            info: offer[`interviewPlace${i + 1}`]
+                          }))
+                          .filter((item) => item.time)"
                         :key="index"
-                        class="flex items-center gap-4 p-3 bg-white rounded-lg"
+                        class="flex items-start gap-4 p-3 bg-white rounded-lg"
                       >
                         <input
+                          v-model="selectedDateIndices[offer.id]"
                           type="radio"
                           :name="'interview-date-' + offer.id"
                           :value="index"
-                          v-model="selectedDateIndices[offer.id]"
                           @click.stop
+                          class="mt-1"
                         />
-                        <div class="font-medium">
-                          {{ dateSlot.slice(0, 10).replaceAll('-', '.') }} {{ dateSlot.slice(11, 16) }}
+                        <div class="space-y-2">
+                          <div class="font-medium flex items-center gap-2">
+                            {{ dateSlot?.time?.slice(0, 10).replaceAll('-', '.') }}
+                            <span class="text-gray-400">|</span>
+                            {{ dateSlot?.time?.slice(11, 16) }}
+                          </div>
+                          <div class="flex items-center gap-2 text-sm text-gray-600">
+                            <i class="pi pi-video"></i>
+                            <span>면접 방식: {{ dateSlot?.type === 'INTERVIEW_TY_1' ? '화상면접' : '대면면접' }}</span>
+                          </div>
+                          <div class="flex items-center gap-2 text-sm text-gray-600">
+                            <i class="pi pi-map-marker text-green-600"></i>
+                            <span class="text-gray-700">
+                              {{ dateSlot?.type === 'INTERVIEW_TY_1' ? '링크: ' : '장소: ' }}
+                              <a
+                                v-if="dateSlot?.type === 'INTERVIEW_TY_1'"
+                                :href="dateSlot?.info"
+                                target="_blank"
+                                class="text-blue-600 hover:underline"
+                              >
+                                {{ dateSlot?.info }}
+                              </a>
+                              <span v-else>{{ dateSlot?.info }}</span>
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -660,7 +707,12 @@ const calculatePeriod = (period) => {
             </h4>
             <div class="bg-gray-50 p-4 rounded-lg">
               <p class="text-base text-gray-700">
-                {{ convertJobCode(selectedOffer?.jobCategoryCd) }} | {{ selectedOffer?.position }}
+                {{
+                  selectedOffer?.jobCategoryCd === 'JOB_22'
+                    ? `기타(${selectedOffer?.customJobCategory})`
+                    : convertJobCode(selectedOffer?.jobCategoryCd)
+                }}
+                | {{ selectedOffer?.position }}
               </p>
             </div>
           </div>
@@ -732,34 +784,54 @@ const calculatePeriod = (period) => {
             </div>
 
             <!-- 면접 일정 관련 정보 -->
-            <div v-if="selectedOffer.interviewConfirmed" class="bg-green-50 p-4 rounded-lg">
+            <div v-if="selectedOffer?.interviewTime" class="bg-green-50 p-4 rounded-lg">
               <h4 class="font-medium text-gray-900 mb-2">확정된 면접 일정</h4>
               <div class="grid grid-cols-2 gap-4">
                 <div class="flex items-center gap-2">
                   <i class="pi pi-calendar text-green-600"></i>
-                  <span class="text-gray-700">{{ selectedOffer.interviewDate }}</span>
+                  <div class="space-y-2">
+                    <div class="font-medium flex items-center gap-2">
+                      {{ selectedOffer?.interviewTime?.slice(0, 10)?.replaceAll('-', '.') }}
+                    </div>
+                  </div>
                 </div>
-                <div class="flex items-center gap-2">
+                <!-- <div class="flex items-center gap-2">
                   <i class="pi pi-clock text-green-600"></i>
-                  <span class="text-gray-700">{{ selectedOffer.interviewTime }}</span>
-                </div>
+                  <div class="space-y-2">
+                    <div class="font-medium flex items-center gap-2">
+                      {{ selectedOffer.interviewTime }}
+                    </div>
+                  </div>
+                </div> -->
                 <div class="flex items-center gap-2">
                   <i class="pi pi-video text-green-600"></i>
                   <span class="text-gray-700">
-                    {{ selectedOffer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}
+                    {{ selectedOffer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접' }}
                   </span>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 text-sm text-gray-600">
                   <i class="pi pi-map-marker text-green-600"></i>
-                  <span class="text-gray-700">{{ selectedOffer.interviewLocation }}</span>
+                  <span class="text-gray-700">
+                    {{ selectedOffer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '링크: ' : '장소: ' }}
+                    <a
+                      v-if="selectedOffer?.interviewTypeCd !== 'INTERVIEW_TY_1'"
+                      :href="selectedOffer?.interviewInfo"
+                      target="_blank"
+                      class="text-blue-600 hover:underline"
+                    >
+                      {{ selectedOffer?.interviewInfo }}
+                    </a>
+                    <span v-else>{{ selectedOffer?.interviewInfo }}</span>
+                  </span>
                 </div>
               </div>
               <p class="mt-4 text-green-600 flex items-center gap-2">
                 <i class="pi pi-check-circle"></i>
-                <span>{{ formatDate(selectedOffer.interviewConfirmedAt) }}에 면접 일정이 확정되었습니다</span>
+                <span>{{ formatDate(selectedOffer?.updatedAt) }}에 면접 일정이 확정되었습니다</span>
               </p>
             </div>
-            <div v-else-if="selectedOffer?.interviewInfo" class="space-y-4">
+
+            <div v-else-if="selectedOffer?.reserveTime1" class="space-y-4">
               <!-- 면접 일정 정보를 담은 파란색 박스 -->
               <div class="bg-blue-50 p-4 rounded-lg">
                 <h4 class="font-medium text-gray-900 mb-2">제안된 면접 일정</h4>
@@ -774,7 +846,7 @@ const calculatePeriod = (period) => {
                       .map((key) => selectedOffer[key])
                       .filter((time) => time)"
                     :key="index"
-                    class="flex items-center gap-4 p-3 bg-white rounded-lg"
+                    class="flex items-start gap-4 p-3 bg-white rounded-lg"
                   >
                     <input
                       type="radio"
@@ -782,9 +854,33 @@ const calculatePeriod = (period) => {
                       :value="index"
                       v-model="selectedDateIndices[selectedOffer.id]"
                       @click.stop
+                      class="mt-1"
                     />
-                    <div class="font-medium">
-                      {{ dateSlot.slice(0, 10).replaceAll('-', '.') }} {{ dateSlot.slice(11, 16) }}
+                    <div class="space-y-2">
+                      <div class="font-medium flex items-center gap-2">
+                        {{ dateSlot.slice(0, 10).replaceAll('-', '.') }}
+                        <span class="text-gray-400">|</span>
+                        {{ dateSlot.slice(11, 16) }}
+                      </div>
+                      <div class="flex items-center gap-2 text-sm text-gray-600">
+                        <i class="pi pi-video"></i>
+                        <span>면접 방식: {{ selectedOffer?.interviewType?.name }}</span>
+                      </div>
+                      <div class="flex items-center gap-2 text-sm text-gray-600">
+                        <i class="pi pi-map-marker text-green-600"></i>
+                        <span class="text-gray-700">
+                          {{ selectedOffer?.interviewType?.code === 'IT_1' ? '장소: ' : '링크: ' }}
+                          <a
+                            v-if="selectedOffer?.interviewType?.code !== 'IT_1'"
+                            :href="selectedOffer?.interviewInfo"
+                            target="_blank"
+                            class="text-blue-600 hover:underline"
+                          >
+                            {{ selectedOffer?.interviewInfo }}
+                          </a>
+                          <span v-else>{{ selectedOffer?.interviewInfo }}</span>
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -822,10 +918,10 @@ const calculatePeriod = (period) => {
                 {{ formatDate(selectedOffer?.updatedAt) }}에 거절되었습니다
               </p>
               <!-- 거절 사유 표시 추가 -->
-              <div v-if="selectedOffer?.rejectReason" class="bg-red-50 p-4 rounded-lg mt-2">
+              <div v-if="selectedOffer?.resultMemo" class="bg-red-50 p-4 rounded-lg mt-2">
                 <p class="text-red-700">
                   <span class="font-medium">거절 사유:</span><br />
-                  {{ selectedOffer?.rejectReason }}
+                  {{ selectedOffer?.resultMemo }}
                 </p>
               </div>
             </div>

@@ -14,10 +14,10 @@ const selectedOffer = ref(null);
 
 // 면접 일정 관련 상태
 const showScheduleModal = ref(false);
-const interviewDates = ref([
-  { date: null, hour: null, minute: null },
-  { date: null, hour: null, minute: null },
-  { date: null, hour: null, minute: null }
+const interviewOptions = ref([
+  { date: null, hour: null, minute: null, type: null, info: null },
+  { date: null, hour: null, minute: null, type: null, info: null },
+  { date: null, hour: null, minute: null, type: null, info: null }
 ]);
 const interviewTypeCd = ref(null);
 const interviewInfo = ref('');
@@ -205,19 +205,20 @@ const convertToTimestamp = (dateTimeStr) => {
 
 const scheduleInterview = async () => {
   // 기존 유효성 검사
-  // if (!interviewDates.value[0].date || !interviewDates.value[0].hour || !interviewDates.value[0].minute) {
-  if (!interviewDates.value.filter((item) => item.date && item.hour && item.minute).length) {
-    alert('최소 하나의 면접 일정을 입력해주세요.');
+  if (
+    !interviewOptions.value.filter((item) => item.date && item.hour && item.minute && item.type && item.info).length
+  ) {
+    alert('최소 하나의 면접 일정 정보를 입력해주세요.');
     return;
   }
 
-  if (!interviewTypeCd.value || !interviewInfo.value) {
-    alert('면접 방식과 장소를 입력해주세요.');
-    return;
-  }
+  // if (!interviewTypeCd.value || !interviewInfo.value) {
+  //   alert('면접 방식과 장소를 입력해주세요.');
+  //   return;
+  // }
 
   // 제안된 일정들 필터링 (날짜가 입력된 것만)
-  let proposedDates = interviewDates.value
+  let proposedDates = interviewOptions.value
     .filter((d) => d.date && d.hour && d.minute)
     .map((d) => ({
       date: d.date
@@ -242,17 +243,25 @@ const scheduleInterview = async () => {
     message: `<div class="text-center">
       <p class="text-xl mb-2">면접 일정을 제안하시겠습니까?</p>
       <div class="text-sm text-gray-600 text-left mt-4">
-        <p class="font-medium mb-2">제안된 일정:</p>
-        ${proposedDates.map((time) => `<div class="mb-2">${time}</div>`).join('')}
-        <p class="mt-2">면접 방식: ${interviewTypeCd === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접'}</p>
-        <p>장소/링크: ${interviewInfo.value}</p>
-        <p class="mt-4 text-red-500">* 확인 시 알림과 이메일이 발송됩니다.</p>
+        <p class="font-medium">제안된 일정:</p><hr class="mt-1 mb-1"/>
+        ${proposedDates
+          .map(
+            (
+              time,
+              index
+            ) => `<div class="mt-1">${time.slice(0, 10).replaceAll('-', '.')} ${time.slice(11, 16)}</div> <p>면접 방식: ${interviewOptions.value[index].type === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접'}</p>
+        <p>장소/링크: ${interviewOptions.value[index].info}</p> <hr class="mb-1"/>`
+          )
+          .join('')}
+        <p class="mt-2 text-red-500">* 확인 시 알림과 이메일이 발송됩니다.</p>
       </div>
     </div>`,
+    // <p class="mt-2">면접 방식: ${interviewTypeCd === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접'}</p>
+    // <p>장소/링크: ${interviewInfo.value}</p>
     acceptLabel: '제안',
     rejectLabel: '취소',
     onCloseYes: async () => {
-      // TODO: 면접 일정 제안 API 연동
+      // 면접 일정 제안 API
       selectedOffer.value.interviewScheduled = true;
       ['reserveTime1', 'reserveTime2', 'reserveTime3']
         .map((item, index) => {
@@ -260,8 +269,19 @@ const scheduleInterview = async () => {
         })
         .filter((time) => time);
 
-      selectedOffer.value.interviewTypeCd = interviewTypeCd.value;
-      selectedOffer.value.interviewInfo = interviewInfo.value;
+      ['interviewTypeCd1', 'interviewTypeCd2', 'interviewTypeCd3']
+        .map((item, index) => {
+          selectedOffer.value[item] = interviewOptions.value[index].type;
+        })
+        .filter((type) => type);
+
+      ['interviewPlace1', 'interviewPlace2', 'interviewPlace3']
+        .map((item, index) => {
+          selectedOffer.value[item] = interviewOptions.value[index].info;
+        })
+        .filter((info) => info);
+      selectedOffer.value.interviewTypeCd = selectedOffer.value.interviewTypeCd1;
+      selectedOffer.value.interviewInfo = selectedOffer.value.interviewPlace1;
 
       const response = await requestOffer(selectedOffer.value);
 
@@ -280,10 +300,10 @@ const scheduleInterview = async () => {
             getJobOfferList();
 
             // 입력값 초기화
-            interviewDates.value = [
-              { date: null, hour: null, minute: null },
-              { date: null, hour: null, minute: null },
-              { date: null, hour: null, minute: null }
+            interviewOptions.value = [
+              { date: null, hour: null, minute: null, type: null, info: null },
+              { date: null, hour: null, minute: null, type: null, info: null },
+              { date: null, hour: null, minute: null, type: null, info: null }
             ];
             interviewTypeCd.value = null;
             interviewInfo.value = '';
@@ -467,7 +487,14 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
         <div class="border-t pt-4">
           <div class="mb-4">
             <h4 class="text-base font-bold text-gray-900 mb-2">직무 · 제안 포지션</h4>
-            <p class="text-gray-600">{{ convertJobCode(offer?.jobCategoryCd) }} | {{ offer?.position }}</p>
+            <p class="text-gray-600">
+              {{
+                offer?.jobCategoryCd === 'JOB_22'
+                  ? `기타(${offer?.customJobCategory})`
+                  : convertJobCode(offer?.jobCategoryCd)
+              }}
+              | {{ offer?.position }}
+            </p>
           </div>
 
           <div class="mb-4">
@@ -531,18 +558,23 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
             <!-- 아직 확정되지 않은 경우 제안된 일정들 표시 -->
             <div v-else class="space-y-4">
               <div
-                v-for="(time, index) in ['reserveTime1', 'reserveTime2', 'reserveTime3']
-                  .map((key) => offer[key])
-                  .filter((time) => time)"
+                v-for="(dateSlot, index) in ['reserveTime1', 'reserveTime2', 'reserveTime3']
+                  .map((key, i) => ({
+                    time: offer[key],
+                    type: offer[`interviewTypeCd${i + 1}`],
+                    info: offer[`interviewPlace${i + 1}`]
+                  }))
+                  .filter((item) => item.time)"
                 :key="index"
                 class="mb-2"
               >
-                {{ time }}
+                <p class="text-gray-600">
+                  날짜·시간: {{ dateSlot.time.slice(0, 10).replaceAll('-', '.') }} &nbsp;
+                  {{ dateSlot.time.slice(11, 16) }}
+                </p>
+                <p class="text-gray-600">방식: {{ dateSlot.type === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접' }}</p>
+                <p class="text-gray-600">장소: {{ dateSlot.info }}</p>
               </div>
-              <p class="text-gray-600">
-                방식: {{ offer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접' }}
-              </p>
-              <p class="text-gray-600">장소: {{ offer?.interviewInfo }}</p>
             </div>
           </div>
         </div>
@@ -590,13 +622,13 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
         </div>
 
         <!-- 3개의 면접 일정 입력 -->
-        <div v-for="(dateSlot, index) in interviewDates" :key="index" class="mb-6">
-          <h4 class="font-medium mb-2">면접 일정 {{ index + 1 }}</h4>
+        <div v-for="(dateSlot, index) in interviewOptions" :key="index" class="mb-6">
+          <h1 class="text-lg mb-2 underline">면접 일정 {{ index + 1 }}</h1>
           <div class="mb-2">
             <label class="block text-sm mb-1">날짜</label>
             <DatePicker v-model="dateSlot.date" class="w-full" :minDate="new Date()" dateFormat="yy-mm-dd" />
           </div>
-          <div class="grid grid-cols-2 gap-2">
+          <div class="grid grid-cols-2 gap-2 mb-4">
             <div>
               <label class="block text-sm mb-1">시간</label>
               <Select
@@ -620,9 +652,35 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
               />
             </div>
           </div>
+
+          <div class="grid grid-cols-2 gap-2 mb-4">
+            <div>
+              <label class="block font-medium mb-2">면접 방식</label>
+              <Select
+                v-model="dateSlot.type"
+                :options="interviewTypes"
+                optionLabel="name"
+                optionValue="code"
+                placeholder="면접 방식 선택"
+                checkmark
+                class="w-full"
+              />
+            </div>
+
+            <div>
+              <label class="block font-medium mb-2">장소 / 링크</label>
+              <InputText
+                v-model="dateSlot.info"
+                class="w-full"
+                :placeholder="
+                  dateSlot.info === 'INTERVIEW_TY_1' ? 'Zoom 링크를 입력해주세요' : '면접 장소를 입력해주세요'
+                "
+              />
+            </div>
+          </div>
         </div>
 
-        <div class="mb-4">
+        <!-- <div class="mb-4">
           <label class="block font-medium mb-2">면접 방식</label>
           <Select
             v-model="interviewTypeCd"
@@ -644,7 +702,7 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
               interviewTypeCd === 'INTERVIEW_TY_1' ? 'Zoom 링크를 입력해주세요' : '면접 장소를 입력해주세요'
             "
           />
-        </div>
+        </div> -->
       </div>
 
       <template #footer>

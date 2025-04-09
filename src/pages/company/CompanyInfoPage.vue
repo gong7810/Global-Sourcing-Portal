@@ -50,8 +50,8 @@ const setCompanyInfo = async () => {
 
   companyInfo.value = {
     ...response,
-    email: response.user.email,
-    companyType: { name: response.companyType.name, code: response.companyType.code }
+    email: response?.user?.email,
+    companyType: { name: response?.companyType?.name, code: response?.companyType?.code }
   };
 
   authStore.setCompanyData(companyInfo.value);
