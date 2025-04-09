@@ -3,14 +3,9 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
 import { useConfirm } from 'primevue/useconfirm';
-import Button from 'primevue/button';
-import Tag from 'primevue/tag';
-import Dialog from 'primevue/dialog';
-import ConfirmDialog from 'primevue/confirmdialog';
 import AdminHeader from '@/components/admin/AdminHeader.vue';
 import AdminSidebar from '@/components/admin/AdminSidebar.vue';
 import { getJobOfferList, deleteJobOffer } from '@/apis/admin/adminApis';
-import InputText from 'primevue/inputtext';
 
 const router = useRouter();
 const toast = useToast();
@@ -32,7 +27,7 @@ const selectedInterview = ref(null);
 const searchQuery = ref('');
 const filteredInterviews = computed(() => {
   if (!searchQuery.value) return interviews.value;
-  return interviews.value.filter(interview => 
+  return interviews.value.filter((interview) =>
     interview.company?.name?.toLowerCase().includes(searchQuery.value.toLowerCase())
   );
 });
@@ -40,9 +35,9 @@ const filteredInterviews = computed(() => {
 // 면접 상태에 따른 태그 색상 매핑
 const getStatusSeverity = (statusCd) => {
   const severityMap = {
-    'JO_ST_1': 'warning',   // 대기중
-    'JO_ST_2': 'success',   // 수락
-    'JO_ST_3': 'danger',    // 거절
+    JO_ST_1: 'warning', // 대기중
+    JO_ST_2: 'success', // 수락
+    JO_ST_3: 'danger' // 거절
   };
   return severityMap[statusCd] || 'secondary';
 };
@@ -56,7 +51,7 @@ const openCancelModal = (interview) => {
 // 면접 취소 처리
 const cancelInterview = async () => {
   if (!selectedInterview.value) return;
-  
+
   // 사용자에게 한 번 더 확인
   confirm.require({
     message: '정말로 이 면접 제안을 철회하시겠습니까?',
@@ -67,10 +62,10 @@ const cancelInterview = async () => {
     accept: async () => {
       try {
         loading.value = true;
-        
+
         // API 호출로 면접 제안 철회
         await deleteJobOffer(selectedInterview.value.id);
-        
+
         // 성공 메시지 표시
         toast.add({
           severity: 'success',
@@ -78,12 +73,12 @@ const cancelInterview = async () => {
           detail: '면접 제안이 철회되었습니다.',
           life: 3000
         });
-        
+
         // 목록 새로고침
         fetchInterviews();
       } catch (error) {
         console.error('면접 제안 철회 중 오류 발생:', error);
-        
+
         // 오류 메시지 표시
         toast.add({
           severity: 'error',
@@ -103,17 +98,17 @@ const cancelInterview = async () => {
 const fetchInterviews = async () => {
   try {
     loading.value = true;
-    
+
     // API 호출로 면접 목록 조회
     const response = await getJobOfferList({
       page: pagination.value.page,
       perPage: 10
     });
-    
+
     // 응답 데이터 처리
     if (response && response.contents) {
       // JSON 문자열을 파싱하여 객체로 변환
-      interviews.value = response.contents.map(item => {
+      interviews.value = response.contents.map((item) => {
         try {
           // 문자열로 된 JSON 데이터를 파싱
           if (typeof item === 'string') {
@@ -125,7 +120,7 @@ const fetchInterviews = async () => {
           return item;
         }
       });
-      
+
       pagination.value = {
         page: response.pagination.page,
         totalCount: response.pagination.totalCount
@@ -139,14 +134,14 @@ const fetchInterviews = async () => {
     }
   } catch (error) {
     console.error('면접 목록 조회 중 오류 발생:', error);
-    
+
     toast.add({
       severity: 'error',
       summary: '오류',
       detail: '면접 목록을 불러오는 중 오류가 발생했습니다.',
       life: 3000
     });
-    
+
     interviews.value = [];
     pagination.value = {
       page: 1,
@@ -199,11 +194,7 @@ const formatDate = (dateString) => {
           <!-- 검색 영역 -->
           <div class="search-container">
             <div class="search-input-wrapper">
-              <InputText 
-                v-model="searchQuery"
-                placeholder="기업명으로 검색"
-                class="search-input"
-              />
+              <InputText v-model="searchQuery" placeholder="기업명으로 검색" class="search-input" />
               <i class="pi pi-search search-icon"></i>
             </div>
           </div>
@@ -236,7 +227,7 @@ const formatDate = (dateString) => {
                     <Tag :value="interview.status?.name || '-'" :severity="getStatusSeverity(interview.statusCd)" />
                   </td>
                   <td>
-                    <Button 
+                    <Button
                       label="철회"
                       class="p-button-outlined p-button-secondary p-button-sm"
                       @click="openCancelModal(interview)"
@@ -303,15 +294,10 @@ const formatDate = (dateString) => {
   </div>
 
   <!-- 면접 취소 모달 -->
-  <Dialog 
-    v-model:visible="showCancelModal" 
-    :style="{ width: '400px' }" 
-    :modal="true"
-    class="interview-cancel-modal"
-  >
+  <Dialog v-model:visible="showCancelModal" :style="{ width: '400px' }" :modal="true" class="interview-cancel-modal">
     <template #header>
       <div class="modal-header">
-        <i class="pi pi-exclamation-triangle" style="font-size: 1.2rem; color: #f59e0b; margin-right: 0.5rem;"></i>
+        <i class="pi pi-exclamation-triangle" style="font-size: 1.2rem; color: #f59e0b; margin-right: 0.5rem"></i>
         <span>면접 제안 철회</span>
       </div>
     </template>
@@ -334,7 +320,10 @@ const formatDate = (dateString) => {
         </div>
         <div class="info-item">
           <span>상태: </span>
-          <Tag :value="selectedInterview.status?.name || '-'" :severity="getStatusSeverity(selectedInterview.statusCd)" />
+          <Tag
+            :value="selectedInterview.status?.name || '-'"
+            :severity="getStatusSeverity(selectedInterview.statusCd)"
+          />
         </div>
       </div>
     </div>
@@ -571,7 +560,7 @@ const formatDate = (dateString) => {
       justify-content: center;
       font-size: 1.2rem;
       font-weight: 600;
-      
+
       i {
         position: relative;
         top: 1px;
@@ -581,11 +570,11 @@ const formatDate = (dateString) => {
 
   :deep(.p-dialog-content) {
     padding: 2rem 1.5rem;
-    
+
     .modal-content {
       .confirmation-message {
         margin-bottom: 2rem;
-        
+
         p {
           margin: 0;
           color: #92400e;
@@ -635,33 +624,33 @@ const formatDate = (dateString) => {
 :deep(.p-confirm-dialog) {
   .p-dialog-content {
     padding: 2rem;
-    
+
     .p-confirm-dialog-message {
       margin-left: 1rem;
       color: #374151;
     }
   }
-  
+
   .p-dialog-footer {
     padding: 1.5rem;
-    
+
     .p-button {
       min-width: 6rem;
-      
+
       &.p-button-outlined {
         border-color: #e5e7eb;
         color: #4b5563;
-        
+
         &:hover {
           background-color: #f3f4f6;
           border-color: #d1d5db;
         }
       }
-      
+
       &.p-button-danger {
         background-color: #ef4444;
         border-color: #ef4444;
-        
+
         &:hover {
           background-color: #dc2626;
           border-color: #dc2626;
@@ -670,4 +659,4 @@ const formatDate = (dateString) => {
     }
   }
 }
-</style> 
+</style>
