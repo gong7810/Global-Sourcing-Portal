@@ -121,7 +121,8 @@ watch(
         mobile: newUser.mobile || '',
         email: newUser.email || '',
         name: newUser.name || '',
-        loginId: newUser.loginId || ''
+        loginId: newUser.loginId || '',
+        password: newUser.password || ''
       };
 
       // 이미지 설정
@@ -148,7 +149,8 @@ const toggleEditMode = () => {
       gender: editedUser.value.gender,
       isCompany: editedUser.value.employer,
       enabled: editedUser.value.active,
-      profileImage: imagePreview.value
+      profileImage: imagePreview.value,
+      password: editedUser.value.password
     };
     emit('update', updatedData);
     isEditMode.value = false;
@@ -193,7 +195,8 @@ const cancelEdit = () => {
     mobile: props.user.mobile || '',
     email: props.user.email || '',
     name: props.user.name || '',
-    loginId: props.user.loginId || ''
+    loginId: props.user.loginId || '',
+    password: props.user.password || ''
   };
 };
 
@@ -294,6 +297,12 @@ const getGenderLabel = (gender) => {
                 <InputText v-model="editedUser.name" class="w-full" />
               </template>
               <template v-else>{{ user?.name }}</template>
+            </td>
+          </tr>
+          <tr v-if="isEditMode">
+            <th>비밀번호</th>
+            <td>
+              <InputText v-model="editedUser.password" type="password" class="w-full" />
             </td>
           </tr>
           <tr>

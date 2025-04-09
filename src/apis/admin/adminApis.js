@@ -179,11 +179,59 @@ export const deleteJobOffer = async (jobOfferId) => {
   }
 };
 
+/**
+ * 선택된 사용자들 삭제
+ * @param {Array} userIds - 삭제할 사용자 ID 배열
+ * @returns {Promise} - API 응답
+ */
+export const deleteUsers = async (userIds) => {
+  try {
+    const response = await api.post('/user/delete', {
+      userIds: userIds.map(id => Number(id))
+    });
+    return response.data;
+  } catch (error) {
+    console.error('사용자 삭제 실패:', error);
+    throw error;
+  }
+};
+
+/**
+ * 사용자 추가
+ * @param {Object} data - 추가할 사용자 데이터
+ * @returns {Promise} - API 응답
+ */
+export const createUser = async (data) => {
+  try {
+    const userData = {
+      loginId: String(data.loginId || ''),
+      password: String(data.password || ''),
+      name: String(data.name || ''),
+      birth: String(data.birthDate || ''),
+      mobile: String(data.mobile || ''),
+      email: String(data.email || ''),
+      roleCd: String(data.role || ''),
+      genderCd: String(data.gender || ''),
+      isCompany: Boolean(data.isCompany),
+      enabled: Boolean(data.enabled),
+      profileImage: data.profileImage || null
+    };
+    
+    const response = await api.post('/user/create', userData);
+    return response.data;
+  } catch (error) {
+    console.error('사용자 추가 실패:', error);
+    throw error;
+  }
+};
+
 export default {
   getUserList,
   getUserStatus,
   updateUserStatus,
   updateUser,
   getJobOfferList,
-  deleteJobOffer
+  deleteJobOffer,
+  deleteUsers,
+  createUser
 };
