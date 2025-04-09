@@ -63,18 +63,18 @@ const getStatusColor = (statusCd, result = null) => {
     case 'JO_ST_1':
       return 'text-yellow-600';
     case 'JO_ST_2':
-      if (result?.code === 'INTERVIEW_RESULT_2') {
-        return 'text-red-600';
-      }
       return 'text-green-600';
     case 'JO_ST_3':
       return 'text-red-600';
     case 'JO_ST_4':
       return 'text-yellow-600';
     case 'JO_ST_5':
-      return 'text-green-600';
-    case 'JO_ST_6':
       return 'text-blue-600';
+    case 'JO_ST_6':
+      if (result?.code === 'INTERVIEW_RESULT_2') {
+        return 'text-red-600';
+      }
+      return 'text-green-600';
     default:
       return 'text-gray-600';
   }
@@ -385,9 +385,9 @@ const getStatusColor = (statusCd, result = null) => {
             <!-- 구분선 -->
             <div class="border-t border-gray-200 my-8"></div>
 
-            <!-- 완료된 면접 제안 -->
+            <!-- 종료된 면접 제안 -->
             <div class="bg-white rounded-lg p-6 border border-gray-200">
-              <h2 class="text-xl font-bold mb-4">완료된 면접 제안</h2>
+              <h2 class="text-xl font-bold mb-4">종료된 면접 제안</h2>
               <div v-if="completedCompanies.length" class="space-y-4">
                 <div
                   v-for="company in completedCompanies"
@@ -418,7 +418,7 @@ const getStatusColor = (statusCd, result = null) => {
                 >
                   <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
-                <p class="text-gray-500 font-medium">완료된 면접 제안이 없습니다</p>
+                <p class="text-gray-500 font-medium">종료된 면접 제안이 없습니다</p>
               </div>
             </div>
           </div>

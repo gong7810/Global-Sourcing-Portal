@@ -162,12 +162,12 @@ const getStatusInfo = (status) => {
     case 'JO_ST_5':
       return {
         text: '일정 확정',
-        class: 'bg-green-50 text-green-600'
+        class: 'bg-blue-50 text-blue-600'
       };
     case 'JO_ST_6':
       return {
         text: '완료',
-        class: 'bg-blue-50 text-blue-600'
+        class: 'bg-green-50 text-green-600'
       };
     default:
       return {
@@ -651,7 +651,6 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
           </div>
         </div>
 
-        <!-- JO_ST_6 -->
         <!-- 면접 완료된 경우 표시 -->
         <div v-if="offer?.statusCd === 'JO_ST_6'" class="flex mt-4">
           <div class="grid grid-cols-1 gap-4">

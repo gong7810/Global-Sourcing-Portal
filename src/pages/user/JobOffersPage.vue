@@ -497,48 +497,22 @@ const calculatePeriod = (period) => {
                   </p>
                 </div>
 
-                <!-- 면접 일정 관련 정보 -->
-                <div v-if="offer?.interviewTime" class="bg-green-50 p-4 rounded-lg">
-                  <h4 class="font-medium text-gray-900 mb-2">확정된 면접 일정</h4>
-                  <div class="grid grid-cols-2 gap-4">
-                    <div class="flex items-center gap-2">
-                      <i class="pi pi-calendar text-green-600"></i>
-                      <div class="space-y-2">
-                        <div class="font-medium flex items-center gap-2">
-                          {{ offer?.interviewTime.slice(0, 10).replaceAll('-', '.') }}
-                          <span class="text-gray-400">|</span>
-                          {{ offer?.interviewTime.slice(11, 16) }}
-                        </div>
-                      </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                      <i class="pi pi-video text-green-600"></i>
-                      <span class="text-gray-700">
-                        {{ offer?.interviewType?.name }}
-                      </span>
-                    </div>
-                    <div class="flex items-center gap-2 text-md text-gray-600">
-                      <i class="pi pi-map-marker text-green-600"></i>
-                      <span class="text-gray-700">
-                        {{ offer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '링크: ' : '장소: ' }}
-                        <a
-                          v-if="offer?.interviewTypeCd === 'INTERVIEW_TY_1'"
-                          :href="offer?.interviewInfo"
-                          target="_blank"
-                          class="text-blue-600 hover:underline"
-                        >
-                          {{ offer?.interviewInfo }}
-                        </a>
-                        <span v-else>{{ offer?.interviewInfo }}</span>
-                      </span>
-                    </div>
+                <!-- 면접 수락한 경우 -->
+                <div v-if="offer?.statusCd === 'JO_ST_2'" class="space-y-4">
+                  <div class="bg-yellow-50 p-4 rounded-lg">
+                    <p class="text-yellow-700">
+                      <i class="pi pi-clock mr-2"></i>
+                      면접 일정 조율 중입니다. 기업 담당자가 일정을 전달할 예정입니다.
+                    </p>
                   </div>
-                  <p class="mt-4 text-green-600 flex items-center gap-2">
-                    <i class="pi pi-check-circle"></i>
-                    <span>{{ dateFormatter.fullDate(offer?.interviewTime) }}으로 면접 일정이 확정되었습니다</span>
-                  </p>
+                  <!-- 상세정보보기 버튼 추가 -->
+                  <div class="flex gap-2 justify-end">
+                    <Button label="상세정보보기" class="p-button-outlined" @click="viewOfferDetail(offer)" />
+                  </div>
                 </div>
-                <div v-else-if="offer?.interviewInfo" class="space-y-4">
+
+                <!-- 면접 일정 조율 중인 경우 -->
+                <div v-else-if="offer?.statusCd === 'JO_ST_4'" class="space-y-4">
                   <!-- 면접 일정 정보를 담은 파란색 박스 -->
                   <div class="bg-blue-50 p-4 rounded-lg">
                     <h4 class="font-medium text-gray-900 mb-2">제안된 면접 일정</h4>
@@ -608,17 +582,47 @@ const calculatePeriod = (period) => {
                     <Button label="면접 거절" severity="danger" @click="rejectInterviewSchedule(offer)" />
                   </div>
                 </div>
-                <div v-else-if="!offer.interviewConfirmed" class="space-y-4">
-                  <div class="bg-yellow-50 p-4 rounded-lg">
-                    <p class="text-yellow-700">
-                      <i class="pi pi-clock mr-2"></i>
-                      면접 일정 조율 중입니다. 기업 담당자가 일정을 전달할 예정입니다.
-                    </p>
+
+                <!-- 면접 일정 확정된 경우 -->
+                <div v-else-if="offer?.statusCd === 'JO_ST_5'" class="bg-green-50 p-4 rounded-lg">
+                  <h4 class="font-medium text-gray-900 mb-2">확정된 면접 일정</h4>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div class="flex items-center gap-2">
+                      <i class="pi pi-calendar text-green-600"></i>
+                      <div class="space-y-2">
+                        <div class="font-medium flex items-center gap-2">
+                          {{ offer?.interviewTime.slice(0, 10).replaceAll('-', '.') }}
+                          <span class="text-gray-400">|</span>
+                          {{ offer?.interviewTime.slice(11, 16) }}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <i class="pi pi-video text-green-600"></i>
+                      <span class="text-gray-700">
+                        {{ offer?.interviewType?.name }}
+                      </span>
+                    </div>
+                    <div class="flex items-center gap-2 text-md text-gray-600">
+                      <i class="pi pi-map-marker text-green-600"></i>
+                      <span class="text-gray-700">
+                        {{ offer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '링크: ' : '장소: ' }}
+                        <a
+                          v-if="offer?.interviewTypeCd === 'INTERVIEW_TY_1'"
+                          :href="offer?.interviewInfo"
+                          target="_blank"
+                          class="text-blue-600 hover:underline"
+                        >
+                          {{ offer?.interviewInfo }}
+                        </a>
+                        <span v-else>{{ offer?.interviewInfo }}</span>
+                      </span>
+                    </div>
                   </div>
-                  <!-- 상세정보보기 버튼 추가 -->
-                  <div class="flex gap-2 justify-end">
-                    <Button label="상세정보보기" class="p-button-outlined" @click="viewOfferDetail(offer)" />
-                  </div>
+                  <p class="mt-4 text-green-600 flex items-center gap-2">
+                    <i class="pi pi-check-circle"></i>
+                    <span>{{ dateFormatter.fullDate(offer?.interviewTime) }}으로 면접 일정이 확정되었습니다</span>
+                  </p>
                 </div>
               </div>
 
@@ -644,6 +648,27 @@ const calculatePeriod = (period) => {
                 <div class="flex gap-2 justify-end">
                   <Button label="상세정보보기" class="p-button-outlined" @click="viewOfferDetail(offer)" />
                 </div>
+              </div>
+
+              <!-- 면접 완료된 경우 표시 -->
+              <div v-if="offer?.statusCd === 'JO_ST_6'" class="flex justify-between">
+                <div class="grid grid-cols-1 gap-4">
+                  <div class="flex items-center gap-2">
+                    <i class="pi pi-calendar text-blue-600"></i>
+                    <div class="space-y-2">
+                      <div class="font-medium flex items-center gap-2">
+                        {{ offer?.interviewTime.slice(0, 10).replaceAll('-', '.') }}
+                        <span class="text-gray-400">|</span>
+                        {{ offer?.interviewTime.slice(11, 16) }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <p class="text-blue-600">
+                  <i class="pi pi-check-circle mr-2"></i>
+                  면접 완료
+                </p>
               </div>
             </div>
           </div>
@@ -744,7 +769,7 @@ const calculatePeriod = (period) => {
         <!-- 상태별 다른 내용 표시 -->
         <div class="mt-4 border-t pt-4">
           <!-- 대기중인 경우 -->
-          <div v-if="selectedOffer.statusCd === 'JO_ST_1'" class="space-y-4">
+          <div v-if="selectedOffer?.statusCd === 'JO_ST_1'" class="space-y-4">
             <p class="text-gray-600">
               <i class="pi pi-clock mr-2"></i>
               제안받은 날짜: {{ dateFormatter.fullDate(selectedOffer?.createdAt) }}
@@ -767,8 +792,8 @@ const calculatePeriod = (period) => {
             </div>
           </div>
 
-          <!-- 수락된 경우 -->
-          <div v-else-if="selectedOffer?.statusCd === 'JO_ST_2'" class="space-y-4">
+          <!-- 수락에서 이어진 경우 -->
+          <div v-else-if="['JO_ST_2', 'JO_ST_4', 'JO_ST_5'].includes(selectedOffer?.statusCd)" class="space-y-4">
             <div class="space-y-2">
               <p class="text-gray-600">
                 <i class="pi pi-clock mr-2"></i>
@@ -780,55 +805,18 @@ const calculatePeriod = (period) => {
               </p>
             </div>
 
-            <!-- 면접 일정 관련 정보 -->
-            <div v-if="selectedOffer?.interviewTime" class="bg-green-50 p-4 rounded-lg">
-              <h4 class="font-medium text-gray-900 mb-2">확정된 면접 일정</h4>
-              <div class="grid grid-cols-2 gap-4">
-                <div class="flex items-center gap-2">
-                  <i class="pi pi-calendar text-green-600"></i>
-                  <div class="space-y-2">
-                    <div class="font-medium flex items-center gap-2">
-                      {{ selectedOffer?.interviewTime?.slice(0, 10)?.replaceAll('-', '.') }}
-                    </div>
-                  </div>
-                </div>
-                <!-- <div class="flex items-center gap-2">
-                  <i class="pi pi-clock text-green-600"></i>
-                  <div class="space-y-2">
-                    <div class="font-medium flex items-center gap-2">
-                      {{ selectedOffer.interviewTime }}
-                    </div>
-                  </div>
-                </div> -->
-                <div class="flex items-center gap-2">
-                  <i class="pi pi-video text-green-600"></i>
-                  <span class="text-gray-700">
-                    {{ selectedOffer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접' }}
-                  </span>
-                </div>
-                <div class="flex items-center gap-2 text-sm text-gray-600">
-                  <i class="pi pi-map-marker text-green-600"></i>
-                  <span class="text-gray-700">
-                    {{ selectedOffer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '링크: ' : '장소: ' }}
-                    <a
-                      v-if="selectedOffer?.interviewTypeCd !== 'INTERVIEW_TY_1'"
-                      :href="selectedOffer?.interviewInfo"
-                      target="_blank"
-                      class="text-blue-600 hover:underline"
-                    >
-                      {{ selectedOffer?.interviewInfo }}
-                    </a>
-                    <span v-else>{{ selectedOffer?.interviewInfo }}</span>
-                  </span>
-                </div>
+            <!-- 면접 일정 대기 중인 경우 -->
+            <div v-if="['JO_ST_2'].includes(selectedOffer?.statusCd)" class="space-y-4">
+              <div class="bg-yellow-50 p-4 rounded-lg">
+                <p class="text-yellow-700">
+                  <i class="pi pi-clock mr-2"></i>
+                  면접 일정 조율 중입니다. 기업 담당자가 일정을 전달할 예정입니다.
+                </p>
               </div>
-              <p class="mt-4 text-green-600 flex items-center gap-2">
-                <i class="pi pi-check-circle"></i>
-                <span>{{ dateFormatter.fullDate(selectedOffer?.updatedAt) }}에 면접 일정이 확정되었습니다</span>
-              </p>
             </div>
 
-            <div v-else-if="selectedOffer?.reserveTime1" class="space-y-4">
+            <!-- 면접 일정 조율중인 경우 -->
+            <div v-else-if="['JO_ST_4'].includes(selectedOffer?.statusCd)" class="space-y-4">
               <!-- 면접 일정 정보를 담은 파란색 박스 -->
               <div class="bg-blue-50 p-4 rounded-lg">
                 <h4 class="font-medium text-gray-900 mb-2">제안된 면접 일정</h4>
@@ -893,14 +881,78 @@ const calculatePeriod = (period) => {
                 <Button label="면접 거절" severity="danger" @click="rejectInterviewSchedule(selectedOffer)" />
               </div>
             </div>
-            <div v-else-if="!selectedOffer?.interviewConfirmed" class="space-y-4">
-              <div class="bg-yellow-50 p-4 rounded-lg">
-                <p class="text-yellow-700">
-                  <i class="pi pi-clock mr-2"></i>
-                  면접 일정 조율 중입니다. 기업 담당자가 일정을 전달할 예정입니다.
-                </p>
+
+            <!-- 면접 일정 확정된 경우 -->
+            <div v-else-if="['JO_ST_5'].includes(selectedOffer?.statusCd)" class="bg-green-50 p-4 rounded-lg">
+              <h4 class="font-medium text-gray-900 mb-2">확정된 면접 일정</h4>
+              <div class="grid grid-cols-2 gap-4">
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-calendar text-green-600"></i>
+                  <div class="space-y-2">
+                    <div class="font-medium flex items-center gap-2">
+                      {{ selectedOffer?.interviewTime?.slice(0, 10)?.replaceAll('-', '.') }}
+                    </div>
+                  </div>
+                </div>
+                <!-- <div class="flex items-center gap-2">
+                  <i class="pi pi-clock text-green-600"></i>
+                  <div class="space-y-2">
+                    <div class="font-medium flex items-center gap-2">
+                      {{ selectedOffer.interviewTime }}
+                    </div>
+                  </div>
+                </div> -->
+                <div class="flex items-center gap-2">
+                  <i class="pi pi-video text-green-600"></i>
+                  <span class="text-gray-700">
+                    {{ selectedOffer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접' }}
+                  </span>
+                </div>
+                <div class="flex items-center gap-2 text-sm text-gray-600">
+                  <i class="pi pi-map-marker text-green-600"></i>
+                  <span class="text-gray-700">
+                    {{ selectedOffer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '링크: ' : '장소: ' }}
+                    <a
+                      v-if="selectedOffer?.interviewTypeCd !== 'INTERVIEW_TY_1'"
+                      :href="selectedOffer?.interviewInfo"
+                      target="_blank"
+                      class="text-blue-600 hover:underline"
+                    >
+                      {{ selectedOffer?.interviewInfo }}
+                    </a>
+                    <span v-else>{{ selectedOffer?.interviewInfo }}</span>
+                  </span>
+                </div>
+              </div>
+              <p class="mt-4 text-green-600 flex items-center gap-2">
+                <i class="pi pi-check-circle"></i>
+                <span>{{ dateFormatter.fullDate(selectedOffer?.updatedAt) }}에 면접 일정이 확정되었습니다</span>
+              </p>
+            </div>
+
+            <!-- 면접 완료된 경우 -->
+          </div>
+
+          <!-- 완료된 경우 -->
+          <div v-else-if="selectedOffer?.statusCd === 'JO_ST_6'" class="flex mt-4">
+            1111
+            <div class="grid grid-cols-1 gap-4">
+              <div class="flex items-center gap-2">
+                <i class="pi pi-calendar text-blue-600"></i>
+                <div class="space-y-2">
+                  <div class="font-medium flex items-center gap-2">
+                    {{ offer?.interviewTime.slice(0, 10).replaceAll('-', '.') }}
+                    <span class="text-gray-400">|</span>
+                    {{ offer?.interviewTime.slice(11, 16) }}
+                  </div>
+                </div>
               </div>
             </div>
+
+            <p class="text-blue-600 ml-14">
+              <i class="pi pi-check-circle mr-2"></i>
+              면접 완료
+            </p>
           </div>
 
           <!-- 거절된 경우 -->
