@@ -670,6 +670,16 @@ const calculatePeriod = (period) => {
                   면접 완료
                 </p>
               </div>
+
+              <div class="mt-4">
+                <button
+                  class="text-[#8B8BF5] hover:text-[#7A7AE6] flex items-center gap-1"
+                  @click="viewOfferDetail(offer)"
+                >
+                  <span>상세 정보 보기</span>
+                  <i class="pi pi-arrow-right text-sm"></i>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -934,16 +944,15 @@ const calculatePeriod = (period) => {
           </div>
 
           <!-- 완료된 경우 -->
-          <div v-else-if="selectedOffer?.statusCd === 'JO_ST_6'" class="flex mt-4">
-            1111
+          <div v-else-if="selectedOffer?.statusCd === 'JO_ST_6'" class="flex justify-between mt-1">
             <div class="grid grid-cols-1 gap-4">
               <div class="flex items-center gap-2">
                 <i class="pi pi-calendar text-blue-600"></i>
                 <div class="space-y-2">
                   <div class="font-medium flex items-center gap-2">
-                    {{ offer?.interviewTime.slice(0, 10).replaceAll('-', '.') }}
+                    {{ selectedOffer?.interviewTime.slice(0, 10).replaceAll('-', '.') }}
                     <span class="text-gray-400">|</span>
-                    {{ offer?.interviewTime.slice(11, 16) }}
+                    {{ selectedOffer?.interviewTime.slice(11, 16) }}
                   </div>
                 </div>
               </div>
