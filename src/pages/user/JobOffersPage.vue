@@ -408,23 +408,23 @@ const calculatePeriod = (period) => {
               </p>
             </div>
 
+            <!-- 직무·제안 포지션 -->
+            <div>
+              <h4 class="font-medium text-gray-900 mb-2">
+                <span class="flex items-center gap-2">
+                  <i class="pi pi-briefcase text-[#8B8BF5]"></i>
+                  직무·제안 포지션
+                </span>
+              </h4>
+              <div class="bg-gray-50 p-4 rounded-lg">
+                <p class="text-base text-gray-700">
+                  {{ offer?.jobCategoryCd === 'JOB_22' ? `기타(${offer?.customJobCategory})` : convertJobCode(offer?.jobCategoryCd) }} | {{ offer?.position }}
+                </p>
+              </div>
+            </div>
+
             <!-- 제안 내용 섹션 -->
             <div class="space-y-4">
-              <!-- 직무·제안 포지션 -->
-              <div>
-                <h4 class="font-medium text-gray-900 mb-2">
-                  <span class="flex items-center gap-2">
-                    <i class="pi pi-briefcase text-[#8B8BF5]"></i>
-                    직무·제안 포지션
-                  </span>
-                </h4>
-                <div class="bg-gray-50 p-4 rounded-lg">
-                  <p class="text-base text-gray-700">
-                    {{ convertJobCode(offer?.jobCategoryCd) }} | {{ offer?.position }}
-                  </p>
-                </div>
-              </div>
-
               <!-- 상세 업무 -->
               <div>
                 <h4 class="font-medium text-gray-900 mb-2">
@@ -660,7 +660,7 @@ const calculatePeriod = (period) => {
             </h4>
             <div class="bg-gray-50 p-4 rounded-lg">
               <p class="text-base text-gray-700">
-                {{ convertJobCode(selectedOffer?.jobCategoryCd) }} | {{ selectedOffer?.position }}
+                {{ selectedOffer?.jobCategoryCd === 'JOB_22' ? `기타(${selectedOffer?.customJobCategory})` : convertJobCode(selectedOffer?.jobCategoryCd) }} | {{ selectedOffer?.position }}
               </p>
             </div>
           </div>
@@ -822,10 +822,10 @@ const calculatePeriod = (period) => {
                 {{ formatDate(selectedOffer?.updatedAt) }}에 거절되었습니다
               </p>
               <!-- 거절 사유 표시 추가 -->
-              <div v-if="selectedOffer?.rejectReason" class="bg-red-50 p-4 rounded-lg mt-2">
+              <div v-if="selectedOffer?.resultMemo" class="bg-red-50 p-4 rounded-lg mt-2">
                 <p class="text-red-700">
                   <span class="font-medium">거절 사유:</span><br />
-                  {{ selectedOffer?.rejectReason }}
+                  {{ selectedOffer?.resultMemo }}
                 </p>
               </div>
             </div>
