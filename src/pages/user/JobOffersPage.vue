@@ -247,7 +247,9 @@ const acceptInterviewSchedule = (offer) => {
       <p class="text-xl mb-2">면접 일정을 수락하시겠습니까?</p>
       <p class="text-md text-gray-600 mb-2">일시: ${selectedDate?.slice(0, 10)?.replaceAll('-', '.')} ${selectedDate?.slice(11, 16)}</p>
       <p class="text-sm text-gray-600">면접 방식: ${offer?.interviewType?.name}</p>
-      <p class="text-sm text-gray-600 mb-4">장소/링크: ${offer.interviewInfo}</p>
+      <p class="text-sm text-gray-600 mb-4">
+        ${offer?.interviewType?.code === 'IT_1' ? '장소' : '링크'}: ${offer.interviewInfo}
+      </p>
       <p class="text-sm text-blue-600">확인 시 기업 담당자에게 알림과 메일이 발송됩니다.</p>
     </div>`,
     acceptLabel: '수락',
@@ -497,24 +499,34 @@ const calculatePeriod = (period) => {
                   <div class="grid grid-cols-2 gap-4">
                     <div class="flex items-center gap-2">
                       <i class="pi pi-calendar text-green-600"></i>
-                      <span class="text-gray-700">
-                        {{ offer?.interviewTime.slice(0, 10).replaceAll('-', '.') }} &nbsp;
-                        {{ offer?.interviewTime.slice(11, 16) }}
-                      </span>
+                      <div class="space-y-2">
+                        <div class="font-medium flex items-center gap-2">
+                          {{ offer?.interviewTime.slice(0, 10).replaceAll('-', '.') }}
+                          <span class="text-gray-400">|</span>
+                          {{ offer?.interviewTime.slice(11, 16) }}
+                        </div>
+                      </div>
                     </div>
-                    <!-- <div class="flex items-center gap-2">
-                      <i class="pi pi-clock text-green-600"></i>
-                      <span class="text-gray-700">{{ offer.interviewTime }}</span>
-                    </div> -->
                     <div class="flex items-center gap-2">
                       <i class="pi pi-video text-green-600"></i>
                       <span class="text-gray-700">
                         {{ offer?.interviewType?.name }}
                       </span>
                     </div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 text-sm text-gray-600">
                       <i class="pi pi-map-marker text-green-600"></i>
-                      <span class="text-gray-700">{{ offer?.interviewInfo }}</span>
+                      <span class="text-gray-700">
+                        {{ offer?.interviewType?.code === 'IT_1' ? '장소: ' : '링크: ' }}
+                        <a 
+                          v-if="offer?.interviewType?.code !== 'IT_1'"
+                          :href="offer?.interviewInfo"
+                          target="_blank"
+                          class="text-blue-600 hover:underline"
+                        >
+                          {{ offer?.interviewInfo }}
+                        </a>
+                        <span v-else>{{ offer?.interviewInfo }}</span>
+                      </span>
                     </div>
                   </div>
                   <p class="mt-4 text-green-600 flex items-center gap-2">
@@ -537,7 +549,7 @@ const calculatePeriod = (period) => {
                           .map((key) => offer[key])
                           .filter((time) => time)"
                         :key="index"
-                        class="flex items-center gap-4 p-3 bg-white rounded-lg"
+                        class="flex items-start gap-4 p-3 bg-white rounded-lg"
                       >
                         <input
                           type="radio"
@@ -545,9 +557,33 @@ const calculatePeriod = (period) => {
                           :value="index"
                           v-model="selectedDateIndices[offer.id]"
                           @click.stop
+                          class="mt-1"
                         />
-                        <div class="font-medium">
-                          {{ dateSlot.slice(0, 10).replaceAll('-', '.') }} {{ dateSlot.slice(11, 16) }}
+                        <div class="space-y-2">
+                          <div class="font-medium flex items-center gap-2">
+                            {{ dateSlot.slice(0, 10).replaceAll('-', '.') }}
+                            <span class="text-gray-400">|</span>
+                            {{ dateSlot.slice(11, 16) }}
+                          </div>
+                          <div class="flex items-center gap-2 text-sm text-gray-600">
+                            <i class="pi pi-video"></i>
+                            <span>면접 방식: {{ offer?.interviewType?.name }}</span>
+                          </div>
+                          <div class="flex items-center gap-2 text-sm text-gray-600">
+                            <i class="pi pi-map-marker text-green-600"></i>
+                            <span class="text-gray-700">
+                              {{ offer?.interviewType?.code === 'IT_1' ? '장소: ' : '링크: ' }}
+                              <a 
+                                v-if="offer?.interviewType?.code !== 'IT_1'"
+                                :href="offer?.interviewInfo"
+                                target="_blank"
+                                class="text-blue-600 hover:underline"
+                              >
+                                {{ offer?.interviewInfo }}
+                              </a>
+                              <span v-else>{{ offer?.interviewInfo }}</span>
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -737,11 +773,19 @@ const calculatePeriod = (period) => {
               <div class="grid grid-cols-2 gap-4">
                 <div class="flex items-center gap-2">
                   <i class="pi pi-calendar text-green-600"></i>
-                  <span class="text-gray-700">{{ selectedOffer.interviewDate }}</span>
+                  <div class="space-y-2">
+                    <div class="font-medium flex items-center gap-2">
+                      {{ selectedOffer.interviewDate }}
+                    </div>
+                  </div>
                 </div>
                 <div class="flex items-center gap-2">
                   <i class="pi pi-clock text-green-600"></i>
-                  <span class="text-gray-700">{{ selectedOffer.interviewTime }}</span>
+                  <div class="space-y-2">
+                    <div class="font-medium flex items-center gap-2">
+                      {{ selectedOffer.interviewTime }}
+                    </div>
+                  </div>
                 </div>
                 <div class="flex items-center gap-2">
                   <i class="pi pi-video text-green-600"></i>
@@ -749,9 +793,20 @@ const calculatePeriod = (period) => {
                     {{ selectedOffer.interviewType === 'online' ? '화상 면접' : '대면 면접' }}
                   </span>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 text-sm text-gray-600">
                   <i class="pi pi-map-marker text-green-600"></i>
-                  <span class="text-gray-700">{{ selectedOffer.interviewLocation }}</span>
+                  <span class="text-gray-700">
+                    {{ selectedOffer.interviewType?.code === 'IT_1' ? '장소: ' : '링크: ' }}
+                    <a 
+                      v-if="selectedOffer.interviewType?.code !== 'IT_1'"
+                      :href="selectedOffer.interviewInfo"
+                      target="_blank"
+                      class="text-blue-600 hover:underline"
+                    >
+                      {{ selectedOffer.interviewInfo }}
+                    </a>
+                    <span v-else>{{ selectedOffer.interviewInfo }}</span>
+                  </span>
                 </div>
               </div>
               <p class="mt-4 text-green-600 flex items-center gap-2">
@@ -774,7 +829,7 @@ const calculatePeriod = (period) => {
                       .map((key) => selectedOffer[key])
                       .filter((time) => time)"
                     :key="index"
-                    class="flex items-center gap-4 p-3 bg-white rounded-lg"
+                    class="flex items-start gap-4 p-3 bg-white rounded-lg"
                   >
                     <input
                       type="radio"
@@ -782,9 +837,33 @@ const calculatePeriod = (period) => {
                       :value="index"
                       v-model="selectedDateIndices[selectedOffer.id]"
                       @click.stop
+                      class="mt-1"
                     />
-                    <div class="font-medium">
-                      {{ dateSlot.slice(0, 10).replaceAll('-', '.') }} {{ dateSlot.slice(11, 16) }}
+                    <div class="space-y-2">
+                      <div class="font-medium flex items-center gap-2">
+                        {{ dateSlot.slice(0, 10).replaceAll('-', '.') }}
+                        <span class="text-gray-400">|</span>
+                        {{ dateSlot.slice(11, 16) }}
+                      </div>
+                      <div class="flex items-center gap-2 text-sm text-gray-600">
+                        <i class="pi pi-video"></i>
+                        <span>면접 방식: {{ selectedOffer?.interviewType?.name }}</span>
+                      </div>
+                      <div class="flex items-center gap-2 text-sm text-gray-600">
+                        <i class="pi pi-map-marker text-green-600"></i>
+                        <span class="text-gray-700">
+                          {{ selectedOffer?.interviewType?.code === 'IT_1' ? '장소: ' : '링크: ' }}
+                          <a 
+                            v-if="selectedOffer?.interviewType?.code !== 'IT_1'"
+                            :href="selectedOffer?.interviewInfo"
+                            target="_blank"
+                            class="text-blue-600 hover:underline"
+                          >
+                            {{ selectedOffer?.interviewInfo }}
+                          </a>
+                          <span v-else>{{ selectedOffer?.interviewInfo }}</span>
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
