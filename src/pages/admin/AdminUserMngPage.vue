@@ -6,7 +6,14 @@ import AdminHeader from '@/components/admin/AdminHeader.vue';
 import AdminSidebar from '@/components/admin/AdminSidebar.vue'; // 사이드바 컴포넌트 임포트
 import UserDetailModal from '@/components/admin/UserDetailModal.vue';
 import UserCreateModal from '@/components/admin/UserCreateModal.vue';
-import { getUserList, getUserStatus, updateUserStatus, updateUser, deleteUsers, createUser } from '@/apis/admin/adminApis';
+import {
+  getUserList,
+  getUserStatus,
+  updateUserStatus,
+  updateUser,
+  deleteUsers,
+  createUser
+} from '@/apis/admin/adminApis';
 
 const router = useRouter();
 const toast = useToast();
@@ -275,7 +282,6 @@ const handleImageError = (e) => {
 };
 
 const openDetailModal = (user) => {
-  console.log(user);
   selectedUser.value = user;
   showDetailModal.value = true;
 };
@@ -287,7 +293,9 @@ const closeDetailModal = () => {
 
 const handleUserUpdate = async (updatedUser) => {
   try {
-    // API 호출
+    closeDetailModal();
+
+    // 정보 변경 API 호출
     const response = await updateUser(updatedUser);
 
     // 성공 시 목록 새로고침
@@ -376,7 +384,7 @@ const handleDeleteSelected = async () => {
     await fetchUsers(); // 목록 새로고침
     selectedUsers.value = []; // 선택 초기화
     selectAll.value = false; // 전체 선택 초기화
-    
+
     toast.add({
       severity: 'success',
       summary: '성공',
@@ -437,7 +445,7 @@ const handleImageUpload = (event) => {
   if (file) {
     uploadedFile.value = file;
     newUser.value.profileImage = file;
-    
+
     // 이미지 미리보기
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -528,16 +536,16 @@ const handleUserCreated = () => {
                 />
               </div>
               <div class="action-buttons">
-                <Button 
-                  label="사용자 추가" 
-                  icon="pi pi-plus" 
-                  class="p-button-success mr-2" 
+                <Button
+                  label="사용자 추가"
+                  icon="pi pi-plus"
+                  class="p-button-success mr-2"
                   @click="showCreateModal = true"
                 />
-                <Button 
-                  label="선택 삭제" 
-                  icon="pi pi-trash" 
-                  class="p-button-danger" 
+                <Button
+                  label="선택 삭제"
+                  icon="pi pi-trash"
+                  class="p-button-danger"
                   :disabled="selectedUsers.length === 0"
                   @click="handleDeleteSelected"
                 />
@@ -736,11 +744,7 @@ const handleUserCreated = () => {
         />
 
         <!-- 사용자 추가 모달 -->
-        <UserCreateModal
-          :is-open="showCreateModal"
-          @close="showCreateModal = false"
-          @created="handleUserCreated"
-        />
+        <UserCreateModal :is-open="showCreateModal" @close="showCreateModal = false" @created="handleUserCreated" />
       </div>
     </div>
   </div>
@@ -1190,7 +1194,7 @@ const handleUserCreated = () => {
   display: flex;
   align-items: center;
   margin-bottom: 1rem;
-  
+
   label {
     margin-left: 0.5rem;
   }
@@ -1236,7 +1240,7 @@ const handleUserCreated = () => {
   display: flex;
   align-items: center;
   margin-bottom: 1rem;
-  
+
   label {
     margin-left: 0.5rem;
     color: #374151;

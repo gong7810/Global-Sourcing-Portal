@@ -16,23 +16,8 @@ const { userInfo } = storeToRefs(authStore);
 
 const basicInfo = ref({
   hasCriminalRecord: null,
-  criminalRecordFile: null
+  criminalRecordFileId: null
 });
-// {
-//   name: '최예지',
-//   birth: '1996.09.01',
-//   gender: { name: '여성', code: 'GENDER_FEMALE' },
-//   email: 'yeji@naver.com',
-//   mobile: '010-1234-7496',
-//   address: '윙스타워 505호',
-//   userId: 'yeji123',
-//   isSocialLogin: true,
-//   hasCriminalRecord: false,
-//   hasVisitedKorea: false,
-//   maritalStatus: null,
-//   koreanProficiencyCd: null,
-//   koreanStudyPeriod: ''
-// }
 
 const profileImage = ref(null);
 const profileRawData = ref();
@@ -135,7 +120,8 @@ const updatePassword = () => {
     message: '비밀번호를 변경하시겠습니까?',
     onCloseYes: async () => {
       const body = {
-        password: passwordInfo.value.newPassword
+        password: passwordInfo.value.currentPassword,
+        newPassword: passwordInfo.value.newPassword
       };
 
       const response = await resetPassword(body);
@@ -190,15 +176,22 @@ const saveAll = () => {
     messagePop.toast('주소를 입력해주세요.', 'warn');
     return;
   }
-  // if (!basicInfo.value.criminalRecordFile) {
-  //   messagePop.toast('범죄경력 확인서를 업로드해주세요.', 'warn');
-  //   return;
-  // }
+  if (!basicInfo.value.criminalRecordFileId) {
+    messagePop.toast('범죄경력 확인서를 업로드해주세요.', 'warn');
+    return;
+  }
 
   messagePop.confirm({
     message: '변경사항을 저장하시겠습니까?',
     onCloseYes: async () => {
-      let body = { ...basicInfo.value, genderCd: basicInfo.value.gender.code };
+      let body = {
+        ...basicInfo.value,
+        birth:
+          typeof basicInfo.value.birth === 'string'
+            ? basicInfo.value.birth
+            : basicInfo.value.birth.toISOString().slice(0, 10).replaceAll('-', '.'),
+        genderCd: basicInfo.value.gender.code
+      };
 
       // 프로필 사진 수정 or 저장
       if (profileRawData.value) {

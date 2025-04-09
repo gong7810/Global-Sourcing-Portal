@@ -1,16 +1,16 @@
-import { useApi } from '@/apis/index'
+import { useApi } from '@/apis/index';
 
 const api = useApi();
 
 // 기존 test 함수는 유지
 export const test = async () => {
   try {
-    const response = await api.get('/v1/st/user/apis')
-    console.log(response)
+    const response = await api.get('/v1/st/user/apis');
+    console.log(response);
   } catch (error) {
-    console.error(error)
+    console.error(error);
   }
-}
+};
 
 /**
  * 사용자 목록 조회
@@ -21,7 +21,7 @@ export const getUserList = async (params = {}) => {
   try {
     // 파라미터 정리
     const queryParams = new URLSearchParams();
-    
+
     // 기본 파라미터 추가
     queryParams.append('page', String(params.page || 1));
     queryParams.append('perPage', String(params.perPage || 10));
@@ -50,11 +50,11 @@ export const getUserList = async (params = {}) => {
     }
 
     // console.log('API 요청 파라미터:', Object.fromEntries(queryParams));
-    
+
     // API 엔드포인트 확인
     const endpoint = '/user/list';
     // console.log('API 엔드포인트:', endpoint);
-    
+
     const response = await api.get(`${endpoint}?${queryParams.toString()}`);
     // console.log('API 응답 데이터:', response.data);
     return response.data;
@@ -106,24 +106,31 @@ export const updateUserStatus = async (data) => {
 export const updateUser = async (data) => {
   try {
     // 데이터 타입 변환 및 필드 매핑
-    const updateData = {
+    let updateData = {
       id: Number(data.id),
       loginId: String(data.loginId || ''),
       name: String(data.name || ''),
-      birth: String(data.birthDate || ''),
+      birth: String(data.birth || ''),
       mobile: String(data.mobile || ''),
       email: String(data.email || ''),
       roleCd: String(data.role || ''),
       genderCd: String(data.gender || ''),
       isCompany: Boolean(data.isCompany),
-      enabled: Boolean(data.enabled),
-      profileImage: data.profileImage || null
+      enabled: Boolean(data.enabled)
     };
-    
+
+    if (data.password) {
+      updateData = { ...updateData, password: data.password };
+    }
+
+    if (data.profileImage) {
+      updateData = { ...updateData, profileImage: data.profileImage };
+    }
+
     // console.log('Sending update data:', updateData); // 디버깅용
     const response = await api.post(`/user`, updateData);
     // console.log('Update response:', response.data); // 디버깅용
-    
+
     // 응답 데이터에 role과 gender 필드가 없으면 추가
     if (response.data && !response.data.role) {
       response.data.role = updateData.roleCd;
@@ -131,7 +138,7 @@ export const updateUser = async (data) => {
     if (response.data && !response.data.gender) {
       response.data.gender = updateData.genderCd;
     }
-    
+
     return response.data;
   } catch (error) {
     console.error('사용자 정보 업데이트 실패:', error);
@@ -148,14 +155,14 @@ export const getJobOfferList = async (params = {}) => {
   try {
     // 파라미터 정리
     const queryParams = new URLSearchParams();
-    
+
     // 기본 파라미터 추가
     queryParams.append('page', String(params.page || 1));
     queryParams.append('perPage', String(params.perPage || 10));
 
     // API 엔드포인트
     const endpoint = '/jobOffer/list';
-    
+
     const response = await api.get(`${endpoint}?${queryParams.toString()}`);
     return response.data;
   } catch (error) {
@@ -187,7 +194,7 @@ export const deleteJobOffer = async (jobOfferId) => {
 export const deleteUsers = async (userIds) => {
   try {
     const response = await api.post('/user/delete', {
-      userIds: userIds.map(id => Number(id))
+      userIds: userIds.map((id) => Number(id))
     });
     return response.data;
   } catch (error) {
@@ -216,7 +223,7 @@ export const createUser = async (data) => {
       enabled: Boolean(data.enabled),
       profileImage: data.profileImage || null
     };
-    
+
     const response = await api.post('/user/create', userData);
     return response.data;
   } catch (error) {

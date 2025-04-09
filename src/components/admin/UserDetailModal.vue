@@ -1,10 +1,6 @@
 <script setup>
 import { ref, watch } from 'vue';
-import Dropdown from 'primevue/dropdown';
-import Button from 'primevue/button';
-import InputText from 'primevue/inputtext';
-import InputSwitch from 'primevue/inputswitch';
-import Dialog from 'primevue/dialog';
+import { fileUpload } from '@/apis/common/commonApis';
 
 const props = defineProps({
   isOpen: Boolean,
@@ -50,11 +46,11 @@ const genderOptions = [
 ];
 
 // 프로필 이미지 관련 상태 추가
-const profileImage = ref(null);
+const profileImage = ref();
 const imagePreview = ref(null);
 
 // 파일 선택 처리
-const handleFileSelect = (event) => {
+const handleFileSelect = async (event) => {
   const file = event.target.files[0];
   if (file) {
     // 파일 미리보기 생성
@@ -65,16 +61,21 @@ const handleFileSelect = (event) => {
     };
     reader.readAsDataURL(file);
 
-    // 모의 업로드 성공 메시지
-    setTimeout(() => {
-      toast.add({
-        severity: 'success',
-        summary: '업로드 완료',
-        detail: '프로필 이미지가 업데이트되었습니다.',
-        life: 3000
-      });
-    }, 500);
+    // 프로필 사진 수정 or 저장
+    const formData = saveImage(file);
+
+    const response = await fileUpload(formData);
+
+    editedUser.value.profileImage = response.id;
   }
+};
+
+// 이미지 바이너리 변환
+const saveImage = (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  return formData;
 };
 
 // 이미지 제거
@@ -149,7 +150,7 @@ const toggleEditMode = () => {
       gender: editedUser.value.gender,
       isCompany: editedUser.value.employer,
       enabled: editedUser.value.active,
-      profileImage: imagePreview.value,
+      profileImage: editedUser.value.profileImage,
       password: editedUser.value.password
     };
     emit('update', updatedData);
@@ -336,11 +337,11 @@ const getGenderLabel = (gender) => {
             <th>권한</th>
             <td>
               <template v-if="isEditMode">
-                <Dropdown 
-                  v-model="editedUser.role" 
-                  :options="roleOptions" 
-                  optionLabel="label" 
-                  optionValue="value" 
+                <Dropdown
+                  v-model="editedUser.role"
+                  :options="roleOptions"
+                  optionLabel="label"
+                  optionValue="value"
                   class="w-full"
                 />
               </template>
@@ -351,11 +352,11 @@ const getGenderLabel = (gender) => {
             <th>성별</th>
             <td>
               <template v-if="isEditMode">
-                <Dropdown 
-                  v-model="editedUser.gender" 
-                  :options="genderOptions" 
-                  optionLabel="label" 
-                  optionValue="value" 
+                <Dropdown
+                  v-model="editedUser.gender"
+                  :options="genderOptions"
+                  optionLabel="label"
+                  optionValue="value"
                   class="w-full"
                 />
               </template>
@@ -401,33 +402,13 @@ const getGenderLabel = (gender) => {
     </div>
     <template #footer>
       <template v-if="isEditMode">
-        <Button
-          label="취소"
-          class="p-button-text"
-          @click="cancelEdit"
-        />
-        <Button
-          label="저장"
-          class="p-button-primary"
-          @click="toggleEditMode"
-        />
+        <Button label="취소" class="p-button-text" @click="cancelEdit" />
+        <Button label="저장" class="p-button-primary" @click="toggleEditMode" />
       </template>
       <template v-else>
-        <Button
-          label="닫기"
-          class="p-button-text"
-          @click="closeModal"
-        />
-        <Button
-          label="편집"
-          class="p-button-primary"
-          @click="toggleEditMode"
-        />
-        <Button
-          label="삭제"
-          class="p-button-danger"
-          @click="handleDelete"
-        />
+        <Button label="닫기" class="p-button-text" @click="closeModal" />
+        <Button label="편집" class="p-button-primary" @click="toggleEditMode" />
+        <Button label="삭제" class="p-button-danger" @click="handleDelete" />
       </template>
     </template>
   </Dialog>
