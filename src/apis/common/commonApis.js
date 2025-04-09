@@ -44,6 +44,15 @@ export const updateNotification = async (id) => {
   }
 };
 
+// 노티 삭제 API
+export const delNotification = async (id) => {
+  try {
+    await api.del(`/notification/${id}`);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 // FAQ 목록 조회
 export const getFaqList = async (params = {}) => {
   try {
