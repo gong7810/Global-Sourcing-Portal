@@ -487,7 +487,14 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
         <div class="border-t pt-4">
           <div class="mb-4">
             <h4 class="text-base font-bold text-gray-900 mb-2">직무 · 제안 포지션</h4>
-            <p class="text-gray-600">{{ offer?.jobCategoryCd === 'JOB_22' ? `기타(${offer?.customJobCategory})` : convertJobCode(offer?.jobCategoryCd) }} | {{ offer?.position }}</p>
+            <p class="text-gray-600">
+              {{
+                offer?.jobCategoryCd === 'JOB_22'
+                  ? `기타(${offer?.customJobCategory})`
+                  : convertJobCode(offer?.jobCategoryCd)
+              }}
+              | {{ offer?.position }}
+            </p>
           </div>
 
           <div class="mb-4">
@@ -551,22 +558,22 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
             <!-- 아직 확정되지 않은 경우 제안된 일정들 표시 -->
             <div v-else class="space-y-4">
               <div
-                v-for="(time, index) in ['reserveTime1', 'reserveTime2', 'reserveTime3']
+                v-for="(dateSlot, index) in ['reserveTime1', 'reserveTime2', 'reserveTime3']
                   .map((key, i) => ({
                     time: offer[key],
                     type: offer[`interviewTypeCd${i + 1}`],
-                    place: offer[`interviewPlace${i + 1}`]
+                    info: offer[`interviewPlace${i + 1}`]
                   }))
                   .filter((item) => item.time)"
                 :key="index"
                 class="mb-2"
               >
                 <p class="text-gray-600">
-                  날짜·시간: {{ time.time.slice(0, 10).replaceAll('-', '.') }} &nbsp;
-                  {{ time.time.slice(11, 16) }}
+                  날짜·시간: {{ dateSlot.time.slice(0, 10).replaceAll('-', '.') }} &nbsp;
+                  {{ dateSlot.time.slice(11, 16) }}
                 </p>
-                <p class="text-gray-600">방식: {{ time.type === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접' }}</p>
-                <p class="text-gray-600">장소: {{ time.place }}</p>
+                <p class="text-gray-600">방식: {{ dateSlot.type === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접' }}</p>
+                <p class="text-gray-600">장소: {{ dateSlot.info }}</p>
               </div>
             </div>
           </div>
