@@ -30,7 +30,8 @@ const loading = ref(false);
 const users = ref([]);
 const pagination = ref({
   page: 1,
-  totalCount: 0
+  totalCount: 0,
+  perPage: 10
 });
 
 // 각 컬럼별 검색어 상태
@@ -80,6 +81,13 @@ const genderOptions = [
   { label: '여성', value: 'FEMALE' }
 ];
 
+// 페이지당 항목 수 옵션
+const perPageOptions = [
+  { label: '10', value: 10 },
+  { label: '20', value: 20 },
+  { label: '50', value: 50 }
+];
+
 // API 호출 함수들
 const fetchUsers = async () => {
   loading.value = true;
@@ -103,7 +111,7 @@ const fetchUsers = async () => {
 
     const params = {
       page: pagination.value.page,
-      perPage: 10,
+      perPage: pagination.value.perPage,
       ...cleanFilters
     };
 
@@ -129,7 +137,8 @@ const fetchUsers = async () => {
       if (response.pagination) {
         pagination.value = {
           page: Number(response.pagination.page) || 1,
-          totalCount: Number(response.pagination.totalCount) || 0
+          totalCount: Number(response.pagination.totalCount) || 0,
+          perPage: Number(response.pagination.perPage) || pagination.value.perPage
         };
       }
 
@@ -466,6 +475,12 @@ const handleImageDelete = () => {
 const handleUserCreated = () => {
   fetchUsers();
 };
+
+// 페이지당 항목 수 변경 핸들러
+const handlePerPageChange = () => {
+  pagination.value.page = 1; // 페이지 초기화
+  fetchUsers();
+};
 </script>
 
 <template>
@@ -609,8 +624,8 @@ const handleUserCreated = () => {
           <!-- 페이지네이션 -->
           <div class="pagination-container">
             <div class="pagination-info">
-              총 {{ pagination.totalCount }}건 중 {{ (pagination.page - 1) * 10 + 1 }}-{{
-                Math.min(pagination.page * 10, pagination.totalCount)
+              총 {{ pagination.totalCount }}건 중 {{ (pagination.page - 1) * pagination.perPage + 1 }}-{{
+                Math.min(pagination.page * pagination.perPage, pagination.totalCount)
               }}건
             </div>
             <div class="pagination-controls">
@@ -636,7 +651,7 @@ const handleUserCreated = () => {
               <Button
                 icon="pi pi-angle-right"
                 class="p-button-text"
-                :disabled="pagination.page * 10 >= pagination.totalCount"
+                :disabled="pagination.page * pagination.perPage >= pagination.totalCount"
                 @click="
                   pagination.page++;
                   fetchUsers();
@@ -645,12 +660,21 @@ const handleUserCreated = () => {
               <Button
                 icon="pi pi-angle-double-right"
                 class="p-button-text"
-                :disabled="pagination.page * 10 >= pagination.totalCount"
+                :disabled="pagination.page * pagination.perPage >= pagination.totalCount"
                 @click="
-                  pagination.page = Math.ceil(pagination.totalCount / 10);
+                  pagination.page = Math.ceil(pagination.totalCount / pagination.perPage);
                   fetchUsers();
                 "
               />
+              <div class="per-page-selector">
+                <Dropdown
+                  v-model="pagination.perPage"
+                  :options="perPageOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  @change="handlePerPageChange"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -1147,15 +1171,18 @@ const handleUserCreated = () => {
 
 .pagination-container {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   margin-top: 1rem;
   padding: 1rem;
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: relative;
 
   .pagination-info {
+    position: absolute;
+    left: 1rem;
     color: #6b7280;
     font-size: 0.875rem;
   }
@@ -1173,6 +1200,15 @@ const handleUserCreated = () => {
       &:disabled {
         opacity: 0.5;
         cursor: default;
+      }
+    }
+
+    .per-page-selector {
+      margin-left: 1rem;
+      
+      :deep(.p-dropdown) {
+        width: 100px;
+        height: 2.5rem;
       }
     }
   }
