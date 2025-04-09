@@ -696,7 +696,6 @@ const getGenderLabel = (gender) => {
       background-color: white;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      overflow: auto;
 
       table {
         width: 100%;
@@ -1014,11 +1013,11 @@ const getGenderLabel = (gender) => {
   }
 }
 
-// 테이블 스크롤을 위한 컨테이너 설정
+// 테이블 스크롤을 위한 컨테이너 설정 제거
 .user-list {
   .table-container {
-    max-height: calc(100vh - 300px); // 적절한 높이로 조정
-    overflow: auto;
+    // max-height: calc(100vh - 300px); 제거
+    // overflow: auto; 제거
   }
 }
 </style>
