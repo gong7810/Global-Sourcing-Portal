@@ -5,14 +5,12 @@ import { storeToRefs } from 'pinia';
 import { useLayout } from '@/layout/composables/layout';
 import { useMessagePop } from '@/plugins/commonutils';
 
-import { useApi } from '@/apis';
 import { logout } from '@/apis/auth/authApis';
 import { getNotificationList, updateNotification } from '@/apis/common/commonApis';
 import { useAuthStore } from '@/store/auth/authStore';
 
 const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
 
-const api = useApi();
 const route = useRoute();
 const router = useRouter();
 const messagePop = useMessagePop();
@@ -310,7 +308,7 @@ const markAllAsRead = async () => {
     // 각 알림에 대해 읽음 처리
     for (const noti of unreadNotifications) {
       noti.isRead = true;
-      await api.post(`/notification/read/${noti.id}`);
+      await updateNotification(noti.id);
     }
 
     getNotiByUser();

@@ -82,8 +82,8 @@ const setAccountInfo = async () => {
   basicInfo.value = response;
 
   basicInfo.value.gender = {
-    name: basicInfo.value.gender.name,
-    code: basicInfo.value.gender.code
+    name: basicInfo.value?.gender.name,
+    code: basicInfo.value?.gender.code
   };
 
   // 프로필 이미지 세팅
@@ -326,7 +326,7 @@ const removeCriminalRecord = () => {
     <div class="grid gap-4">
       <div class="user-page">
         <!-- 계정 정보 섹션 -->
-        <div class="bg-white rounded-lg p-6 mb-6" v-if="!basicInfo.isSocialLogin">
+        <div class="bg-white rounded-lg p-6 mb-6" v-if="!basicInfo?.isSocialLogin">
           <div class="flex justify-between items-center mb-4">
             <h2 class="text-lg font-bold">계정 정보</h2>
           </div>
