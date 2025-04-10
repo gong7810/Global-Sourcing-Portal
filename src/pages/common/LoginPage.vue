@@ -67,26 +67,37 @@ const getUserInfo = async () => {
   }
 };
 
-const { lineState } = storeToRefs(authStore);
+// 소셜 로그인 - Google
 const loginGoogle = () => {
   // const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${import.meta.env.VITE_GOOGLE_CLIENT_ID}&redirect_uri=${import.meta.env.VITE_GOOGLE_REDIRECT_URL}&response_type=code&scope=email profile`;
 
-  const popup = window.open(`${import.meta.env.VITE_PROXY_URL}/auth/google`, 'snsLogin', 'width=500,height=600');
+  window.open(`${import.meta.env.VITE_PROXY_URL}/auth/google`, 'snsLogin', 'width=500,height=600');
 
   // 메시지 리스너 설정
   window.addEventListener('message', (event) => {
     const token = event.data?.accessToken;
 
     console.log(token);
+
+    if (token) {
+      authStore.setToken(token, false);
+    }
   });
+
+  setTimeout(async () => {
+    getUserInfo();
+
+    router.push('/');
+  }, 1000);
 };
 
-const loginLine = () => {
+// 소셜 로그인 - Line
+const loginLine = async () => {
   // const url = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&&client_id=${import.meta.env.VITE_LINE_CLIENT_ID}&redirect_uri=${import.meta.env.VITE_LINE_REDIRECT_URL}&state=${states}&scope=profile%20openid`;
   messagePop.toast('준비중입니다.', 'info');
   return;
 
-  const popup = window.open(`${import.meta.env.VITE_PROXY_URL}/auth/line`, 'snsLogin', 'width=500,height=600');
+  window.open(`${import.meta.env.VITE_PROXY_URL}/auth/line`, 'snsLogin', 'width=500,height=600');
 
   // 메시지 리스너 설정
   window.addEventListener('message', (event) => {

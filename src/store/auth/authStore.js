@@ -11,7 +11,6 @@ export const useAuthStore = defineStore(
     const tokenInfo = ref({});
     const userInfo = ref(null); // 사용자정보
     const companyData = ref(null); // 기업정보
-    let lineState = ref('12345abcde');
 
     /* 로그인 완료후 토큰 정보 설정 */
     const setToken = (accessToken, isRemember = false) => {
@@ -94,18 +93,11 @@ export const useAuthStore = defineStore(
       return meta.authorization.includes(userInfo.value.roleCd);
     };
 
-    /* 라인 state 관리 */
-    const setState = (state) => {
-      lineState.value = state;
-    };
-
     return {
       userInfo,
       companyData,
       tokenInfo,
       setToken,
-      lineState,
-      setState,
       setUserInfo,
       setCompanyData,
       reset,

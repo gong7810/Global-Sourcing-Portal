@@ -437,6 +437,7 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
               <span v-if="slotProps.value?.code !== 'all'" class="text-sm text-gray-500">
                 ({{ getJobCount(slotProps.value) }})
               </span>
+              <span v-else class="text-sm text-gray-500"> ({{ getJobCount(slotProps) }}) </span>
             </div>
           </template>
           <template #option="slotProps">
@@ -445,6 +446,7 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
               <span v-if="slotProps.option?.code !== 'all'" class="text-sm text-gray-500">
                 ({{ getJobCount(slotProps.option) }})
               </span>
+              <span v-else class="text-sm text-gray-500"> ({{ getJobCount(slotProps) }}) </span>
             </div>
           </template>
         </Select>
@@ -518,9 +520,7 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
             <h4 class="text-base font-bold text-gray-900 mb-2">직무 · 제안 포지션</h4>
             <p class="text-gray-600">
               {{
-                offer?.jobCategoryCd === 'JOB_22'
-                  ? `기타(${offer?.jobCategoryEtc})`
-                  : convertJobCode(offer?.jobCategoryCd)
+                offer?.jobCategoryCd === 'JOB_22' ? `${offer?.jobCategoryEtc}` : convertJobCode(offer?.jobCategoryCd)
               }}
               | {{ offer?.position }}
             </p>
@@ -575,7 +575,9 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
                   {{ dateSlot.time.slice(11, 16) }}
                 </p>
                 <p class="text-gray-600">방식: {{ dateSlot.type === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접' }}</p>
-                <p class="text-gray-600">{{ dateSlot.type === 'INTERVIEW_TY_1' ? '링크: ' : '장소: ' }}{{ dateSlot.info }}</p>
+                <p class="text-gray-600">
+                  {{ dateSlot.type === 'INTERVIEW_TY_1' ? '링크: ' : '장소: ' }}{{ dateSlot.info }}
+                </p>
               </div>
             </div>
 

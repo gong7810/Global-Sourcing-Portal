@@ -34,13 +34,7 @@ export default defineConfig(({ mode }) => {
         '/api': {
           target: env.VITE_PROXY_URL,
           rewrite: (path) => path.replace(/^\/api/, ''),
-          changeOrigin: true,
-          bypass: (req) => {
-            // callback 경로는 프록시하지 않음
-            if (req.url.includes('/api/auth/callback')) {
-              return req.url;
-            }
-          }
+          changeOrigin: true
         }
       }
     }

@@ -224,6 +224,8 @@ const getDaysUntilDeadline = (deadline) => {
   // 기한이 지난 경우 '마감' 표시
   if (!isNaN(diffDays) && diffDays < 0) {
     return '마감';
+  } else if (!isNaN(diffDays) && diffDays === 0) {
+    return 'DAY';
   }
 
   return isNaN(diffDays) ? 7 : diffDays;
@@ -379,13 +381,15 @@ const calculatePeriod = (period) => {
                 </span>
               </div>
               <!-- 회신기한을 상단으로 이동 -->
-              <div v-if="offer.statusCd === 'JO_ST_1'" class="text-right">
+              <div v-if="offer?.statusCd === 'JO_ST_1'" class="text-right">
                 <span
                   :class="[
                     'text-sm flex items-center gap-2 justify-end',
-                    getDaysUntilDeadline(offer?.deadAt?.slice(0, 10)?.replaceAll('-', '.')) === '마감'
+                    ['마감', 'DAY'].includes(
+                      getDaysUntilDeadline(offer?.deadlineDt?.slice(0, 10)?.replaceAll('-', '.'))
+                    )
                       ? 'text-red-500'
-                      : getDaysUntilDeadline(offer?.deadAt?.slice(0, 10)?.replaceAll('-', '.')) <= 3
+                      : getDaysUntilDeadline(offer?.deadlineDt?.slice(0, 10)?.replaceAll('-', '.')) <= 3
                         ? 'text-orange-500'
                         : 'text-gray-500'
                   ]"
@@ -393,9 +397,9 @@ const calculatePeriod = (period) => {
                   <i class="pi pi-calendar"></i>
                   회신기한:
                   {{
-                    getDaysUntilDeadline(offer?.deadAt?.slice(0, 10)?.replaceAll('-', '.')) === '마감'
+                    getDaysUntilDeadline(offer?.deadlineDt?.slice(0, 10)?.replaceAll('-', '.')) === '마감'
                       ? '마감'
-                      : 'D-' + getDaysUntilDeadline(offer?.deadAt?.slice(0, 10)?.replaceAll('-', '.'))
+                      : 'D-' + getDaysUntilDeadline(offer?.deadlineDt?.slice(0, 10)?.replaceAll('-', '.'))
                   }}
                 </span>
               </div>
@@ -466,14 +470,31 @@ const calculatePeriod = (period) => {
                   <i class="pi pi-clock mr-2"></i>
                   제안받은 날짜: {{ dateFormatter.halfDate(offer?.createdAt) }}
                 </p>
-                <div class="bg-blue-50 p-4 rounded-lg">
-                  <p class="text-blue-700">
+                <div
+                  class="p-4 rounded-lg"
+                  :class="
+                    ['마감', 'DAY'].includes(
+                      getDaysUntilDeadline(offer?.deadlineDt?.slice(0, 10)?.replaceAll('-', '.'))
+                    ) || getDaysUntilDeadline(offer?.deadlineDt?.slice(0, 10)?.replaceAll('-', '.')) < 3
+                      ? 'bg-red-50'
+                      : 'bg-blue-50'
+                  "
+                >
+                  <p
+                    :class="
+                      ['마감', 'DAY'].includes(
+                        getDaysUntilDeadline(offer?.deadlineDt?.slice(0, 10)?.replaceAll('-', '.'))
+                      ) || getDaysUntilDeadline(offer?.deadlineDt?.slice(0, 10)?.replaceAll('-', '.')) < 3
+                        ? 'text-red-700'
+                        : 'text-blue-700'
+                    "
+                  >
                     <i class="pi pi-info-circle mr-2"></i>
                     회신기한:
                     {{
-                      getDaysUntilDeadline(offer?.deadAt?.slice(0, 10)?.replaceAll('-', '.')) === '마감'
+                      getDaysUntilDeadline(offer?.deadlineDt?.slice(0, 10)?.replaceAll('-', '.')) === '마감'
                         ? '마감'
-                        : 'D-' + getDaysUntilDeadline(offer?.deadAt?.slice(0, 10)?.replaceAll('-', '.'))
+                        : 'D-' + getDaysUntilDeadline(offer?.deadlineDt?.slice(0, 10)?.replaceAll('-', '.'))
                     }}
                   </p>
                 </div>
@@ -514,12 +535,35 @@ const calculatePeriod = (period) => {
                 <!-- 면접 일정 조율 중인 경우 -->
                 <div v-else-if="offer?.statusCd === 'JO_ST_4'" class="space-y-4">
                   <!-- 면접 일정 정보를 담은 파란색 박스 -->
-                  <div class="bg-blue-50 p-4 rounded-lg">
+                  <div
+                    class="p-4 rounded-lg"
+                    :class="
+                      getDaysUntilDeadline(offer?.deadlineScheduleDt?.slice(0, 10)?.replaceAll('-', '.')) === '마감' ||
+                      getDaysUntilDeadline(offer?.deadlineScheduleDt?.slice(0, 10)?.replaceAll('-', '.')) === 'DAY' ||
+                      getDaysUntilDeadline(offer?.deadlineScheduleDt?.slice(0, 10)?.replaceAll('-', '.')) <= 1
+                        ? 'bg-red-50'
+                        : 'bg-blue-50'
+                    "
+                  >
                     <h4 class="font-medium text-gray-900 mb-2">제안된 면접 일정</h4>
                     <!-- 회신기한 추가 -->
-                    <p class="text-blue-700 mb-4">
+                    <p
+                      class="mb-4"
+                      :class="
+                        ['마감', 'DAY'].includes(
+                          getDaysUntilDeadline(offer?.deadlineScheduleDt?.slice(0, 10)?.replaceAll('-', '.'))
+                        ) || getDaysUntilDeadline(offer?.deadlineScheduleDt?.slice(0, 10)?.replaceAll('-', '.')) <= 1
+                          ? 'text-red-700'
+                          : 'text-blue-700'
+                      "
+                    >
                       <i class="pi pi-info-circle mr-2"></i>
-                      회신기한: D-3
+                      회신기한:
+                      {{
+                        getDaysUntilDeadline(offer?.deadlineScheduleDt?.slice(0, 10)?.replaceAll('-', '.')) === '마감'
+                          ? '마감'
+                          : 'D-' + getDaysUntilDeadline(offer?.deadlineScheduleDt?.slice(0, 10)?.replaceAll('-', '.'))
+                      }}
                     </p>
                     <div class="space-y-4 mb-4">
                       <div
@@ -782,13 +826,22 @@ const calculatePeriod = (period) => {
               제안받은 날짜: {{ dateFormatter.fullDate(selectedOffer?.createdAt) }}
             </p>
             <div class="bg-blue-50 p-4 rounded-lg">
-              <p class="text-blue-700">
+              <p
+                class="mb-4"
+                :class="
+                  ['마감', 'DAY'].includes(
+                    getDaysUntilDeadline(selectedOffer?.deadlineDt?.slice(0, 10)?.replaceAll('-', '.'))
+                  ) || getDaysUntilDeadline(selectedOffer?.deadlineDt?.slice(0, 10)?.replaceAll('-', '.')) <= 1
+                    ? 'text-red-700'
+                    : 'text-blue-700'
+                "
+              >
                 <i class="pi pi-info-circle mr-2"></i>
                 회신기한:
                 {{
-                  getDaysUntilDeadline(selectedOffer?.deadAt?.slice(0, 10)?.replaceAll('-', '.')) === '마감'
+                  getDaysUntilDeadline(selectedOffer?.deadlineDt?.slice(0, 10)?.replaceAll('-', '.')) === '마감'
                     ? '마감'
-                    : 'D-' + getDaysUntilDeadline(selectedOffer?.deadAt?.slice(0, 10)?.replaceAll('-', '.'))
+                    : 'D-' + getDaysUntilDeadline(selectedOffer?.deadlineDt?.slice(0, 10)?.replaceAll('-', '.'))
                 }}
               </p>
             </div>
@@ -828,9 +881,26 @@ const calculatePeriod = (period) => {
               <div class="bg-blue-50 p-4 rounded-lg">
                 <h4 class="font-medium text-gray-900 mb-2">제안된 면접 일정</h4>
                 <!-- 회신기한 추가 -->
-                <p class="text-blue-700 mb-4">
+                <p
+                  class="mb-4"
+                  :class="
+                    ['마감', 'DAY'].includes(
+                      getDaysUntilDeadline(selectedOffer?.deadlineScheduleDt?.slice(0, 10)?.replaceAll('-', '.'))
+                    ) ||
+                    getDaysUntilDeadline(selectedOffer?.deadlineScheduleDt?.slice(0, 10)?.replaceAll('-', '.')) <= 1
+                      ? 'text-red-700'
+                      : 'text-blue-700'
+                  "
+                >
                   <i class="pi pi-info-circle mr-2"></i>
-                  회신기한: D-3
+                  회신기한:
+                  {{
+                    getDaysUntilDeadline(selectedOffer?.deadlineScheduleDt?.slice(0, 10)?.replaceAll('-', '.')) ===
+                    '마감'
+                      ? '마감'
+                      : 'D-' +
+                        getDaysUntilDeadline(selectedOffer?.deadlineScheduleDt?.slice(0, 10)?.replaceAll('-', '.'))
+                  }}
                 </p>
                 <div class="space-y-4 mb-4">
                   <div
@@ -922,11 +992,9 @@ const calculatePeriod = (period) => {
                 <span>{{ dateFormatter.fullDate(selectedOffer?.updatedAt) }}에 면접 일정이 확정되었습니다</span>
               </p>
             </div>
-
-            <!-- 면접 완료된 경우 -->
           </div>
 
-          <!-- 완료된 경우 -->
+          <!-- 면접 완료된 경우 -->
           <div v-else-if="selectedOffer?.statusCd === 'JO_ST_6'" class="flex justify-between mt-1">
             <div class="grid grid-cols-1 gap-4">
               <div class="flex items-center gap-2">
@@ -1207,8 +1275,6 @@ const calculatePeriod = (period) => {
         </div>
       </template>
     </Dialog>
-
-    <!-- 토스트 메시지 -->
   </div>
 </template>
 

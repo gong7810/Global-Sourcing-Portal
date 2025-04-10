@@ -16,7 +16,7 @@ export function useApi() {
 
     // Axios 인스턴스 생성
     const api = axios.create({
-      baseURL: import.meta.env.VITE_PROXY_URL,
+      baseURL: import.meta.env.VITE_BASE_URL,
       headers: {
         'Content-Type': 'application/json',
         Authorization: tokenInfo.value?.accessToken ? `Bearer ${tokenInfo.value.accessToken}` : ''

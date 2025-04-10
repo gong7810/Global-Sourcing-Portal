@@ -6,7 +6,7 @@ import { useLayout } from '@/layout/composables/layout';
 import { useMessagePop } from '@/plugins/commonutils';
 
 import { logout } from '@/apis/auth/authApis';
-import { delNotification, getNotificationList, updateNotification } from '@/apis/common/commonApis';
+import { delNotificationAll, getNotificationList, updateNotification } from '@/apis/common/commonApis';
 import { useAuthStore } from '@/store/auth/authStore';
 
 const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
@@ -295,10 +295,7 @@ const formatDate = (dateString) => {
 // 모든 알림 삭제 처리
 const markAllAsRead = async () => {
   try {
-    for (const noti of notifications.value) {
-      noti.isRead = true;
-      await delNotification(noti.id);
-    }
+    await delNotificationAll();
 
     getNotiByUser();
   } catch (error) {
