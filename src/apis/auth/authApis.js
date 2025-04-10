@@ -133,8 +133,19 @@ export const findPassword = async (body) => {
   }
 };
 
-// 비밀번호 재설정 API - 로그인한 사용자
+// 비밀번호 재설정 API - 로그인 안한 사용자
 export const resetPassword = async (body) => {
+  try {
+    const response = await api.post(`/auth/resetPassword`, body);
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// 비밀번호 재설정 API - 로그인한 사용자
+export const resetPasswordByUser = async (body) => {
   try {
     const response = await api.post(`/auth/password`, body);
 

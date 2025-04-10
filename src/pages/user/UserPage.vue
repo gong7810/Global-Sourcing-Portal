@@ -6,7 +6,7 @@ import { useRouter } from 'vue-router';
 
 import { useMessagePop } from '@/plugins/commonutils';
 import { fileUpload, getCodeList } from '@/apis/common/commonApis';
-import { getAccount, resetPassword, updateAccount } from '@/apis/auth/authApis';
+import { getAccount, resetPasswordByUser, updateAccount } from '@/apis/auth/authApis';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -124,7 +124,7 @@ const updatePassword = () => {
         newPassword: passwordInfo.value.newPassword
       };
 
-      const response = await resetPassword(body);
+      const response = await resetPasswordByUser(body);
 
       if (response) {
         messagePop.alert('비밀번호가 변경되었습니다.', 'good');

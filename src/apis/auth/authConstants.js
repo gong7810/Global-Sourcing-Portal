@@ -12,6 +12,7 @@ export const AUTH_EXCLUSIONS_ROUTER_NAME = [
   'companyRegisterComplete',
   'findId',
   'findPassword',
+  'ResetPassword',
   'findIdResult',
   'findPasswordResult',
   'InquiryPage',
