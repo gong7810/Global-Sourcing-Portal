@@ -269,7 +269,7 @@ const scheduleInterview = async () => {
               time,
               index
             ) => `<div class="mt-1">${time.slice(0, 10).replaceAll('-', '.')} ${time.slice(11, 16)}</div> <p>면접 방식: ${interviewOptions.value[index].type === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접'}</p>
-        <p>장소/링크: ${interviewOptions.value[index].info}</p> <hr class="mb-1"/>`
+        <p>${interviewOptions.value[index].type === 'INTERVIEW_TY_1' ? '링크: ' : '장소: '}${interviewOptions.value[index].info}</p> <hr class="mb-1"/>`
           )
           .join('')}
         <p class="mt-2 text-red-500">* 확인 시 알림과 이메일이 발송됩니다.</p>
@@ -575,7 +575,7 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
                   {{ dateSlot.time.slice(11, 16) }}
                 </p>
                 <p class="text-gray-600">방식: {{ dateSlot.type === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접' }}</p>
-                <p class="text-gray-600">장소: {{ dateSlot.info }}</p>
+                <p class="text-gray-600">{{ dateSlot.type === 'INTERVIEW_TY_1' ? '링크: ' : '장소: ' }}{{ dateSlot.info }}</p>
               </div>
             </div>
 
