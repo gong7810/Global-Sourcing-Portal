@@ -88,7 +88,7 @@ const getOfferChange = async () => {
   }).length;
 
   unwriteResults.value = response.contents.filter((com) => {
-    return ['JO_ST_6'].includes(com.statusCd) && isNull(com?.resultCd);
+    return ['JO_ST_6'].includes(com.statusCd) && (isNull(com?.resultCd) || com?.resultCd === 'INTERVIEW_RESULT_3');
   }).length;
 };
 
