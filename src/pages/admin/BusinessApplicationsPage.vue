@@ -34,9 +34,7 @@ const searchQuery = ref('');
 // 필터링된 신청 목록
 const filteredApplications = computed(() => {
   if (!searchQuery.value) return applications.value;
-  return applications.value.filter(app => 
-    app.businessName?.toLowerCase().includes(searchQuery.value.toLowerCase())
-  );
+  return applications.value.filter((app) => app.businessName?.toLowerCase().includes(searchQuery.value.toLowerCase()));
 });
 
 // 신청 목록 로드
@@ -45,19 +43,20 @@ const loadApplications = async () => {
     // 미승인 기업 목록 가져오기
     const pendingResponse = await getPendingCompanyApplications();
 
+    let allApplications = pendingResponse.contents;
     // 승인된 기업 목록 가져오기 (notApproved=false로 설정)
-    const approvedResponse = await getAllCompanyApplications('&notApproved=false');
+    // const approvedResponse = await getAllCompanyApplications('&notApproved=false');
 
-    // 두 응답을 합치기
-    let allApplications = [];
+    // // 두 응답을 합치기
+    // let allApplications = [];
 
-    if (pendingResponse && pendingResponse.contents) {
-      allApplications = [...pendingResponse.contents];
-    }
+    // if (pendingResponse && pendingResponse.contents) {
+    //   allApplications = [...pendingResponse.contents];
+    // }
 
-    if (approvedResponse && approvedResponse.contents) {
-      allApplications = [...allApplications, ...approvedResponse.contents];
-    }
+    // if (approvedResponse && approvedResponse.contents) {
+    //   allApplications = [...allApplications, ...approvedResponse.contents];
+    // }
 
     // 데이터 매핑
     applications.value = allApplications.map((app) => ({
@@ -139,6 +138,7 @@ const approveApplication = async (id) => {
       // 목록 새로고침
       await loadApplications();
 
+      showDetailModal.value = false;
       messagePop.toast('승인되었습니다.', 'success');
     } catch (error) {
       console.error('승인 처리 중 오류 발생:', error);
@@ -216,11 +216,7 @@ const goBack = () => {
         <!-- 검색 영역 -->
         <div class="search-container">
           <div class="search-input-wrapper">
-            <InputText 
-              v-model="searchQuery"
-              placeholder="기업명으로 검색"
-              class="search-input"
-            />
+            <InputText v-model="searchQuery" placeholder="기업명으로 검색" class="search-input" />
             <i class="pi pi-search search-icon"></i>
           </div>
         </div>
@@ -247,15 +243,15 @@ const goBack = () => {
             <Column field="managerName" header="가입자명" :sortable="true"></Column>
             <Column field="status" header="상태" :sortable="true">
               <template #body="{ data }">
-                <Tag 
+                <Tag
                   :value="data.status === 'PENDING' ? '대기' : data.status === 'APPROVED' ? '승인' : '거절'"
-                  :severity="data.status === 'PENDING' ? 'warning' : data.status === 'APPROVED' ? 'success' : 'danger'" 
+                  :severity="data.status === 'PENDING' ? 'warn' : data.status === 'APPROVED' ? 'success' : 'danger'"
                 />
               </template>
             </Column>
             <Column header="관리" :style="{ width: '100px' }">
               <template #body="{ data }">
-                <Button 
+                <Button
                   label="상세"
                   class="p-button-outlined p-button-secondary p-button-sm"
                   @click="viewDetail(data)"

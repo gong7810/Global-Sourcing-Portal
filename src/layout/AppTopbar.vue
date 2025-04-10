@@ -418,6 +418,7 @@ const markAllAsRead = async () => {
               <!-- 메뉴 열림 상태에 따라 표시 -->
               <div class="py-2">
                 <a
+                  v-if="!userInfo?.isCompany"
                   class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50"
                   style="cursor: pointer"
                   @click="
@@ -429,6 +430,20 @@ const markAllAsRead = async () => {
                 >
                   <i class="pi pi-file-edit text-[#8FA1FF]"></i>
                   <span class="font-medium">이력서 관리</span>
+                </a>
+                <a
+                  v-else
+                  class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50"
+                  style="cursor: pointer"
+                  @click="
+                    () => {
+                      router.push('/company/index');
+                      closeMenu();
+                    }
+                  "
+                >
+                  <i class="pi pi-users text-[#8FA1FF]"></i>
+                  <span class="font-medium">북마크 인재 관리</span>
                 </a>
                 <a
                   class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50"
