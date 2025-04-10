@@ -1,7 +1,6 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { storeToRefs } from 'pinia';
 import { useMessagePop } from '@/plugins/commonutils';
 
 import { useAuthStore } from '@/store/auth/authStore';

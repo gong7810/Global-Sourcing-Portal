@@ -39,5 +39,10 @@ export const authRouter = [
     path: '/find-password',
     name: 'findPassword',
     component: () => import('@/pages/common/FindPasswordPage.vue')
+  },
+  {
+    path: '/resetPassword/:authKey', // 동적 세그먼트
+    name: 'ResetPassword',
+    component: () => import('@/pages/common/FindPasswordPage.vue')
   }
 ];
