@@ -39,5 +39,10 @@ export const authRouter = [
     path: '/find-password',
     name: 'findPassword',
     component: () => import('@/pages/common/FindPasswordPage.vue')
+  },
+  {
+    path: '/reset-password',
+    name: 'resetPassword',
+    component: () => import('@/pages/common/ResetPasswordPage.vue')
   }
 ];
