@@ -206,11 +206,14 @@ onMounted(() => {
             </div>
             <div class="form-group">
               <label>카테고리</label>
-              <Select v-model="newFaq.categoryCd" checkmark class="form-input">
-                <option v-for="category in categories.slice(1)" :key="category.value" :value="category.value">
-                  {{ category.label }}
-                </option>
-              </Select>
+              <Dropdown
+                v-model="newFaq.categoryCd"
+                :options="categories.slice(1)"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="카테고리 선택"
+                class="w-full"
+              />
             </div>
             <div class="modal-actions">
               <Button label="취소" class="p-button-text" @click="closeModal" />
