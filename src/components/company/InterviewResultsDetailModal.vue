@@ -256,9 +256,9 @@ const printResume = () => {
             <table>
               <tr><th>성명</th><td>${offerUserInfo.value?.resumeSnapshot?.user?.name}</td><th>국적</th><td>${offerUserInfo.value?.resumeSnapshot?.nationality?.name}</td></tr>
               <tr><th>생년월일</th><td>${offerUserInfo.value?.resumeSnapshot?.user?.birth}</td><th>성별</th><td>${offerUserInfo.value?.resumeSnapshot?.user?.genderCd === 'GENDER_MALE' ? '남성' : '여성'}</td></tr>
-              <tr><th>연락처</th><td colspan="3">${offerUserInfo.value?.statusCd === 'JO_ST_2' ? offerUserInfo.value?.resumeSnapshot?.user?.mobile : '🔒'}</td></tr>
-              <tr><th>이메일</th><td colspan="3">${offerUserInfo.value?.statusCd === 'JO_ST_2' ? offerUserInfo.value?.resumeSnapshot?.user?.email : '🔒'}</td></tr>
-              <tr><th>주소</th><td colspan="3">${offerUserInfo.value?.statusCd === 'JO_ST_2' ? offerUserInfo.value?.resumeSnapshot?.user?.address : '🔒'}</td></tr>
+              <tr><th>연락처</th><td colspan="3">${['JO_ST_2', 'JO_ST_4', 'JO_ST_5', 'JO_ST_6'].includes(offerUserInfo.value?.statusCd) ? offerUserInfo.value?.resumeSnapshot?.user?.mobile : '🔒'}</td></tr>
+              <tr><th>이메일</th><td colspan="3">${['JO_ST_2', 'JO_ST_4', 'JO_ST_5', 'JO_ST_6'].includes(offerUserInfo.value?.statusCd) ? offerUserInfo.value?.resumeSnapshot?.user?.email : '🔒'}</td></tr>
+              <tr><th>주소</th><td colspan="3">${['JO_ST_2', 'JO_ST_4', 'JO_ST_5', 'JO_ST_6'].includes(offerUserInfo.value?.statusCd) ? offerUserInfo.value?.resumeSnapshot?.user?.address : '🔒'}</td></tr>
               <tr><th>여권번호</th><td colspan="3">${offerUserInfo.value?.resumeSnapshot?.passport || '-'}</td></tr>
             </table>
           </div>
@@ -268,7 +268,7 @@ const printResume = () => {
       <!-- 기타 사항 -->
       <section class="mb-4">
         <table>
-          <tr><th>범죄 여부</th><td colspan="3">${offerUserInfo.value?.statusCd === 'JO_ST_2' ? (offerUserInfo.value?.resumeSnapshot?.user?.hasCriminalRecord ? '있음' : '없음') : '🔒'}</td></tr>
+          <tr><th>범죄 여부</th><td colspan="3">${['JO_ST_2', 'JO_ST_4', 'JO_ST_5', 'JO_ST_6'].includes(offerUserInfo.value?.statusCd) ? (offerUserInfo.value?.resumeSnapshot?.user?.hasCriminalRecord ? '있음' : '없음') : '🔒'}</td></tr>
           <tr><th>한국어 능력</th><td>${!isNull(offerUserInfo.value?.resumeSnapshot?.user?.koreanProficiency) ? offerUserInfo.value?.resumeSnapshot?.user?.koreanProficiency?.name : '-'}</td><th>공부 기간</th><td>${offerUserInfo.value?.resumeSnapshot?.user?.koreanStudyPeriod || '-'}</td></tr>
           <tr><th>한국 방문 경험</th><td>${!isNull(offerUserInfo.value?.resumeSnapshot?.user?.hasVisitedKorea) ? (offerUserInfo.value?.resumeSnapshot?.user?.hasVisitedKorea ? '있음' : '없음') : '-'}</td><th>혼인 사항</th><td>${!isNull(offerUserInfo.value?.resumeSnapshot?.user?.isMarried) ? (offerUserInfo.value?.resumeSnapshot?.user?.isMarried ? '기혼' : '미혼') : '-'}</td></tr>
         </table>
