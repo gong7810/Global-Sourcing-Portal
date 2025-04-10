@@ -422,7 +422,7 @@ const calculatePeriod = (period) => {
                 <p class="text-base text-gray-700">
                   {{
                     offer?.jobCategoryCd === 'JOB_22'
-                      ? `기타(${offer?.customJobCategory})`
+                      ? `기타(${offer?.jobCategoryEtc})`
                       : convertJobCode(offer?.jobCategoryCd)
                   }}
                   | {{ offer?.position }}
@@ -746,7 +746,7 @@ const calculatePeriod = (period) => {
               <p class="text-base text-gray-700">
                 {{
                   selectedOffer?.jobCategoryCd === 'JOB_22'
-                    ? `기타(${selectedOffer?.customJobCategory})`
+                    ? `기타(${selectedOffer?.jobCategoryEtc})`
                     : convertJobCode(selectedOffer?.jobCategoryCd)
                 }}
                 | {{ selectedOffer?.position }}
