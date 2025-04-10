@@ -582,50 +582,31 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
             <!-- JO_ST_5 -->
             <!-- 면접 일정이 확정된 경우 -->
             <div v-else class="p-4 bg-green-50 rounded-lg">
-              <!-- <p class="text-green-600 font-medium mb-3">확정된 면접 일정</p>
-              <div class="space-y-2 ml-4">
-                <p class="text-gray-600">
-                  날짜·시간: {{ offer?.interviewTime.slice(0, 10).replaceAll('-', '.') }} &nbsp;
-                  {{ offer?.interviewTime.slice(11, 16) }}
-                </p>
-                <p class="text-gray-600">
-                  방식: {{ offer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접' }}
-                </p>
-                <p class="text-gray-600">장소: {{ offer?.interviewInfo }}</p>
-              </div> -->
               <h4 class="font-medium text-gray-900 mb-2">확정된 면접 일정</h4>
-              <div class="grid grid-cols-2 gap-4">
-                <div class="flex items-center gap-2">
-                  <i class="pi pi-calendar text-green-600"></i>
-                  <div class="space-y-2">
-                    <div class="font-medium flex items-center gap-2">
-                      {{ offer?.interviewTime.slice(0, 10).replaceAll('-', '.') }}
-                      <span class="text-gray-400">|</span>
-                      {{ offer?.interviewTime.slice(11, 16) }}
-                    </div>
-                  </div>
+              <div class="flex items-center gap-2">
+                <i class="pi pi-calendar text-green-600"></i>
+                <div class="font-medium flex items-center gap-2">
+                  {{ offer?.interviewTime.slice(0, 10).replaceAll('-', '.') }}
+                  <span class="text-gray-400">|</span>
+                  {{ offer?.interviewTime.slice(11, 16) }}
                 </div>
-                <div class="flex items-center gap-2">
-                  <i class="pi pi-video text-green-600"></i>
-                  <span class="text-gray-700">
-                    {{ offer?.interviewType?.name }}
-                  </span>
-                </div>
-                <div class="flex items-center gap-2 text-md text-gray-600">
-                  <i class="pi pi-map-marker text-green-600"></i>
-                  <span class="text-gray-700">
-                    {{ offer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '링크: ' : '장소: ' }}
-                    <a
-                      v-if="offer?.interviewTypeCd === 'INTERVIEW_TY_1'"
-                      :href="offer?.interviewInfo"
-                      target="_blank"
-                      class="text-blue-600 hover:underline"
-                    >
-                      {{ offer?.interviewInfo }}
-                    </a>
-                    <span v-else>{{ offer?.interviewInfo }}</span>
-                  </span>
-                </div>
+              </div>
+              <div class="flex items-center gap-2 mt-2">
+                <i class="pi pi-video text-green-600"></i>
+                <span class="text-gray-700">
+                  방식: {{ offer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접' }}
+                  <span class="text-gray-400 mx-2">|</span>
+                  {{ offer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '링크: ' : '장소: ' }}
+                  <a
+                    v-if="offer?.interviewTypeCd === 'INTERVIEW_TY_1'"
+                    :href="offer?.interviewInfo"
+                    target="_blank"
+                    class="text-blue-600 hover:underline"
+                  >
+                    {{ offer?.interviewInfo }}
+                  </a>
+                  <span v-else>{{ offer?.interviewInfo }}</span>
+                </span>
               </div>
 
               <!-- JO_ST_5 -->
