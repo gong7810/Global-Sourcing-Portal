@@ -589,9 +589,9 @@ const calculatePeriod = (period) => {
                   <div class="flex items-center gap-2">
                     <i class="pi pi-calendar text-green-600"></i>
                     <div class="font-medium flex items-center gap-2">
-                      {{ offer?.interviewTime.slice(0, 10).replaceAll('-', '.') }}
+                      {{ offer?.interviewTime?.slice(0, 10)?.replaceAll('-', '.') }}
                       <span class="text-gray-400">|</span>
-                      {{ offer?.interviewTime.slice(11, 16) }}
+                      {{ offer?.interviewTime?.slice(11, 16) }}
                     </div>
                   </div>
                   <div class="flex items-center gap-2 mt-2">
@@ -613,7 +613,7 @@ const calculatePeriod = (period) => {
                   </div>
                   <p class="mt-4 text-green-600 flex items-center gap-2">
                     <i class="pi pi-check-circle"></i>
-                    <span>{{ dateFormatter.fullDate(offer?.interviewTime) }}으로 면접 일정이 확정되었습니다</span>
+                    <span>{{ dateFormatter.fullDate(offer?.updatedAt) }}에 면접 일정이 확정되었습니다</span>
                   </p>
                 </div>
               </div>
@@ -892,32 +892,30 @@ const calculatePeriod = (period) => {
             <!-- 면접 일정 확정된 경우 -->
             <div v-else-if="['JO_ST_5'].includes(selectedOffer?.statusCd)" class="bg-green-50 p-4 rounded-lg">
               <h4 class="font-medium text-gray-900 mb-2">확정된 면접 일정</h4>
-              <div class="grid grid-cols-2 gap-4">
-                <div class="flex items-center gap-2">
-                  <i class="pi pi-calendar text-green-600"></i>
-                  <div class="space-y-2">
-                    <div class="font-medium flex items-center gap-2">
-                      {{ selectedOffer?.interviewTime?.slice(0, 10)?.replaceAll('-', '.') }}
-                    </div>
-                  </div>
+              <div class="flex items-center gap-2">
+                <i class="pi pi-calendar text-green-600"></i>
+                <div class="font-medium flex items-center gap-2">
+                  {{ selectedOffer?.interviewTime?.slice(0, 10)?.replaceAll('-', '.') }}
+                  <span class="text-gray-400">|</span>
+                  {{ selectedOffer?.interviewTime?.slice(11, 16) }}
                 </div>
-                <div class="flex items-center gap-2">
-                  <i class="pi pi-video text-green-600"></i>
-                  <span class="text-gray-700">
-                    방식: {{ selectedOffer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접' }}
-                    <span class="text-gray-400 mx-2">|</span>
-                    {{ selectedOffer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '링크: ' : '장소: ' }}
-                    <a
-                      v-if="selectedOffer?.interviewTypeCd === 'INTERVIEW_TY_1'"
-                      :href="selectedOffer?.interviewInfo"
-                      target="_blank"
-                      class="text-blue-600 hover:underline"
-                    >
-                      {{ selectedOffer?.interviewInfo }}
-                    </a>
-                    <span v-else>{{ selectedOffer?.interviewInfo }}</span>
-                  </span>
-                </div>
+              </div>
+              <div class="flex items-center gap-2 mt-2">
+                <i class="pi pi-video text-green-600"></i>
+                <span class="text-gray-700">
+                  방식: {{ selectedOffer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접' }}
+                  <span class="text-gray-400 mx-2">|</span>
+                  {{ selectedOffer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '링크: ' : '장소: ' }}
+                  <a
+                    v-if="selectedOffer?.interviewTypeCd === 'INTERVIEW_TY_1'"
+                    :href="selectedOffer?.interviewInfo"
+                    target="_blank"
+                    class="text-blue-600 hover:underline"
+                  >
+                    {{ selectedOffer?.interviewInfo }}
+                  </a>
+                  <span v-else>{{ selectedOffer?.interviewInfo }}</span>
+                </span>
               </div>
               <p class="mt-4 text-green-600 flex items-center gap-2">
                 <i class="pi pi-check-circle"></i>
