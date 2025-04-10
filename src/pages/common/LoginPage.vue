@@ -81,14 +81,14 @@ const loginGoogle = () => {
 
     if (token) {
       authStore.setToken(token, false);
+
+      setTimeout(async () => {
+        getUserInfo();
+
+        router.push('/');
+      }, 1000);
     }
   });
-
-  setTimeout(async () => {
-    getUserInfo();
-
-    router.push('/');
-  }, 1000);
 };
 
 // 소셜 로그인 - Line
