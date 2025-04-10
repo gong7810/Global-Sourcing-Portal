@@ -55,7 +55,7 @@ watch(
   () => route?.matched,
   () => {
     // 대시보드 접근시에만 재호출
-    if (['/', '/company/index'].includes(route?.matched[1].path)) {
+    if (['/', '/company/index'].includes(route?.matched[1].path) && authStore.isLogin()) {
       getNotiByUser();
     }
   },
