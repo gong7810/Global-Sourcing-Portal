@@ -383,7 +383,7 @@ const printResume = () => {
   <Dialog
     :visible="props.visible"
     modal
-    :style="{ width: '80vw', maxHeight: '90vh' }"
+    :style="{ width: '55vw', minWidth: '700px', maxHeight: '90vh' }"
     :closable="true"
     :closeOnEscape="true"
     @update:visible="emit('update:visible', $event)"
@@ -414,23 +414,33 @@ const printResume = () => {
             <span class="text-gray-600">성별</span>
             <span>{{ offerUserInfo?.resumeSnapshot?.user?.genderCd === 'GENDER_MALE' ? '남성' : '여성' }}</span>
             <span class="text-gray-600">휴대폰</span>
-            <span v-if="offerUserInfo?.statusCd === 'JO_ST_2'">{{ offerUserInfo?.resumeSnapshot?.user?.mobile }}</span>
+            <span v-if="['JO_ST_2', 'JO_ST_4', 'JO_ST_5', 'JO_ST_6'].includes(offerUserInfo?.statusCd)">{{
+              offerUserInfo?.resumeSnapshot?.user?.mobile
+            }}</span>
+            <span v-else-if="['JO_ST_3'].includes(offerUserInfo?.statusCd)" class="text-[#8B8BF5]">{{ '🔒' }}</span>
             <span v-else class="text-[#8B8BF5]">{{ '면접 제안 수락 후 확인 가능' }}</span>
             <span class="text-gray-600">이메일</span>
-            <span v-if="offerUserInfo?.statusCd === 'JO_ST_2'">{{ offerUserInfo?.resumeSnapshot?.user?.email }}</span>
+            <span v-if="['JO_ST_2', 'JO_ST_4', 'JO_ST_5', 'JO_ST_6'].includes(offerUserInfo?.statusCd)">{{
+              offerUserInfo?.resumeSnapshot?.user?.email
+            }}</span>
+            <span v-else-if="['JO_ST_3'].includes(offerUserInfo?.statusCd)" class="text-[#8B8BF5]">{{ '🔒' }}</span>
             <span v-else class="text-[#8B8BF5]">{{ '면접 제안 수락 후 확인 가능' }}</span>
             <span class="text-gray-600">주소</span>
-            <span v-if="offerUserInfo?.statusCd === 'JO_ST_2'">{{ offerUserInfo?.resumeSnapshot?.user?.address }}</span>
+            <span v-if="['JO_ST_2', 'JO_ST_4', 'JO_ST_5', 'JO_ST_6'].includes(offerUserInfo?.statusCd)">{{
+              offerUserInfo?.resumeSnapshot?.user?.address
+            }}</span>
+            <span v-else-if="['JO_ST_3'].includes(offerUserInfo?.statusCd)" class="text-[#8B8BF5]">{{ '🔒' }}</span>
             <span v-else class="text-[#8B8BF5]">{{ '면접 제안 수락 후 확인 가능' }}</span>
           </div>
 
           <!-- 가운데 컬럼 -->
           <div class="grid grid-cols-[100px_auto] gap-y-2 text-sm text-gray-600">
             <span class="text-gray-600">범죄경력</span>
-            <span v-if="offerUserInfo?.statusCd === 'JO_ST_2'">
+            <span v-if="['JO_ST_2', 'JO_ST_4', 'JO_ST_5', 'JO_ST_6'].includes(offerUserInfo?.statusCd)">
               <!-- <i class="pi pi-file-pdf text-red-500"></i> -->
               {{ offerUserInfo?.resumeSnapshot?.user?.hasCriminalRecord ? '있음' : '없음' }}
             </span>
+            <span v-else-if="['JO_ST_3'].includes(offerUserInfo?.statusCd)" class="text-[#8B8BF5]">{{ '🔒' }}</span>
             <span v-else class="text-[#8B8BF5]">{{ '면접 제안 수락 후 확인 가능' }}</span>
             <span class="text-gray-600">한국어 능력</span>
             <span>{{ offerUserInfo?.resumeSnapshot?.user?.koreanProficiency?.name || '미입력' }}</span>

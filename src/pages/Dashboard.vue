@@ -314,7 +314,7 @@ const getStatusColor = (statusCd, result = null) => {
           :header="currentFilter?.title"
           :modal="true"
           :style="{ width: '50vw' }"
-          :breakpoints="{ '960px': '75vw', '641px': '90vw' }"
+          :breakpoints="{ '960px': '55vw', '641px': '90vw' }"
         >
           <div class="p-4">
             <div class="grid grid-cols-3 gap-4">

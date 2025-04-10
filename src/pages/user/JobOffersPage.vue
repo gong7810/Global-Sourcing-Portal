@@ -248,8 +248,8 @@ const acceptInterviewSchedule = (offer) => {
   // TODO: 필드명 reserve로 통일 필요
   const selectedIndex = selectedDateIndices.value[offer.id];
   const selectedDate = offer[`reserveTime${selectedIndex + 1}`];
-  const selectedType = offer[`interviewTypeCd${selectedIndex + 1}`];
-  const selectedInfo = offer[`interviewPlace${selectedIndex + 1}`];
+  const selectedType = offer[`reserveTypeCd${selectedIndex + 1}`];
+  const selectedInfo = offer[`reservePlace${selectedIndex + 1}`];
 
   messagePop.confirm({
     icon: 'info',
@@ -526,8 +526,8 @@ const calculatePeriod = (period) => {
                         v-for="(dateSlot, index) in ['reserveTime1', 'reserveTime2', 'reserveTime3']
                           .map((key, i) => ({
                             time: offer[key],
-                            type: offer[`interviewTypeCd${i + 1}`],
-                            info: offer[`interviewPlace${i + 1}`]
+                            type: offer[`reserveTypeCd${i + 1}`],
+                            info: offer[`reservePlace${i + 1}`]
                           }))
                           .filter((item) => item.time)"
                         :key="index"
@@ -697,7 +697,12 @@ const calculatePeriod = (period) => {
     </div>
 
     <!-- 상세 보기 모달 -->
-    <Dialog v-if="showDetailModal" v-model:visible="showDetailModal" modal :style="{ width: '80vw' }">
+    <Dialog
+      v-if="showDetailModal"
+      v-model:visible="showDetailModal"
+      modal
+      :style="{ width: '55vw', minWidth: '700px' }"
+    >
       <!-- 헤더 커스텀 -->
       <template #header>
         <div class="flex items-center gap-2">

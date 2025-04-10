@@ -288,19 +288,19 @@ const scheduleInterview = async () => {
         })
         .filter((time) => time);
 
-      ['interviewTypeCd1', 'interviewTypeCd2', 'interviewTypeCd3']
+      ['reserveTypeCd1', 'reserveTypeCd2', 'reserveTypeCd3']
         .map((item, index) => {
           selectedOffer.value[item] = interviewOptions.value[index].type;
         })
         .filter((type) => type);
 
-      ['interviewPlace1', 'interviewPlace2', 'interviewPlace3']
+      ['reservePlace1', 'reservePlace2', 'reservePlace3']
         .map((item, index) => {
           selectedOffer.value[item] = interviewOptions.value[index].info;
         })
         .filter((info) => info);
-      selectedOffer.value.interviewTypeCd = selectedOffer.value.interviewTypeCd1;
-      selectedOffer.value.interviewInfo = selectedOffer.value.interviewPlace1;
+      // selectedOffer.value.interviewTypeCd = selectedOffer.value.interviewTypeCd1;
+      // selectedOffer.value.interviewInfo = selectedOffer.value.interviewPlace1;
       selectedOffer.value.statusCd = 'JO_ST_4';
 
       const response = await requestOffer(selectedOffer.value);
@@ -563,8 +563,8 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
                 v-for="(dateSlot, index) in ['reserveTime1', 'reserveTime2', 'reserveTime3']
                   .map((key, i) => ({
                     time: offer[key],
-                    type: offer[`interviewTypeCd${i + 1}`],
-                    info: offer[`interviewPlace${i + 1}`]
+                    type: offer[`reserveTypeCd${i + 1}`],
+                    info: offer[`reservePlace${i + 1}`]
                   }))
                   .filter((item) => item.time)"
                 :key="index"

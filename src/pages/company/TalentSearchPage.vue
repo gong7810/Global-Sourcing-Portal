@@ -392,7 +392,7 @@ const openInterviewOffer = async (talent, isPage) => {
     </div>
 
     <!-- 이력서 상세 모달 -->
-    <Dialog v-model:visible="showResumeModal" modal :style="{ width: '80vw' }" :maximizable="true">
+    <Dialog v-model:visible="showResumeModal" modal :style="{ width: '55vw', minWidth: '700px' }" :maximizable="true">
       <template #header>
         <div class="text-2xl font-bold">이력서</div>
       </template>

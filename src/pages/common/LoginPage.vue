@@ -70,8 +70,9 @@ const getUserInfo = async () => {
 const { lineState } = storeToRefs(authStore);
 const loginGoogle = () => {
   const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${import.meta.env.VITE_GOOGLE_CLIENT_ID}&redirect_uri=${import.meta.env.VITE_GOOGLE_REDIRECT_URL}&response_type=code&scope=email profile`;
+  const popup = window.open('/api/auth/google', 'snsLogin', 'width=500,height=600');
 
-  window.location.href = url;
+  // window.location.href = url;
 };
 
 const loginLine = () => {

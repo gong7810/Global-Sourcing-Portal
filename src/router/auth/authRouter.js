@@ -6,6 +6,11 @@ export const authRouter = [
     component: () => import('@/pages/common/LoginPage.vue')
   },
   {
+    path: '/api/auth/callback',
+    name: 'loginGoogleResult',
+    component: () => import('@/pages/common/LoginGoogleBridgePage.vue')
+  },
+  {
     path: '/auth/login/google',
     name: 'loginGoogleResult',
     component: () => import('@/pages/common/LoginGoogleBridgePage.vue')
