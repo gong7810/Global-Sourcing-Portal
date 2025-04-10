@@ -40,8 +40,6 @@ onMounted(() => {
       profileImage: `${import.meta.env.VITE_UPLOAD_PATH}/${offerUserInfo.value.resumeSnapshot.user.imageFile?.fileName}`
     };
   }
-
-  console.log(offerUserInfo.value);
 });
 
 // Dialog가 닫힐 때 호출되는 함수
@@ -103,7 +101,6 @@ const downloadFile = (fileType, fileInfo, certName = '') => {
 
 // 경력 기간 계산 함수
 const calculateCareerPeriod = (period) => {
-  console.log(period);
   if (!period) return '';
 
   const [start, end] = period.split(' - ');

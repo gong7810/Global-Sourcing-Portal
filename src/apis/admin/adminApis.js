@@ -2,16 +2,6 @@ import { useApi } from '@/apis/index';
 
 const api = useApi();
 
-// 기존 test 함수는 유지
-export const test = async () => {
-  try {
-    const response = await api.get('/v1/st/user/apis');
-    console.log(response);
-  } catch (error) {
-    console.error(error);
-  }
-};
-
 /**
  * 사용자 목록 조회
  * @param {Object} params - 검색 파라미터

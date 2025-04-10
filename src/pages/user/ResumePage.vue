@@ -996,8 +996,6 @@ const handleCertificationFileUpload = (index, event) => {
     }
     certificationList.value[index].fileId = certificationImage.value;
   }
-
-  console.log(certificationList.value);
 };
 
 // 자격증빙파일 초기화
