@@ -7,19 +7,19 @@ export const authRouter = [
   },
   {
     path: '/api/auth/callback',
-    name: 'loginGoogleResult',
-    component: () => import('@/pages/common/LoginGoogleBridgePage.vue')
+    name: 'loginResult',
+    component: () => import('@/pages/common/LoginBridgePage.vue')
   },
-  {
-    path: '/auth/login/google',
-    name: 'loginGoogleResult',
-    component: () => import('@/pages/common/LoginGoogleBridgePage.vue')
-  },
-  {
-    path: '/auth/login/line',
-    name: 'loginLineResult',
-    component: () => import('@/pages/common/LoginLineBridgePage.vue')
-  },
+  // {
+  //   path: '/auth/login/google',
+  //   name: 'loginGoogleResult',
+  //   component: () => import('@/pages/common/LoginGoogleBridgePage.vue')
+  // },
+  // {
+  //   path: '/auth/login/line',
+  //   name: 'loginLineResult',
+  //   component: () => import('@/pages/common/LoginLineBridgePage.vue')
+  // },
   {
     path: '/register-select',
     name: 'RegisterSelect',

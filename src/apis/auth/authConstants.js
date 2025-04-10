@@ -2,8 +2,9 @@
 export const AUTH_EXCLUSIONS_ROUTER_NAME = [
   'dashboard',
   'login',
-  'loginGoogleResult',
-  'loginLineResult',
+  'loginResult',
+  // 'loginGoogleResult',
+  // 'loginLineResult',
   'RegisterSelect',
   'personalRegister',
   'companyRegister',

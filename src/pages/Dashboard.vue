@@ -58,7 +58,6 @@ const getJobOfferList = async () => {
 
 // 상태에 따른 텍스트 색상 반환
 const getStatusColor = (statusCd, result = null) => {
-  console.log(statusCd, result);
   switch (statusCd) {
     case 'JO_ST_1':
       return 'text-yellow-600';
