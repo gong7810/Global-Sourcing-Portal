@@ -519,7 +519,7 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
             <p class="text-gray-600">
               {{
                 offer?.jobCategoryCd === 'JOB_22'
-                  ? `기타(${offer?.customJobCategory})`
+                  ? `기타(${offer?.jobCategoryEtc})`
                   : convertJobCode(offer?.jobCategoryCd)
               }}
               | {{ offer?.position }}

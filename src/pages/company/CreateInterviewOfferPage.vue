@@ -20,7 +20,7 @@ const { offerUserResume } = storeToRefs(companyStore);
 
 // 직무 카테고리 데이터
 const jobCategoryOptions = ref([]);
-const customJobCategory = ref(''); // 기타 직무 입력을 위한 변수
+const jobCategoryEtc = ref(''); // 기타 직무 입력을 위한 변수
 
 const isOtherJobCategory = computed(() => {
   return jobOffer.value.jobCategoryCd === 'JOB_22'; // 기타 직무 코드
@@ -91,7 +91,7 @@ const submitOffer = () => {
     return;
   }
 
-  if (isOtherJobCategory.value && !customJobCategory.value) {
+  if (isOtherJobCategory.value && !jobCategoryEtc.value) {
     alert('기타 직무명을 입력해주세요.');
     return;
   }
@@ -107,7 +107,7 @@ const submitOffer = () => {
         statusCd: 'JO_ST_1',
         result: true,
         ...jobOffer.value,
-        customJobCategory: isOtherJobCategory.value ? customJobCategory.value : null
+        jobCategoryEtc: isOtherJobCategory.value ? jobCategoryEtc.value : null
       };
 
       const response = await requestOffer(body);
@@ -246,7 +246,7 @@ const submitOffer = () => {
         <!-- 기타 직무 입력 필드 -->
         <input
           v-if="isOtherJobCategory"
-          v-model="customJobCategory"
+          v-model="jobCategoryEtc"
           type="text"
           class="w-full p-3 mt-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#8B8BF5]"
           placeholder="기타 직무명을 입력해주세요"

@@ -167,7 +167,7 @@ const isInterviewCompleted = (interview) => {
             <p class="text-gray-600">
               {{
                 interview?.jobCategoryCd === 'JOB_22'
-                  ? `기타(${interview?.customJobCategory})`
+                  ? `기타(${interview?.jobCategoryEtc})`
                   : convertJobCode(interview?.jobCategoryCd)
               }}
               | {{ interview?.position }}
