@@ -586,38 +586,30 @@ const calculatePeriod = (period) => {
                 <!-- 면접 일정 확정된 경우 -->
                 <div v-else-if="offer?.statusCd === 'JO_ST_5'" class="bg-green-50 p-4 rounded-lg">
                   <h4 class="font-medium text-gray-900 mb-2">확정된 면접 일정</h4>
-                  <div class="grid grid-cols-2 gap-4">
-                    <div class="flex items-center gap-2">
-                      <i class="pi pi-calendar text-green-600"></i>
-                      <div class="space-y-2">
-                        <div class="font-medium flex items-center gap-2">
-                          {{ offer?.interviewTime.slice(0, 10).replaceAll('-', '.') }}
-                          <span class="text-gray-400">|</span>
-                          {{ offer?.interviewTime.slice(11, 16) }}
-                        </div>
-                      </div>
+                  <div class="flex items-center gap-2">
+                    <i class="pi pi-calendar text-green-600"></i>
+                    <div class="font-medium flex items-center gap-2">
+                      {{ offer?.interviewTime.slice(0, 10).replaceAll('-', '.') }}
+                      <span class="text-gray-400">|</span>
+                      {{ offer?.interviewTime.slice(11, 16) }}
                     </div>
-                    <div class="flex items-center gap-2">
-                      <i class="pi pi-video text-green-600"></i>
-                      <span class="text-gray-700">
-                        {{ offer?.interviewType?.name }}
-                      </span>
-                    </div>
-                    <div class="flex items-center gap-2 text-md text-gray-600">
-                      <i class="pi pi-map-marker text-green-600"></i>
-                      <span class="text-gray-700">
-                        {{ offer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '링크: ' : '장소: ' }}
-                        <a
-                          v-if="offer?.interviewTypeCd === 'INTERVIEW_TY_1'"
-                          :href="offer?.interviewInfo"
-                          target="_blank"
-                          class="text-blue-600 hover:underline"
-                        >
-                          {{ offer?.interviewInfo }}
-                        </a>
-                        <span v-else>{{ offer?.interviewInfo }}</span>
-                      </span>
-                    </div>
+                  </div>
+                  <div class="flex items-center gap-2 mt-2">
+                    <i class="pi pi-video text-green-600"></i>
+                    <span class="text-gray-700">
+                      방식: {{ offer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접' }}
+                      <span class="text-gray-400 mx-2">|</span>
+                      {{ offer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '링크: ' : '장소: ' }}
+                      <a
+                        v-if="offer?.interviewTypeCd === 'INTERVIEW_TY_1'"
+                        :href="offer?.interviewInfo"
+                        target="_blank"
+                        class="text-blue-600 hover:underline"
+                      >
+                        {{ offer?.interviewInfo }}
+                      </a>
+                      <span v-else>{{ offer?.interviewInfo }}</span>
+                    </span>
                   </div>
                   <p class="mt-4 text-green-600 flex items-center gap-2">
                     <i class="pi pi-check-circle"></i>
@@ -909,26 +901,14 @@ const calculatePeriod = (period) => {
                     </div>
                   </div>
                 </div>
-                <!-- <div class="flex items-center gap-2">
-                  <i class="pi pi-clock text-green-600"></i>
-                  <div class="space-y-2">
-                    <div class="font-medium flex items-center gap-2">
-                      {{ selectedOffer.interviewTime }}
-                    </div>
-                  </div>
-                </div> -->
                 <div class="flex items-center gap-2">
                   <i class="pi pi-video text-green-600"></i>
                   <span class="text-gray-700">
-                    {{ selectedOffer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접' }}
-                  </span>
-                </div>
-                <div class="flex items-center gap-2 text-sm text-gray-600">
-                  <i class="pi pi-map-marker text-green-600"></i>
-                  <span class="text-gray-700">
+                    방식: {{ selectedOffer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접' }}
+                    <span class="text-gray-400 mx-2">|</span>
                     {{ selectedOffer?.interviewTypeCd === 'INTERVIEW_TY_1' ? '링크: ' : '장소: ' }}
                     <a
-                      v-if="selectedOffer?.interviewTypeCd !== 'INTERVIEW_TY_1'"
+                      v-if="selectedOffer?.interviewTypeCd === 'INTERVIEW_TY_1'"
                       :href="selectedOffer?.interviewInfo"
                       target="_blank"
                       class="text-blue-600 hover:underline"
