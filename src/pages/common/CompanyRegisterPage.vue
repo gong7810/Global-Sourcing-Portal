@@ -322,7 +322,6 @@ const submitForm = async () => {
   const fornmData = savePassportImage();
 
   const res = await fileUpload(fornmData);
-  console.log(res);
 
   if (res && res?.success === undefined) {
     const body = {
@@ -597,7 +596,7 @@ const savePassportImage = () => {
         관리자 검토 후 승인 이메일이 발송될 예정입니다.
       </p>
       <div class="flex justify-center">
-        <Button label="확인" @click="router.push('/')" class="w-32" />
+        <Button label="확인" @click="router.push('/')" class="bt_btn primary w-32" />
       </div>
     </div>
   </Dialog>
