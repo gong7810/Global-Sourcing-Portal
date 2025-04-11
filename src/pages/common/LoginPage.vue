@@ -65,9 +65,9 @@ const getUserInfo = async () => {
   }
 
   // 탭에 따라 다른 경로로 이동
-  if (!response.isCompany) {
+  if (!response?.isCompany) {
     router.push('/'); // 개인회원 메인 페이지
-  } else if (response.isCompany) {
+  } else if (response?.isCompany) {
     router.push('/company/index'); // 기업회원 대시보드
   }
 };
@@ -86,10 +86,12 @@ const loginGoogle = () => {
       authStore.setToken(token, false);
 
       setTimeout(async () => {
-        getUserInfo();
-
-        router.push('/');
+        await getUserInfo();
       }, 1000);
+
+      setTimeout(async () => {
+        router.push('/');
+      }, 100);
     } else if (!token || !event.data?.success) {
       messagePop.alert('등록된 사용자가 아닙니다.\n회원가입을 먼저 진행해주세요.', 'info');
     }
