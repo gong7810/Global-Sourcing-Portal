@@ -88,10 +88,6 @@ const loginGoogle = () => {
       setTimeout(async () => {
         await getUserInfo();
       }, 1000);
-
-      setTimeout(async () => {
-        router.push('/');
-      }, 100);
     } else if (!token || !event.data?.success) {
       messagePop.alert('등록된 사용자가 아닙니다.\n회원가입을 먼저 진행해주세요.', 'info');
     }
