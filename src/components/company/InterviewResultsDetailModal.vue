@@ -579,12 +579,13 @@ const printResume = () => {
       <div class="bg-gray-50 p-6 rounded-lg mb-6">
         <div class="flex items-center gap-2 mb-4">
           <h3 class="text-lg font-bold">학력 사항</h3>
-          <span class="text-sm text-[#8B8BF5] bg-[#8B8BF5] bg-opacity-10 px-2 py-1 rounded">
+          <span
+            v-if="offerUserInfo?.resumeSnapshot?.finalEducation"
+            class="text-sm text-[#8B8BF5] bg-[#8B8BF5] bg-opacity-10 px-2 py-1 rounded"
+          >
+            최종학력 :
             {{
-              offerUserInfo?.resumeSnapshot?.finalEducation
-                ? '최종학력 : ' +
-                  `${offerUserInfo?.resumeSnapshot?.finalEducation?.schoolName} ${offerUserInfo?.resumeSnapshot?.finalEducation?.major} ${offerUserInfo?.resumeSnapshot?.finalEducation?.isGraduated ? '졸업' : '재학중'}`
-                : ''
+              `${offerUserInfo?.resumeSnapshot?.finalEducation?.schoolName} ${offerUserInfo?.resumeSnapshot?.finalEducation?.major} ${offerUserInfo?.resumeSnapshot?.finalEducation?.isGraduated ? '졸업' : '재학중'}`
             }}
           </span>
         </div>

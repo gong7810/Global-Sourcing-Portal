@@ -58,7 +58,7 @@ const getNationList = async () => {
 
   response.map((item) => {
     nationalityOptions.value.push({
-      label: item.name,
+      name: item.name,
       code: item.code
     });
   });
@@ -347,7 +347,7 @@ const savePassportImage = () => {
               <Select
                 v-model="nationality"
                 :options="nationalityOptions"
-                optionLabel="label"
+                optionLabel="name"
                 optionValue="code"
                 checkmark
                 placeholder="국적"
@@ -434,7 +434,7 @@ const savePassportImage = () => {
               <Select
                 v-model="issuingCountry"
                 :options="nationalityOptions"
-                optionLabel="label"
+                optionLabel="name"
                 optionValue="code"
                 placeholder="발급국가"
                 class="w-full"
