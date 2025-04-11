@@ -86,7 +86,7 @@ const getStatusColor = (statusCd, result = null) => {
     <template v-if="!authStore.isLogin()">
       <!-- 메인 히어로 섹션 -->
       <div class="text-center mb-16">
-        <h1 class="text-4xl font-bold mb-4">Global Sourcing Portal</h1>
+        <h1 class="text-4xl font-bold mb-4 notranslate">Global Sourcing Portal</h1>
         <p class="text-xl text-gray-600 mb-8">기업의 직접 면접 제안을 받아보세요</p>
         <div class="flex justify-center gap-4">
           <button

@@ -116,7 +116,7 @@ const loginLine = async () => {
     <div class="bg-white p-8 rounded-2xl shadow-lg w-[480px]">
       <!-- 로고 -->
       <div class="text-center mb-8">
-        <router-link to="/" class="text-3xl font-bold">Global Sourcing Portal</router-link>
+        <router-link to="/" class="text-3xl font-bold notranslate">Global Sourcing Portal</router-link>
       </div>
 
       <!-- 탭 메뉴 -->

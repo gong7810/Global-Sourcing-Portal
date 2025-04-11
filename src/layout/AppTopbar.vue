@@ -25,7 +25,7 @@ const loginFlag = computed(() => {
 });
 
 // 다국어 지원 관련
-const selectedLanguage = ref('ko');
+const selectedLanguage = ref('');
 const languages = ref([
   { name: '한국어', code: 'ko' },
   { name: 'English', code: 'en' },
@@ -50,36 +50,48 @@ onMounted(() => {
 
   if (loginFlag.value) getNotiByUser();
 
-  // 기존 번역 언어 맞춰 셀렉 동기화
-  setTimeout(() => {
-    const loginElement = document.getElementsByClassName('loginSpan')[0];
-
-    if (loginElement) {
-      const currentText = loginElement.textContent.trim();
-
-      // 선택된 언어에 따라 예상되는 텍스트
-      const expectedTranslations = authStore.isLogin()
-        ? {
-            ko: '로그아웃',
-            en: 'log out',
-            vi: 'đăng xuất'
-          }
-        : {
-            ko: '로그인',
-            en: 'log in',
-            vi: 'đăng nhập'
-          };
-
-      Object.entries(expectedTranslations).map(([key, value], index) => {
-        console.log(currentText, value, index);
-        if (currentText === value) {
-          selectedLanguage.value = key;
-          return;
-        }
-      });
+  // 구글 트랜스레이터 초기화 확인
+  setTimeout(async () => {
+    if (!document.getElementById('google_translate_element')) {
+      try {
+        window.googleTranslateElementInit();
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        syncLanguageWithTranslation();
+      } catch (error) {
+        console.error('구글 번역기 초기화 실패', error);
+      }
     }
-  }, 500);
+  }, 1000);
 });
+
+// 언어 동기화 함수 분리
+const syncLanguageWithTranslation = () => {
+  const loginElement = document.getElementsByClassName('loginSpan')[0];
+  if (!loginElement) return;
+
+  const currentText = loginElement.textContent.trim();
+  const expectedTranslations = authStore.isLogin()
+    ? {
+        ko: '로그아웃',
+        en: 'log out',
+        vi: 'đăng xuất'
+      }
+    : {
+        ko: '로그인',
+        en: 'log in',
+        vi: 'đăng nhập'
+      };
+
+  // 현재 텍스트와 일치하는 언어 찾기
+  for (const [key, value] of Object.entries(expectedTranslations)) {
+    if (currentText === value) {
+      if (selectedLanguage.value !== key) {
+        selectedLanguage.value = key;
+      }
+      break;
+    }
+  }
+};
 
 watch(
   () => route?.matched,
@@ -232,70 +244,98 @@ const getNotiTypeContent = (noti) => {
 
 // 다국어 번역
 const changeLanguage = async () => {
-  const translateElement = document.getElementById('google_translate_element');
-  const selectElement = translateElement?.querySelector('.goog-te-combo');
+  try {
+    // 구글 트랜스레이터 초기화 체크 및 재시도
+    const initGoogleTranslate = async () => {
+      const maxAttempts = 3;
+      let attempts = 0;
 
-  if (selectElement) {
+      while (attempts < maxAttempts) {
+        const translateElement = document.getElementById('google_translate_element');
+        if (translateElement) {
+          return translateElement;
+        }
+
+        // 구글 트랜스레이터 재초기화 시도
+        if (window.googleTranslateElementInit) {
+          window.googleTranslateElementInit();
+        } else {
+          // 스크립트 재로드
+          const script = document.createElement('script');
+          script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+          script.async = true;
+          document.head.appendChild(script);
+        }
+
+        // 잠시 대기
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        attempts++;
+      }
+      return null;
+    };
+
+    const translateElement = await initGoogleTranslate();
+    if (!translateElement) {
+      console.error('Failed to initialize Google Translate after multiple attempts');
+      return;
+    }
+
     if (selectedLanguage.value === 'ko') {
-      // 한국어로 변경 시 번역을 취소하고 원본으로 복원
-      const googleFrame = document.querySelector('.VIpgJd-ZVi9od-ORHb-OEVmcd');
-      if (googleFrame) {
-        // 구글 번역 쿠키 제거
-        document.cookie.split(';').forEach((cookie) => {
-          const [name] = cookie.split('=');
-          if (name.trim().startsWith('googtrans')) {
-            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${window.location.hostname};`;
-          }
-        });
-        // 페이지 새로고침하여 원본 상태로 복원
-        window.location.reload();
+      // 한국어로 변경 시
+      // 구글 번역 쿠키 제거
+      document.cookie.split(';').forEach((cookie) => {
+        const [name] = cookie.split('=');
+        if (name.trim().startsWith('googtrans')) {
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${window.location.hostname};`;
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`;
+        }
+      });
+
+      // 페이지 새로고침
+      window.location.reload();
+      return;
+    }
+
+    // 다른 언어로 변경 시
+    const combo = document.querySelector('.goog-te-combo');
+    if (!combo) {
+      // 콤보박스가 없으면 재시도
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      window.googleTranslateElementInit();
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+
+    const retryCombo = document.querySelector('.goog-te-combo');
+    if (retryCombo) {
+      retryCombo.value = selectedLanguage.value;
+      retryCombo.dispatchEvent(new Event('change'));
+
+      // 번역 적용 대기
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // 번역 상태 확인
+      const currentLang = document.querySelector('html').getAttribute('lang');
+      if (currentLang !== selectedLanguage.value) {
+        // 번역이 적용되지 않았다면 다시 시도
+        retryCombo.dispatchEvent(new Event('change'));
       }
     } else {
-      // 다른 언어로 변경 시 기존 번역 로직 실행
-      selectElement.value = selectedLanguage.value;
-
-      const dispatchEventAsync = (element, event) => {
-        return new Promise((resolve) => {
-          element.dispatchEvent(new Event(event));
-          setTimeout(resolve, 500);
-        });
-      };
-
-      await dispatchEventAsync(selectElement, 'change');
-      checkTranslation();
+      console.error('Google Translate combo box not found after retry');
     }
+  } catch (error) {
+    console.error('Language change failed:', error);
   }
 };
 
-// 번역 체크 로직
+// 번역 체크 로직 수정
 const checkTranslation = () => {
-  const loginElement = document.getElementsByClassName('loginSpan')[0];
-  if (loginElement) {
-    const currentText = loginElement.textContent.trim();
-
-    // 선택된 언어에 따라 예상되는 텍스트
-    const expectedTranslations = authStore.isLogin()
-      ? {
-          ko: '로그아웃',
-          en: 'log out',
-          vi: 'đăng xuất'
-        }
-      : {
-          ko: '로그인',
-          en: 'log in',
-          vi: 'đăng nhập'
-        };
-
-    console.log('1', currentText);
-    console.log('2', expectedTranslations[selectedLanguage.value]);
-
-    const isCorrectTranslation = currentText === expectedTranslations[selectedLanguage.value];
-
-    if (!isCorrectTranslation) {
+  setTimeout(() => {
+    const currentLang = document.querySelector('html').getAttribute('lang');
+    if (currentLang !== selectedLanguage.value) {
       changeLanguage();
     }
-  }
+  }, 500);
 };
 
 // formatDate 함수

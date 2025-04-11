@@ -268,7 +268,7 @@ const savePassportImage = () => {
     <div class="bg-white p-8 rounded-2xl shadow-lg w-[480px]">
       <!-- 로고 -->
       <div class="text-center mb-8">
-        <router-link to="/" class="text-xl text-[#8FA1FF] font-bold">Global Sourcing Portal</router-link>
+        <router-link to="/" class="text-xl text-[#8FA1FF] font-bold notranslate">Global Sourcing Portal</router-link>
         <h1 class="text-3xl font-bold">개인회원가입</h1>
       </div>
 
