@@ -49,6 +49,36 @@ onMounted(() => {
   document.addEventListener('click', handleClickOutside);
 
   if (loginFlag.value) getNotiByUser();
+
+  // 기존 번역 언어 맞춰 셀렉 동기화
+  setTimeout(() => {
+    const loginElement = document.getElementsByClassName('loginSpan')[0];
+
+    if (loginElement) {
+      const currentText = loginElement.textContent.trim();
+
+      // 선택된 언어에 따라 예상되는 텍스트
+      const expectedTranslations = authStore.isLogin()
+        ? {
+            ko: '로그아웃',
+            en: 'log out',
+            vi: 'đăng xuất'
+          }
+        : {
+            ko: '로그인',
+            en: 'log in',
+            vi: 'đăng nhập'
+          };
+
+      Object.entries(expectedTranslations).map(([key, value], index) => {
+        console.log(currentText, value, index);
+        if (currentText === value) {
+          selectedLanguage.value = key;
+          return;
+        }
+      });
+    }
+  }, 500);
 });
 
 watch(
