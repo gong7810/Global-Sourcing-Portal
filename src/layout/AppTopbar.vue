@@ -588,6 +588,11 @@ const markAllAsRead = async () => {
                 </div>
               </template>
               <template #option="{ option }">
+                <!-- <span
+                  class="flag"
+                  :class="`flag-${option.code}`"
+                  style="width: 25px; height: 15px; margin-right: 15px"
+                /> -->
                 <img
                   v-if="option"
                   :src="`/demo/flag${option.flag}`"
