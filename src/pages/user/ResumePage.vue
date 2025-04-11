@@ -941,9 +941,9 @@ const handlePassportFileUpload = async (event) => {
 
     const res = await fileUpload(formData);
 
-    if (res && res.success === undefined) {
+    if (res && res?.success === undefined) {
       const body = {
-        passportFileId: res.id
+        passportFileId: res?.id
       };
 
       const response = await updateResume(body);

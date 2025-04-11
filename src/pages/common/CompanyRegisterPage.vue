@@ -317,12 +317,14 @@ const submitForm = async () => {
     formError.value = '모든 필수 항목을 입력하고 체크해주세요.';
     return;
   }
+
   // 사업자등록증명원 저장
   const fornmData = savePassportImage();
 
   const res = await fileUpload(fornmData);
+  console.log(res);
 
-  if (res && res.success === undefined) {
+  if (res && res?.success === undefined) {
     const body = {
       user: {
         loginId: businessId.value,

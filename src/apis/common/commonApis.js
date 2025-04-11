@@ -7,7 +7,7 @@ export const fileUpload = async (body) => {
   try {
     const response = await api.post(`/file/upload`, body);
 
-    return response.data;
+    return response;
   } catch (error) {
     console.error(error);
   }
