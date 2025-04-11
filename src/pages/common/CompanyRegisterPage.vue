@@ -297,9 +297,6 @@ const removeFile = () => {
 };
 
 const submitForm = async () => {
-  const formData = savePassportImage();
-
-  const response = await fileUpload(formData);
   if (
     !businessType.value ||
     !businessType.value.value.trim() ||
