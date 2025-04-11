@@ -28,16 +28,17 @@ const loginFlag = computed(() => {
 const selectedLanguage = ref('');
 
 const flagImages = {
-  KO: '/public/KO.png', // 한국 국기 이미지 경로
-  US: '/public/US.png', // 미국 국기 이미지 경로
-  VI: '/public/VI.png' // 베트남 국기 이미지 경로
-  // 다른 국가 코드와 이미지 경로 추가
+  KO: '/KO_ko.png', // 한국 국기 이미지 경로
+  US: '/US_en.png', // 미국 국기 이미지 경로
+  VI: '/VI_vi.png', // 베트남 국기 이미지 경로
+  JP: '/JP_ja.png' // 일본 국기 이미지 경로
 };
 
 const languages = ref([
-  { name: 'KO', code: 'KO', flag: flagImages.KO },
-  { name: 'US', code: 'US', flag: flagImages.US },
-  { name: 'VI', code: 'VI', flag: flagImages.VI }
+  { name: 'KO', code: 'ko', flag: flagImages.KO, isDisable: false },
+  { name: 'US', code: 'en', flag: flagImages.US, isDisable: false },
+  { name: 'VI', code: 'vi', flag: flagImages.VI, isDisable: false },
+  { name: 'JP', code: 'ja', flag: flagImages.JP, isDisable: true }
 ]);
 
 // 노티 리스트
@@ -91,20 +92,22 @@ const syncLanguageWithTranslation = () => {
     ? {
         KO: '로그아웃',
         US: 'log out',
-        VI: 'đăng xuất'
+        VI: 'đăng xuất',
+        JP: 'ログアウト'
       }
     : {
         KO: '로그인',
         US: 'log in',
-        VI: 'đăng nhập'
+        VI: 'đăng nhập',
+        JP: 'ログイン'
       };
 
   // 현재 텍스트와 일치하는 언어 찾기
   for (const [key, value] of Object.entries(expectedTranslations)) {
     console.log(currentText, value);
     if (currentText === value) {
-      if (selectedLanguage.value !== `/public/${key}.png`) {
-        selectedLanguage.value = `/public/${key}.png`;
+      if (selectedLanguage.value !== flagImages[key]) {
+        selectedLanguage.value = flagImages[key];
       }
       break;
     }
@@ -298,7 +301,7 @@ const changeLanguage = async () => {
       return;
     }
 
-    if (selectedLanguage.value === `/public/KO.png`) {
+    if (selectedLanguage.value === `/KO_ko.png`) {
       // 한국어로 변경 시
       // 구글 번역 쿠키 제거
       document.cookie.split(';').forEach((cookie) => {
@@ -324,9 +327,11 @@ const changeLanguage = async () => {
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
 
+    // 실질적 번역 시작 부분
     const retryCombo = document.querySelector('.goog-te-combo');
+    console.log('retryCombo', selectedLanguage.value.slice(4, 6).toLowerCase());
     if (retryCombo) {
-      retryCombo.value = selectedLanguage.value.slice(8, 10).toLowerCase();
+      retryCombo.value = selectedLanguage.value.slice(4, 6).toLowerCase();
       retryCombo.dispatchEvent(new Event('change'));
 
       // 번역 적용 대기
@@ -334,7 +339,7 @@ const changeLanguage = async () => {
 
       // 번역 상태 확인
       const currentLang = document.querySelector('html').getAttribute('lang');
-      if (currentLang !== selectedLanguage.value) {
+      if (currentLang !== selectedLanguage.value.slice(4, 6).toLowerCase()) {
         // 번역이 적용되지 않았다면 다시 시도
         retryCombo.dispatchEvent(new Event('change'));
       }
@@ -567,12 +572,14 @@ const markAllAsRead = async () => {
               :options="languages"
               optionLabel="name"
               optionValue="flag"
+              optionDisabled="isDisable"
+              highlightOnSelect
               @change="changeLanguage"
             >
               <template #value="{ value }">
                 <div class="flex notranslate">
                   <img v-if="value" :src="value" alt="" style="width: 25px; height: 15px; margin: 3.5px 15px 0 0" />
-                  {{ value ? value?.slice(8, 10) : 'Language' }}
+                  {{ value ? value.slice(1, 3) : 'Language' }}
                 </div>
               </template>
               <template #option="{ option }">
