@@ -1054,7 +1054,7 @@ const calculatePeriod = (period) => {
               <!-- 왼쪽 컬럼 -->
               <div class="grid grid-cols-[80px_auto] gap-y-2 text-sm text-gray-600">
                 <span class="text-gray-600">이름</span>
-                <span>{{ selectedOffer?.resumeSnapshot?.user?.name }}</span>
+                <span translate="no">{{ selectedOffer?.resumeSnapshot?.user?.name }}</span>
                 <span class="text-gray-600">생년월일</span>
                 <span>{{ selectedOffer?.resumeSnapshot?.user?.birth }}</span>
                 <span class="text-gray-600">성별</span>
@@ -1122,7 +1122,7 @@ const calculatePeriod = (period) => {
             <div class="grid gap-y-4">
               <div class="flex gap-8">
                 <span class="text-gray-600 w-20">이름</span>
-                <span
+                <span translate="no"
                   >{{ selectedOffer?.resumeSnapshot?.passportFirstName }}
                   {{ selectedOffer?.resumeSnapshot?.passportLastName }}</span
                 >

@@ -90,16 +90,16 @@ const getStatusColor = (statusCd, result = null) => {
         <p class="text-xl text-gray-600 mb-8">기업의 직접 면접 제안을 받아보세요</p>
         <div class="flex justify-center gap-4">
           <button
-            class="px-8 py-3 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7878F2] transition-colors"
+            class="bt_btn widthFixed primary px-8 py-3 text-lg bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7878F2] transition-colors notranslate"
             @click="router.push('/login')"
           >
-            로그인하기
+            Login
           </button>
           <button
-            class="px-8 py-3 border-2 border-[#8B8BF5] text-[#8B8BF5] rounded-lg hover:bg-[#8B8BF5] hover:text-white transition-colors"
+            class="bt_btn widthFixed primary_outline px-8 py-3 border-2 text-lg border-[#8B8BF5] text-[#8B8BF5] rounded-lg hover:bg-[#8B8BF5] hover:text-white transition-colors notranslate"
             @click="router.push('/register-select')"
           >
-            회원가입
+            Sign Up
           </button>
         </div>
       </div>

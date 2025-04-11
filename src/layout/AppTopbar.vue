@@ -26,10 +26,18 @@ const loginFlag = computed(() => {
 
 // 다국어 지원 관련
 const selectedLanguage = ref('');
+
+const flagImages = {
+  KO: '/public/KO.png', // 한국 국기 이미지 경로
+  US: '/public/US.png', // 미국 국기 이미지 경로
+  VI: '/public/VI.png' // 베트남 국기 이미지 경로
+  // 다른 국가 코드와 이미지 경로 추가
+};
+
 const languages = ref([
-  { name: '한국어', code: 'ko' },
-  { name: 'English', code: 'en' },
-  { name: 'Tiếng Việt', code: 'vi' }
+  { name: 'KO', code: 'KO', flag: flagImages.KO },
+  { name: 'US', code: 'US', flag: flagImages.US },
+  { name: 'VI', code: 'VI', flag: flagImages.VI }
 ]);
 
 // 노티 리스트
@@ -55,7 +63,16 @@ onMounted(() => {
     if (!document.getElementById('google_translate_element')) {
       try {
         window.googleTranslateElementInit();
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        syncLanguageWithTranslation();
+      } catch (error) {
+        console.error('구글 번역기 초기화 실패', error);
+      }
+    } else {
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
         syncLanguageWithTranslation();
       } catch (error) {
         console.error('구글 번역기 초기화 실패', error);
@@ -72,21 +89,22 @@ const syncLanguageWithTranslation = () => {
   const currentText = loginElement.textContent.trim();
   const expectedTranslations = authStore.isLogin()
     ? {
-        ko: '로그아웃',
-        en: 'log out',
-        vi: 'đăng xuất'
+        KO: '로그아웃',
+        US: 'log out',
+        VI: 'đăng xuất'
       }
     : {
-        ko: '로그인',
-        en: 'log in',
-        vi: 'đăng nhập'
+        KO: '로그인',
+        US: 'log in',
+        VI: 'đăng nhập'
       };
 
   // 현재 텍스트와 일치하는 언어 찾기
   for (const [key, value] of Object.entries(expectedTranslations)) {
+    console.log(currentText, value);
     if (currentText === value) {
-      if (selectedLanguage.value !== key) {
-        selectedLanguage.value = key;
+      if (selectedLanguage.value !== `/public/${key}.png`) {
+        selectedLanguage.value = `/public/${key}.png`;
       }
       break;
     }
@@ -280,7 +298,7 @@ const changeLanguage = async () => {
       return;
     }
 
-    if (selectedLanguage.value === 'ko') {
+    if (selectedLanguage.value === `/public/KO.png`) {
       // 한국어로 변경 시
       // 구글 번역 쿠키 제거
       document.cookie.split(';').forEach((cookie) => {
@@ -308,7 +326,7 @@ const changeLanguage = async () => {
 
     const retryCombo = document.querySelector('.goog-te-combo');
     if (retryCombo) {
-      retryCombo.value = selectedLanguage.value;
+      retryCombo.value = selectedLanguage.value.slice(8, 10).toLowerCase();
       retryCombo.dispatchEvent(new Event('change'));
 
       // 번역 적용 대기
@@ -548,18 +566,18 @@ const markAllAsRead = async () => {
               class="custom-dropdown notranslate"
               :options="languages"
               optionLabel="name"
-              optionValue="code"
-              checkmark
+              optionValue="flag"
               @change="changeLanguage"
-              placeholder="언어 선택"
             >
-              <template #option="{ option }">
-                <div class="notranslate">{{ option.name }}</div>
-              </template>
               <template #value="{ value }">
-                <div class="notranslate">
-                  {{ value ? languages.find((lang) => lang.code === value)?.name : '언어 선택' }}
+                <div class="flex notranslate">
+                  <img v-if="value" :src="value" alt="" style="width: 25px; height: 15px; margin: 3.5px 15px 0 0" />
+                  {{ value ? value?.slice(8, 10) : 'Language' }}
                 </div>
+              </template>
+              <template #option="{ option }">
+                <img v-if="option" :src="option.flag" alt="" style="width: 25px; height: 15px; margin-right: 15px" />
+                <div class="notranslate">{{ option.name }}</div>
               </template>
             </Select>
           </div>

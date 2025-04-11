@@ -326,15 +326,15 @@ const removeCriminalRecord = () => {
           <div class="space-y-4 text-gray-600">
             <div class="flex items-center gap-4">
               <i class="pi pi-id-card"></i>
-              <span class="w-20 text-gray-500">아이디</span>
-              <span>{{ basicInfo.loginId }}</span>
+              <span class="w-20 text-gray-500 notranslate">ID</span>
+              <span translate="no">{{ basicInfo.loginId }}</span>
             </div>
             <div class="flex items-center gap-4">
               <i class="pi pi-lock"></i>
-              <span class="w-20 text-gray-500">비밀번호</span>
+              <span class="w-20 text-gray-500 notranslate" style="width: 4.3rem !important">PW</span>
               <Button
                 label="수정"
-                class="p-button-text p-button-sm text-[#8FA1FF]"
+                class="p-button-text p-button-sm text-[#8FA1FF] mr-2"
                 style="color: #8fa1ff"
                 @click="openPasswordModal"
               />

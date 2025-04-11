@@ -147,7 +147,7 @@ const submitOffer = () => {
       <div class="flex justify-between items-start">
         <div class="flex-1">
           <div class="flex items-start gap-3 mb-4">
-            <h3 class="text-lg font-bold">{{ candidate?.user?.name }}</h3>
+            <h3 class="text-lg font-bold notranslate">{{ candidate?.user?.name }}</h3>
             <span class="bg-[#8B8BF5] bg-opacity-10 text-[#8B8BF5] px-3 py-1 rounded-full text-sm">{{
               candidate?.nationality?.name
             }}</span>

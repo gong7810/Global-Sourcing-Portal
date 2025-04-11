@@ -429,11 +429,6 @@ const openInterviewOffer = async (talent, isPage) => {
               showClear
             />
           </div>
-
-          <!-- 검색 버튼 -->
-          <!-- <div class="self-end">
-            <Button @click="searchTalents" class="bt_btn widthFixed primary"> 검색 </Button>
-          </div> -->
         </div>
 
         <!-- 로딩 중일 때 표시할 상태 -->

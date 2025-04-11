@@ -1070,9 +1070,9 @@ const clearCertificationFile = (index) => {
             <div class="space-y-3 text-gray-600 flex-grow">
               <!-- 이름과 생년월일 그룹 -->
               <div class="flex items-center">
-                <span class="text-xl font-medium">{{ basicInfo?.name }}</span>
+                <span class="text-xl font-medium notranslate">{{ basicInfo?.name }}</span>
                 <span class="ml-4 text-gray-500"
-                  >{{ basicInfo?.gender.name }} | {{ basicInfo?.birth }} &nbsp; {{ globalAge }}</span
+                  >{{ basicInfo?.gender?.name }} | {{ basicInfo?.birth }} &nbsp; {{ globalAge }}</span
                 >
               </div>
 
