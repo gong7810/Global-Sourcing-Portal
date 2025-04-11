@@ -82,8 +82,6 @@ const loginGoogle = () => {
   window.addEventListener('message', (event) => {
     const token = event.data?.accessToken;
 
-    console.log(token);
-
     if (token) {
       authStore.setToken(token, false);
 
@@ -92,6 +90,8 @@ const loginGoogle = () => {
 
         router.push('/');
       }, 1000);
+    } else if (!token || !event.data?.success) {
+      messagePop.alert('등록된 사용자가 아닙니다.\n회원가입을 먼저 진행해주세요.', 'info');
     }
   });
 };

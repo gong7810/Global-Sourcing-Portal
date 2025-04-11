@@ -134,33 +134,6 @@ const markAsRead = async (noti) => {
         router.push('/company/InterviewOffers');
         break;
     }
-
-    // FIXME: 사용자경험을 위해 페이지 이동을 우선시
-    // if (response?.data && response?.data?.success === undefined) {
-    //   overlayPanel.value.hide(); // 알림 패널 닫기
-
-    //   // 알림 타입에 따라 페이지 이동
-    //   switch (noti.typeCd) {
-    //     // 구직자용
-    //     case 'NOTI_1': // 면접제안
-    //       router.push('/user/jobOffers');
-    //       break;
-    //     case 'NOTI_2': // 면접일정조율
-    //       router.push('/user/jobOffers');
-    //       break;
-    //     case 'NOTI_3': // 면접결과
-    //       router.push('/user/jobSeekerInterviews');
-    //       break;
-
-    //     // 기업용
-    //     case 'NOTI_4': // 면접제안 답변
-    //       router.push('/company/InterviewOffers');
-    //       break;
-    //     case 'NOTI_5': // 면접일정 확정
-    //       router.push('/company/InterviewOffers');
-    //       break;
-    //   }
-    // }
   } catch (error) {
     console.error(error);
   }
@@ -294,8 +267,17 @@ const formatDate = (dateString) => {
 
 // 모든 알림 삭제 처리
 const markAllAsRead = async () => {
+  const readNotiList = [];
+
+  notifications.value.map((noti) => {
+    readNotiList.push(noti.id);
+  });
+
+  const body = {
+    ids: readNotiList
+  };
   try {
-    await delNotificationAll();
+    await delNotificationAll(body);
 
     getNotiByUser();
   } catch (error) {
