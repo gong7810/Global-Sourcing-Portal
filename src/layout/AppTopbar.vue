@@ -228,7 +228,7 @@ const changeLanguage = async () => {
       const dispatchEventAsync = (element, event) => {
         return new Promise((resolve) => {
           element.dispatchEvent(new Event(event));
-          setTimeout(resolve, 0);
+          setTimeout(resolve, 500);
         });
       };
 
@@ -245,11 +245,20 @@ const checkTranslation = () => {
     const currentText = loginElement.textContent.trim();
 
     // 선택된 언어에 따라 예상되는 텍스트
-    const expectedTranslations = {
-      ko: '로그인',
-      en: 'log in',
-      vi: 'đăng nhập'
-    };
+    const expectedTranslations = authStore.isLogin()
+      ? {
+          ko: '로그아웃',
+          en: 'log out',
+          vi: 'đăng xuất'
+        }
+      : {
+          ko: '로그인',
+          en: 'log in',
+          vi: 'đăng nhập'
+        };
+
+    console.log('1', currentText);
+    console.log('2', expectedTranslations[selectedLanguage.value]);
 
     const isCorrectTranslation = currentText === expectedTranslations[selectedLanguage.value];
 
@@ -378,12 +387,12 @@ const markAllAsRead = async () => {
             <span class="text-sm text-white font-medium loginSpan">로그인</span>
           </button>
           <button
-            v-if="loginFlag"
+            v-else
             class="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 rounded-full transition-all"
             @click="getLogout"
           >
             <i class="pi pi-user text-white"></i>
-            <span class="text-sm text-white font-medium">로그아웃</span>
+            <span class="text-sm text-white font-medium loginSpan">로그아웃</span>
           </button>
 
           <!-- 메뉴 버튼 -->
