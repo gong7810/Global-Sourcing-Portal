@@ -434,7 +434,7 @@ const savePassportImage = () => {
               <Select
                 v-model="issuingCountry"
                 :options="nationalityOptions"
-                optionLabel="name"
+                optionLabel="label"
                 optionValue="code"
                 placeholder="발급국가"
                 class="w-full"
