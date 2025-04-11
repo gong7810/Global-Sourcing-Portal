@@ -11,8 +11,8 @@ const authStore = useAuthStore();
 const messagePop = useMessagePop();
 
 const loginForm = ref({
-  loginId: 'admin',
-  password: '1q2w#E$R'
+  loginId: '',
+  password: ''
 });
 
 const loading = ref(false);

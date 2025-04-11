@@ -224,12 +224,17 @@ const changeLanguage = async () => {
     } else {
       // 다른 언어로 변경 시 기존 번역 로직 실행
       selectElement.value = selectedLanguage.value;
-      selectElement.dispatchEvent(new Event('change'));
-    }
 
-    setTimeout(() => {
+      const dispatchEventAsync = (element, event) => {
+        return new Promise((resolve) => {
+          element.dispatchEvent(new Event(event));
+          setTimeout(resolve, 0);
+        });
+      };
+
+      await dispatchEventAsync(selectElement, 'change');
       checkTranslation();
-    }, 200);
+    }
   }
 };
 
