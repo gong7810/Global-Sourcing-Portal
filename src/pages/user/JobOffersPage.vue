@@ -681,9 +681,9 @@ const calculatePeriod = (period) => {
                     </p>
                   </div>
                 </div>
-                <div class="flex gap-2 justify-end">
+                <!-- <div class="flex gap-2 justify-end">
                   <Button label="상세정보보기" class="p-button-outlined" @click="viewOfferDetail(offer)" />
-                </div>
+                </div> -->
               </div>
 
               <!-- 면접 완료된 경우 표시 -->
