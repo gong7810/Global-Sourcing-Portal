@@ -578,12 +578,22 @@ const markAllAsRead = async () => {
             >
               <template #value="{ value }">
                 <div class="flex notranslate">
-                  <img v-if="value" :src="value" alt="" style="width: 25px; height: 15px; margin: 3.5px 15px 0 0" />
+                  <img
+                    v-if="value"
+                    :src="`/demo/flag/${value}`"
+                    alt=""
+                    style="width: 25px; height: 15px; margin: 3.5px 15px 0 0"
+                  />
                   {{ value ? value.slice(1, 3) : 'Language' }}
                 </div>
               </template>
               <template #option="{ option }">
-                <img v-if="option" :src="option.flag" alt="" style="width: 25px; height: 15px; margin-right: 15px" />
+                <img
+                  v-if="option"
+                  :src="`/demo/flag${option.flag}`"
+                  alt=""
+                  style="width: 25px; height: 15px; margin-right: 15px"
+                />
                 <div class="notranslate">{{ option.name }}</div>
               </template>
             </Select>
