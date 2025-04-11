@@ -82,7 +82,7 @@ export const signUpUser = async (body) => {
 // 기업회원가입 API
 export const signUpCompany = async (body) => {
   try {
-    const response = await api.post(`/company`, body);
+    const response = await api.post(`/auth/joinCompany`, body);
 
     return response.data;
   } catch (error) {
