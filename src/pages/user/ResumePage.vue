@@ -129,11 +129,12 @@ const checkRequiredInfo = () => {
     email: { value: basicInfo.value.email, label: '이메일' },
     phone: { value: basicInfo.value.mobile, label: '전화번호' },
     address: { value: basicInfo.value.address, label: '주소' },
-    hasCriminalRecord: { value: basicInfo.value.hasCriminalRecord, label: '범죄경력확인서' }
+    hasCriminalRecord: { value: basicInfo.value.hasCriminalRecord, label: '범죄경력확인서' },
+    criminalRecordFile: { value: basicInfo.value?.criminalRecordFileId, label: '범죄경력확인서' }
   };
 
   const missingFields = Object.entries(requiredFields)
-    .filter(([_, field]) => isNil(field.value) && isLength(field.value))
+    .filter(([_, field]) => isNil(field.value) && !isLength(field.value))
     .map(([_, field]) => field.label);
 
   if (missingFields.length > 0) {
@@ -236,7 +237,7 @@ const getUserInfo = async () => {
 
     if (missingFields.length > 0) {
       messagePop.confirm({
-        message: `필수 정보(${missingFields.join(', ')})가 누락되었습니다.\n저장하기 전에 기본정보를 입력해주세요.`,
+        message: `필수 정보(${missingFields.join(', ')})가 누락되었습니다.\n기본정보를 입력하시겠습니까?`,
         onCloseYes: () => {
           router.push('/user/userPage');
         }

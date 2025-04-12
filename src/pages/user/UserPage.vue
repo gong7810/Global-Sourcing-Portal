@@ -199,25 +199,26 @@ const saveAll = () => {
 
         const res = await fileUpload(formData);
 
-        body = { ...basicInfo.value, profileImage: res?.id };
+        body.profileImage = res?.id;
       }
+
       // 범죄경력 증빙파일
       if (criminalRecordFile.value) {
         const formData = saveImage(criminalRecordFile.value);
 
         const res = await fileUpload(formData);
 
-        body = { ...basicInfo.value, criminalRecordFileId: res?.id };
+        body.criminalRecordFileId = res?.id;
       }
 
+      // 내 정보 저장
       const response = await updateAccount(body);
 
       if (response && response.success === undefined) {
         userInfo.value = response;
         messagePop.alert('저장되었습니다.', 'good');
-      } else {
-        messagePop.alert('시스템 오류입니다.', 'bad');
       }
+
       router.back();
     }
   });
@@ -558,11 +559,11 @@ const removeCriminalRecord = () => {
             <div class="px-8 py-6 bg-gray-50 border-t flex justify-center gap-4">
               <Button
                 label="취소"
-                class="bt_btn secondary p-button-secondary px-6 hover:bg-gray-100"
+                class="bt_btn widthFixed secondary p-button-secondary px-6 hover:bg-gray-100"
                 @click="cancelEdit"
               />
               <Button
-                class="bt_btn primary p-button-primary px-6 bg-gradient-to-r from-[#8FA1FF] to-[#8B8BF5] border-none hover:bg-gradient-to-r hover:from-[#7B8FFF] hover:to-[#7878F2]"
+                class="bt_btn widthFixed primary p-button-primary px-6 bg-gradient-to-r from-[#8FA1FF] to-[#8B8BF5] border-none hover:bg-gradient-to-r hover:from-[#7B8FFF] hover:to-[#7878F2]"
                 label="저장"
                 @click="saveAll"
               />
