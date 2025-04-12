@@ -377,12 +377,17 @@ const setCertificationInfo = () => {
 
 // 이력서 공개전 체크사항 확인
 const checkResumeClear = (value) => {
-  if (!value || (resumeFlag.value && passportInfo.value.fileImage)) {
+  if (
+    !value || // 비공개로 변경이거나
+    (resumeFlag.value && // 기본정보 모두 작성됐으면서
+      passportInfo.value.fileImage && // 여권 파일이 존재하면서
+      (!educationList.value.length || basicInfo.value.finalEducation)) // 학력이 있을경우는 최종학력 선택이 됐는지 체크
+  ) {
     visibilityType.value = value;
   } else if (!passportInfo.value.fileImage) {
     messagePop.toast('여권 스캔파일을 업로드 해주세요.', 'warn');
     return;
-  } else if (educationList.value.length && !resumeInfo.value?.finalEducation) {
+  } else if (educationList.value.length || !basicInfo.value.finalEducation) {
     messagePop.toast('최종학력을 선택해주세요.', 'warn');
     return;
   } else {
@@ -513,7 +518,6 @@ const saveCareerInfo = async () => {
   let body = {};
 
   // 경력 증빙파일이 있는 경우
-  // if (experienceImage.value) {
   if (careerInfo.value.fileId) {
     let formData = saveImage(careerInfo.value.fileId);
 
