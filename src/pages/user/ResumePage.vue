@@ -1302,12 +1302,12 @@ const clearCertificationFile = (index) => {
                 <span class="font-medium">{{ basicInfo?.finalEducation }}</span>
               </div>
             </div>
-            <div v-else class="text-center py-8 text-gray-500 border border-dashed rounded-lg">
-              등록된 학력이 없습니다
-            </div>
 
             <!-- 학력 리스트 -->
             <div class="space-y-4">
+              <div v-if="!educationList.length" class="text-center py-8 text-gray-500 border border-dashed rounded-lg">
+                등록된 학력이 없습니다
+              </div>
               <div
                 v-for="(education, index) in educationList"
                 :key="index"
@@ -1374,7 +1374,7 @@ const clearCertificationFile = (index) => {
             <div class="space-y-4">
               <!-- 자격증이 없을 때 -->
               <div
-                v-if="certificationList.length === 0"
+                v-if="!certificationList.length"
                 class="text-center py-8 text-gray-500 border border-dashed rounded-lg"
               >
                 등록된 자격증이 없습니다
