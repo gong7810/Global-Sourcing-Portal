@@ -200,7 +200,7 @@ const getResultInfo = (result) => {
         text: '보류',
         class: 'bg-yellow-50 text-yellow-600'
       };
-    default: // null이거나 다른 값일 경우
+    default: // null일 경우
       return {
         text: '결과 미입력',
         class: 'bg-gray-50 text-gray-600'

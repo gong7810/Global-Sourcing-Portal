@@ -47,7 +47,7 @@ const getJobOfferList = async () => {
 
   //진행중인 면접 : 면접 대기중 / 수락 / 일정 조율 / 일정 확정 / 면접 결과 미입력
   offerCompanies.value = response.contents.filter((com) => {
-    return !['JO_ST_3'].includes(com.statusCd) && isNull(com?.resultCd);
+    return !['JO_ST_3'].includes(com.statusCd) && [null, 'INTERVIEW_RESULT_3'].includes(com?.resultCd);
   });
 
   //완료된 면접 : 면접 거절 / 면접 결과 합격 불합격

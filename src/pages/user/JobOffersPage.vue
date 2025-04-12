@@ -285,6 +285,8 @@ const acceptInterviewSchedule = (offer) => {
         messagePop.toast('면접이 확정되었습니다.', 'success');
 
         getOfferList();
+
+        showDetailModal.value = false;
       } else {
         messagePop.toast('시스템 오류입니다.', 'error');
       }
