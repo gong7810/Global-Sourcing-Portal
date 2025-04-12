@@ -150,6 +150,27 @@ const calculateTotalCareer = (careerHistory) => {
 const printResume = () => {
   const printWindow = window.open('', '_blank');
 
+  // 증빙서류 정리
+  const passportDocument = `${import.meta.env.VITE_UPLOAD_PATH}/${offerUserInfo.value?.resumeSnapshot?.passportFile?.fileName}`;
+  const careerDocuments = [];
+  const educationDocuments = [];
+  const certificationDocuments = [];
+  offerUserInfo.value?.resumeSnapshot?.experiences.map((exp) => {
+    if (exp?.file) {
+      careerDocuments.push(`${import.meta.env.VITE_UPLOAD_PATH}/${exp.file?.fileName}`);
+    }
+  });
+  offerUserInfo.value?.resumeSnapshot?.educations.map((edu) => {
+    if (edu?.file) {
+      educationDocuments.push(`${import.meta.env.VITE_UPLOAD_PATH}/${edu.file?.fileName}`);
+    }
+  });
+  offerUserInfo.value?.resumeSnapshot?.certifications.map((cer) => {
+    if (cer?.file) {
+      certificationDocuments.push(`${import.meta.env.VITE_UPLOAD_PATH}/${cer.file?.fileName}`);
+    }
+  });
+
   // 스타일 정의
   const styles = `
     <style>
@@ -162,6 +183,10 @@ const printResume = () => {
         body {
           margin: 0;
           position: relative;
+        }
+        /* 페이지 나누기 */
+        .page-break {
+          page-break-before: always;
         }
         .creation-date {
           position: absolute;
@@ -189,6 +214,12 @@ const printResume = () => {
         th {
           -webkit-print-color-adjust: exact !important;
           print-color-adjust: exact !important;
+        }
+        .document-header {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+
         }
       }
       .resume-container {
@@ -360,6 +391,52 @@ const printResume = () => {
       </head>
       <body>
         ${resumeContent}
+
+        <div class="page-break"></div>
+        <h2 class="document-header">여권스캔파일</h2>
+        <img src="${passportDocument}" alt="여권스캔파일" style="width: 100%; max-width: 600px;" />
+
+        <div class="page-break"></div>
+        <h2 class="document-header">경력증빙서류</h2>
+        ${
+          careerDocuments.length > 0
+            ? careerDocuments
+                .map((doc, idx) =>
+                  idx !== careerDocuments.length - 1
+                    ? `<img src="${doc}" alt="경력증빙서류" style="width: 100%; max-width: 600px;" /><div class="page-break"></div>`
+                    : `<img src="${doc}" alt="경력증빙서류" style="width: 100%; max-width: 600px;" />`
+                )
+                .join('')
+            : '제출서류 없음'
+        }
+
+        <div class="page-break"></div>
+        <h2 class="document-header">학력증빙서류</h2>
+        ${
+          educationDocuments.length > 0
+            ? educationDocuments
+                .map((doc, idx) =>
+                  idx !== educationDocuments.length - 1
+                    ? `<img src="${doc}" alt="학력증빙서류" style="width: 100%; max-width: 600px;" /><div class="page-break"></div>`
+                    : `<img src="${doc}" alt="학력증빙서류" style="width: 100%; max-width: 600px;" />`
+                )
+                .join('')
+            : '제출서류 없음'
+        }
+
+        <div class="page-break"></div>
+        <h2 class="document-header">자격증 증빙서류</h2>
+        ${
+          certificationDocuments.length > 0
+            ? certificationDocuments
+                .map((doc, idx) =>
+                  idx !== certificationDocuments.length - 1
+                    ? `<img src="${doc}" alt="자격증 증빙서류" style="width: 100%; max-width: 600px;" /><div class="page-break"></div>`
+                    : `<img src="${doc}" alt="자격증 증빙서류" style="width: 100%; max-width: 600px;" />`
+                )
+                .join('')
+            : '제출서류 없음'
+        }
       </body>
     </html>
   `;
@@ -590,14 +667,6 @@ const printResume = () => {
           </span>
         </div>
         <div v-if="offerUserInfo?.resumeSnapshot?.educations?.length">
-          <!-- <div class="text-[#8B8BF5] mb-4">
-            최종학력:
-            {{
-              offerUserInfo?.resumeSnapshot?.finalEducation
-                ? `${offerUserInfo?.resumeSnapshot?.finalEducation?.schoolName} ${offerUserInfo?.resumeSnapshot?.finalEducation?.major} ${offerUserInfo?.resumeSnapshot?.finalEducation?.isGraduated ? '졸업' : '재학중'}`
-                : ''
-            }}
-          </div> -->
           <div
             v-for="(edu, index) in offerUserInfo?.resumeSnapshot?.educations"
             :key="index"
