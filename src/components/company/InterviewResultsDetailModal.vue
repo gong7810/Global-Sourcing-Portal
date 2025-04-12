@@ -1,7 +1,9 @@
 <script setup>
 import { defineProps, defineEmits, ref, onBeforeUnmount, onMounted, toRaw } from 'vue';
 import { isNull } from 'es-toolkit';
+import { useMessagePop } from '@/plugins/commonutils';
 
+const messagePop = useMessagePop();
 const props = defineProps({
   visible: {
     type: Boolean,
@@ -90,15 +92,17 @@ const sampleFiles = {
 
 // 파일 다운로드 함수
 const downloadFile = (fileType, fileInfo, certName = '') => {
-  if (!fileInfo?.exists) {
-    alert('업로드된 파일이 없습니다.');
+  console.log(fileType, fileInfo);
+
+  if (!fileInfo) {
+    messagePop('업로드된 파일이 없습니다.', 'info');
     return;
   }
-  const message = certName
-    ? `${certName} ${fileType} 파일 다운로드 시도\n파일명: ${fileInfo.name}`
-    : `${fileType} 파일 다운로드 시도\n파일명: ${fileInfo.name}`;
+  // const message = certName
+  //   ? `${certName} ${fileType} 파일 다운로드 시도\n파일명: ${fileInfo.name}`
+  //   : `${fileType} 파일 다운로드 시도\n파일명: ${fileInfo.name}`;
 
-  alert(`${message}\n(실제 다운로드는 백엔드 연동 후 구현 예정)`);
+  // alert(`${message}\n(실제 다운로드는 백엔드 연동 후 구현 예정)`);
 };
 
 // 경력 기간 계산 함수
@@ -570,7 +574,7 @@ const printResume = () => {
           <div>
             <button
               v-if="offerUserInfo?.resumeSnapshot?.passportFile"
-              @click="downloadFile('여권', offerUserInfo?.resumeSnapshot?.passportFile)"
+              @click="downloadFile('여권', offerUserInfo?.resumeSnapshot?.passportFile?.id)"
               class="flex items-center gap-2 text-[#8B8BF5] hover:text-[#7A7AE6]"
             >
               <i class="pi pi-download"></i>

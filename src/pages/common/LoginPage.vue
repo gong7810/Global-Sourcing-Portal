@@ -68,6 +68,9 @@ const getLogin = async () => {
 const getUserInfo = async () => {
   const response = await getAccount();
   // 사용자 정보 저장
+
+  // 기업회원 권한 추가
+  response.roleCd = response?.isCompany ? 'ROLE_MANAGER' : 'ROLE_USER';
   authStore.setUserInfo(response, isRemember.value);
 
   if (activeTab.value !== 'personal') {

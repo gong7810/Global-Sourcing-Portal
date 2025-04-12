@@ -13,6 +13,17 @@ export const fileUpload = async (body) => {
   }
 };
 
+// 파일 다운로드
+export const fileDownload = async (id) => {
+  try {
+    const response = await api.post(`/file/download/${id}`);
+
+    return response.data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 // 코드 리스트 API
 export const getCodeList = async (code) => {
   try {

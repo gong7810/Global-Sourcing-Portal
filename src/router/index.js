@@ -27,26 +27,6 @@ const router = createRouter({
       path: '/',
       children: adminRouter
     }
-    // {
-    //   path: '/landing',
-    //   name: 'landing',
-    //   component: () => import('@/pages/tests/Landing.vue')
-    // },
-    // {
-    //   path: '/pages/notfound',
-    //   name: 'notfound',
-    //   component: () => import('@/pages/tests/NotFound.vue')
-    // }
-    // {
-    //   path: '/auth/access',
-    //   name: 'accessDenied',
-    //   component: () => import('@/pages/tests/auth/Access.vue')
-    // },
-    // {
-    //   path: '/auth/error',
-    //   name: 'error',
-    //   component: () => import('@/pages/tests/auth/Error.vue')
-    // }
   ]
 });
 
@@ -66,7 +46,9 @@ router.beforeEach((to, from, next) => {
     if (userInfo.value?.roleCd === 'ROLE_ADMIN' && to.name === 'dashboard') {
       // 관리자
       return next({ path: '/admin/users' });
-    } else if (userInfo.value?.isCompany && userInfo.value?.roleCd === 'ROLE_MANAGER' && to.name === 'dashboard') {
+    } else if (userInfo.value?.roleCd === 'ROLE_MANAGER' && to.name === 'dashboard') {
+      messagePop.alert('기업회원 페이지로 이동합니다.', 'info');
+
       // 기업회원
       return next({ path: '/company/index' });
     } else {
