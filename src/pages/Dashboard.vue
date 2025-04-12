@@ -68,12 +68,12 @@ const getStatusColor = (statusCd, result = null) => {
     case 'JO_ST_4':
       return 'text-yellow-600';
     case 'JO_ST_5':
-      return 'text-blue-600';
+      return 'text-green-600';
     case 'JO_ST_6':
       if (result?.code === 'INTERVIEW_RESULT_2') {
         return 'text-red-600';
       }
-      return 'text-green-600';
+      return 'text-blue-600';
     default:
       return 'text-gray-600';
   }

@@ -286,8 +286,8 @@ const submitOffer = () => {
       </div>
 
       <div class="flex justify-end gap-3">
-        <Button @click="router.back()" class="bt_btn secondary"> 취소 </Button>
-        <Button @click="submitOffer" class="bt_btn primary"> 제안하기 </Button>
+        <Button class="bt_btn widthFixed secondary" @click="router.back()"> 취소 </Button>
+        <Button class="bt_btn widthFixed primary" @click="submitOffer"> 제안하기 </Button>
       </div>
     </div>
   </div>

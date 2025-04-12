@@ -106,7 +106,7 @@ const isToday = (dateString) => {
   );
 };
 
-// 인재 필터 조회
+// 북마크 인재 필터 조회
 const searchTalents = async () => {
   isLoading.value = true;
   let fromPeriod = '';

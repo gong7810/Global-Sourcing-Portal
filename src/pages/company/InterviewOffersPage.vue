@@ -162,12 +162,12 @@ const getStatusInfo = (status) => {
     case 'JO_ST_5':
       return {
         text: '일정 확정',
-        class: 'bg-blue-50 text-blue-600'
+        class: 'bg-green-50 text-green-600'
       };
     case 'JO_ST_6':
       return {
-        text: '완료',
-        class: 'bg-green-50 text-green-600'
+        text: '면접 완료',
+        class: 'bg-blue-50 text-blue-600'
       };
     default:
       return {
@@ -612,9 +612,9 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
               </div>
 
               <!-- JO_ST_5 -->
-              <div v-if="!offer?.resultCd" class="mt-4">
+              <!-- <div v-if="!offer?.resultCd" class="mt-4">
                 <Button @click="completeInterview(offer)" style="border-color: none"> 면접 완료 </Button>
-              </div>
+              </div> -->
             </div>
           </div>
         </div>
@@ -656,7 +656,7 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
         </div>
 
         <div class="flex justify-between">
-          <div class="mt-4">
+          <div class="mt-5">
             <button
               class="text-[#8B8BF5] hover:text-[#7A7AE6] flex items-center gap-1"
               @click.stop="openDetailModal(offer)"
@@ -666,14 +666,20 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
             </button>
           </div>
 
+          <!-- JO_ST_5 -->
+          <div v-if="['JO_ST_5'].includes(offer?.statusCd) && !offer?.resultCd" class="mt-4">
+            <Button style="border-color: none" @click="completeInterview(offer)">
+              <i class="pi pi-check-circle mr-2"></i>
+              면접 완료처리
+            </Button>
+          </div>
+
           <!-- 면접 결과 입력 안됐을때 표시 -->
           <div v-if="['JO_ST_6'].includes(offer?.statusCd) && isNull(offer?.resultCd)" class="mt-3">
-            <button
-              @click="router.push('/company/InterviewResults')"
-              class="px-4 py-2 bg-[#8B8BF5] text-white rounded-lg hover:bg-[#7A7AE6]"
-            >
-              결과 입력
-            </button>
+            <Button class="bt_btn primary" @click="router.push('/company/InterviewResults')">
+              <i class="pi pi-arrow-right mt-1"></i>
+              면접 결과 관리
+            </Button>
           </div>
         </div>
       </div>

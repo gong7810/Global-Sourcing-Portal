@@ -30,7 +30,7 @@ const filterOptions = [
   { name: '거절', code: 'JO_ST_3' },
   { name: '일정 조율', code: 'JO_ST_4' },
   { name: '일정 확정', code: 'JO_ST_5' },
-  { name: '완료', code: 'JO_ST_6' }
+  { name: '면접 완료', code: 'JO_ST_6' }
 ];
 
 // 면접 일정 선택을 위한 상태
@@ -498,11 +498,6 @@ const calculatePeriod = (period) => {
                     }}
                   </p>
                 </div>
-                <div class="flex gap-2 justify-end">
-                  <Button label="상세정보보기" class="p-button-outlined" @click="viewOfferDetail(offer)" />
-                  <Button label="수락하기" class="p-button-success" @click="acceptOffer(offer)" />
-                  <Button label="거절하기" class="p-button-danger" @click="rejectOffer(offer)" />
-                </div>
               </div>
 
               <!-- 수락에서 이어진 경우 -->
@@ -525,10 +520,6 @@ const calculatePeriod = (period) => {
                       <i class="pi pi-clock mr-2"></i>
                       면접 일정 조율 중입니다. 기업 담당자가 일정을 전달할 예정입니다.
                     </p>
-                  </div>
-                  <!-- 상세정보보기 버튼 추가 -->
-                  <div class="flex gap-2 justify-end">
-                    <Button label="상세정보보기" class="p-button-outlined" @click="viewOfferDetail(offer)" />
                   </div>
                 </div>
 
@@ -579,11 +570,15 @@ const calculatePeriod = (period) => {
                       >
                         <input
                           v-model="selectedDateIndices[offer.id]"
+                          class="mt-1"
                           type="radio"
                           :name="'interview-date-' + offer.id"
                           :value="index"
+                          :disabled="
+                            getDaysUntilDeadline(offer?.deadlineScheduleDt?.slice(0, 10)?.replaceAll('-', '.')) ===
+                            '마감'
+                          "
                           @click.stop
-                          class="mt-1"
                         />
                         <div class="space-y-2">
                           <div class="font-medium flex items-center gap-2">
@@ -613,17 +608,6 @@ const calculatePeriod = (period) => {
                         </div>
                       </div>
                     </div>
-                  </div>
-
-                  <div class="flex gap-2 justify-end">
-                    <Button label="상세정보보기" class="p-button-outlined" @click="viewOfferDetail(offer)" />
-                    <Button
-                      label="일정 수락"
-                      severity="success"
-                      @click="acceptInterviewSchedule(offer)"
-                      :disabled="selectedDateIndices[offer.id] === undefined"
-                    />
-                    <Button label="면접 거절" severity="danger" @click="rejectInterviewSchedule(offer)" />
                   </div>
                 </div>
 
@@ -671,7 +655,7 @@ const calculatePeriod = (period) => {
                   </p>
                   <p class="text-red-600">
                     <i class="pi pi-times-circle mr-2"></i>
-                    {{ dateFormatter.fullDate(offer?.updatedAt) }} 에 거절되었습니다
+                    거절한 날짜: {{ dateFormatter.fullDate(offer?.updatedAt) }}
                   </p>
                   <!-- 거절 사유 표시 추가 -->
                   <div v-if="offer?.resultMemo" class="bg-red-50 p-4 rounded-lg mt-2">
@@ -687,7 +671,17 @@ const calculatePeriod = (period) => {
               </div>
 
               <!-- 면접 완료된 경우 표시 -->
-              <div v-if="offer?.statusCd === 'JO_ST_6'" class="flex justify-between">
+              <div v-if="offer?.statusCd === 'JO_ST_6'" class="space-y-4">
+                <div class="space-y-2">
+                  <p class="text-gray-600">
+                    <i class="pi pi-clock mr-2"></i>
+                    제안받은 날짜: {{ dateFormatter.fullDate(offer?.createdAt) }}
+                  </p>
+                  <p class="text-green-600">
+                    <i class="pi pi-check-circle mr-2"></i>
+                    수락 날짜: {{ dateFormatter.fullDate(offer?.updatedAt) }}
+                  </p>
+                </div>
                 <div class="grid grid-cols-1 gap-4">
                   <div class="flex items-center gap-2">
                     <i class="pi pi-calendar text-blue-600"></i>
@@ -698,16 +692,32 @@ const calculatePeriod = (period) => {
                         {{ offer?.interviewTime.slice(11, 16) }}
                       </div>
                     </div>
+                    <!-- <p class="text-blue-600">
+                      <i class="pi pi-check-circle mr-2"></i>
+                      면접 완료
+                    </p> -->
                   </div>
                 </div>
 
-                <p class="text-blue-600">
-                  <i class="pi pi-check-circle mr-2"></i>
-                  면접 완료
-                </p>
+                <div v-if="!offer?.resultCd || offer?.resultCd === 'INTERVIEW_RESULT_3'" class="space-y-4">
+                  <div class="bg-blue-50 p-4 rounded-lg">
+                    <p class="text-blue-700">
+                      <i class="pi pi-clock mr-2"></i>
+                      면접이 완료 되었습니다. 기업 담당자가 결과를 전달할 예정입니다.
+                    </p>
+                  </div>
+                </div>
+                <div v-else class="space-y-4">
+                  <div class="bg-blue-50 p-4 rounded-lg">
+                    <p class="text-blue-700">
+                      <i class="pi pi-clock mr-2"></i>
+                      채용 결과가 공지되었습니다. 면접 결과 페이지에서 확인해주세요.
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              <div class="mt-4">
+              <div class="mt-4 flex justify-between">
                 <button
                   class="text-[#8B8BF5] hover:text-[#7A7AE6] flex items-center gap-1"
                   @click="viewOfferDetail(offer)"
@@ -715,6 +725,41 @@ const calculatePeriod = (period) => {
                   <span>상세 정보 보기</span>
                   <i class="pi pi-arrow-right text-sm"></i>
                 </button>
+
+                <div v-if="offer?.statusCd === 'JO_ST_1'" class="flex gap-2 justify-end">
+                  <Button
+                    class="p-button-danger"
+                    label="거절하기"
+                    :disabled="getDaysUntilDeadline(offer?.deadlineDt?.slice(0, 10)?.replaceAll('-', '.')) === '마감'"
+                    @click="rejectOffer(offer)"
+                  />
+                  <Button
+                    class="bt_btn primary"
+                    label="수락하기"
+                    :disabled="getDaysUntilDeadline(offer?.deadlineDt?.slice(0, 10)?.replaceAll('-', '.')) === '마감'"
+                    @click="acceptOffer(offer)"
+                  />
+                </div>
+
+                <div v-if="offer?.statusCd === 'JO_ST_4'" class="flex gap-2 justify-end">
+                  <Button
+                    class="p-button-danger"
+                    label="면접 거절"
+                    :disabled="
+                      getDaysUntilDeadline(offer?.deadlineScheduleDt?.slice(0, 10)?.replaceAll('-', '.')) === '마감'
+                    "
+                    @click="rejectInterviewSchedule(offer)"
+                  />
+                  <Button
+                    class="bt_btn primary"
+                    label="일정 수락"
+                    :disabled="
+                      selectedDateIndices[offer.id] === undefined ||
+                      getDaysUntilDeadline(offer?.deadlineScheduleDt?.slice(0, 10)?.replaceAll('-', '.')) === '마감'
+                    "
+                    @click="acceptInterviewSchedule(offer)"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -825,7 +870,16 @@ const calculatePeriod = (period) => {
               <i class="pi pi-clock mr-2"></i>
               제안받은 날짜: {{ dateFormatter.fullDate(selectedOffer?.createdAt) }}
             </p>
-            <div class="bg-blue-50 p-4 rounded-lg">
+            <div
+              class="p-4 rounded-lg"
+              :class="
+                ['마감', 'DAY'].includes(
+                  getDaysUntilDeadline(selectedOffer?.deadlineDt?.slice(0, 10)?.replaceAll('-', '.'))
+                ) || getDaysUntilDeadline(selectedOffer?.deadlineDt?.slice(0, 10)?.replaceAll('-', '.')) < 3
+                  ? 'bg-red-50'
+                  : 'bg-blue-50'
+              "
+            >
               <p
                 class="mb-4"
                 :class="
@@ -845,10 +899,24 @@ const calculatePeriod = (period) => {
                 }}
               </p>
             </div>
-            <!-- 버튼 추가 -->
+
             <div class="flex gap-2 justify-end">
-              <Button label="수락하기" class="p-button-success" @click="acceptOffer(selectedOffer)" />
-              <Button label="거절하기" class="p-button-danger" @click="rejectOffer(selectedOffer)" />
+              <Button
+                label="거절하기"
+                class="p-button-danger"
+                :disabled="
+                  getDaysUntilDeadline(selectedOffer?.deadlineDt?.slice(0, 10)?.replaceAll('-', '.')) === '마감'
+                "
+                @click="rejectOffer(selectedOffer)"
+              />
+              <Button
+                label="수락하기"
+                class="bt_btn primary"
+                :disabled="
+                  getDaysUntilDeadline(selectedOffer?.deadlineDt?.slice(0, 10)?.replaceAll('-', '.')) === '마감'
+                "
+                @click="acceptOffer(selectedOffer)"
+              />
             </div>
           </div>
 
@@ -878,7 +946,16 @@ const calculatePeriod = (period) => {
             <!-- 면접 일정 조율중인 경우 -->
             <div v-else-if="['JO_ST_4'].includes(selectedOffer?.statusCd)" class="space-y-4">
               <!-- 면접 일정 정보를 담은 파란색 박스 -->
-              <div class="bg-blue-50 p-4 rounded-lg">
+              <div
+                class="p-4 rounded-lg"
+                :class="
+                  ['마감', 'DAY'].includes(
+                    getDaysUntilDeadline(selectedOffer?.deadlineScheduleDt?.slice(0, 10)?.replaceAll('-', '.'))
+                  ) || getDaysUntilDeadline(selectedOffer?.deadlineScheduleDt?.slice(0, 10)?.replaceAll('-', '.')) < 1
+                    ? 'bg-red-50'
+                    : 'bg-blue-50'
+                "
+              >
                 <h4 class="font-medium text-gray-900 mb-2">제안된 면접 일정</h4>
                 <!-- 회신기한 추가 -->
                 <p
@@ -911,12 +988,16 @@ const calculatePeriod = (period) => {
                     class="flex items-start gap-4 p-3 bg-white rounded-lg"
                   >
                     <input
+                      v-model="selectedDateIndices[selectedOffer.id]"
+                      class="mt-1"
                       type="radio"
                       :name="'interview-date-' + selectedOffer.id"
                       :value="index"
-                      v-model="selectedDateIndices[selectedOffer.id]"
+                      :disabled="
+                        getDaysUntilDeadline(selectedOffer?.deadlineScheduleDt?.slice(0, 10)?.replaceAll('-', '.')) ===
+                        '마감'
+                      "
                       @click.stop
-                      class="mt-1"
                     />
                     <div class="space-y-2">
                       <div class="font-medium flex items-center gap-2">
@@ -950,12 +1031,24 @@ const calculatePeriod = (period) => {
 
               <div class="flex gap-2 justify-end">
                 <Button
+                  class="p-button-danger"
+                  label="면접 거절"
+                  :disabled="
+                    getDaysUntilDeadline(selectedOffer?.deadlineScheduleDt?.slice(0, 10)?.replaceAll('-', '.')) ===
+                    '마감'
+                  "
+                  @click="rejectInterviewSchedule(selectedOffer)"
+                />
+                <Button
+                  class="bt_btn primary"
                   label="일정 수락"
-                  severity="success"
-                  :disabled="selectedDateIndices[selectedOffer.id] === undefined"
+                  :disabled="
+                    selectedDateIndices[selectedOffer.id] === undefined ||
+                    getDaysUntilDeadline(selectedOffer?.deadlineScheduleDt?.slice(0, 10)?.replaceAll('-', '.')) ===
+                      '마감'
+                  "
                   @click="acceptInterviewSchedule(selectedOffer)"
                 />
-                <Button label="면접 거절" severity="danger" @click="rejectInterviewSchedule(selectedOffer)" />
               </div>
             </div>
 
@@ -1024,7 +1117,7 @@ const calculatePeriod = (period) => {
               </p>
               <p class="text-red-600">
                 <i class="pi pi-times-circle mr-2"></i>
-                {{ dateFormatter.fullDate(selectedOffer?.updatedAt) }} 에 거절되었습니다
+                거절한 날짜: {{ dateFormatter.fullDate(selectedOffer?.updatedAt) }}
               </p>
               <!-- 거절 사유 표시 추가 -->
               <div v-if="selectedOffer?.resultMemo" class="bg-red-50 p-4 rounded-lg mt-2">
@@ -1270,8 +1363,13 @@ const calculatePeriod = (period) => {
       </div>
       <template #footer>
         <div class="flex justify-end gap-2">
-          <Button label="취소" class="bt_btn secondary p-button-text" @click="showRejectReasonModal = false" />
-          <Button label="거절" severity="danger" @click="confirmReject" />
+          <Button
+            label="취소"
+            class="bt_btn secondary p-button-text"
+            style="width: 100px"
+            @click="showRejectReasonModal = false"
+          />
+          <Button label="거절" style="width: 100px" severity="danger" @click="confirmReject" />
         </div>
       </template>
     </Dialog>
@@ -1299,8 +1397,10 @@ const calculatePeriod = (period) => {
 }
 
 :deep(.p-button.p-button-danger) {
-  background: #ef4444;
-  border-color: #ef4444;
+  /* background: #ef4444;
+  border-color: #ef4444; */
+  background: tomato;
+  border-color: tomato;
 }
 
 :deep(.p-button.p-button-danger:hover) {

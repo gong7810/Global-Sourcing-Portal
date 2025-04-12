@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMessagePop } from '@/plugins/commonutils';
 
@@ -23,16 +23,28 @@ const pw = ref(''); // 정의
 // 기업회원 입력 필드
 const businessId = ref('');
 const businessPassword = ref('');
-// const id = ref('user1'); // 정의
-// const pw = ref('1q2w3e4r5t!'); // 정의
 
-// // 기업회원 입력 필드
+// FIXME: 테스트용
+// const id = ref('user1');
+// const pw = ref('1q2w3e4r5t!');
+
 // const businessId = ref('com1');
 // const businessPassword = ref('1q2w3e4r5t!');
 
 const setActiveTab = (tab) => {
   activeTab.value = tab;
 };
+
+onMounted(() => {
+  // FIXME: 테스트용
+  if (import.meta.env.MODE === 'localhost') {
+    id.value = 'user1';
+    pw.value = '1q2w3e4r5t!';
+
+    businessId.value = 'com1';
+    businessPassword.value = '1q2w3e4r5t!';
+  }
+});
 
 // 로그인
 const getLogin = async () => {
