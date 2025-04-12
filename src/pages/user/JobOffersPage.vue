@@ -1397,6 +1397,8 @@ const calculatePeriod = (period) => {
 }
 
 :deep(.p-button.p-button-danger) {
+  padding: 8px 16px;
+  border: 0;
   /* background: #ef4444;
   border-color: #ef4444; */
   background: tomato;
@@ -1404,6 +1406,8 @@ const calculatePeriod = (period) => {
 }
 
 :deep(.p-button.p-button-danger:hover) {
+  padding: 8px 16px;
+  border: 0;
   background: #dc2626;
   border-color: #dc2626;
 }

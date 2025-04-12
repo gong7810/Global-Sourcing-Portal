@@ -37,7 +37,7 @@ const setActiveTab = (tab) => {
 
 onMounted(() => {
   // FIXME: 테스트용
-  if (import.meta.env.MODE === 'localhost') {
+  if (['localhost', 'development'].includes(import.meta.env.MODE)) {
     id.value = 'user1';
     pw.value = '1q2w3e4r5t!';
 
