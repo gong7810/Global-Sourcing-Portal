@@ -40,13 +40,20 @@ export function useApi() {
       headers['Content-Type'] = 'multipart/form-data';
     }
 
+    // responseType 설정
+    const responseConfig = {
+      headers,
+      ...config,
+      responseType: config.responseType || 'json' // 기본값은 'json'
+    };
+
     try {
       const response =
         method === 'GET'
-          ? await api.get(url, { params: data, headers, ...config })
+          ? await api.get(url, { params: data, ...responseConfig })
           : method === 'POST'
-            ? await api.post(url, data, { headers, ...config })
-            : await api.delete(url, data, { headers, ...config });
+            ? await api.post(url, data, responseConfig)
+            : await api.delete(url, data, responseConfig);
 
       return {
         status: response?.status,

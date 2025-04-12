@@ -16,9 +16,11 @@ export const fileUpload = async (body) => {
 // 파일 다운로드
 export const fileDownload = async (id) => {
   try {
-    const response = await api.post(`/file/download/${id}`);
+    const response = await api.get(`/file/download/${id}`, null, {
+      responseType: 'blob'
+    });
 
-    return response.data;
+    return response;
   } catch (error) {
     console.error(error);
   }

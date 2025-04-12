@@ -2,6 +2,7 @@
 import { defineProps, defineEmits, ref, onBeforeUnmount, onMounted, toRaw } from 'vue';
 import { isNull } from 'es-toolkit';
 import { useMessagePop } from '@/plugins/commonutils';
+import { fileDownload } from '@/apis/common/commonApis';
 
 const messagePop = useMessagePop();
 const props = defineProps({
@@ -37,12 +38,9 @@ onMounted(() => {
   offerUserInfo.value = toRaw(props.interviewer);
 
   if (offerUserInfo.value?.resumeSnapshot && offerUserInfo.value.resumeSnapshot?.user) {
-    offerUserInfo.value.resumeSnapshot.user = {
-      ...offerUserInfo.value.resumeSnapshot.user,
-      profileImage: offerUserInfo.value.resumeSnapshot.user.imageFile
-        ? `${import.meta.env.VITE_UPLOAD_PATH}/${offerUserInfo.value.resumeSnapshot.user.imageFile?.fileName}`
-        : null
-    };
+    offerUserInfo.value.resumeSnapshot.user.profileImage = offerUserInfo.value.resumeSnapshot.user?.imageFile
+      ? `${import.meta.env.VITE_UPLOAD_PATH}/${offerUserInfo.value.resumeSnapshot.user.imageFile?.fileName}`
+      : null;
   }
 });
 
@@ -66,43 +64,39 @@ const convertJobCode = (code) => {
   return name;
 };
 
-// 샘플 파일 정보
-const sampleFiles = {
-  passport: {
-    name: '여권사본.pdf',
-    size: '2.1MB',
-    exists: true
-  },
-  career: {
-    name: '경력증명서.pdf',
-    size: '1.5MB',
-    exists: false
-  },
-  education: {
-    name: '졸업증명서.pdf',
-    size: '1.8MB',
-    exists: true
-  },
-  certificate: {
-    name: '자격증.pdf',
-    size: '1.2MB',
-    exists: true
-  }
-};
-
 // 파일 다운로드 함수
-const downloadFile = (fileType, fileInfo, certName = '') => {
-  console.log(fileType, fileInfo);
+const downloadFile = async (fileName, fileType, mimeType, fileId) => {
+  // console.log(fileName, fileType, mimeType, fileId);
 
-  if (!fileInfo) {
-    messagePop('업로드된 파일이 없습니다.', 'info');
+  if (!fileId) {
+    messagePop.toast('업로드된 파일이 없습니다.', 'info');
     return;
-  }
-  // const message = certName
-  //   ? `${certName} ${fileType} 파일 다운로드 시도\n파일명: ${fileInfo.name}`
-  //   : `${fileType} 파일 다운로드 시도\n파일명: ${fileInfo.name}`;
+  } else {
+    const response = await fileDownload(fileId);
 
-  // alert(`${message}\n(실제 다운로드는 백엔드 연동 후 구현 예정)`);
+    // Blob 객체 생성
+    const blob = new Blob([response?.data], { type: response?.header?.['content-type'] });
+
+    // 다운로드를 위한 URL 생성
+    const url = URL.createObjectURL(blob);
+    // 대체수단
+    // const url = `${import.meta.env.VITE_BASE_URL}/file/download/${fileId}`;
+
+    // 링크 생성 및 클릭하여 다운로드
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute(
+      'download',
+      `${offerUserInfo.value?.resumeSnapshot?.user?.name}_${fileType}_${fileName}.${mimeType}`
+    );
+
+    document.body.appendChild(link);
+    link.click();
+
+    // 링크 제거 및 URL 해제
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
 };
 
 // 경력 기간 계산 함수
@@ -163,19 +157,29 @@ const printResume = () => {
   const certificationDocuments = [];
   offerUserInfo.value?.resumeSnapshot?.experiences.map((exp) => {
     if (exp?.file) {
-      careerDocuments.push(`${import.meta.env.VITE_UPLOAD_PATH}/${exp.file?.fileName}`);
+      careerDocuments.push({
+        path: `${import.meta.env.VITE_UPLOAD_PATH}/${exp?.file?.fileName}`,
+        fileType: exp?.file?.mimeType
+      });
     }
   });
   offerUserInfo.value?.resumeSnapshot?.educations.map((edu) => {
     if (edu?.file) {
-      educationDocuments.push(`${import.meta.env.VITE_UPLOAD_PATH}/${edu.file?.fileName}`);
+      educationDocuments.push({
+        path: `${import.meta.env.VITE_UPLOAD_PATH}/${edu?.file?.fileName}`,
+        fileType: edu?.file?.mimeType
+      });
     }
   });
   offerUserInfo.value?.resumeSnapshot?.certifications.map((cer) => {
     if (cer?.file) {
-      certificationDocuments.push(`${import.meta.env.VITE_UPLOAD_PATH}/${cer.file?.fileName}`);
+      certificationDocuments.push({
+        path: `${import.meta.env.VITE_UPLOAD_PATH}/${cer?.file?.fileName}`,
+        fileType: cer?.file?.mimeType
+      });
     }
   });
+  console.log(careerDocuments);
 
   // 스타일 정의
   const styles = `
@@ -389,6 +393,69 @@ const printResume = () => {
     </div>
   `;
 
+  // 증빙서류 생성
+  // 여권스캔파일
+  const passportContent = `<div class="page-break"></div>
+        <h2 class="document-header">여권스캔파일</h2>
+        <img src="${passportDocument}" alt="여권스캔파일" style="width: 100%; max-width: 600px;" />`;
+
+  // 경력증빙서류
+  const careerContent = `<div class="page-break"></div>
+        <h2 class="document-header">경력증빙서류</h2>
+        ${
+          careerDocuments.length > 0
+            ? careerDocuments
+                .map((doc, idx) =>
+                  idx !== careerDocuments.length - 1
+                    ? doc.fileType === 'image/jpeg'
+                      ? `<img src="${doc.path}" alt="경력증빙서류" style="width: 100%; max-width: 600px;" /><div class="page-break"></div>`
+                      : `<iframe src="${doc.path}" type="application/pdf" width="100%" height="600px" ></iframe><div class="page-break"></div>`
+                    : doc.fileType === 'image/jpeg'
+                      ? `<img src="${doc.path}" alt="경력증빙서류" style="width: 100%; max-width: 600px;" />`
+                      : `<iframe src="${doc.path}" type="application/pdf" width="100%" height="600px" ></iframe>`
+                )
+                .join('')
+            : '제출서류 없음'
+        }`;
+
+  // 학력증빙서류
+  const educationContent = `<div class="page-break"></div>
+        <h2 class="document-header">학력증빙서류</h2>
+        ${
+          educationDocuments.length > 0
+            ? educationDocuments
+                .map((doc, idx) =>
+                  idx !== educationDocuments.length - 1
+                    ? doc.fileType === 'image/jpeg'
+                      ? `<img src="${doc.path}" alt="학력증빙서류" style="width: 100%; max-width: 600px;" /><div class="page-break"></div>`
+                      : `<iframe src="${doc.path}" type="application/pdf" width="100%" height="600px" ></iframe><div class="page-break"></div>`
+                    : doc.fileType === 'image/jpeg'
+                      ? `<img src="${doc.path}" alt="학력증빙서류" style="width: 100%; max-width: 600px;" />`
+                      : `<iframe src="${doc.path}" type="application/pdf" width="100%" height="600px" ></iframe>`
+                )
+                .join('')
+            : '제출서류 없음'
+        }`;
+
+  // 자격증 스캔파일
+  const certificationContent = `<div class="page-break"></div>
+        <h2 class="document-header">자격증 증빙서류</h2>
+        ${
+          certificationDocuments.length > 0
+            ? certificationDocuments
+                .map((doc, idx) =>
+                  idx !== certificationDocuments.length - 1
+                    ? doc.fileType === 'image/jpeg'
+                      ? `<img src="${doc.path}" alt="자격증 증빙서류" style="width: 100%; max-width: 600px;" /><div class="page-break"></div>`
+                      : `<iframe src="${doc.path}" type="application/pdf" width="100%" height="600px" ></iframe><div class="page-break"></div>`
+                    : doc.fileType === 'image/jpeg'
+                      ? `<img src="${doc.path}" alt="자격증 증빙서류" style="width: 100%; max-width: 600px;" />`
+                      : `<iframe src="${doc.path}" type="application/pdf" width="100%" height="600px" ></iframe>`
+                )
+                .join('')
+            : '제출서류 없음'
+        }`;
+
   const printContent = `
     <!DOCTYPE html>
     <html>
@@ -397,52 +464,10 @@ const printResume = () => {
       </head>
       <body>
         ${resumeContent}
-
-        <div class="page-break"></div>
-        <h2 class="document-header">여권스캔파일</h2>
-        <img src="${passportDocument}" alt="여권스캔파일" style="width: 100%; max-width: 600px;" />
-
-        <div class="page-break"></div>
-        <h2 class="document-header">경력증빙서류</h2>
-        ${
-          careerDocuments.length > 0
-            ? careerDocuments
-                .map((doc, idx) =>
-                  idx !== careerDocuments.length - 1
-                    ? `<img src="${doc}" alt="경력증빙서류" style="width: 100%; max-width: 600px;" /><div class="page-break"></div>`
-                    : `<img src="${doc}" alt="경력증빙서류" style="width: 100%; max-width: 600px;" />`
-                )
-                .join('')
-            : '제출서류 없음'
-        }
-
-        <div class="page-break"></div>
-        <h2 class="document-header">학력증빙서류</h2>
-        ${
-          educationDocuments.length > 0
-            ? educationDocuments
-                .map((doc, idx) =>
-                  idx !== educationDocuments.length - 1
-                    ? `<img src="${doc}" alt="학력증빙서류" style="width: 100%; max-width: 600px;" /><div class="page-break"></div>`
-                    : `<img src="${doc}" alt="학력증빙서류" style="width: 100%; max-width: 600px;" />`
-                )
-                .join('')
-            : '제출서류 없음'
-        }
-
-        <div class="page-break"></div>
-        <h2 class="document-header">자격증 증빙서류</h2>
-        ${
-          certificationDocuments.length > 0
-            ? certificationDocuments
-                .map((doc, idx) =>
-                  idx !== certificationDocuments.length - 1
-                    ? `<img src="${doc}" alt="자격증 증빙서류" style="width: 100%; max-width: 600px;" /><div class="page-break"></div>`
-                    : `<img src="${doc}" alt="자격증 증빙서류" style="width: 100%; max-width: 600px;" />`
-                )
-                .join('')
-            : '제출서류 없음'
-        }
+        ${passportContent}
+        ${careerContent}
+        ${educationContent}
+        ${certificationContent}
       </body>
     </html>
   `;
@@ -574,11 +599,18 @@ const printResume = () => {
           <div>
             <button
               v-if="offerUserInfo?.resumeSnapshot?.passportFile"
-              @click="downloadFile('여권', offerUserInfo?.resumeSnapshot?.passportFile?.id)"
+              @click="
+                downloadFile(
+                  offerUserInfo?.resumeSnapshot?.passportCountry?.name,
+                  '여권스캔파일',
+                  offerUserInfo?.resumeSnapshot?.passportFile?.originalName.split('.')[1],
+                  offerUserInfo?.resumeSnapshot?.passportFileId
+                )
+              "
               class="flex items-center gap-2 text-[#8B8BF5] hover:text-[#7A7AE6]"
             >
               <i class="pi pi-download"></i>
-              <span>파일 다운로드</span>
+              <span>첨부파일</span>
               <span class="text-sm text-gray-500"
                 >({{ parseInt(offerUserInfo?.resumeSnapshot?.passportFile?.size / 1024) }}KB)</span
               >
@@ -645,12 +677,19 @@ const printResume = () => {
               </div>
               <button
                 v-if="career?.fileId"
-                @click="downloadFile('경력증명서', career?.fileId, career?.companyName)"
+                @click="
+                  downloadFile(
+                    career?.companyName,
+                    career?.isCurrent ? '재직증명서' : '경력증명서',
+                    career?.file?.originalName.split('.')[1],
+                    career?.fileId
+                  )
+                "
                 class="flex items-center gap-2 text-[#8B8BF5] hover:text-[#7A7AE6] ml-4"
               >
                 <i class="pi pi-download"></i>
-                <span class="text-sm">증명서</span>
-                <!-- <span class="text-sm text-gray-500">({{ career.file.size }})</span> -->
+                <span class="text-sm">{{ career.isCurrent ? '재직증명서' : '경력증명서' }}</span>
+                <span class="text-sm text-gray-500">({{ parseInt(career.file?.size / 1024) }}KB)</span>
               </button>
               <span v-else class="text-sm text-gray-500 ml-4"> 증명서 없음 </span>
             </div>
@@ -689,12 +728,19 @@ const printResume = () => {
               </div>
               <button
                 v-if="edu?.fileId"
-                @click="downloadFile('졸업증명서', edu.fileId, edu.schoolName)"
+                @click="
+                  downloadFile(
+                    edu?.schoolName,
+                    edu?.isGraduated ? '졸업증명서' : '재학증명서',
+                    edu?.file?.originalName.split('.')[1],
+                    edu?.fileId
+                  )
+                "
                 class="flex items-center gap-2 text-[#8B8BF5] hover:text-[#7A7AE6] ml-4"
               >
                 <i class="pi pi-download"></i>
-                <span class="text-sm">졸업증명서</span>
-                <!-- <span class="text-sm text-gray-500">({{ edu.file.size }})</span> -->
+                <span class="text-sm">{{ edu?.isGraduated ? '졸업증명서' : '재학증명서' }}</span>
+                <span class="text-sm text-gray-500">({{ parseInt(edu.file.size / 1024) }}KB)</span>
               </button>
               <span v-else class="text-sm text-gray-500 ml-4"> 증명서 없음 </span>
             </div>
@@ -725,12 +771,14 @@ const printResume = () => {
               </div>
               <button
                 v-if="cert?.fileId"
-                @click="downloadFile('자격증', sampleFiles.certificate, cert?.fileId)"
+                @click="
+                  downloadFile(cert?.name, '자격증스캔파일', cert?.file?.originalName.split('.')[1], cert?.fileId)
+                "
                 class="flex items-center gap-2 text-[#8B8BF5] hover:text-[#7A7AE6] ml-4"
               >
                 <i class="pi pi-download"></i>
                 <span class="text-sm">첨부파일</span>
-                <!-- <span class="text-sm text-gray-500">({{ sampleFiles.certificate.size }})</span> -->
+                <span class="text-sm text-gray-500">({{ parseInt(cert.file.size / 1024) }}KB)</span>
               </button>
               <span v-else class="text-sm text-gray-500 ml-4"> 첨부파일 없음 </span>
             </div>
