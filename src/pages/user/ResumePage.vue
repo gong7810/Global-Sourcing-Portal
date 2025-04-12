@@ -357,8 +357,6 @@ const setEducationInfo = () => {
       }
     });
   });
-
-  // basicInfo.value.finalEducation = getFinalEducation(educationList.value);
 };
 
 // 자격증 정보 세팅
@@ -383,8 +381,13 @@ const checkResumeClear = (value) => {
     visibilityType.value = value;
   } else if (!passportInfo.value.fileImage) {
     messagePop.toast('여권 스캔파일을 업로드 해주세요.', 'warn');
+    return;
+  } else if (educationList.value.length && !resumeInfo.value?.finalEducation) {
+    messagePop.toast('최종학력을 선택해주세요.', 'warn');
+    return;
   } else {
     messagePop.toast('기본 정보를 모두 입력해 주세요.', 'warn');
+    return;
   }
 };
 
@@ -440,19 +443,6 @@ const calculateTotalCareer = (careerList) => {
   return totalMonth % 12
     ? `(총 ${Math.floor(totalMonth / 12)}년 ${totalMonth % 12}개월)`
     : `(총 ${Math.floor(totalMonth / 12)}년)`;
-  // let totalMonths = 0;
-  // careerList.forEach((career) => {
-  //   const [start, end] = career.period.split(' - ');
-  //   const startDate = new Date(start);
-  //   const endDate = end === '재직중' ? new Date() : new Date(end);
-  //   const months =
-  //     (endDate.getFullYear() - startDate.getFullYear()) * 12 + (endDate.getMonth() - startDate.getMonth() + 1);
-  //   totalMonths += months;
-  // });
-
-  // return totalMonths % 12
-  //   ? `(총 ${Math.floor(totalMonths / 12)}년 ${totalMonths % 12}개월)`
-  //   : `(총 ${Math.floor(totalMonths / 12)}년)`;
 };
 
 // ISO문자열 처리를 위한 다음달 구하는 함수
