@@ -586,7 +586,7 @@ const calculatePeriod = (period) => {
                         />
                         <div class="space-y-2">
                           <div class="font-medium flex items-center gap-2">
-                            {{ dateSlot?.time?.slice(0, 10).replaceAll('-', '.') }}
+                            {{ dateSlot?.time?.slice(0, 10)?.replaceAll('-', '.') }}
                             <span class="text-gray-400">|</span>
                             {{ dateSlot?.time?.slice(11, 16) }}
                           </div>
@@ -691,9 +691,9 @@ const calculatePeriod = (period) => {
                     <i class="pi pi-calendar text-blue-600"></i>
                     <div class="space-y-2">
                       <div class="font-medium flex items-center gap-2">
-                        {{ offer?.interviewTime.slice(0, 10).replaceAll('-', '.') }}
+                        {{ offer?.interviewTime?.slice(0, 10)?.replaceAll('-', '.') }}
                         <span class="text-gray-400">|</span>
-                        {{ offer?.interviewTime.slice(11, 16) }}
+                        {{ offer?.interviewTime?.slice(11, 16) }}
                       </div>
                     </div>
                     <!-- <p class="text-blue-600">
@@ -1005,9 +1005,9 @@ const calculatePeriod = (period) => {
                     />
                     <div class="space-y-2">
                       <div class="font-medium flex items-center gap-2">
-                        {{ dateSlot.slice(0, 10).replaceAll('-', '.') }}
+                        {{ dateSlot?.slice(0, 10)?.replaceAll('-', '.') }}
                         <span class="text-gray-400">|</span>
-                        {{ dateSlot.slice(11, 16) }}
+                        {{ dateSlot?.slice(11, 16) }}
                       </div>
                       <div class="flex items-center gap-2 text-sm text-gray-600">
                         <i class="pi pi-video"></i>
@@ -1098,9 +1098,9 @@ const calculatePeriod = (period) => {
                 <i class="pi pi-calendar text-blue-600"></i>
                 <div class="space-y-2">
                   <div class="font-medium flex items-center gap-2">
-                    {{ selectedOffer?.interviewTime.slice(0, 10).replaceAll('-', '.') }}
+                    {{ selectedOffer?.interviewTime?.slice(0, 10)?.replaceAll('-', '.') }}
                     <span class="text-gray-400">|</span>
-                    {{ selectedOffer?.interviewTime.slice(11, 16) }}
+                    {{ selectedOffer?.interviewTime?.slice(11, 16) }}
                   </div>
                 </div>
               </div>
@@ -1265,7 +1265,7 @@ const calculatePeriod = (period) => {
                   <div class="font-medium">{{ career?.companyName }}</div>
                   <span class="text-sm text-gray-500">
                     ({{
-                      `${career?.startDt?.slice(0, 7).replaceAll('-', '.')} ~ ${career?.endDt?.slice(0, 7) ? career?.endDt?.slice(0, 7).replaceAll('-', '.') : '재직중'}`
+                      `${career?.startDt?.slice(0, 7)?.replaceAll('-', '.')} ~ ${career?.endDt?.slice(0, 7) ? career?.endDt?.slice(0, 7)?.replaceAll('-', '.') : '재직중'}`
                     }})
                   </span>
                 </div>
@@ -1327,7 +1327,7 @@ const calculatePeriod = (period) => {
                   <div>
                     <div class="font-medium mb-1">{{ cert?.name }}</div>
                     <div class="font-medium mb-1">발급기관 : {{ cert?.issuer }}</div>
-                    <div class="text-gray-600">취득일 : {{ cert?.acquiredDt.slice(0, 10).replaceAll('-', '.') }}</div>
+                    <div class="text-gray-600">취득일 : {{ cert?.acquiredDt?.slice(0, 10)?.replaceAll('-', '.') }}</div>
                   </div>
                 </div>
               </div>
