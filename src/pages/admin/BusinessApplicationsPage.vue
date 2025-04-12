@@ -3,15 +3,12 @@ import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import AdminSidebar from '@/components/admin/AdminSidebar.vue';
 import AdminHeader from '@/components/admin/AdminHeader.vue';
-import {
-  getAllCompanyApplications,
-  approveCompanyApplication,
-  getPendingCompanyApplications
-} from '@/apis/company/companyApis';
+import { approveCompanyApplication, getPendingCompanyApplications } from '@/apis/company/companyApis';
 import { useMessagePop } from '@/plugins/commonutils';
 import InputText from 'primevue/inputtext';
 import DataTable from 'primevue/datatable';
 import Tag from 'primevue/tag';
+import { fileDownload } from '@/apis/common/commonApis';
 
 const router = useRouter();
 const messagePop = useMessagePop();
@@ -61,18 +58,17 @@ const loadApplications = async () => {
     // 데이터 매핑
     applications.value = allApplications.map((app) => ({
       id: app.id,
-      createdAt: app.createdAt,
-      businessName: app.name,
-      businessRegistrationNo: app.businessNumber,
-      ownerName: app.ceoName,
+      createdAt: app?.createdAt,
+      name: app?.name,
+      businessNumber: app?.businessNumber,
+      ceoName: app.ceoName,
       managerName: app.user?.name || '',
-      businessPhoneNo: app.phone,
+      businessPhoneNo: app?.phone,
       businessEmail: app.user?.email || '',
-      businessAddress: app.address,
-      businessType: app.companyTypeCd,
+      address: app?.address,
+      companyType: app.companyType?.name,
       status: app.isApproved === null ? 'PENDING' : app.isApproved ? 'APPROVED' : 'REJECTED',
-      fileUrl: app.registrationFile,
-      fileName: '사업자등록증명원.pdf'
+      fileId: app.registrationFile
     }));
 
     // ID 기준으로 내림차순 정렬 (최신순)
@@ -181,8 +177,32 @@ const closeDetailModal = () => {
 };
 
 // 파일 다운로드
-const downloadFile = (fileUrl, fileName) => {
-  alert(`${fileName} 파일 다운로드 시도\n(실제 다운로드는 백엔드 연동 후 구현 예정)`);
+const downloadFile = async (companyName, fileId) => {
+  if (!fileId) {
+    messagePop.toast('업로드된 파일이 없습니다.', 'info');
+    return;
+  } else {
+    const response = await fileDownload(fileId);
+
+    // Blob 객체 생성
+    const blob = new Blob([response?.data], { type: response?.header?.['content-type'] });
+
+    let mimeType = response?.header?.['content-type'].split('/')[1];
+    // 다운로드를 위한 URL 생성
+    const url = URL.createObjectURL(blob);
+
+    // 링크 생성 및 클릭하여 다운로드
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `사업자등록증명원_${companyName}.${mimeType}`);
+
+    document.body.appendChild(link);
+    link.click();
+
+    // 링크 제거 및 URL 해제
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
 };
 
 // 뒤로가기 함수
@@ -237,9 +257,9 @@ const goBack = () => {
             :rowsPerPageOptions="[10, 20, 50]"
           >
             <Column field="createdAt" header="신청일" :sortable="true"></Column>
-            <Column field="businessName" header="기업명" :sortable="true"></Column>
-            <Column field="businessRegistrationNo" header="사업자등록번호" :sortable="true"></Column>
-            <Column field="ownerName" header="대표자명" :sortable="true"></Column>
+            <Column field="name" header="기업명" :sortable="true"></Column>
+            <Column field="businessNumber" header="사업자등록번호" :sortable="true"></Column>
+            <Column field="ceoName" header="대표자명" :sortable="true"></Column>
             <Column field="managerName" header="가입자명" :sortable="true"></Column>
             <Column field="status" header="상태" :sortable="true">
               <template #body="{ data }">
@@ -270,15 +290,15 @@ const goBack = () => {
             <div class="grid grid-cols-2 gap-4">
               <div class="detail-item">
                 <h3>기본 정보</h3>
-                <p><strong>기업명:</strong> {{ selectedApplication.businessName }}</p>
-                <p><strong>사업자등록번호:</strong> {{ selectedApplication.businessRegistrationNo }}</p>
-                <p><strong>대표자명:</strong> {{ selectedApplication.ownerName }}</p>
-                <p><strong>기업주소:</strong> {{ selectedApplication.businessAddress }}</p>
-                <p><strong>기업형태:</strong> {{ selectedApplication.businessType }}</p>
+                <p><strong>기업명:</strong> {{ selectedApplication?.name }}</p>
+                <p><strong>사업자등록번호:</strong> {{ selectedApplication?.businessNumber }}</p>
+                <p><strong>대표자명:</strong> {{ selectedApplication?.ceoName }}</p>
+                <p><strong>기업주소:</strong> {{ selectedApplication?.address }}</p>
+                <p><strong>기업형태:</strong> {{ selectedApplication?.companyType }}</p>
               </div>
               <div class="detail-item">
                 <h3>담당자 정보</h3>
-                <p><strong>가입자명:</strong> {{ selectedApplication.managerName }}</p>
+                <p><strong>가입자명:</strong> {{ selectedApplication?.managerName }}</p>
                 <p><strong>연락처:</strong> {{ selectedApplication.businessPhoneNo }}</p>
                 <p><strong>이메일:</strong> {{ selectedApplication.businessEmail }}</p>
               </div>
@@ -294,12 +314,12 @@ const goBack = () => {
                     label="다운로드"
                     icon="pi pi-download"
                     class="p-button-text"
-                    @click="downloadFile(selectedApplication.fileUrl, selectedApplication.fileName)"
-                    :disabled="!selectedApplication.fileUrl"
+                    :disabled="!selectedApplication.fileId"
+                    @click="downloadFile(selectedApplication?.name, selectedApplication.fileId)"
                   />
                 </div>
               </div>
-              <p v-if="!selectedApplication.fileUrl" class="text-sm text-red-500 mt-1">* 첨부된 파일이 없습니다.</p>
+              <p v-if="!selectedApplication.fileId" class="text-sm text-red-500 mt-1">* 첨부된 파일이 없습니다.</p>
             </div>
 
             <!-- 거절 사유 입력 -->

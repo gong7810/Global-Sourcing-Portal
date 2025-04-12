@@ -155,6 +155,7 @@ const printResume = () => {
   const careerDocuments = [];
   const educationDocuments = [];
   const certificationDocuments = [];
+
   offerUserInfo.value?.resumeSnapshot?.experiences.map((exp) => {
     if (exp?.file) {
       careerDocuments.push({
@@ -179,7 +180,6 @@ const printResume = () => {
       });
     }
   });
-  console.log(careerDocuments);
 
   // 스타일 정의
   const styles = `
