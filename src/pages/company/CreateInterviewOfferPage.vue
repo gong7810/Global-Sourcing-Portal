@@ -42,7 +42,9 @@ onMounted(() => {
 
   candidate.value.user = {
     ...candidate.value.user,
-    profileImage: `${import.meta.env.VITE_UPLOAD_PATH}/${candidate.value?.user?.imageFile?.fileName}`
+    profileImage: candidate.value?.user?.imageFile
+      ? `${import.meta.env.VITE_UPLOAD_PATH}/${candidate.value?.user?.imageFile?.fileName}`
+      : null
   };
 });
 
@@ -216,7 +218,7 @@ const submitOffer = () => {
           <div class="w-[140px] h-[180px] bg-gray-100 rounded-lg overflow-hidden">
             <img
               v-if="candidate?.user?.profileImage"
-              :src="candidate?.user?.profileImage || '/default-profile.jpg'"
+              :src="candidate?.user?.profileImage"
               alt="프로필 사진"
               class="w-full h-full object-cover"
             />

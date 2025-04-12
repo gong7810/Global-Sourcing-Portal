@@ -176,7 +176,7 @@ const saveAll = () => {
     messagePop.toast('주소를 입력해주세요.', 'warn');
     return;
   }
-  if (!basicInfo.value.criminalRecordFileId) {
+  if (!basicInfo.value.criminalRecordFile) {
     messagePop.toast('범죄경력 확인서를 업로드해주세요.', 'warn');
     return;
   }
@@ -480,7 +480,7 @@ const removeCriminalRecord = () => {
 
               <!-- 파일 업로드 영역 -->
               <div class="border rounded-lg p-4">
-                <div v-if="!basicInfo.criminalRecordFileId" class="flex flex-col items-center gap-2">
+                <div v-if="!basicInfo.criminalRecordFile" class="flex flex-col items-center gap-2">
                   <label class="cursor-pointer text-center">
                     <input type="file" accept=".pdf,image/*" class="hidden" @change="handleCriminalRecordUpload" />
                     <i class="pi pi-upload text-2xl text-gray-400"></i>

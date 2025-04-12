@@ -228,7 +228,9 @@ const openResumeModal = async (talent) => {
 
     selectedCandidate.value.user = {
       ...selectedCandidate.value.user,
-      profileImage: `${import.meta.env.VITE_UPLOAD_PATH}/${selectedCandidate.value.user?.imageFile?.fileName}`
+      profileImage: selectedCandidate.value.user?.imageFile
+        ? `${import.meta.env.VITE_UPLOAD_PATH}/${selectedCandidate.value.user?.imageFile?.fileName}`
+        : null
     };
   } catch (error) {
     console.error('이력서 정보를 불러오는 중 오류가 발생했습니다:', error);
@@ -605,7 +607,7 @@ const openInterviewOffer = async (talent, isPage) => {
               <div class="w-[140px] h-[180px] bg-gray-100 rounded-lg overflow-hidden">
                 <img
                   v-if="selectedCandidate?.user?.profileImage"
-                  :src="selectedCandidate?.user?.profileImage || '/default-profile.jpg'"
+                  :src="selectedCandidate?.user?.profileImage"
                   alt="프로필 사진"
                   class="w-full h-full object-cover"
                 />

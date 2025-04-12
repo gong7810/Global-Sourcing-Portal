@@ -90,7 +90,9 @@ const getOfferList = async () => {
           ...com.resumeSnapshot,
           user: {
             ...com.resumeSnapshot.user,
-            profileImage: `${import.meta.env.VITE_UPLOAD_PATH}/${com.resumeSnapshot.user.imageFile.fileName}`
+            profileImage: com.resumeSnapshot.user.imageFile.fileName
+              ? `${import.meta.env.VITE_UPLOAD_PATH}/${com.resumeSnapshot.user.imageFile.fileName}`
+              : null
           }
         }
       };
@@ -1187,7 +1189,7 @@ const calculatePeriod = (period) => {
                 <div class="w-[140px] h-[180px] bg-gray-100 rounded-lg overflow-hidden">
                   <img
                     v-if="selectedOffer?.resumeSnapshot?.user?.profileImage"
-                    :src="selectedOffer?.resumeSnapshot?.user?.profileImage || '/default-profile.jpg'"
+                    :src="selectedOffer?.resumeSnapshot?.user?.profileImage"
                     alt="프로필 사진"
                     class="w-full h-full object-cover"
                   />

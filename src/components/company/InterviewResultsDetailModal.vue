@@ -37,7 +37,9 @@ onMounted(() => {
   if (offerUserInfo.value?.resumeSnapshot && offerUserInfo.value.resumeSnapshot?.user) {
     offerUserInfo.value.resumeSnapshot.user = {
       ...offerUserInfo.value.resumeSnapshot.user,
-      profileImage: `${import.meta.env.VITE_UPLOAD_PATH}/${offerUserInfo.value.resumeSnapshot.user.imageFile?.fileName}`
+      profileImage: offerUserInfo.value.resumeSnapshot.user.imageFile
+        ? `${import.meta.env.VITE_UPLOAD_PATH}/${offerUserInfo.value.resumeSnapshot.user.imageFile?.fileName}`
+        : null
     };
   }
 });
@@ -543,7 +545,7 @@ const printResume = () => {
             <div class="w-[140px] h-[180px] bg-gray-100 rounded-lg overflow-hidden">
               <img
                 v-if="offerUserInfo?.resumeSnapshot?.user?.profileImage"
-                :src="offerUserInfo?.resumeSnapshot?.user?.profileImage || '/default-profile.jpg'"
+                :src="offerUserInfo?.resumeSnapshot?.user?.profileImage"
                 alt="프로필 사진"
                 class="w-full h-full object-cover"
               />

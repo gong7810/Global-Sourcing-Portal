@@ -211,24 +211,27 @@ const getUserInfo = async () => {
 
   // 프로필 이미지 세팅
   if (basicInfo.value.imageFile) {
-    profileImage.value = `${import.meta.env.VITE_UPLOAD_PATH}/${basicInfo.value.imageFile.fileName}`;
+    profileImage.value = basicInfo.value.imageFile.fileName
+      ? `${import.meta.env.VITE_UPLOAD_PATH}/${basicInfo.value.imageFile.fileName}`
+      : null;
   }
 
   setTimeout(() => {
     // 페이지 진입 시 필수 정보 체크
     const requiredFields = {
       name: { value: basicInfo.value.name, label: '이름' },
+      profileImage: { value: basicInfo.value.profileImage, label: '프로필사진' },
       birthDate: { value: basicInfo.value.birth, label: '생년월일' },
       gender: { value: basicInfo.value.gender.name, label: '성별' },
       email: { value: basicInfo.value.email, label: '이메일' },
       mobile: { value: basicInfo.value.mobile, label: '전화번호' },
       address: { value: basicInfo.value.address, label: '주소' },
-      hasCriminalRecord: { value: basicInfo.value?.hasCriminalRecord, label: '범죄경력확인서' }
-      // criminalRecordFile: { value: basicInfo.value?.criminalRecordFile, label: '범죄경력확인서' }
+      hasCriminalRecord: { value: basicInfo.value?.hasCriminalRecord, label: '범죄경력확인서' },
+      criminalRecordFile: { value: basicInfo.value?.criminalRecordFileId, label: '범죄경력확인서' }
     };
 
     const missingFields = Object.entries(requiredFields)
-      .filter(([_, field]) => isNil(field.value) && isLength(field.value))
+      .filter(([_, field]) => isNil(field.value) && !isLength(field.value))
       .map(([_, field]) => field.label);
 
     if (missingFields.length > 0) {
@@ -279,19 +282,19 @@ const getResumeInfo = async () => {
   resumeInfo.value = response;
 
   // 공개여부 설정
-  visibilityType.value = response.isPublic;
+  visibilityType.value = response?.isPublic;
 
   // 국적 설정
-  nationalityInfo.value = response.nationality.name;
+  nationalityInfo.value = response?.nationality?.name;
 
   passportInfo.value = {
-    passportNo: response.passport,
-    firstName: response.passportLastName,
-    lastName: response.passportFirstName,
-    nationality: response.passportCountry.name,
-    issueDate: response.passportIssueDt.slice(0, 10),
-    expiryDate: response.passportExpiryDt.slice(0, 10),
-    fileImage: response.passportFileId
+    passportNo: response?.passport,
+    firstName: response?.passportLastName,
+    lastName: response?.passportFirstName,
+    nationality: response?.passportCountry.name,
+    issueDate: response?.passportIssueDt.slice(0, 10),
+    expiryDate: response?.passportExpiryDt.slice(0, 10),
+    fileImage: response?.passportFileId
   };
 
   setTimeout(() => {
@@ -307,7 +310,7 @@ const getResumeInfo = async () => {
 const setCareerInfo = () => {
   careerList.value = [];
 
-  resumeInfo.value.experiences.map((exp) => {
+  resumeInfo.value?.experiences.map((exp) => {
     jobCategories.value.map((cate) => {
       if (cate.code === exp.jobCategoryCd) {
         careerList.value.push({
@@ -330,7 +333,7 @@ const setCareerInfo = () => {
 const setEducationInfo = () => {
   educationList.value = [];
 
-  resumeInfo.value.educations.map((edu) => {
+  resumeInfo.value?.educations.map((edu) => {
     educationTypes.value.map((type) => {
       if (type.code === edu.educationLevelCd) {
         educationList.value.push({
@@ -361,7 +364,7 @@ const setEducationInfo = () => {
 const setCertificationInfo = () => {
   certificationList.value = [];
 
-  resumeInfo.value.certifications.map((cer) => {
+  resumeInfo.value?.certifications.map((cer) => {
     certificationList.value.push({
       id: cer.id,
       name: cer.name,
@@ -1126,11 +1129,10 @@ const clearCertificationFile = (index) => {
             <!-- 프로필 이미지 -->
             <div class="flex-shrink-0 ml-8">
               <div class="w-[120px] h-[160px] overflow-hidden border border-gray-200 rounded-sm">
-                <img
-                  :src="profileImage || '/default-profile.jpg'"
-                  alt="프로필 이미지"
-                  class="w-full h-full object-cover"
-                />
+                <img v-if="profileImage" :src="profileImage" alt="프로필 이미지" class="w-full h-full object-cover" />
+                <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
+                  <i class="pi pi-user text-4xl"></i>
+                </div>
               </div>
             </div>
           </div>
@@ -1234,6 +1236,9 @@ const clearCertificationFile = (index) => {
 
             <!-- 경력 리스트 -->
             <div class="space-y-4">
+              <div v-if="!careerList?.length" class="text-center py-8 text-gray-500 border border-dashed rounded-lg">
+                등록된 경력이 없습니다
+              </div>
               <div
                 v-for="(career, index) in careerList"
                 :key="index"
@@ -1290,11 +1295,14 @@ const clearCertificationFile = (index) => {
             </div>
 
             <!-- 최종학력 표시 -->
-            <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+            <div v-if="basicInfo?.finalEducation" class="mb-4 p-4 bg-gray-50 rounded-lg">
               <div class="flex items-center gap-2">
                 <span class="text-gray-600">최종학력 :</span>
                 <span class="font-medium">{{ basicInfo?.finalEducation }}</span>
               </div>
+            </div>
+            <div v-else class="text-center py-8 text-gray-500 border border-dashed rounded-lg">
+              등록된 학력이 없습니다
             </div>
 
             <!-- 학력 리스트 -->
