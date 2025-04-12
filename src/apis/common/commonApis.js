@@ -56,7 +56,9 @@ export const delNotification = async (id) => {
 // 노티 전체 삭제 API
 export const delNotificationAll = async (body) => {
   try {
-    api.post(`/notification/delete`, body);
+    const response = api.post(`/notification/delete`, body);
+
+    return response;
   } catch (error) {
     console.error(error);
   }

@@ -383,10 +383,13 @@ const markAllAsRead = async () => {
   const body = {
     ids: readNotiList
   };
-  try {
-    await delNotificationAll(body);
 
-    getNotiByUser();
+  try {
+    const response = await delNotificationAll(body);
+
+    if (response.data?.count) {
+      getNotiByUser();
+    }
   } catch (error) {
     console.error('알림 읽음 처리 실패:', error);
   }
@@ -421,7 +424,7 @@ const markAllAsRead = async () => {
           </button>
 
           <!-- 알림 패널 -->
-          <OverlayPanel ref="overlayPanel" class="w-96">
+          <OverlayPanel ref="overlayPanel" style="width: 330px">
             <div class="p-3">
               <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-bold">알림</h3>
@@ -431,7 +434,7 @@ const markAllAsRead = async () => {
                   class="w-8 h-8 inline-flex items-center justify-center bg-[#8FA1FF] text-white rounded-full hover:bg-[#7C8EFF] transition-colors notranslate"
                   title="clear"
                 >
-                  <i class="pi pi-trash pr-[0.5px]"></i>
+                  <i class="pi pi-trash pl-[1px]"></i>
                 </button>
               </div>
               <div v-if="notifications.length === 0" class="text-gray-500 text-center py-4">
