@@ -12,8 +12,18 @@ dotenv.config();
 export default defineConfig(({ mode }) => {
   // 세 번째 매개변수를 ''로 설정하면 `VITE_` 접두사에 관계없이 모든 환경 변수를 불러옴
   const env = loadEnv(mode, process.cwd());
+  let outDir = 'dist';
+
+  if (mode === 'development') {
+    outDir = 'dist/dist_dev'; // 개발 모드
+  } else if (mode === 'production') {
+    outDir = 'dist/dist_prod'; // 프로덕션 모드
+  }
 
   return {
+    build: {
+      outDir: outDir
+    },
     optimizeDeps: {
       noDiscovery: true
     },
