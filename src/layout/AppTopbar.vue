@@ -329,7 +329,6 @@ const changeLanguage = async () => {
 
     // 실질적 번역 시작 부분
     const retryCombo = document.querySelector('.goog-te-combo');
-    console.log('retryCombo', selectedLanguage.value.slice(4, 6).toLowerCase());
     if (retryCombo) {
       retryCombo.value = selectedLanguage.value.slice(4, 6).toLowerCase();
       retryCombo.dispatchEvent(new Event('change'));

@@ -16,7 +16,6 @@ const confirmPassword = ref('');
 const isValidPassword = (password) => {
   // 8~16자의 영문, 숫자, 특수문자 조합
   const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,16}$/;
-  console.log(regex.test(password));
   return regex.test(password);
 };
 
