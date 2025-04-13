@@ -268,7 +268,7 @@ const scheduleInterview = async () => {
             (
               time,
               index
-            ) => `<div class="mt-1">${time.slice(0, 10).replaceAll('-', '.')} ${time.slice(11, 16)}</div> <p>면접 방식: ${interviewOptions.value[index].type === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접'}</p>
+            ) => `<div class="mt-1">${time?.slice(0, 10)?.replaceAll('-', '.')} ${time?.slice(11, 16)}</div> <p>면접 방식: ${interviewOptions.value[index].type === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접'}</p>
         <p>${interviewOptions.value[index].type === 'INTERVIEW_TY_1' ? '링크: ' : '장소: '}${interviewOptions.value[index].info}</p> <hr class="mb-1"/>`
           )
           .join('')}
@@ -571,8 +571,8 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
                 class="mb-2"
               >
                 <p class="text-gray-600">
-                  날짜·시간: {{ dateSlot.time.slice(0, 10).replaceAll('-', '.') }} &nbsp;
-                  {{ dateSlot.time.slice(11, 16) }}
+                  날짜·시간: {{ dateSlot.time?.slice(0, 10)?.replaceAll('-', '.') }} &nbsp;
+                  {{ dateSlot.time?.slice(11, 16) }}
                 </p>
                 <p class="text-gray-600">방식: {{ dateSlot.type === 'INTERVIEW_TY_1' ? '화상 면접' : '대면 면접' }}</p>
                 <p class="text-gray-600">
@@ -588,9 +588,9 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
               <div class="flex items-center gap-2">
                 <i class="pi pi-calendar text-green-600"></i>
                 <div class="font-medium flex items-center gap-2">
-                  {{ offer?.interviewTime.slice(0, 10).replaceAll('-', '.') }}
+                  {{ offer?.interviewTime?.slice(0, 10)?.replaceAll('-', '.') }}
                   <span class="text-gray-400">|</span>
-                  {{ offer?.interviewTime.slice(11, 16) }}
+                  {{ offer?.interviewTime?.slice(11, 16) }}
                 </div>
               </div>
               <div class="flex items-center gap-2 mt-2">
@@ -623,7 +623,7 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
         <div v-if="offer?.statusCd === 'JO_ST_3'" class="mt-4 border-t pt-4">
           <p class="text-red-600">
             <i class="pi pi-times-circle mr-2"></i>
-            {{ offer?.updatedAt?.slice(0, 10).replaceAll('-', '.') }}에 거절되었습니다
+            {{ offer?.updatedAt?.slice(0, 10)?.replaceAll('-', '.') }}에 거절되었습니다
           </p>
           <!-- 거절 사유 표시 추가 -->
           <div v-if="offer?.resultMemo" class="bg-red-50 p-4 rounded-lg mt-2">
@@ -641,9 +641,9 @@ const downloadFile = (fileType, fileInfo, itemName = '') => {
               <i class="pi pi-calendar text-blue-600"></i>
               <div class="space-y-2">
                 <div class="font-medium flex items-center gap-2">
-                  {{ offer?.interviewTime.slice(0, 10).replaceAll('-', '.') }}
+                  {{ offer?.interviewTime?.slice(0, 10)?.replaceAll('-', '.') }}
                   <span class="text-gray-400">|</span>
-                  {{ offer?.interviewTime.slice(11, 16) }}
+                  {{ offer?.interviewTime?.slice(11, 16) }}
                 </div>
               </div>
             </div>

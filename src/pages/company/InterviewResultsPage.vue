@@ -51,7 +51,7 @@ const getFinishedInterviewr = async () => {
   const response = await getOfferList();
 
   interviewResults.value = response.contents.filter((resume) => {
-    return ['JO_ST_5', 'JO_ST_6'].includes(resume.statusCd) && resume.interviewTime;
+    return ['JO_ST_5', 'JO_ST_6'].includes(resume.statusCd);
   });
 };
 
@@ -210,6 +210,7 @@ const getResultInfo = (result) => {
 
 // 필터링된 결과 목록
 const filteredResults = computed(() => {
+  console.log(interviewResults.value);
   if (selectedFilter.value === 'all') {
     return interviewResults.value;
   } else if (isNull(selectedFilter.value)) {
