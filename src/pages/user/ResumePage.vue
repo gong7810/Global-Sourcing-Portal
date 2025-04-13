@@ -934,7 +934,7 @@ const saveCertification = async (cer) => {
   const response = await upsertCertification(body);
 
   if (response && response.success === undefined) {
-    messagePop.toast('자격증이 저장되었습니다.', 'success');
+    messagePop.alert('자격증이 저장되었습니다.', 'good');
   }
 };
 
@@ -1457,7 +1457,11 @@ const clearCertificationFile = (index) => {
                     <p class="text-gray-600">
                       {{ [career.jobCategory.name, career.position, career.department].filter(Boolean).join(' | ') }}
                     </p>
-                    <p class="text-gray-600 mt-2">{{ career.content }}</p>
+                    <p
+                      v-if="career.content"
+                      v-html="career.content.replaceAll(/\n/g, '<br>')"
+                      class="text-gray-600 mt-2"
+                    ></p>
                   </div>
                   <div class="flex gap-2">
                     <button class="text-gray-400 hover:text-gray-600" @click="modifyCareer(index)">
@@ -1530,7 +1534,11 @@ const clearCertificationFile = (index) => {
                     <p class="text-gray-600">{{ education.educationType.name }}</p>
                     <p class="text-gray-600 mt-1">{{ education.period }}</p>
                     <p class="text-gray-600">{{ education.major }}</p>
-                    <p v-if="education.content" class="text-gray-600 mt-2">{{ education.content }}</p>
+                    <p
+                      v-if="education.content"
+                      v-html="education.content.replaceAll(/\n/g, '<br>')"
+                      class="text-gray-600 mt-2"
+                    ></p>
                   </div>
                   <div class="flex gap-2">
                     <button class="text-gray-400 hover:text-gray-600" @click="modifyEducation(index)">
