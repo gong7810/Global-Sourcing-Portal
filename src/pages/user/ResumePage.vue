@@ -15,7 +15,7 @@ import {
   upsertCertification,
   deleteCertification
 } from '@/apis/user/userApis';
-import { isInteger, isLength, isNil } from 'es-toolkit/compat';
+import { compact, isInteger, isLength, isNil } from 'es-toolkit/compat';
 
 const router = useRouter();
 const messagePop = useMessagePop();
@@ -26,14 +26,17 @@ const showEducationModal = ref(false);
 const careerModifyIdx = ref(-1);
 const educationModifyIdx = ref(-1);
 
+const passportFlag = ref(false);
 const careerModifyFlag = ref(false);
 const educationModifyFlag = ref(false);
 
 const profileImage = ref();
+const passportImage = ref();
 const experienceImage = ref();
 const educationImage = ref();
 const certificationImage = ref();
 
+const nationsTypes = ref([]); // 국적종류
 const educationTypes = ref([]); // 학력종류
 const jobCategories = ref([]); // 직무종류
 const koreanLevels = ref([]); // 한국어실력
@@ -71,6 +74,7 @@ const nationalityInfo = ref();
 
 // 여권 정보 관련 상태
 const passportInfo = ref({});
+const editPassportInfo = ref({});
 
 // 경력리스트
 const careerList = ref([]);
@@ -151,6 +155,7 @@ const checkRequiredInfo = () => {
 
 onMounted(async () => {
   // 기본 코드 정보 조회
+  getNationCode();
   getEduCode();
   getJobCategoryCode();
   getKoreanLevelCode();
@@ -161,6 +166,18 @@ onMounted(async () => {
   // 이력서 정보 조회
   getResumeInfo();
 });
+
+// 국가 코드 조회
+const getNationCode = async () => {
+  const response = await getCodeList(`NATIONALITY_TY`);
+
+  response.map((type) => {
+    nationsTypes.value.push({
+      name: type.name,
+      code: type.code
+    });
+  });
+};
 
 // 학력 코드 조회
 const getEduCode = async () => {
@@ -290,12 +307,14 @@ const getResumeInfo = async () => {
 
   passportInfo.value = {
     passportNo: response?.passport,
-    firstName: response?.passportLastName,
-    lastName: response?.passportFirstName,
+    lastName: response?.passportLastName,
+    firstName: response?.passportFirstName,
+    fullName: response?.passportName,
+    nationalityCd: response?.passportCountryCd,
     nationality: response?.passportCountry.name,
     issueDate: response?.passportIssueDt.slice(0, 10),
     expiryDate: response?.passportExpiryDt.slice(0, 10),
-    fileImage: response?.passportFileId
+    fileId: response?.passportFileId
   };
 
   setTimeout(() => {
@@ -380,11 +399,11 @@ const checkResumeClear = (value) => {
   if (
     !value || // 비공개로 변경이거나
     (resumeFlag.value && // 기본정보 모두 작성됐으면서
-      passportInfo.value.fileImage && // 여권 파일이 존재하면서
+      passportInfo.value.fileId && // 여권 파일이 존재하면서
       (!educationList.value.length || basicInfo.value.finalEducation)) // 학력이 있을경우는 최종학력 선택이 됐는지 체크
   ) {
     visibilityType.value = value;
-  } else if (!passportInfo.value.fileImage) {
+  } else if (!passportInfo.value.fileId) {
     messagePop.toast('여권 스캔파일을 업로드 해주세요.', 'warn');
     return;
   } else if (educationList.value.length || !basicInfo.value.finalEducation) {
@@ -410,6 +429,88 @@ const navigateToSection = (section) => {
 
 const closeCareerModal = () => {
   showCareerModal.value = false;
+};
+
+// 여권 수정
+const modifyPassport = async () => {
+  // 수정 진입
+  if (!passportFlag.value) {
+    editPassportInfo.value = { ...passportInfo.value, fileId: null, issueDate: null, expiryDate: null };
+    passportInfo.value.fileId = null;
+
+    passportFlag.value = true;
+  } else {
+    // 저장 로직
+
+    const requiredFields = {
+      nationalityCd: editPassportInfo.value.nationalityCd,
+      passportNo: editPassportInfo.value.passportNo.trim(),
+      passportIssueDt: editPassportInfo.value.issueDate,
+      passportExpiryDt: editPassportInfo.value.expiryDate
+    };
+
+    const missingFields = compact(Object.entries(requiredFields).map(([_, field]) => field));
+
+    console.log(missingFields);
+    if (missingFields.length !== 4) {
+      messagePop.toast('필수 정보가 누락되었습니다.', 'warn');
+      return;
+    }
+
+    if (!editPassportInfo.value.fileId) {
+      messagePop.toast('여권 스캔파일을 첨부해주세요.', 'warn');
+      return;
+    } else {
+      messagePop.confirm({
+        icon: 'info',
+        message: '여권 정보를 저장하시겠습니까?',
+        onCloseYes: async () => {
+          // 여권 정보 수정 API
+
+          const formData = new FormData();
+
+          formData.append('file', passportImage.value);
+
+          const res = await fileUpload(formData);
+
+          if (res && res?.success === undefined) {
+            const body = {
+              passport: editPassportInfo.value.passportNo.trim(),
+              passportCountryCd: editPassportInfo.value.nationalityCd,
+              passportIssueDt: editPassportInfo.value.issueDate.toISOString(),
+              passportExpiryDt: editPassportInfo.value.expiryDate.toISOString(),
+              passportFileId: res?.id
+            };
+
+            await updateResume(body);
+
+            messagePop.toast('여권 정보가 저장되었습니다.', 'success');
+
+            getResumeInfo();
+          }
+
+          editPassportInfo.value = {};
+          passportFlag.value = false;
+        }
+      });
+    }
+  }
+};
+
+// 여권 수정 취소
+const returnPassport = () => {
+  editPassportInfo.value = {};
+  passportImage.value = null;
+  passportInfo.value.fileId = resumeInfo.value.passportFileId;
+
+  passportFlag.value = false;
+};
+
+// 여권 등록 파일 삭제
+const removePassportFile = () => {
+  editPassportInfo.value.fileId = null;
+  passportImage.value = null;
+  passportInfo.value.fileId = null;
 };
 
 // 개별 경력 기간 계산 함수
@@ -744,25 +845,6 @@ const saveEducationInfo = async () => {
 
   getResumeInfo();
 
-  // const insertEdu = {
-  //   educationType: educationInfo.value.educationType,
-  //   schoolName: educationInfo.value.schoolName,
-  //   major: educationInfo.value.major,
-  //   period: !educationInfo.value.isGraduated
-  //     ? `${educationInfo.value.startDate.getFullYear()}.${(educationInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')} - 재학중`
-  //     : `${educationInfo.value.startDate.getFullYear()}.${(educationInfo.value.startDate.getMonth() + 1).toString().padStart(2, '0')} - ${educationInfo.value.endDate.getFullYear()}.${(educationInfo.value.endDate.getMonth() + 1).toString().padStart(2, '0')}`,
-  //   content: educationInfo.value.content,
-  //   isGraduated: educationInfo.value.isGraduated,
-  //   isLastEducation: false,
-  //   certificateFile: educationInfo.value.certificateFile
-  // };
-
-  // if (educationModifyFlag.value) {
-  //   educationList.value[educationModifyIdx.value] = insertEdu;
-  // } else {
-  //   educationList.value.push(insertEdu);
-  // }
-
   educationModifyFlag.value = false;
   showEducationModal.value = false;
 };
@@ -803,59 +885,112 @@ const deleteEducations = (education, index) => {
   });
 };
 
-// 자격증 추가, 수정 로직
-const saveCertificationInfo = async () => {
-  // 필수 필드 검증
-  for (const cer of certificationList.value) {
-    const requiredFields = {
-      name: cer.name,
-      issuer: cer.issuer,
-      acquiredDt: new Date(cer.acquiredDt).toISOString()
-    };
+// 자격증 추가
+const saveCertification = async (cer) => {
+  const requiredFields = {
+    name: cer.name,
+    issuer: cer.issuer,
+    acquiredDt: new Date(cer.acquiredDt).toISOString()
+  };
 
-    const hasEmptyField = Object.values(requiredFields).some(
-      (value) => value === null || value === '' || value === undefined
-    );
+  const hasEmptyField = Object.values(requiredFields).some(
+    (value) => value === null || value === '' || value === undefined
+  );
 
-    if (hasEmptyField) {
-      messagePop.toast('필수 항목을 입력해주세요.', 'warn');
-      return true;
-    }
+  if (hasEmptyField) {
+    messagePop.toast('필수 항목을 입력해주세요.', 'warn');
+    return true;
   }
 
   // DONE: 저장 로직 시작
-  for (const cer of certificationList.value) {
-    let body = {};
+  let body = {};
 
-    if (cer.fileId && !isInteger(cer.fileId)) {
-      let formData = saveImage(cer.fileId);
+  if (cer.fileId && !isInteger(cer.fileId)) {
+    let formData = saveImage(cer.fileId);
 
-      const response = await fileUpload(formData);
+    const response = await fileUpload(formData);
 
-      body = {
-        id: cer.id,
-        resumeId: resumeInfo.value.id,
-        name: cer.name,
-        issuer: cer.issuer,
-        certificationNo: cer.certificationNo,
-        acquiredDt: new Date(cer.acquiredDt).toISOString(),
-        fileId: response.id
-      };
-    } else {
-      body = {
-        id: cer.id,
-        resumeId: resumeInfo.value.id,
-        name: cer.name,
-        issuer: cer.issuer,
-        certificationNo: cer.certificationNo,
-        acquiredDt: new Date(cer.acquiredDt).toISOString(),
-        fileId: cer.fileId
-      };
-    }
+    body = {
+      id: cer.id,
+      resumeId: resumeInfo.value.id,
+      name: cer.name,
+      issuer: cer.issuer,
+      certificationNo: cer.certificationNo,
+      acquiredDt: new Date(cer.acquiredDt).toISOString(),
+      fileId: response.id
+    };
+  } else {
+    body = {
+      id: cer.id,
+      resumeId: resumeInfo.value.id,
+      name: cer.name,
+      issuer: cer.issuer,
+      certificationNo: cer.certificationNo,
+      acquiredDt: new Date(cer.acquiredDt).toISOString(),
+      fileId: cer.fileId
+    };
+  }
 
-    await upsertCertification(body);
+  const response = await upsertCertification(body);
+
+  if (response && response.success === undefined) {
+    messagePop.toast('자격증이 저장되었습니다.', 'success');
   }
 };
+
+// 자격증 추가, 수정 로직
+// const saveCertificationInfo = async () => {
+//   // 필수 필드 검증
+//   for (const cer of certificationList.value) {
+//     const requiredFields = {
+//       name: cer.name,
+//       issuer: cer.issuer,
+//       acquiredDt: new Date(cer.acquiredDt).toISOString()
+//     };
+
+//     const hasEmptyField = Object.values(requiredFields).some(
+//       (value) => value === null || value === '' || value === undefined
+//     );
+
+//     if (hasEmptyField) {
+//       messagePop.toast('필수 항목을 입력해주세요.', 'warn');
+//       return true;
+//     }
+//   }
+
+//   // DONE: 저장 로직 시작
+//   for (const cer of certificationList.value) {
+//     let body = {};
+
+//     if (cer.fileId && !isInteger(cer.fileId)) {
+//       let formData = saveImage(cer.fileId);
+
+//       const response = await fileUpload(formData);
+
+//       body = {
+//         id: cer.id,
+//         resumeId: resumeInfo.value.id,
+//         name: cer.name,
+//         issuer: cer.issuer,
+//         certificationNo: cer.certificationNo,
+//         acquiredDt: new Date(cer.acquiredDt).toISOString(),
+//         fileId: response.id
+//       };
+//     } else {
+//       body = {
+//         id: cer.id,
+//         resumeId: resumeInfo.value.id,
+//         name: cer.name,
+//         issuer: cer.issuer,
+//         certificationNo: cer.certificationNo,
+//         acquiredDt: new Date(cer.acquiredDt).toISOString(),
+//         fileId: cer.fileId
+//       };
+//     }
+
+//     await upsertCertification(body);
+//   }
+// };
 
 // 자격증 행 추가
 const addCertification = () => {
@@ -889,16 +1024,9 @@ const saveResume = () => {
 
   // 저장 확인
   messagePop.confirm({
-    message: '이력서를 저장하시겠습니까?',
+    message: '공개 설정을 저장하시겠습니까?',
     onCloseYes: async () => {
       try {
-        // 이력서 공개여부, 자격증 저장
-        const res = await saveCertificationInfo();
-        if (res) {
-          // 에러나면 return
-          return;
-        }
-
         const body = {
           isPublic: visibilityType.value
         };
@@ -906,7 +1034,7 @@ const saveResume = () => {
         const response = await updateResume(body);
 
         if (response && response.success === undefined) {
-          messagePop.toast('이력서가 저장되었습니다.', 'success');
+          messagePop.toast('저장되었습니다.', 'success');
         }
       } catch (error) {
         console.error('이력서 저장 중 오류:', error);
@@ -925,29 +1053,16 @@ const saveImage = (file) => {
 
 // 여권증빙파일 업로드 핸들러
 const handlePassportFileUpload = async (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    if (file.size > 10 * 1024 * 1024) {
+  passportImage.value = event.target.files[0];
+  if (passportImage.value) {
+    if (passportImage.value.size > 10 * 1024 * 1024) {
       // 10MB 제한
       messagePop.toast('파일 크기는 10MB를 초과할 수 없습니다.', 'warn');
       return;
     }
 
-    const formData = new FormData();
-
-    formData.append('file', file);
-
-    const res = await fileUpload(formData);
-
-    if (res && res?.success === undefined) {
-      const body = {
-        passportFileId: res?.id
-      };
-
-      const response = await updateResume(body);
-
-      resumeInfo.value = response;
-    }
+    editPassportInfo.value.fileId = passportImage.value;
+    passportInfo.value.fileId = passportImage.value;
   }
 };
 
@@ -1014,7 +1129,7 @@ const clearCertificationFile = (index) => {
         ></i>
         <h1 class="text-3xl font-bold">이력서</h1>
       </div>
-      <Button class="bt_btn primary" label="저장" icon="pi pi-save" @click="saveResume" />
+      <!-- <Button class="bt_btn primary" label="저장" icon="pi pi-save" @click="saveResume" /> -->
     </div>
 
     <!-- 이력서 공개 설정 섹션 -->
@@ -1039,6 +1154,7 @@ const clearCertificationFile = (index) => {
             </div>
           </div>
         </div>
+        <Button class="bt_btn primary" label="저장" icon="pi pi-save" @click="saveResume" />
       </div>
       <!-- 안내 문구 추가 -->
       <div class="mt-4 text-sm text-gray-600">
@@ -1169,13 +1285,96 @@ const clearCertificationFile = (index) => {
 
             <!-- 여권 정보 카드 -->
             <div class="space-y-4">
-              <div class="border border-gray-200 rounded-lg p-4 hover:border-[#8FA1FF] transition-colors">
+              <div
+                v-if="!passportFlag"
+                class="border border-gray-200 rounded-lg p-4 hover:border-[#8FA1FF] transition-colors"
+              >
                 <div class="flex justify-between items-start">
                   <div>
-                    <h4 class="font-medium text-lg">{{ passportInfo?.firstName }} {{ passportInfo?.lastName }}</h4>
+                    <h4 class="font-medium text-lg">{{ passportInfo?.lastName }} {{ passportInfo?.firstName }}</h4>
                     <p class="text-gray-600 mt-1">여권번호: {{ passportInfo?.passportNo?.slice(0, 5) + '****' }}</p>
                     <p class="text-gray-600">국적: {{ passportInfo?.nationality }}</p>
                     <p class="text-gray-600">만료일: {{ passportInfo?.expiryDate }}</p>
+                  </div>
+                  <div class="flex">
+                    <button class="text-gray-400 hover:text-gray-600" @click="modifyPassport">
+                      <i class="pi pi-pencil"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="border border-gray-200 rounded-lg p-4 hover:border-[#8FA1FF] transition-colors">
+                <div class="flex justify-between items-start">
+                  <div class="mb-4">
+                    <h4 class="font-medium text-lg">{{ passportInfo?.lastName }} {{ passportInfo?.firstName }}</h4>
+                  </div>
+                  <div class="flex gap-2">
+                    <button class="text-gray-400 hover:text-gray-600" @click="returnPassport">
+                      <i class="pi pi-times"></i>
+                    </button>
+                    <button class="text-gray-400 hover:text-gray-600" @click="modifyPassport">
+                      <i class="pi pi-save"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                  <!-- <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700">
+                      이름<span class="text-red-500">*</span>
+                    </label>
+                    <InputText
+                      v-model="passportInfo.fullName"
+                      class="w-full"
+                      readonly
+                      title="이름은 수정할 수 없습니다."
+                    />
+                  </div> -->
+                  <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700">
+                      발급국가<span class="text-red-500">*</span>
+                    </label>
+                    <!-- <InputText v-model="cert.issuer" placeholder="발급기관을 입력하세요" class="w-full" /> -->
+                    <Select
+                      v-model="editPassportInfo.nationalityCd"
+                      :options="nationsTypes"
+                      class="w-full"
+                      optionLabel="name"
+                      optionValue="code"
+                    />
+                  </div>
+                  <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700">
+                      여권 번호<span class="text-red-500">*</span>
+                    </label>
+                    <InputText
+                      v-model="editPassportInfo.passportNo"
+                      placeholder="여권 번호를 입력하세요"
+                      class="w-full"
+                    />
+                  </div>
+                  <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700">
+                      발급일<span class="text-red-500">*</span>
+                    </label>
+                    <DatePicker
+                      v-model="editPassportInfo.issueDate"
+                      dateFormat="yy.mm.dd"
+                      placeholder="취득일을 선택하세요"
+                      :showIcon="true"
+                      class="w-full"
+                    />
+                  </div>
+                  <div class="space-y-2">
+                    <label class="block text-sm font-medium text-gray-700">
+                      만료일<span class="text-red-500">*</span>
+                    </label>
+                    <DatePicker
+                      v-model="editPassportInfo.expiryDate"
+                      dateFormat="yy.mm.dd"
+                      placeholder="만료일을 선택하세요"
+                      :showIcon="true"
+                      class="w-full"
+                    />
                   </div>
                 </div>
               </div>
@@ -1189,7 +1388,7 @@ const clearCertificationFile = (index) => {
                   <span class="font-medium">여권 스캔본</span>
                   <span class="text-red-500 text-sm">*필수</span>
                 </div>
-                <div v-if="!passportInfo.fileImage">
+                <div v-if="!passportInfo.fileId">
                   <label class="cursor-pointer px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
                     <span class="text-sm">파일 선택</span>
                     <input
@@ -1201,9 +1400,18 @@ const clearCertificationFile = (index) => {
                   </label>
                 </div>
                 <div v-else>
-                  <label class="cursor-default px-4 py-2 bg-gray-200 rounded-lg transition-colors cursor-default">
+                  <label
+                    v-if="!editPassportInfo.fileId"
+                    class="cursor-default px-4 py-2 bg-gray-200 rounded-lg transition-colors cursor-default"
+                  >
                     <span class="text-sm">첨부완료</span>
                   </label>
+                  <span v-else class="text-md">
+                    {{ editPassportInfo.fileId.name }}
+                    <button class="text-red-500 hover:text-red-500" @click="removePassportFile">
+                      <i class="pi pi-times ml-2"></i>
+                    </button>
+                  </span>
                 </div>
               </div>
             </div>
@@ -1419,7 +1627,7 @@ const clearCertificationFile = (index) => {
                 </div>
 
                 <!-- 파일 업로드 영역 -->
-                <div class="flex items-center justify-between border-t pt-4">
+                <div class="flex items-center justify-between border-t pt-5">
                   <span class="text-sm text-gray-600">
                     자격증 스캔본 {{ cert.fileId ? ' : ' + (cert.fileId?.name || '제출완료') : '' }}
                     <button
@@ -1430,7 +1638,7 @@ const clearCertificationFile = (index) => {
                       <i class="pi pi-times"></i>
                     </button>
                   </span>
-                  <div>
+                  <div class="flex">
                     <label class="cursor-pointer px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
                       <span class="text-sm">파일 선택</span>
                       <input
@@ -1445,6 +1653,11 @@ const clearCertificationFile = (index) => {
                         "
                       />
                     </label>
+                    <div>
+                      <button class="text-gray-400 hover:text-gray-600" @click="saveCertification(cert)">
+                        <i class="pi pi-save ml-3 mt-2" style="font-size: 1.5rem"></i>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1585,7 +1798,7 @@ const clearCertificationFile = (index) => {
 
       <!-- 하단 버튼 -->
       <div class="p-6 border-t bg-gray-50 flex justify-center">
-        <Button label="저장하기" class="w-full" @click="saveCareerInfo" />
+        <Button label="저장하기" class="bt_btn primary w-full" @click="saveCareerInfo" />
       </div>
     </div>
   </div>
@@ -1720,7 +1933,7 @@ const clearCertificationFile = (index) => {
 
       <!-- 하단 버튼 -->
       <div class="p-6 border-t bg-gray-50 flex justify-center">
-        <Button label="저장하기" class="w-full" @click="saveEducationInfo" />
+        <Button label="저장하기" class="bt_btn primary w-full" @click="saveEducationInfo" />
       </div>
     </div>
   </div>
