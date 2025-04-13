@@ -400,7 +400,7 @@ const markAllAsRead = async () => {
     <div class="max-w-[1200px] mx-auto px-4">
       <div class="flex justify-between items-center h-20">
         <!-- 왼쪽 로고 -->
-        <router-link to="/" class="flex items-center gap-2">
+        <router-link :to="authStore?.userInfo?.isCompany ? '/company/index' : '/'" class="flex items-center gap-2">
           <span class="font-bold text-2xl text-white tracking-tight notranslate">Global Sourcing Portal</span>
         </router-link>
 
