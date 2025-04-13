@@ -607,7 +607,7 @@ const printResume = () => {
                   offerUserInfo?.resumeSnapshot?.passportFileId
                 )
               "
-              class="flex items-center gap-2 text-[#8B8BF5] hover:text-[#7A7AE6]"
+              class="flex items-center gap-1 text-[#8B8BF5] hover:text-[#7A7AE6]"
             >
               <i class="pi pi-download"></i>
               <span>첨부파일</span>
@@ -646,7 +646,7 @@ const printResume = () => {
           <span class="text-sm text-[#8B8BF5] bg-[#8B8BF5] bg-opacity-10 px-2 py-1 rounded">
             {{
               offerUserInfo?.resumeSnapshot?.experienceDurationMonth
-                ? '경력 ' +
+                ? '총 ' +
                   parseInt(offerUserInfo?.resumeSnapshot?.experienceDurationMonth / 12) +
                   '년 ' +
                   (offerUserInfo?.resumeSnapshot?.experienceDurationMonth % 12) +
@@ -659,7 +659,7 @@ const printResume = () => {
           <div
             v-for="(career, index) in offerUserInfo?.resumeSnapshot?.experiences"
             :key="index"
-            class="mb-4 pb-4 border-b last:border-b-0"
+            class="mb-4 pb-4 border-b last:border-b-0 last:mb-0 last:pb-0"
           >
             <div class="flex justify-between items-start">
               <div>
@@ -685,10 +685,10 @@ const printResume = () => {
                     career?.fileId
                   )
                 "
-                class="flex items-center gap-2 text-[#8B8BF5] hover:text-[#7A7AE6] ml-4"
+                class="flex items-center text-[#8B8BF5] hover:text-[#7A7AE6] ml-2"
               >
                 <i class="pi pi-download"></i>
-                <span class="text-sm">{{ career.isCurrent ? '재직증명서' : '경력증명서' }}</span>
+                <span class="text-sm w-20">{{ career.isCurrent ? '재직증명서' : '경력증명서' }}</span>
                 <span class="text-sm text-gray-500">({{ parseInt(career.file?.size / 1024) }}KB)</span>
               </button>
               <span v-else class="text-sm text-gray-500 ml-4"> 증명서 없음 </span>
@@ -715,7 +715,7 @@ const printResume = () => {
           <div
             v-for="(edu, index) in offerUserInfo?.resumeSnapshot?.educations"
             :key="index"
-            class="mb-6 pb-6 border-b last:border-b-0"
+            class="mb-6 pb-6 border-b last:border-b-0 last:mb-0 last:pb-0"
           >
             <div class="flex justify-between items-start">
               <div>
@@ -724,7 +724,7 @@ const printResume = () => {
                 </div>
                 <div class="text-gray-600">{{ edu?.major }}</div>
                 <div class="text-gray-600">{{ `${edu?.startDt} ~ ${edu?.endDt ? edu?.endDt : '재학중'}` }}</div>
-                <div v-if="edu.description">{{ edu?.content }}</div>
+                <div class="mt-2 whitespace-pre-line">{{ edu?.content }}</div>
               </div>
               <button
                 v-if="edu?.fileId"
@@ -736,10 +736,10 @@ const printResume = () => {
                     edu?.fileId
                   )
                 "
-                class="flex items-center gap-2 text-[#8B8BF5] hover:text-[#7A7AE6] ml-4"
+                class="flex items-center text-[#8B8BF5] hover:text-[#7A7AE6] ml-2"
               >
                 <i class="pi pi-download"></i>
-                <span class="text-sm">{{ edu?.isGraduated ? '졸업증명서' : '재학증명서' }}</span>
+                <span class="text-sm w-20">{{ edu?.isGraduated ? '졸업증명서' : '재학증명서' }}</span>
                 <span class="text-sm text-gray-500">({{ parseInt(edu.file.size / 1024) }}KB)</span>
               </button>
               <span v-else class="text-sm text-gray-500 ml-4"> 증명서 없음 </span>
@@ -750,8 +750,15 @@ const printResume = () => {
       </div>
 
       <div class="bg-gray-50 p-6 rounded-lg">
-        <div class="mb-4">
+        <div class="flex items-center gap-2 mb-4">
           <h3 class="text-lg font-bold">자격증 사항</h3>
+          <span class="text-sm text-[#8B8BF5] bg-[#8B8BF5] bg-opacity-10 px-2 py-1 rounded">
+            {{
+              offerUserInfo?.resumeSnapshot?.certifications?.length
+                ? '총 ' + offerUserInfo?.resumeSnapshot?.certifications?.length + '개 취득'
+                : '미취득'
+            }}
+          </span>
         </div>
         <div v-if="offerUserInfo?.resumeSnapshot?.certifications?.length" class="space-y-4">
           <div

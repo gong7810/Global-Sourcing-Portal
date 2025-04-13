@@ -115,7 +115,7 @@ const isInterviewCompleted = (interview) => {
           class="pi pi-angle-left text-4xl text-gray-600 cursor-pointer transition-colors hover:text-[#8FA1FF]"
           @click="router.back()"
         ></i>
-        <h1 class="text-3xl font-bold">내 면접 현황</h1>
+        <h1 class="text-3xl font-bold">내 면접 결과</h1>
       </div>
     </div>
 

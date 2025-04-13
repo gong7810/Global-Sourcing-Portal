@@ -786,7 +786,7 @@ const calculatePeriod = (period) => {
       v-if="showDetailModal"
       v-model:visible="showDetailModal"
       modal
-      :style="{ width: '55vw', minWidth: '700px' }"
+      :style="{ width: '55vw', minWidth: '700px', maxHeight: '90vh' }"
     >
       <!-- 헤더 커스텀 -->
       <template #header>
@@ -1259,7 +1259,7 @@ const calculatePeriod = (period) => {
               <div
                 v-for="career in selectedOffer?.resumeSnapshot?.experiences"
                 :key="career?.id"
-                class="mb-4 pb-4 border-b last:border-b-0"
+                class="mb-4 pb-4 border-b last:border-b-0 last:mb-0 last:pb-0"
               >
                 <div class="flex items-center gap-2">
                   <div class="font-medium">{{ career?.companyName }}</div>
@@ -1296,7 +1296,7 @@ const calculatePeriod = (period) => {
               <div
                 v-for="education in selectedOffer?.resumeSnapshot?.educations"
                 :key="education.schoolName"
-                class="mb-6 pb-6 border-b last:border-b-0"
+                class="mb-6 pb-6 border-b last:border-b-0 last:mb-0 last:pb-0"
               >
                 <div class="text-[#8B8BF5] mb-2">
                   {{ education?.schoolName }} {{ `(${education?.educationLevel?.name})` }}
@@ -1314,14 +1314,21 @@ const calculatePeriod = (period) => {
 
           <!-- 자격증 정보 -->
           <div class="bg-gray-50 p-6 rounded-lg">
-            <div class="mb-4">
+            <div class="flex items-center gap-2 mb-4">
               <h3 class="text-lg font-medium">자격증 사항</h3>
+              <span class="text-sm text-[#8B8BF5] bg-[#8B8BF5] bg-opacity-10 px-2 py-1 rounded">
+                {{
+                  selectedOffer?.resumeSnapshot?.certifications?.length
+                    ? '총 ' + selectedOffer?.resumeSnapshot?.certifications?.length + '개 취득'
+                    : '미취득'
+                }}
+              </span>
             </div>
             <div v-if="selectedOffer?.resumeSnapshot?.certifications?.length" class="space-y-4">
               <div
                 v-for="(cert, index) in selectedOffer?.resumeSnapshot?.certifications"
                 :key="index"
-                class="mb-4 pb-4 border-b last:border-b-0"
+                class="mb-4 pb-4 border-b last:border-b-0 last:mb-0 last:pb-0"
               >
                 <div class="flex items-start">
                   <div>

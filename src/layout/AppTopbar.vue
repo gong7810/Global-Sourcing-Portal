@@ -104,7 +104,7 @@ const syncLanguageWithTranslation = () => {
 
   // 현재 텍스트와 일치하는 언어 찾기
   for (const [key, value] of Object.entries(expectedTranslations)) {
-    console.log(currentText, value);
+    // console.log(currentText, value);
     if (currentText === value) {
       if (selectedLanguage.value !== flagImages[key]) {
         selectedLanguage.value = flagImages[key];

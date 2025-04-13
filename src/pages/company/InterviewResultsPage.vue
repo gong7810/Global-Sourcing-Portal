@@ -210,7 +210,6 @@ const getResultInfo = (result) => {
 
 // 필터링된 결과 목록
 const filteredResults = computed(() => {
-  console.log(interviewResults.value);
   if (selectedFilter.value === 'all') {
     return interviewResults.value;
   } else if (isNull(selectedFilter.value)) {
@@ -357,7 +356,9 @@ const openDetailModal = (interview) => {
 
           <div class="mb-4">
             <h4 class="text-base font-bold text-gray-900 mb-2">면접 피드백</h4>
-            <p class="text-gray-600">{{ interview?.resultMemo || '아직 입력된 피드백이 없습니다.' }}</p>
+            <p class="text-gray-600 whitespace-pre-line">
+              {{ interview?.resultMemo || '아직 입력된 피드백이 없습니다.' }}
+            </p>
           </div>
         </div>
 

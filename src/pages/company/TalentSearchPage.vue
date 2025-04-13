@@ -221,13 +221,14 @@ const openInterviewOffer = async (talent, isPage) => {
 
     companyStore.setOfferUserResume(response);
 
-    router.push(`/company/interview-offer/create/${response.resumeId}`);
+    router.push(`/company/InterviewOffer/create/${response.resumeId}`);
+
     talent.isInterviewOffered = true;
   } else {
     companyStore.setOfferUserResume(talent);
   }
-
-  router.push(`/company/interview-offer/create/${id}`);
+  
+  router.push(`/company/InterviewOffer/create/${id}`);
   talent.isInterviewOffered = true;
 
   // 모달이 열려있는 경우 selectedCandidate도 업데이트
@@ -577,8 +578,15 @@ const openInterviewOffer = async (talent, isPage) => {
 
         <!-- 자격증 사항 -->
         <div class="mb-8 bg-gray-50 p-6 rounded-lg">
-          <div class="mb-4">
+          <div class="flex items-center gap-2 mb-4">
             <h3 class="text-lg font-medium">자격증 사항</h3>
+            <span class="text-sm text-[#8B8BF5] bg-[#8B8BF5] bg-opacity-10 px-2 py-1 rounded">
+              {{
+                selectedCandidate?.certifications?.length
+                  ? '총 ' + selectedCandidate?.certifications?.length + '개 취득'
+                  : '미취득'
+              }}
+            </span>
           </div>
           <div v-if="selectedCandidate?.certifications?.length" class="space-y-4">
             <div

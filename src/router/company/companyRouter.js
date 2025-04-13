@@ -24,7 +24,7 @@ export const companyRouter = [
     meta: { authorization: ['ROLE_MANAGER'] }
   },
   {
-    path: '/company/interview-offer/create/:id',
+    path: '/company/InterviewOffer/create/:id',
     name: 'CreateInterviewOffer',
     component: () => import('@/pages/company/CreateInterviewOfferPage.vue'),
     meta: { authorization: ['ROLE_MANAGER'] }

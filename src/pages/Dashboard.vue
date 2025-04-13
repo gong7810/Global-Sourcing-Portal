@@ -244,7 +244,7 @@ const getStatusColor = (statusCd, result = null) => {
               </svg>
             </div>
             <span class="text-[14px] font-bold text-gray-700 transition-all duration-200 group-hover:text-[#8B8BF5]">
-              면접 현황
+              면접 결과
             </span>
           </div>
           <!-- <div class="flex flex-col items-center cursor-pointer group" @click="router.push('/user/companyList')">
