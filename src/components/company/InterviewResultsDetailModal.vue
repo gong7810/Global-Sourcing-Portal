@@ -151,6 +151,7 @@ const printResume = () => {
   const printWindow = window.open('', '_blank');
 
   // 증빙서류 정리
+  const criminalRecordDocument = `${import.meta.env.VITE_UPLOAD_PATH}/${offerUserInfo.value?.resumeSnapshot?.user?.criminalRecordFile?.fileName}`;
   const passportDocument = `${import.meta.env.VITE_UPLOAD_PATH}/${offerUserInfo.value?.resumeSnapshot?.passportFile?.fileName}`;
   const careerDocuments = [];
   const educationDocuments = [];
@@ -394,6 +395,11 @@ const printResume = () => {
   `;
 
   // 증빙서류 생성
+  // 범죄경력증명파일
+  const criminalRecordContent = `<div class="page-break"></div>
+  <h2 class="document-header">범죄경력증빙파일</h2>
+  <img src="${criminalRecordDocument}" alt="범죄경력증빙파일" style="width: 100%; max-width: 600px;" />`;
+
   // 여권스캔파일
   const passportContent = `<div class="page-break"></div>
         <h2 class="document-header">여권스캔파일</h2>
@@ -464,6 +470,7 @@ const printResume = () => {
       </head>
       <body>
         ${resumeContent}
+        ${criminalRecordContent}
         ${passportContent}
         ${careerContent}
         ${educationContent}
