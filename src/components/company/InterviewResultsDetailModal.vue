@@ -415,10 +415,10 @@ const printResume = () => {
                   idx !== careerDocuments.length - 1
                     ? doc.fileType === 'image/jpeg'
                       ? `<img src="${doc.path}" alt="경력증빙서류" style="width: 100%; max-width: 600px;" /><div class="page-break"></div>`
-                      : `<iframe src="${doc.path}" type="application/pdf" width="100%" height="600px" ></iframe><div class="page-break"></div>`
+                      : `<iframe src="${doc.path}" type="application/pdf" width="100%" height="950px" ></iframe><div class="page-break"></div>`
                     : doc.fileType === 'image/jpeg'
                       ? `<img src="${doc.path}" alt="경력증빙서류" style="width: 100%; max-width: 600px;" />`
-                      : `<iframe src="${doc.path}" type="application/pdf" width="100%" height="600px" ></iframe>`
+                      : `<iframe src="${doc.path}" type="application/pdf" width="100%" height="950px" ></iframe>`
                 )
                 .join('')
             : '제출서류 없음'
@@ -434,10 +434,10 @@ const printResume = () => {
                   idx !== educationDocuments.length - 1
                     ? doc.fileType === 'image/jpeg'
                       ? `<img src="${doc.path}" alt="학력증빙서류" style="width: 100%; max-width: 600px;" /><div class="page-break"></div>`
-                      : `<iframe src="${doc.path}" type="application/pdf" width="100%" height="600px" ></iframe><div class="page-break"></div>`
+                      : `<iframe src="${doc.path}" type="application/pdf" width="100%" height="950px" ></iframe><div class="page-break"></div>`
                     : doc.fileType === 'image/jpeg'
                       ? `<img src="${doc.path}" alt="학력증빙서류" style="width: 100%; max-width: 600px;" />`
-                      : `<iframe src="${doc.path}" type="application/pdf" width="100%" height="600px" ></iframe>`
+                      : `<iframe src="${doc.path}" type="application/pdf" width="100%" height="950px" ></iframe>`
                 )
                 .join('')
             : '제출서류 없음'
@@ -453,10 +453,10 @@ const printResume = () => {
                   idx !== certificationDocuments.length - 1
                     ? doc.fileType === 'image/jpeg'
                       ? `<img src="${doc.path}" alt="자격증 증빙서류" style="width: 100%; max-width: 600px;" /><div class="page-break"></div>`
-                      : `<iframe src="${doc.path}" type="application/pdf" width="100%" height="600px" ></iframe><div class="page-break"></div>`
+                      : `<iframe src="${doc.path}" type="application/pdf" width="100%" height="950px" ></iframe><div class="page-break"></div>`
                     : doc.fileType === 'image/jpeg'
                       ? `<img src="${doc.path}" alt="자격증 증빙서류" style="width: 100%; max-width: 600px;" />`
-                      : `<iframe src="${doc.path}" type="application/pdf" width="100%" height="600px" ></iframe>`
+                      : `<iframe src="${doc.path}" type="application/pdf" width="100%" height="950px" ></iframe>`
                 )
                 .join('')
             : '제출서류 없음'
