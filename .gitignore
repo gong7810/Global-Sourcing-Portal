@@ -20,11 +20,8 @@ yarn.lock
 .eslintcache
 .DS_Store
 .idea
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-.env
+
+.env.*
 
 /.vscode
 

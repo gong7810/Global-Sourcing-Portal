@@ -1,17 +1,45 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/BTfavicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title class="notranslate">Global Sourcing Portal</title>
+    <link href="https://fonts.cdnfonts.com/css/lato" rel="stylesheet" />
+    <div id="google_translate_element" style="display: none"></div>
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <script type="text/javascript">
+      function googleTranslateElementInit() {
+        new google.translate.TranslateElement(
+          { pageLanguage: 'ko', autoDisplay: false, includedLanguages: 'ko,en,vi,ja' },
+          'google_translate_element'
+        );
+      }
+    </script>
 
-<head>
-      <meta charset="UTF-8">
-      <link rel="icon" href="/favicon.ico">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Sakai Vue</title>
-      <link href="https://fonts.cdnfonts.com/css/lato" rel="stylesheet">
-</head>
+    <script src="https://d.line-scdn.net/liff/edge/2.1/sdk.js"></script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+  </head>
 
-<body>
-      <div id="app"></div>
-      <script type="module" src="/src/main.js"></script>
-</body>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
 
+  <style>
+    /* .google_translate_element {
+      display: none;
+    } */
+    /* 구글 번역 위젯 관련 iframe 숨기기 */
+    .VIpgJd-ZVi9od-ORHb-OEVmcd {
+      visibility: hidden !important;
+    }
+    .VIpgJd-ZVi9od-l4eHX-hSRGPd {
+      visibility: hidden !important;
+    }
+    /* 번역 시 상단에 생기는 여백 제거 */
+    body {
+      top: 0 !important;
+    }
+  </style>
 </html>

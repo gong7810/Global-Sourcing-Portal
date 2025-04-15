@@ -1,79 +1,680 @@
 <script setup>
+import { onMounted, ref, computed, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { storeToRefs } from 'pinia';
 import { useLayout } from '@/layout/composables/layout';
-import AppConfigurator from './AppConfigurator.vue';
+import { useMessagePop } from '@/plugins/commonutils';
+
+import { logout } from '@/apis/auth/authApis';
+import { delNotificationAll, getNotificationList, updateNotification } from '@/apis/common/commonApis';
+import { useAuthStore } from '@/store/auth/authStore';
 
 const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
+
+const route = useRoute();
+const router = useRouter();
+const messagePop = useMessagePop();
+
+const authStore = useAuthStore();
+const { userInfo } = storeToRefs(authStore);
+
+const isMenuOpen = ref(false); // 메뉴 열림 상태
+// 로그인 여부 체크
+const loginFlag = computed(() => {
+  return authStore.isLogin();
+});
+
+// 다국어 지원 관련
+const selectedLanguage = ref('');
+
+const flagImages = {
+  KO: '/KO_ko.png', // 한국 국기 이미지 경로
+  US: '/US_en.png', // 미국 국기 이미지 경로
+  VI: '/VI_vi.png', // 베트남 국기 이미지 경로
+  JP: '/JP_ja.png' // 일본 국기 이미지 경로
+};
+
+const languages = ref([
+  { name: 'KO', code: 'ko', flag: flagImages.KO, isDisable: false },
+  { name: 'US', code: 'en', flag: flagImages.US, isDisable: false },
+  { name: 'VI', code: 'vi', flag: flagImages.VI, isDisable: false },
+  { name: 'JP', code: 'ja', flag: flagImages.JP, isDisable: true }
+]);
+
+// 노티 리스트
+const notifications = ref([]);
+
+const unreadCount = computed(() => {
+  return notifications.value?.filter((notif) => !notif.isRead).length;
+});
+
+const overlayPanel = ref();
+
+const toggleNotificationPanel = (event) => {
+  overlayPanel.value.toggle(event);
+};
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside);
+
+  if (loginFlag.value) getNotiByUser();
+
+  // 구글 트랜스레이터 초기화 확인
+  setTimeout(async () => {
+    if (!document.getElementById('google_translate_element')) {
+      try {
+        window.googleTranslateElementInit();
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        syncLanguageWithTranslation();
+      } catch (error) {
+        console.error('구글 번역기 초기화 실패', error);
+      }
+    } else {
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        syncLanguageWithTranslation();
+      } catch (error) {
+        console.error('구글 번역기 초기화 실패', error);
+      }
+    }
+  }, 1000);
+});
+
+// 언어 동기화 함수 분리
+const syncLanguageWithTranslation = () => {
+  const loginElement = document.getElementsByClassName('loginSpan')[0];
+  if (!loginElement) return;
+
+  const currentText = loginElement.textContent.trim();
+  const expectedTranslations = authStore.isLogin()
+    ? {
+        KO: '로그아웃',
+        US: 'log out',
+        VI: 'đăng xuất',
+        JP: 'ログアウト'
+      }
+    : {
+        KO: '로그인',
+        US: 'log in',
+        VI: 'đăng nhập',
+        JP: 'ログイン'
+      };
+
+  // 현재 텍스트와 일치하는 언어 찾기
+  for (const [key, value] of Object.entries(expectedTranslations)) {
+    // console.log(currentText, value);
+    if (currentText === value) {
+      if (selectedLanguage.value !== flagImages[key]) {
+        selectedLanguage.value = flagImages[key];
+      }
+      break;
+    }
+  }
+};
+
+watch(
+  () => route?.matched,
+  () => {
+    // 대시보드 접근시에만 재호출
+    if (['/', '/company/index'].includes(route?.matched[1].path) && authStore.isLogin()) {
+      getNotiByUser();
+    }
+  },
+  { deep: true }
+);
+
+const toggleMenu = () => {
+  isMenuOpen.value = !isMenuOpen.value; // 메뉴 토글
+};
+
+const closeMenu = () => {
+  isMenuOpen.value = false;
+};
+
+// 회원 알림 체크
+const getNotiByUser = async () => {
+  const response = await getNotificationList();
+
+  notifications.value = response;
+};
+
+// 로그아웃 API 호출
+const getLogout = () => {
+  messagePop.confirm({
+    icon: 'info',
+    message: '로그아웃 하시겠습니까?',
+    onCloseYes: async () => {
+      try {
+        const response = await logout();
+        if (response.status === 400) throw new Error('400 Error');
+
+        authStore.reset();
+
+        window.location.reload();
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  });
+};
+
+// 외부 클릭 시 메뉴 닫기
+const handleClickOutside = (event) => {
+  if (!event.target.closest('.relative')) {
+    isMenuOpen.value = false;
+  }
+};
+
+// 패널 클릭
+const markAsRead = async (noti) => {
+  noti.isRead = true;
+
+  try {
+    await updateNotification(noti.id);
+
+    overlayPanel.value.hide(); // 알림 패널 닫기
+
+    // 알림 타입에 따라 페이지 이동
+    switch (noti.typeCd) {
+      // 구직자용
+      case 'NOTI_1': // 면접제안
+        router.push('/user/jobOffers');
+        break;
+      case 'NOTI_2': // 면접일정조율
+        router.push('/user/jobOffers');
+        break;
+      case 'NOTI_3': // 면접결과
+        router.push('/user/jobSeekerInterviews');
+        break;
+
+      // 기업용
+      case 'NOTI_4': // 면접제안 답변
+        router.push('/company/InterviewOffers');
+        break;
+      case 'NOTI_5': // 면접일정 확정
+        router.push('/company/InterviewOffers');
+        break;
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// 알림 아이콘 및 색상 매핑
+const getNotificationIcon = (typeCd) => {
+  const iconMap = {
+    // 구직자용
+    NOTI_1: 'pi-envelope',
+    NOTI_2: 'pi-calendar',
+    NOTI_3: 'pi-check-circle',
+    // 기업용
+    NOTI_4: 'pi-check',
+    NOTI_5: 'pi-calendar-plus'
+    // interview_declined: 'pi-times-circle'
+  };
+  return iconMap[typeCd] || 'pi-bell';
+};
+
+const getNotificationColor = (typeCd) => {
+  const colorMap = {
+    // 구직자용
+    NOTI_1: 'text-blue-500',
+    NOTI_2: 'text-green-500',
+    NOTI_3: 'text-purple-500',
+    // 기업용
+    NOTI_4: 'text-green-500',
+    NOTI_5: 'text-blue-500'
+    // interview_declined: 'text-red-500'
+  };
+  return colorMap[typeCd] || 'text-gray-500';
+};
+
+// 노티 타입별 타이틀
+const getNotiTypeTitle = (typeCd) => {
+  switch (typeCd) {
+    case 'NOTI_1':
+      return '새로운 면접 제안';
+    case 'NOTI_2':
+      return '면접 일정 조율';
+    case 'NOTI_3':
+      return '면접 결과';
+    case 'NOTI_4':
+      return '면접 제안 답변';
+    case 'NOTI_5':
+      return '면접 일정 확정';
+  }
+};
+
+// 노티 타입별 내용
+const getNotiTypeContent = (noti) => {
+  switch (noti?.typeCd) {
+    case 'NOTI_1':
+      return '해당 포지션 면접제안이 도착했습니다.';
+    case 'NOTI_2':
+      return '해당 포지션 면접일정이 도착했습니다.';
+    case 'NOTI_3':
+      return '해당 포지션 면접결과가 도착했습니다.';
+    case 'NOTI_4':
+      return '면접 제안에 대한 답변이 도착했습니다.';
+    case 'NOTI_5':
+      return '면접 일정이 확정되었습니다.';
+  }
+};
+
+// 다국어 번역
+const changeLanguage = async () => {
+  try {
+    // 구글 트랜스레이터 초기화 체크 및 재시도
+    const initGoogleTranslate = async () => {
+      const maxAttempts = 3;
+      let attempts = 0;
+
+      while (attempts < maxAttempts) {
+        const translateElement = document.getElementById('google_translate_element');
+        if (translateElement) {
+          return translateElement;
+        }
+
+        // 구글 트랜스레이터 재초기화 시도
+        if (window.googleTranslateElementInit) {
+          window.googleTranslateElementInit();
+        } else {
+          // 스크립트 재로드
+          const script = document.createElement('script');
+          script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+          script.async = true;
+          document.head.appendChild(script);
+        }
+
+        // 잠시 대기
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        attempts++;
+      }
+      return null;
+    };
+
+    const translateElement = await initGoogleTranslate();
+    if (!translateElement) {
+      console.error('Failed to initialize Google Translate after multiple attempts');
+      return;
+    }
+
+    if (selectedLanguage.value === `/KO_ko.png`) {
+      // 한국어로 변경 시
+      // 구글 번역 쿠키 제거
+      document.cookie.split(';').forEach((cookie) => {
+        const [name] = cookie.split('=');
+        if (name.trim().startsWith('googtrans')) {
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.${window.location.hostname};`;
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`;
+        }
+      });
+
+      // 페이지 새로고침
+      window.location.reload();
+      return;
+    }
+
+    // 다른 언어로 변경 시
+    const combo = document.querySelector('.goog-te-combo');
+    if (!combo) {
+      // 콤보박스가 없으면 재시도
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      window.googleTranslateElementInit();
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+
+    // 실질적 번역 시작 부분
+    const retryCombo = document.querySelector('.goog-te-combo');
+    if (retryCombo) {
+      retryCombo.value = selectedLanguage.value.slice(4, 6).toLowerCase();
+      retryCombo.dispatchEvent(new Event('change'));
+
+      // 번역 적용 대기
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // 번역 상태 확인
+      const currentLang = document.querySelector('html').getAttribute('lang');
+      if (currentLang !== selectedLanguage.value.slice(4, 6).toLowerCase()) {
+        // 번역이 적용되지 않았다면 다시 시도
+        retryCombo.dispatchEvent(new Event('change'));
+      }
+    } else {
+      console.error('Google Translate combo box not found after retry');
+    }
+  } catch (error) {
+    console.error('Language change failed:', error);
+  }
+};
+
+// 번역 체크 로직 수정
+const checkTranslation = () => {
+  setTimeout(() => {
+    const currentLang = document.querySelector('html').getAttribute('lang');
+    if (currentLang !== selectedLanguage.value) {
+      changeLanguage();
+    }
+  }, 500);
+};
+
+// formatDate 함수
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  return date.toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+};
+
+// 모든 알림 삭제 처리
+const markAllAsRead = async () => {
+  const readNotiList = [];
+
+  notifications.value.map((noti) => {
+    readNotiList.push(noti.id);
+  });
+
+  const body = {
+    ids: readNotiList
+  };
+
+  try {
+    const response = await delNotificationAll(body);
+
+    if (response.data?.count) {
+      getNotiByUser();
+    }
+  } catch (error) {
+    console.error('알림 읽음 처리 실패:', error);
+  }
+};
 </script>
 
 <template>
-    <div class="layout-topbar">
-        <div class="layout-topbar-logo-container">
-            <button class="layout-menu-button layout-topbar-action" @click="onMenuToggle">
-                <i class="pi pi-bars"></i>
-            </button>
-            <router-link to="/" class="layout-topbar-logo">
-                <svg viewBox="0 0 54 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path
-                        fill-rule="evenodd"
-                        clip-rule="evenodd"
-                        d="M17.1637 19.2467C17.1566 19.4033 17.1529 19.561 17.1529 19.7194C17.1529 25.3503 21.7203 29.915 27.3546 29.915C32.9887 29.915 37.5561 25.3503 37.5561 19.7194C37.5561 19.5572 37.5524 19.3959 37.5449 19.2355C38.5617 19.0801 39.5759 18.9013 40.5867 18.6994L40.6926 18.6782C40.7191 19.0218 40.7326 19.369 40.7326 19.7194C40.7326 27.1036 34.743 33.0896 27.3546 33.0896C19.966 33.0896 13.9765 27.1036 13.9765 19.7194C13.9765 19.374 13.9896 19.0316 14.0154 18.6927L14.0486 18.6994C15.0837 18.9062 16.1223 19.0886 17.1637 19.2467ZM33.3284 11.4538C31.6493 10.2396 29.5855 9.52381 27.3546 9.52381C25.1195 9.52381 23.0524 10.2421 21.3717 11.4603C20.0078 11.3232 18.6475 11.1387 17.2933 10.907C19.7453 8.11308 23.3438 6.34921 27.3546 6.34921C31.36 6.34921 34.9543 8.10844 37.4061 10.896C36.0521 11.1292 34.692 11.3152 33.3284 11.4538ZM43.826 18.0518C43.881 18.6003 43.9091 19.1566 43.9091 19.7194C43.9091 28.8568 36.4973 36.2642 27.3546 36.2642C18.2117 36.2642 10.8 28.8568 10.8 19.7194C10.8 19.1615 10.8276 18.61 10.8816 18.0663L7.75383 17.4411C7.66775 18.1886 7.62354 18.9488 7.62354 19.7194C7.62354 30.6102 16.4574 39.4388 27.3546 39.4388C38.2517 39.4388 47.0855 30.6102 47.0855 19.7194C47.0855 18.9439 47.0407 18.1789 46.9536 17.4267L43.826 18.0518ZM44.2613 9.54743L40.9084 10.2176C37.9134 5.95821 32.9593 3.1746 27.3546 3.1746C21.7442 3.1746 16.7856 5.96385 13.7915 10.2305L10.4399 9.56057C13.892 3.83178 20.1756 0 27.3546 0C34.5281 0 40.8075 3.82591 44.2613 9.54743Z"
-                        fill="var(--primary-color)"
-                    />
-                    <mask id="mask0_1413_1551" style="mask-type: alpha" maskUnits="userSpaceOnUse" x="0" y="8" width="54" height="11">
-                        <path d="M27 18.3652C10.5114 19.1944 0 8.88892 0 8.88892C0 8.88892 16.5176 14.5866 27 14.5866C37.4824 14.5866 54 8.88892 54 8.88892C54 8.88892 43.4886 17.5361 27 18.3652Z" fill="var(--primary-color)" />
-                    </mask>
-                    <g mask="url(#mask0_1413_1551)">
-                        <path
-                            d="M-4.673e-05 8.88887L3.73084 -1.91434L-8.00806 17.0473L-4.673e-05 8.88887ZM27 18.3652L26.4253 6.95109L27 18.3652ZM54 8.88887L61.2673 17.7127L50.2691 -1.91434L54 8.88887ZM-4.673e-05 8.88887C-8.00806 17.0473 -8.00469 17.0505 -8.00132 17.0538C-8.00018 17.055 -7.99675 17.0583 -7.9944 17.0607C-7.98963 17.0653 -7.98474 17.0701 -7.97966 17.075C-7.96949 17.0849 -7.95863 17.0955 -7.94707 17.1066C-7.92401 17.129 -7.89809 17.1539 -7.86944 17.1812C-7.8122 17.236 -7.74377 17.3005 -7.66436 17.3743C-7.50567 17.5218 -7.30269 17.7063 -7.05645 17.9221C-6.56467 18.3532 -5.89662 18.9125 -5.06089 19.5534C-3.39603 20.83 -1.02575 22.4605 1.98012 24.0457C7.97874 27.2091 16.7723 30.3226 27.5746 29.7793L26.4253 6.95109C20.7391 7.23699 16.0326 5.61231 12.6534 3.83024C10.9703 2.94267 9.68222 2.04866 8.86091 1.41888C8.45356 1.10653 8.17155 0.867278 8.0241 0.738027C7.95072 0.673671 7.91178 0.637576 7.90841 0.634492C7.90682 0.63298 7.91419 0.639805 7.93071 0.65557C7.93897 0.663455 7.94952 0.673589 7.96235 0.686039C7.96883 0.692262 7.97582 0.699075 7.98338 0.706471C7.98719 0.710167 7.99113 0.714014 7.99526 0.718014C7.99729 0.720008 8.00047 0.723119 8.00148 0.724116C8.00466 0.727265 8.00796 0.730446 -4.673e-05 8.88887ZM27.5746 29.7793C37.6904 29.2706 45.9416 26.3684 51.6602 23.6054C54.5296 22.2191 56.8064 20.8465 58.4186 19.7784C59.2265 19.2431 59.873 18.7805 60.3494 18.4257C60.5878 18.2482 60.7841 18.0971 60.9374 17.977C61.014 17.9169 61.0799 17.8645 61.1349 17.8203C61.1624 17.7981 61.1872 17.7781 61.2093 17.7602C61.2203 17.7512 61.2307 17.7427 61.2403 17.7348C61.2452 17.7308 61.2499 17.727 61.2544 17.7233C61.2566 17.7215 61.2598 17.7188 61.261 17.7179C61.2642 17.7153 61.2673 17.7127 54 8.88887C46.7326 0.0650536 46.7357 0.0625219 46.7387 0.0600241C46.7397 0.0592345 46.7427 0.0567658 46.7446 0.0551857C46.7485 0.0520238 46.7521 0.0489887 46.7557 0.0460799C46.7628 0.0402623 46.7694 0.0349487 46.7753 0.0301318C46.7871 0.0204986 46.7966 0.0128495 46.8037 0.00712562C46.818 -0.00431848 46.8228 -0.00808311 46.8184 -0.00463784C46.8096 0.00228345 46.764 0.0378652 46.6828 0.0983779C46.5199 0.219675 46.2165 0.439161 45.7812 0.727519C44.9072 1.30663 43.5257 2.14765 41.7061 3.02677C38.0469 4.79468 32.7981 6.63058 26.4253 6.95109L27.5746 29.7793ZM54 8.88887C50.2691 -1.91433 50.27 -1.91467 50.271 -1.91498C50.2712 -1.91506 50.272 -1.91535 50.2724 -1.9155C50.2733 -1.91581 50.274 -1.91602 50.2743 -1.91616C50.2752 -1.91643 50.275 -1.91636 50.2738 -1.91595C50.2714 -1.91515 50.2652 -1.91302 50.2552 -1.9096C50.2351 -1.90276 50.1999 -1.89078 50.1503 -1.874C50.0509 -1.84043 49.8938 -1.78773 49.6844 -1.71863C49.2652 -1.58031 48.6387 -1.377 47.8481 -1.13035C46.2609 -0.635237 44.0427 0.0249875 41.5325 0.6823C36.215 2.07471 30.6736 3.15796 27 3.15796V26.0151C33.8087 26.0151 41.7672 24.2495 47.3292 22.7931C50.2586 22.026 52.825 21.2618 54.6625 20.6886C55.5842 20.4011 56.33 20.1593 56.8551 19.986C57.1178 19.8993 57.3258 19.8296 57.4735 19.7797C57.5474 19.7548 57.6062 19.7348 57.6493 19.72C57.6709 19.7127 57.6885 19.7066 57.7021 19.7019C57.7089 19.6996 57.7147 19.6976 57.7195 19.696C57.7219 19.6952 57.7241 19.6944 57.726 19.6938C57.7269 19.6934 57.7281 19.693 57.7286 19.6929C57.7298 19.6924 57.7309 19.692 54 8.88887ZM27 3.15796C23.3263 3.15796 17.7849 2.07471 12.4674 0.6823C9.95717 0.0249875 7.73904 -0.635237 6.15184 -1.13035C5.36118 -1.377 4.73467 -1.58031 4.3155 -1.71863C4.10609 -1.78773 3.94899 -1.84043 3.84961 -1.874C3.79994 -1.89078 3.76474 -1.90276 3.74471 -1.9096C3.73469 -1.91302 3.72848 -1.91515 3.72613 -1.91595C3.72496 -1.91636 3.72476 -1.91643 3.72554 -1.91616C3.72593 -1.91602 3.72657 -1.91581 3.72745 -1.9155C3.72789 -1.91535 3.72874 -1.91506 3.72896 -1.91498C3.72987 -1.91467 3.73084 -1.91433 -4.673e-05 8.88887C-3.73093 19.692 -3.72983 19.6924 -3.72868 19.6929C-3.72821 19.693 -3.72698 19.6934 -3.72603 19.6938C-3.72415 19.6944 -3.72201 19.6952 -3.71961 19.696C-3.71482 19.6976 -3.70901 19.6996 -3.7022 19.7019C-3.68858 19.7066 -3.67095 19.7127 -3.6494 19.72C-3.60629 19.7348 -3.54745 19.7548 -3.47359 19.7797C-3.32589 19.8296 -3.11788 19.8993 -2.85516 19.986C-2.33008 20.1593 -1.58425 20.4011 -0.662589 20.6886C1.17485 21.2618 3.74125 22.026 6.67073 22.7931C12.2327 24.2495 20.1913 26.0151 27 26.0151V3.15796Z"
-                            fill="var(--primary-color)"
-                        />
-                    </g>
-                </svg>
+  <div class="w-full bg-gradient-to-r from-[#8FA1FF] to-[#A5B4FF] shadow-sm">
+    <div class="max-w-[1200px] mx-auto px-4">
+      <div class="flex justify-between items-center h-20">
+        <!-- 왼쪽 로고 -->
+        <router-link :to="authStore?.userInfo?.isCompany ? '/company/index' : '/'" class="flex items-center gap-2">
+          <span class="font-bold text-2xl text-white tracking-tight notranslate">Global Sourcing Portal</span>
+        </router-link>
 
-                <span>SAKAI</span>
-            </router-link>
-        </div>
-
-        <div class="layout-topbar-actions">
-            <div class="layout-config-menu">
-                <button type="button" class="layout-topbar-action" @click="toggleDarkMode">
-                    <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]"></i>
-                </button>
-                <div class="relative">
-                    <button
-                        v-styleclass="{ selector: '@next', enterFromClass: 'hidden', enterActiveClass: 'animate-scalein', leaveToClass: 'hidden', leaveActiveClass: 'animate-fadeout', hideOnOutsideClick: true }"
-                        type="button"
-                        class="layout-topbar-action layout-topbar-action-highlight"
-                    >
-                        <i class="pi pi-palette"></i>
-                    </button>
-                    <AppConfigurator />
-                </div>
-            </div>
-
-            <button
-                class="layout-topbar-menu-button layout-topbar-action"
-                v-styleclass="{ selector: '@next', enterFromClass: 'hidden', enterActiveClass: 'animate-scalein', leaveToClass: 'hidden', leaveActiveClass: 'animate-fadeout', hideOnOutsideClick: true }"
+        <!-- 오른쪽 메뉴들 -->
+        <div class="flex items-center gap-4">
+          <!-- 알림 버튼 (로그인 시에만 표시) -->
+          <button
+            v-if="loginFlag"
+            class="flex items-center gap-2 px-4 py-2.5 bg-white/10 hover:bg-white/20 rounded-full transition-all relative"
+            @click="toggleNotificationPanel"
+          >
+            <i class="pi pi-bell text-white"></i>
+            <!-- 읽지 않은 알림이 있을 경우 표시되는 배지 -->
+            <div
+              v-if="unreadCount > 0"
+              class="absolute -top-1 -right-1 w-5 h-5 flex items-center justify-center bg-red-500 text-white text-xs rounded-full"
             >
-                <i class="pi pi-ellipsis-v"></i>
-            </button>
-
-            <div class="layout-topbar-menu hidden lg:block">
-                <div class="layout-topbar-menu-content">
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-calendar"></i>
-                        <span>Calendar</span>
-                    </button>
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-inbox"></i>
-                        <span>Messages</span>
-                    </button>
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-user"></i>
-                        <span>Profile</span>
-                    </button>
-                </div>
+              {{ unreadCount }}
             </div>
+          </button>
+
+          <!-- 알림 패널 -->
+          <OverlayPanel ref="overlayPanel" style="width: 330px">
+            <div class="p-3">
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold">알림</h3>
+                <button
+                  v-if="unreadCount > 0"
+                  @click="markAllAsRead"
+                  class="w-8 h-8 inline-flex items-center justify-center bg-[#8FA1FF] text-white rounded-full hover:bg-[#7C8EFF] transition-colors notranslate"
+                  title="clear"
+                >
+                  <i class="pi pi-trash pl-[1px]"></i>
+                </button>
+              </div>
+              <div v-if="notifications.length === 0" class="text-gray-500 text-center py-4">
+                새로운 알림이 없습니다.
+              </div>
+              <div v-else class="space-y-3 max-h-[400px] overflow-y-auto">
+                <div
+                  v-for="notification in notifications"
+                  :key="notification?.id"
+                  class="p-3 rounded-lg hover:bg-gray-50 cursor-pointer"
+                  :class="{ 'bg-blue-50': !notification?.isRead }"
+                  @click="markAsRead(notification)"
+                >
+                  <div class="flex items-start gap-3">
+                    <i
+                      class="pi"
+                      :class="[getNotificationIcon(notification?.typeCd), getNotificationColor(notification?.typeCd)]"
+                    ></i>
+                    <div class="flex-1">
+                      <!-- <div class="font-semibold text-gray-900">{{ getNotiTypeTitle(notification?.typeCd) }}</div> -->
+                      <div class="font-semibold text-gray-900">{{ notification?.type?.name }}</div>
+                      <!-- 구직자용 알림일 경우 -->
+                      <div v-if="!userInfo?.isCompany" class="text-sm text-gray-600 mb-1">
+                        {{ notification?.subData?.companyName }} | {{ notification?.subData?.position }}
+                      </div>
+                      <!-- 기업용 알림일 경우 -->
+                      <div v-else class="text-sm text-gray-600 mb-1">
+                        {{ notification?.subData?.userName }} | {{ notification?.subData?.position }}
+                      </div>
+                      <div class="text-sm text-gray-700" v-html="getNotiTypeContent(notification)"></div>
+                      <div class="text-xs text-gray-500 mt-1">{{ formatDate(notification?.createdAt) }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </OverlayPanel>
+
+          <!-- 로그인 버튼 -->
+          <button
+            v-if="!loginFlag"
+            class="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 rounded-full transition-all"
+            @click="router.push('/login')"
+          >
+            <i class="pi pi-user text-white"></i>
+            <span class="text-sm text-white font-medium loginSpan">로그인</span>
+          </button>
+          <button
+            v-else
+            class="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 rounded-full transition-all"
+            @click="getLogout"
+          >
+            <i class="pi pi-user text-white"></i>
+            <span class="text-sm text-white font-medium loginSpan">로그아웃</span>
+          </button>
+
+          <!-- 메뉴 버튼 -->
+          <div class="relative">
+            <div class="flex items-center cursor-pointer" @click="toggleMenu">
+              <button
+                class="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 rounded-full transition-all"
+              >
+                <i class="pi pi-bars text-white"></i>
+                <span class="text-sm text-white font-medium">메뉴</span>
+              </button>
+            </div>
+
+            <!-- 메뉴 드롭다운 -->
+            <div
+              v-show="isMenuOpen"
+              class="absolute right-0 top-[3.8rem] w-56 bg-white rounded-xl shadow-lg border border-gray-100 z-50 transition-all duration-200"
+            >
+              <!-- 메뉴 열림 상태에 따라 표시 -->
+              <div class="py-2">
+                <a
+                  v-if="!userInfo?.isCompany"
+                  class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50"
+                  style="cursor: pointer"
+                  @click="
+                    () => {
+                      router.push('/user/resume');
+                      closeMenu();
+                    }
+                  "
+                >
+                  <i class="pi pi-file-edit text-[#8FA1FF]"></i>
+                  <span class="font-medium">이력서 관리</span>
+                </a>
+                <a
+                  v-else
+                  class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50"
+                  style="cursor: pointer"
+                  @click="
+                    () => {
+                      router.push('/company/index');
+                      closeMenu();
+                    }
+                  "
+                >
+                  <i class="pi pi-users text-[#8FA1FF]"></i>
+                  <span class="font-medium">북마크 인재 관리</span>
+                </a>
+                <a
+                  class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50"
+                  style="cursor: pointer"
+                  @click="
+                    () => {
+                      router.push('/faq');
+                      closeMenu();
+                    }
+                  "
+                >
+                  <i class="pi pi-question-circle text-[#8FA1FF]"></i>
+                  <span class="font-medium">FAQ</span>
+                </a>
+                <a
+                  class="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50"
+                  style="cursor: pointer"
+                  @click="
+                    () => {
+                      router.push('/inquiry');
+                      closeMenu();
+                    }
+                  "
+                >
+                  <i class="pi pi-comments text-[#8FA1FF]"></i>
+                  <span class="font-medium">문의하기</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- 다국어 지원 -->
+          <div class="language-selector notranslate">
+            <Select
+              v-model="selectedLanguage"
+              class="custom-dropdown notranslate"
+              :options="languages"
+              optionLabel="name"
+              optionValue="flag"
+              optionDisabled="isDisable"
+              highlightOnSelect
+              @change="changeLanguage"
+            >
+              <template #value="{ value }">
+                <div class="flex notranslate">
+                  <img
+                    v-if="value"
+                    :src="`/demo/flag/${value}`"
+                    alt=""
+                    style="width: 25px; height: 15px; margin: 3.5px 15px 0 0"
+                  />
+                  {{ value ? value.slice(1, 3) : 'Language' }}
+                </div>
+              </template>
+              <template #option="{ option }">
+                <!-- <span
+                  class="flag"
+                  :class="`flag-${option.code}`"
+                  style="width: 25px; height: 15px; margin-right: 15px"
+                /> -->
+                <img
+                  v-if="option"
+                  :src="`/demo/flag${option.flag}`"
+                  alt=""
+                  style="width: 25px; height: 15px; margin-right: 15px"
+                />
+                <div class="notranslate">{{ option.name }}</div>
+              </template>
+            </Select>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 </template>
+
+<style scoped>
+/* 추가적인 애니메이션 효과 */
+.animate-scalein {
+  animation: scalein 0.15s ease-in-out;
+}
+
+@keyframes scalein {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.language-selector :deep(.custom-dropdown) {
+  width: 120px;
+  border: 1px solid #8884d8;
+}
+
+.language-selector :deep(.p-select) {
+  border-color: #8884d8;
+}
+
+.language-selector :deep(.p-select:not(.p-disabled):hover) {
+  border-color: #6c63ff;
+}
+
+.language-selector :deep(.p-select:not(.p-disabled).p-focus) {
+  box-shadow: 0 0 0 1px #8884d8;
+  border-color: #8884d8;
+}
+
+.language-selector :deep(.p-select-panel) {
+  background: #ffffff;
+  border: 1px solid #8884d8;
+}
+
+.language-selector :deep(.p-select-item:hover) {
+  background: #f0f0ff;
+  color: #6c63ff;
+}
+
+.language-selector :deep(.p-select-item.p-highlight) {
+  background: #e8e8ff;
+  color: #6c63ff;
+}
+
+/* 알림 패널 스타일 */
+:deep(.p-overlaypanel) {
+  border-radius: 12px;
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+:deep(.p-overlaypanel-content) {
+  padding: 0;
+}
+
+:deep(.p-overlaypanel::before),
+:deep(.p-overlaypanel::after) {
+  border-bottom-color: white;
+}
+</style>
