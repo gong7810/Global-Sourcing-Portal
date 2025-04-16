@@ -99,170 +99,22 @@ nginx는 재기동안해도 자동 반영
 </br>   
 </br>
 
-<h2>4. Package Structure
+<h2>4. 패키지 구조
 
 - 크게 apis, components, pages, router, store 구조로 구성.
 - 각 구성마다 admin, auth, common, company, user 서비스를 개별적으로 구축
 
 ```
-📦src
- ┣ 📂apis : api 호출부 모듈
- ┃ ┣ 📂admin
- ┃ ┃ ┗ 📜adminApis.js
- ┃ ┣ 📂auth
- ┃ ┃ ┣ 📜authApis.js
- ┃ ┃ ┗ 📜authConstants.js : 권한체크가 필요없는 페이지 목록
- ┃ ┣ 📂common
- ┃ ┃ ┗ 📜commonApis.js
- ┃ ┣ 📂company
- ┃ ┃ ┗ 📜companyApis.js
- ┃ ┣ 📂user
- ┃ ┃ ┗ 📜userApis.js
- ┃ ┗ 📜index.js : api instance 구축 파일
- ┣ 📂assets : 이미지 등 정적리소스 폴더
- ┃ ┣ 📂demo
- ┃ ┃ ┣ 📂flags
- ┃ ┃ ┃ ┣ 📜flags.css
- ┃ ┃ ┃ ┗ 📜flags_responsive.png
- ┃ ┃ ┣ 📜code.scss
- ┃ ┃ ┗ 📜demo.scss
- ┃ ┣ 📂font
- ┃ ┃ ┣ 📜MaterialSymbolsRoundedVariable.woff2
- ┃ ┃ ┣ 📜OutfitVariable.woff2
- ┃ ┃ ┗ 📜PretendardVariable.woff2
- ┃ ┣ 📂layout : 공통 css 구성 폴더
- ┃ ┃ ┣ 📂variables
- ┃ ┃ ┃ ┣ 📜_common.scss
- ┃ ┃ ┃ ┣ 📜_dark.scss
- ┃ ┃ ┃ ┗ 📜_light.scss
- ┃ ┃ ┣ 📜layout.scss
- ┃ ┃ ┣ 📜_core.scss
- ┃ ┃ ┣ 📜_custom.scss : 템플릿 스타일 외 커스텀 스타일 모듈
- ┃ ┃ ┣ 📜_footer.scss
- ┃ ┃ ┣ 📜_main.scss
- ┃ ┃ ┣ 📜_menu.scss
- ┃ ┃ ┣ 📜_mixins.scss
- ┃ ┃ ┣ 📜_preloading.scss
- ┃ ┃ ┣ 📜_responsive.scss
- ┃ ┃ ┣ 📜_topbar.scss
- ┃ ┃ ┣ 📜_typography.scss
- ┃ ┃ ┗ 📜_utils.scss
- ┃ ┣ 📜styles.scss
- ┃ ┗ 📜tailwind.css
- ┣ 📂components : 페이지내 공통 컴포넌트 모듈
- ┃ ┣ 📂admin
- ┃ ┃ ┣ 📜Admin.vue
- ┃ ┃ ┣ 📜AdminHeader.vue
- ┃ ┃ ┣ 📜AdminSidebar.vue
- ┃ ┃ ┣ 📜UserCreateModal.vue
- ┃ ┃ ┗ 📜UserDetailModal.vue
- ┃ ┣ 📂common
- ┃ ┃ ┗ 📜CommonMessageDialog.vue : 공통 alert, confirm, toast 구축 파일
- ┃ ┣ 📂company
- ┃ ┃ ┗ 📜InterviewResultsDetailModal.vue
- ┃ ┗ 📂terms
- ┃ ┃ ┣ 📜BusinessOptionalPrivacyTerms.vue
- ┃ ┃ ┣ 📜BusinessPrivacyTerms.vue
- ┃ ┃ ┣ 📜BusinessServiceTerms.vue
- ┃ ┃ ┣ 📜OptionalPrivacyTerms.vue
- ┃ ┃ ┣ 📜PrivacyTerms.vue
- ┃ ┃ ┣ 📜ServiceTerms.vue
- ┃ ┃ ┗ 📜SmsServiceTerms.vue
- ┣ 📂layout : 공통 레이아웃 구축 폴더
- ┃ ┣ 📂composables
- ┃ ┃ ┗ 📜layout.js
- ┃ ┣ 📜AppConfigurator.vue
- ┃ ┣ 📜AppFooter.vue
- ┃ ┣ 📜AppLayout.vue
- ┃ ┣ 📜AppMenu.vue
- ┃ ┣ 📜AppMenuItem.vue
- ┃ ┣ 📜AppSidebar.vue
- ┃ ┗ 📜AppTopbar.vue
- ┣ 📂pages : 사이트 내 페이지 폴더
- ┃ ┣ 📂admin
- ┃ ┃ ┣ 📜AdminFaqPage.vue
- ┃ ┃ ┣ 📜AdminInquiriesPage.vue
- ┃ ┃ ┣ 📜AdminInterviewManagementPage.vue
- ┃ ┃ ┣ 📜AdminLoginPage.vue
- ┃ ┃ ┣ 📜AdminUserMngPage.vue
- ┃ ┃ ┗ 📜BusinessApplicationsPage.vue
- ┃ ┣ 📂common
- ┃ ┃ ┣ 📜CommonPage.vue
- ┃ ┃ ┣ 📜CompanyRegisterPage.vue
- ┃ ┃ ┣ 📜FaqPage.vue
- ┃ ┃ ┣ 📜FindIdPage.vue
- ┃ ┃ ┣ 📜FindPasswordPage.vue
- ┃ ┃ ┣ 📜InquiryPage.vue
- ┃ ┃ ┣ 📜LoginPage.vue
- ┃ ┃ ┣ 📜PersonalRegisterPage.vue
- ┃ ┃ ┣ 📜RegisterComplete.vue
- ┃ ┃ ┣ 📜RegisterSelect.vue
- ┃ ┃ ┗ 📜ResetPasswordPage.vue
- ┃ ┣ 📂company
- ┃ ┃ ┣ 📜CompanyInfoPage.vue
- ┃ ┃ ┣ 📜CreateInterviewOfferPage.vue
- ┃ ┃ ┣ 📜Dashboard.vue : 기업 메인 대시보드 페이지
- ┃ ┃ ┣ 📜InterviewOffersPage.vue
- ┃ ┃ ┣ 📜InterviewResultsPage.vue
- ┃ ┃ ┗ 📜TalentSearchPage.vue
- ┃ ┣ 📂policy
- ┃ ┃ ┣ 📜PrivacyPolicyPage.vue
- ┃ ┃ ┗ 📜TermsOfServicePage.vue
- ┃ ┣ 📂user
- ┃ ┃ ┣ 📜CompanyList.vue
- ┃ ┃ ┣ 📜JobOffersPage.vue
- ┃ ┃ ┣ 📜JobSeekerInterviewsPage.vue
- ┃ ┃ ┣ 📜RegisterComplete.vue
- ┃ ┃ ┣ 📜ResumePage.vue
- ┃ ┃ ┣ 📜SupportDetailPage.vue
- ┃ ┃ ┗ 📜UserPage.vue
- ┃ ┗ 📜Dashboard.vue : 구직자 메인 대시보드 페이지
- ┣ 📂plugins : 추가적인 커스텀 이벤트훅 구축 폴더
- ┃ ┣ 📜commonprimevue.js : primevue 템플릿 모듈
- ┃ ┣ 📜commonspinner.js
- ┃ ┗ 📜commonutils.js : 공통 커스텀 이벤트훅 구축
- ┣ 📂router : 페이지 라우팅 관리 폴더
- ┃ ┣ 📂admin
- ┃ ┃ ┗ 📜adminRouter.js
- ┃ ┣ 📂auth
- ┃ ┃ ┗ 📜authRouter.js
- ┃ ┣ 📂common
- ┃ ┃ ┗ 📜commonRouter.js
- ┃ ┣ 📂company
- ┃ ┃ ┗ 📜companyRouter.js
- ┃ ┣ 📂policy
- ┃ ┃ ┗ 📜policyRouter.js
- ┃ ┣ 📂user
- ┃ ┃ ┗ 📜userRouter.js
- ┃ ┗ 📜index.js : 라우터가드 구축 파일
- ┣ 📂store : 상태관리 폴더
- ┃ ┣ 📂admin
- ┃ ┃ ┗ 📜adminStore.js
- ┃ ┣ 📂auth
- ┃ ┃ ┗ 📜authStore.js
- ┃ ┣ 📂common
- ┃ ┃ ┗ 📜commonStore.js
- ┃ ┣ 📂company
- ┃ ┃ ┗ 📜companyStore.js
- ┃ ┣ 📂interview
- ┃ ┃ ┗ 📜interviewStore.js
- ┃ ┗ 📂user
- ┃ ┃ ┗ 📜userStore.js
- ┣ 📜App.vue
- ┗ 📜main.js
-```
-
-```
 📦gsp_f
- ┣ 📂public
+ ┣ 📂public : 정적 리소스 폴더
  ┃ ┣ 📂demo
- ┃ ┃ ┣ 📂flag
+ ┃ ┃ ┣ 📂flag : 다국어 지원 국가 국기 (표기명_코드값.png)
  ┃ ┃ ┃ ┣ 📜JP_ja.png
  ┃ ┃ ┃ ┣ 📜KO_ko.png
  ┃ ┃ ┃ ┣ 📜US_en.png
  ┃ ┃ ┃ ┗ 📜VI_vi.png
  ┃ ┣ 📜BTfavicon.svg
- ┃ ┗ 📜default-profile.jpg
+ ┃ ┗ 📜default-profile.jpg : 프로필 없을때 기본 프로필
  ┣ 📂src
  ┃ ┣ 📂apis : api 호출부 모듈
  ┃ ┃ ┣ 📂admin
@@ -276,7 +128,7 @@ nginx는 재기동안해도 자동 반영
  ┃ ┃ ┃ ┗ 📜companyApis.js
  ┃ ┃ ┣ 📂user
  ┃ ┃ ┃ ┗ 📜userApis.js
- ┃ ┃ ┗ 📜index.js
+ ┃ ┃ ┗ 📜index.js : api instance 구축 파일
  ┃ ┣ 📂assets
  ┃ ┃ ┣ 📂demo
  ┃ ┃ ┃ ┣ 📂flags
@@ -288,14 +140,14 @@ nginx는 재기동안해도 자동 반영
  ┃ ┃ ┃ ┣ 📜MaterialSymbolsRoundedVariable.woff2
  ┃ ┃ ┃ ┣ 📜OutfitVariable.woff2
  ┃ ┃ ┃ ┗ 📜PretendardVariable.woff2
- ┃ ┃ ┣ 📂layout
+ ┃ ┃ ┣ 📂layout : 공통 css 구성 폴더
  ┃ ┃ ┃ ┣ 📂variables
  ┃ ┃ ┃ ┃ ┣ 📜_common.scss
  ┃ ┃ ┃ ┃ ┣ 📜_dark.scss
  ┃ ┃ ┃ ┃ ┗ 📜_light.scss
  ┃ ┃ ┃ ┣ 📜layout.scss
  ┃ ┃ ┃ ┣ 📜_core.scss
- ┃ ┃ ┃ ┣ 📜_custom.scss
+ ┃ ┃ ┃ ┣ 📜_custom.scss : 템플릿 스타일 외 커스텀 스타일 모듈
  ┃ ┃ ┃ ┣ 📜_footer.scss
  ┃ ┃ ┃ ┣ 📜_main.scss
  ┃ ┃ ┃ ┣ 📜_menu.scss
@@ -307,7 +159,7 @@ nginx는 재기동안해도 자동 반영
  ┃ ┃ ┃ ┗ 📜_utils.scss
  ┃ ┃ ┣ 📜styles.scss
  ┃ ┃ ┗ 📜tailwind.css
- ┃ ┣ 📂components
+ ┃ ┣ 📂components : 페이지내 공통 컴포넌트 모듈
  ┃ ┃ ┣ 📂admin
  ┃ ┃ ┃ ┣ 📜Admin.vue
  ┃ ┃ ┃ ┣ 📜AdminHeader.vue
@@ -315,7 +167,7 @@ nginx는 재기동안해도 자동 반영
  ┃ ┃ ┃ ┣ 📜UserCreateModal.vue
  ┃ ┃ ┃ ┗ 📜UserDetailModal.vue
  ┃ ┃ ┣ 📂common
- ┃ ┃ ┃ ┗ 📜CommonMessageDialog.vue
+ ┃ ┃ ┃ ┗ 📜CommonMessageDialog.vue : 공통 alert, confirm, toast 구축 파일
  ┃ ┃ ┣ 📂company
  ┃ ┃ ┃ ┗ 📜InterviewResultsDetailModal.vue
  ┃ ┃ ┗ 📂terms
@@ -326,7 +178,7 @@ nginx는 재기동안해도 자동 반영
  ┃ ┃ ┃ ┣ 📜PrivacyTerms.vue
  ┃ ┃ ┃ ┣ 📜ServiceTerms.vue
  ┃ ┃ ┃ ┗ 📜SmsServiceTerms.vue
- ┃ ┣ 📂layout
+ ┃ ┣ 📂layout : 공통 레이아웃 구축 폴더
  ┃ ┃ ┣ 📂composables
  ┃ ┃ ┃ ┗ 📜layout.js
  ┃ ┃ ┣ 📜AppConfigurator.vue
@@ -336,7 +188,7 @@ nginx는 재기동안해도 자동 반영
  ┃ ┃ ┣ 📜AppMenuItem.vue
  ┃ ┃ ┣ 📜AppSidebar.vue
  ┃ ┃ ┗ 📜AppTopbar.vue
- ┃ ┣ 📂pages
+ ┃ ┣ 📂pages : 사이트 내 페이지 폴더
  ┃ ┃ ┣ 📂admin
  ┃ ┃ ┃ ┣ 📜AdminFaqPage.vue
  ┃ ┃ ┃ ┣ 📜AdminInquiriesPage.vue
@@ -359,7 +211,7 @@ nginx는 재기동안해도 자동 반영
  ┃ ┃ ┣ 📂company
  ┃ ┃ ┃ ┣ 📜CompanyInfoPage.vue
  ┃ ┃ ┃ ┣ 📜CreateInterviewOfferPage.vue
- ┃ ┃ ┃ ┣ 📜Dashboard.vue
+ ┃ ┃ ┃ ┣ 📜Dashboard.vue : 기업 메인 대시보드 페이지
  ┃ ┃ ┃ ┣ 📜InterviewOffersPage.vue
  ┃ ┃ ┃ ┣ 📜InterviewResultsPage.vue
  ┃ ┃ ┃ ┗ 📜TalentSearchPage.vue
@@ -374,12 +226,12 @@ nginx는 재기동안해도 자동 반영
  ┃ ┃ ┃ ┣ 📜ResumePage.vue
  ┃ ┃ ┃ ┣ 📜SupportDetailPage.vue
  ┃ ┃ ┃ ┗ 📜UserPage.vue
- ┃ ┃ ┗ 📜Dashboard.vue
- ┃ ┣ 📂plugins
- ┃ ┃ ┣ 📜commonprimevue.js
+ ┃ ┃ ┗ 📜Dashboard.vue : 구직자 메인 대시보드 페이지
+ ┃ ┣ 📂plugins : 추가적인 커스텀 이벤트훅 구축 폴더
+ ┃ ┃ ┣ 📜commonprimevue.js : primevue 템플릿 모듈
  ┃ ┃ ┣ 📜commonspinner.js
- ┃ ┃ ┗ 📜commonutils.js
- ┃ ┣ 📂router
+ ┃ ┃ ┗ 📜commonutils.js : 공통 커스텀 이벤트훅 구축
+ ┃ ┣ 📂router : 페이지 라우팅 관리 폴더
  ┃ ┃ ┣ 📂admin
  ┃ ┃ ┃ ┗ 📜adminRouter.js
  ┃ ┃ ┣ 📂auth
@@ -392,8 +244,8 @@ nginx는 재기동안해도 자동 반영
  ┃ ┃ ┃ ┗ 📜policyRouter.js
  ┃ ┃ ┣ 📂user
  ┃ ┃ ┃ ┗ 📜userRouter.js
- ┃ ┃ ┗ 📜index.js
- ┃ ┣ 📂store
+ ┃ ┃ ┗ 📜index.js : 라우터가드 구축 파일
+ ┃ ┣ 📂store : 상태관리 폴더
  ┃ ┃ ┣ 📂admin
  ┃ ┃ ┃ ┗ 📜adminStore.js
  ┃ ┃ ┣ 📂auth
@@ -409,21 +261,37 @@ nginx는 재기동안해도 자동 반영
  ┃ ┣ 📜App.vue
  ┃ ┗ 📜main.js
  ┣ 📜.editorconfig
- ┣ 📜.env.development
- ┣ 📜.env.localhost
- ┣ 📜.env.production
+ ┣ 📜.env.development : 개발서버 환경변수
+ ┣ 📜.env.localhost : 로컬 환경변수
+ ┣ 📜.env.production : 운영서버 환경변수
  ┣ 📜.eslintrc.cjs
- ┣ 📜.gitignore
- ┣ 📜.prettierrc.json
+ ┣ 📜.gitignore : 깃 추적 제외 파일 및 폴더 세텅
+ ┣ 📜.prettierrc.json : vsc prettier 세팅
  ┣ 📜CHANGELOG.md
- ┣ 📜index.html
+ ┣ 📜index.html : 사이트 기본 페이지, 다국어 번역 기능 세팅 파일
  ┣ 📜jsconfig.json
  ┣ 📜LICENSE.md
  ┣ 📜package-lock.json
- ┣ 📜package.json
+ ┣ 📜package.json : npm 라이브러리 목록, script 명령어 확인
  ┣ 📜postcss.config.js
- ┣ 📜README.md
+ ┣ 📜README.md : 서비스 세부정보
  ┣ 📜tailwind.config.js
  ┣ 📜vercel.json
- ┗ 📜vite.config.mjs
+ ┗ 📜vite.config.mjs : 번들링 설정 세팅 파일
 ```
+
+</br>   
+</br>
+
+<h2>5. 주요 기능 흐름</br></br>
+1. 기본적인 흐름 : page</br>
+ -> apis[GET(조회) or POST(저장, 수정) /api/gsource/{사용자}/{요구사항}/{id}]</br>
+ -> B.E.controller.service</br>
+ -> DB -> page ( -> store )</br></br>
+2. admin(관리자), company(고용주), user(구직자), auth(권한) 사용자 or 유형 타입별로 흐름 분기
+
+</br>   
+</br>
+
+<h2>6. API 명세</br></br>
+http://182.229.224.143/gsource/api/api-docs/
