@@ -21,8 +21,6 @@ yarn.lock
 .DS_Store
 .idea
 
-.env.*
-
 /.vscode
 
 npm-debug.log*
