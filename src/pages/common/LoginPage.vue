@@ -65,13 +65,16 @@ const getLogin = async () => {
 };
 
 // 사용자 정보 조회
-const getUserInfo = async () => {
+const getUserInfo = async (isSocial = false) => {
   const response = await getAccount();
   // 사용자 정보 저장
 
   // 기업회원 권한 추가
   response.roleCd = response?.isCompany ? 'ROLE_MANAGER' : 'ROLE_USER';
   authStore.setUserInfo(response, isRemember.value);
+
+  // 소셜 체크
+  authStore.setSocialFlag(isSocial);
 
   if (activeTab.value !== 'personal') {
     const res = await getCompanyInfo();
@@ -101,7 +104,7 @@ const loginGoogle = () => {
       authStore.setToken(token, false);
 
       setTimeout(async () => {
-        await getUserInfo();
+        await getUserInfo(true);
       }, 1000);
     } else if (!token || !event.data?.success) {
       messagePop.alert('등록된 사용자가 아닙니다.\n회원가입을 먼저 진행해주세요.', 'info');

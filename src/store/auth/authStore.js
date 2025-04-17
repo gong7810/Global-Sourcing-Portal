@@ -11,6 +11,7 @@ export const useAuthStore = defineStore(
     const tokenInfo = ref({});
     const userInfo = ref(null); // 사용자정보
     const companyData = ref(null); // 기업정보
+    const isSocialFlag = ref(false); // 소셜연동여부
 
     /* 로그인 완료후 토큰 정보 설정 */
     const setToken = (accessToken, isRemember = false) => {
@@ -25,11 +26,17 @@ export const useAuthStore = defineStore(
 
       isRemember ? localStorage.setItem('userInfo', JSON.stringify(info)) : '';
     };
+
     /* 로그인 완료후 기업 정보 설정 */
     const setCompanyData = (info, isRemember = false) => {
       companyData.value = info;
 
       isRemember ? localStorage.setItem('companyData', JSON.stringify(info)) : '';
+    };
+
+    /* 소셜연동 체크 */
+    const setSocialFlag = (flag) => {
+      isSocialFlag.value = flag;
     };
 
     /* 초기 빌드시 자동로그인 체크 */
@@ -95,11 +102,13 @@ export const useAuthStore = defineStore(
 
     return {
       userInfo,
-      companyData,
       tokenInfo,
+      companyData,
+      isSocialFlag,
       setToken,
       setUserInfo,
       setCompanyData,
+      setSocialFlag,
       reset,
       isLogin,
       login,
