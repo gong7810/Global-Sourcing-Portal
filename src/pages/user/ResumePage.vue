@@ -1296,11 +1296,11 @@ const clearCertificationFile = (index) => {
                     <p class="text-gray-600">국적: {{ passportInfo?.nationality }}</p>
                     <p class="text-gray-600">만료일: {{ passportInfo?.expiryDate }}</p>
                   </div>
-                  <div class="flex">
+                  <!-- <div class="flex">
                     <button class="text-gray-400 hover:text-gray-600" @click="modifyPassport">
                       <i class="pi pi-pencil"></i>
                     </button>
-                  </div>
+                  </div> -->
                 </div>
               </div>
               <div v-else class="border border-gray-200 rounded-lg p-4 hover:border-[#8FA1FF] transition-colors">

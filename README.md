@@ -1,14 +1,8 @@
 ![header](https://capsule-render.vercel.app/api?type=waving&color=609af8&height=100&text=Global%20Sourcing%20Platform&fontColor=000080&fontSize=60&fontAlignY=60&desc=1st%20Generation&descSize=15&descAlignY=90&animation=fadeIn)
 
-> - **_본 소프트웨어는 관련 법률에 따라 보호되는 플랫폼 B&T의 지식재산 및 영업비밀 입니다._**
->   <br/>
-> - **_본 소프트웨어를 권한 없이 사용하거나 플랫폼 B&T의 사전 서면 동의 없이 제3자에게 공개하는 행위는 엄격히 금지되어 있으며_**
->   <br/> **_위반 시 귀하는 무단 사용 또는 비밀 유지 의무 위반에 대해 법적인 책임을 져야 합니다._**
->   <br/>
->   <br/>
-> - **_This software is the intellectual property and confidential information of Platform B&T,_**
->   <br/> **_Co., Ltd. (“Platform B&T”) protected by applicable laws._**
->   <br/>
+> - **_본 소프트웨어는 관련 법률에 따라 보호되는 플랫폼 B&T의 지식재산 및 영업비밀 입니다._** > <br/>
+> - **_본 소프트웨어를 권한 없이 사용하거나 플랫폼 B&T의 사전 서면 동의 없이 제3자에게 공개하는 행위는 엄격히 금지되어 있으며_** > <br/> **_위반 시 귀하는 무단 사용 또는 비밀 유지 의무 위반에 대해 법적인 책임을 져야 합니다._** > <br/> > <br/>
+> - **_This software is the intellectual property and confidential information of Platform B&T,_** > <br/> **_Co., Ltd. (“Platform B&T”) protected by applicable laws._** > <br/>
 > - **_The unauthorized use or disclosure of the software to any third party without the prior written consent of Platform B&T is strictly prohibited, and you should be legally responsible for the unauthorized use or violation of confidentiality obligation._**
 
 <h2>0. Project 로컬환경 구축
@@ -23,6 +17,7 @@ git clone [깃랩 클론 주소]
 nvm 설치후 node 18.20.0 버전설치  
 https://github.com/coreybutler/nvm-windows/releases
 (nvm-setup.exe 설치)
+
 ```
 nvm install 18.20.0
 nvm use 18.20.0
@@ -285,7 +280,7 @@ nginx는 재기동안해도 자동 반영
 
 <h2>5. 주요 기능 흐름</br></br>
 1. 기본적인 흐름 : page</br>
- -> apis[GET(조회) or POST(저장, 수정) /api/gsource/{사용자}/{요구사항}/{id}]</br>
+ -> apis[GET(조회) or POST(저장, 수정) /gsource/api/{서비스}/{요구사항}/{id}]</br>
  -> B.E.controller.service</br>
  -> DB -> page ( -> store )</br></br>
 2. admin(관리자), company(고용주), user(구직자), auth(권한) 사용자 or 유형 타입별로 흐름 분기

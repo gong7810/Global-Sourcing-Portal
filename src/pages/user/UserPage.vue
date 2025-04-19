@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, toRaw } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useAuthStore } from '@/store/auth/authStore';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
@@ -12,7 +12,7 @@ const router = useRouter();
 const authStore = useAuthStore();
 const messagePop = useMessagePop();
 
-const { userInfo } = storeToRefs(authStore);
+const { userInfo, isSocialFlag } = storeToRefs(authStore);
 
 const basicInfo = ref({
   hasCriminalRecord: null,
@@ -344,10 +344,10 @@ const removeCriminalRecord = () => {
         </div>
 
         <!-- 소셜 로그인 알림 -->
-        <div class="bg-white rounded-lg p-6 mb-6" v-else>
+        <div v-if="isSocialFlag" class="bg-white rounded-lg p-6 mb-6">
           <div class="flex items-center gap-2 text-gray-600">
             <i class="pi pi-info-circle text-[#8FA1FF]"></i>
-            <span>소셜 로그인으로 가입된 계정입니다.</span>
+            <span>소셜 로그인 연동된 계정입니다.</span>
           </div>
         </div>
 
